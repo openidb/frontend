@@ -59,8 +59,8 @@ def extract_metadata_from_filename(filename):
     # Source ID (e.g., Shamela0001349-ara1)
     source_id = parts[2] if len(parts) > 2 else "Unknown"
 
-    # Extract Shamela ID if present
-    shamela_match = re.search(r'(Shamela|Sham19Y)(\d+)', source_id)
+    # Extract Shamela ID if present (Shamela, Sham19Y, ShamAY variants)
+    shamela_match = re.search(r'(Shamela|Sham19Y|ShamAY)(\d+)', source_id)
     shamela_id = shamela_match.group(2) if shamela_match else ""
 
     # Check if we have Arabic metadata for this file
@@ -121,9 +121,23 @@ def create_metadata_xml(metadata, output_file):
         f.write(xml_content)
 
 
-def convert_tei_to_html(tei_content, metadata):
+def clean_arabic_text(text):
     """
-    Convert TEI XML content to properly structured HTML with chapters
+    Clean up Arabic text: remove pilcrow symbols and convert English numerals to Arabic-Indic
+    """
+    # Remove pilcrow symbol (¶)
+    text = text.replace('¶', '')
+
+    # Convert English numerals (0-9) to Arabic-Indic numerals (٠-٩)
+    english_to_arabic = str.maketrans('0123456789', '٠١٢٣٤٥٦٧٨٩')
+    text = text.translate(english_to_arabic)
+
+    return text
+
+
+def convert_tei_to_pages(tei_content, metadata):
+    """
+    Convert TEI XML content to a list of page content (HTML fragments)
     """
     import re
     import xml.etree.ElementTree as ET
@@ -136,80 +150,67 @@ def convert_tei_to_html(tei_content, metadata):
         # Find body element
         body = root.find('.//tei:text/tei:body', ns)
         if body is None:
-            # Fallback to simple extraction
-            return convert_tei_to_html_simple(tei_content, metadata)
+            return None
 
-        # Extract div sections (chapters)
-        divs = body.findall('.//tei:div', ns)
+        # Process the body element using iter() to traverse in document order
+        pages_html = []
+        current_page_content = []
+        page_num = 0
+        processed_elements = set()  # Track processed elements to avoid duplicates
 
-        chapters_html = []
-        chapter_num = 0
+        # Iterate through ALL elements in document order
+        for elem in body.iter():
+            elem_id = id(elem)
+            if elem_id in processed_elements:
+                continue
+            processed_elements.add(elem_id)
 
-        for div in divs:
-            # Get chapter heading
-            head = div.find('.//tei:head', ns)
-            if head is not None and head.text and head.text.strip():
-                chapter_num += 1
-                heading_text = head.text.strip()
+            # Check if this is a page break
+            if elem.tag == '{http://www.tei-c.org/ns/1.0}pb':
+                # Save current page if it has content
+                if current_page_content:
+                    pages_html.append(''.join(current_page_content))
+                    current_page_content = []
+                page_num += 1
+                continue
 
-                # Get all paragraphs in this div
-                paragraphs = []
-                for p in div.findall('.//tei:p', ns):
-                    # Use itertext() to get all text content properly
-                    para_text = ' '.join(p.itertext()).strip()
+            # Process headings
+            if elem.tag == '{http://www.tei-c.org/ns/1.0}head':
+                if elem.text and elem.text.strip():
+                    heading_text = elem.text.strip()
+                    # Clean heading
+                    heading_text = re.sub(r'\bms\d+\b', '', heading_text)
+                    heading_text = re.sub(r'\s+', ' ', heading_text).strip()
+                    heading_text = clean_arabic_text(heading_text)
+                    current_page_content.append(f'<h2>{heading_text}</h2>\n')
+                continue
 
-                    # Clean up the text - remove all extra whitespace and leading/trailing spaces
-                    para_text = ' '.join(para_text.split())  # Normalize whitespace
-                    para_text = para_text.strip()  # Remove any leading/trailing whitespace
+            # Process paragraphs
+            if elem.tag == '{http://www.tei-c.org/ns/1.0}p':
+                para_text = ' '.join(elem.itertext()).strip()
+                # Clean up text
+                para_text = ' '.join(para_text.split())
+                para_text = re.sub(r'^[\s\u00A0\u2000-\u200F\u202F\u205F\u3000]+', '', para_text)
+                para_text = re.sub(r'[\s\u00A0\u2000-\u200F\u202F\u205F\u3000]+$', '', para_text)
+                para_text = re.sub(r'\bms\d+\b', '', para_text)
+                para_text = re.sub(r'\s+', ' ', para_text).strip()
+                para_text = clean_arabic_text(para_text)
 
-                    # Remove any leading non-breaking spaces or unusual whitespace characters
-                    para_text = re.sub(r'^[\s\u00A0\u2000-\u200F\u202F\u205F\u3000]+', '', para_text)
-                    para_text = re.sub(r'[\s\u00A0\u2000-\u200F\u202F\u205F\u3000]+$', '', para_text)
+                # Skip empty paragraphs and metadata markers
+                if para_text and not para_text.startswith('PageV') and not para_text.startswith('Milestone'):
+                    current_page_content.append(f'<p>{para_text}</p>\n')
+                continue
 
-                    # Skip empty paragraphs and metadata markers
-                    if para_text and not para_text.startswith('PageV') and not para_text.startswith('Milestone'):
-                        # Don't add RTL mark - let CSS handle RTL direction
-                        paragraphs.append(f'<p>{para_text}</p>')
+        # Add any remaining content as the last page
+        if current_page_content:
+            pages_html.append(''.join(current_page_content))
 
-                # Create chapter section with proper heading
-                if paragraphs:
-                    # Don't add RTL mark - let CSS handle it
-                    chapter_html = f'''
-<section epub:type="chapter" class="chapter">
-    <h2>{heading_text}</h2>
-    {''.join(paragraphs)}
-</section>
-'''
-                    chapters_html.append(chapter_html)
-
-        # If no chapters found, use simple conversion
-        if not chapters_html:
-            return convert_tei_to_html_simple(tei_content, metadata)
-
-        # Build complete HTML with proper structure
-        html = f'''<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>{metadata['title']}</title>
-</head>
-<body>
-    <section epub:type="titlepage" class="titlepage">
-        <h1>{metadata['title']}</h1>
-        <p><strong>المؤلف:</strong> {metadata['author']} (ت. {metadata['death_year']} هـ)</p>
-        <p><strong>المصدر:</strong> شاملة {metadata['shamela_id']}</p>
-        <hr/>
-    </section>
-    {''.join(chapters_html)}
-</body>
-</html>'''
-
-        return html
+        # Return list of page content
+        return pages_html if pages_html else None
 
     except Exception as e:
-        print(f"  Warning: XML parsing failed ({e}), using simple conversion")
-        return convert_tei_to_html_simple(tei_content, metadata)
+        print(f"  Warning: XML parsing failed ({e})")
+        return None
 
 
 def convert_tei_to_html_simple(tei_content, metadata):
@@ -232,17 +233,29 @@ def convert_tei_to_html_simple(tei_content, metadata):
     body_content = re.sub(r'<pb[^>]*>', '', body_content)  # Remove page breaks
     body_content = re.sub(r'<([a-z]+)[^>]*>', r'<\1>', body_content)
 
+    # Remove milestone markers (ms001, ms002, etc.)
+    body_content = re.sub(r'\bms\d+\b', '', body_content)
+    body_content = re.sub(r'\s+', ' ', body_content)  # Clean up extra spaces
+
+    # Clean Arabic text
+    body_content = clean_arabic_text(body_content)
+
+    # Clean metadata fields
+    clean_title = clean_arabic_text(metadata['title'])
+    clean_author = clean_arabic_text(metadata['author'])
+    clean_death_year = clean_arabic_text(metadata['death_year'])
+
     # Build complete HTML
     html = f"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{metadata['title']}</title>
+    <title>{clean_title}</title>
 </head>
 <body>
-    <h1>{metadata['title']}</h1>
-    <p><strong>المؤلف:</strong> {metadata['author']} (ت. {metadata['death_year']} هـ)</p>
+    <h1>{clean_title}</h1>
+    <p><strong>المؤلف:</strong> {clean_author} (ت. {clean_death_year} هـ)</p>
     <hr/>
     {body_content}
 </body>
@@ -253,7 +266,7 @@ def convert_tei_to_html_simple(tei_content, metadata):
 
 def convert_tei_to_epub(tei_file, epub_file, metadata, css_file):
     """
-    Convert TEI XML to EPUB using Pandoc (via HTML intermediate)
+    Convert TEI XML to EPUB using Pandoc with proper page breaks
     """
     print(f"  Converting TEI to EPUB...")
 
@@ -261,51 +274,96 @@ def convert_tei_to_epub(tei_file, epub_file, metadata, css_file):
     with open(tei_file, 'r', encoding='utf-8') as f:
         tei_content = f.read()
 
-    # Convert to HTML
-    html_content = convert_tei_to_html(tei_content, metadata)
-    if not html_content:
+    # Convert to HTML pages
+    pages_data = convert_tei_to_pages(tei_content, metadata)
+    if not pages_data:
         print(f"  ✗ Could not extract content from TEI")
         return False
 
-    # Save HTML file
-    html_file = tei_file.replace('.xml', '.html')
-    with open(html_file, 'w', encoding='utf-8') as f:
-        f.write(html_content)
-
-    # Create metadata file
-    metadata_file = tei_file.replace('.xml', '-metadata.xml')
-    create_metadata_xml(metadata, metadata_file)
-
-    # Build Pandoc command (HTML to EPUB)
-    # Use --epub-chapter-level=2 to split at h2 headings (our chapters)
-    cmd = [
-        'pandoc',
-        html_file,
-        '-f', 'html',
-        '-t', 'epub3',
-        '--epub-metadata=' + metadata_file,
-        '--css=' + css_file,
-        '--epub-chapter-level=2',  # Split chapters at h2 level
-        '--metadata', f'title={metadata["title"]}',
-        '--metadata', f'author={metadata["author"]}',
-        '--metadata', 'lang=ar',
-        '--metadata', 'dir=rtl',
-        '-o', epub_file
-    ]
+    # Create temporary directory for page files
+    import tempfile
+    temp_dir = tempfile.mkdtemp()
 
     try:
+        # Clean metadata fields
+        clean_title = clean_arabic_text(metadata['title'])
+        clean_author = clean_arabic_text(metadata['author'])
+        clean_death_year = clean_arabic_text(metadata['death_year'])
+        clean_shamela_id = clean_arabic_text(metadata['shamela_id'])
+
+        # Create title page
+        title_html = f'''<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"/>
+    <title>{clean_title}</title>
+</head>
+<body>
+    <h1>{clean_title}</h1>
+    <p><strong>المؤلف:</strong> {clean_author} (ت. {clean_death_year} هـ)</p>
+    <p><strong>المصدر:</strong> شاملة {clean_shamela_id}</p>
+</body>
+</html>'''
+
+        title_file = os.path.join(temp_dir, '000-title.html')
+        with open(title_file, 'w', encoding='utf-8') as f:
+            f.write(title_html)
+
+        # Create individual page HTML files
+        page_files = [title_file]
+        for i, page_content in enumerate(pages_data, 1):
+            # Add h1 for chapter splitting with hidden page number
+            page_html = f'''<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"/>
+    <title>{clean_title} - Page {i}</title>
+</head>
+<body>
+<h1 style="display:none;">صفحة {i}</h1>
+{page_content}
+</body>
+</html>'''
+
+            page_file = os.path.join(temp_dir, f'{i:03d}-page.html')
+            with open(page_file, 'w', encoding='utf-8') as f:
+                f.write(page_html)
+            page_files.append(page_file)
+
+        # Create metadata file
+        metadata_file = os.path.join(temp_dir, 'metadata.xml')
+        create_metadata_xml(metadata, metadata_file)
+
+        # Build Pandoc command with all page files
+        cmd = [
+            'pandoc',
+            *page_files,  # All HTML files in order
+            '-f', 'html',
+            '-t', 'epub3',
+            '--epub-metadata=' + metadata_file,
+            '--css=' + css_file,
+            '--metadata', f'title={metadata["title"]}',
+            '--metadata', f'author={metadata["author"]}',
+            '--metadata', 'lang=ar',
+            '--metadata', 'dir=rtl',
+            '--epub-chapter-level=1',  # Split at h1 level
+            '-o', epub_file
+        ]
+
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        print(f"  ✓ EPUB created successfully")
-        # Clean up intermediate files
-        os.remove(metadata_file)
-        os.remove(html_file)
+        print(f"  ✓ EPUB created successfully with {len(pages_data)} pages")
         return True
+
     except subprocess.CalledProcessError as e:
         print(f"  ✗ Pandoc error: {e.stderr}")
         return False
     except Exception as e:
         print(f"  ✗ Error: {e}")
         return False
+    finally:
+        # Clean up temporary directory
+        import shutil
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 def convert_single_file(markdown_file, output_dir, css_file):
