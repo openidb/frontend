@@ -1,0 +1,14 @@
+{
+  "books": [
+    {
+      "id": "18",
+      "title": "كتاب مجموع فيه أربع رسائل - الحجاوي",
+      "author": "الحجاوي",
+      "filename": "18_كتاب مجموع فيه أربع رسائل - الحجاوي.epub",
+      "pages": 56,
+      "first_printed_page": null,
+      "has_pdf": false,
+      "test_book": true
+    }
+  ]
+}

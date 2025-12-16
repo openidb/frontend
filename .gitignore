@@ -68,3 +68,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Project data directories (root level)
+/data/
+/output/
+/shamela-scraper/

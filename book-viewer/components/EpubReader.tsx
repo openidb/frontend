@@ -31,6 +31,9 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
   const [showSidebar, setShowSidebar] = useState(false);
   const [chapters, setChapters] = useState<any[]>([]);
   const [pageInputValue, setPageInputValue] = useState("");
+  const [pageList, setPageList] = useState<any[]>([]);
+  const [currentPageLabel, setCurrentPageLabel] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const viewerElement = viewerRef.current;
@@ -134,7 +137,26 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
           // Use the index from the location
           const currentIndex = (location.start.index ?? 0) + 1;
           setCurrentSection(currentIndex);
-          setPageInputValue(currentIndex.toString());
+
+          // Try to find the current page label from page list
+          // The page list has pages with their corresponding CFI locations
+          // We need to find which page corresponds to the current location
+          if (pageList.length > 0) {
+            // For now, use section index to find page
+            // This is a simplified approach - ideally we'd compare CFIs
+            const pageIndex = Math.min(currentIndex - 1, pageList.length - 1);
+            const page = pageList[pageIndex];
+            if (page && page.label) {
+              setCurrentPageLabel(page.label);
+              setPageInputValue(page.label);
+            } else {
+              setCurrentPageLabel(currentIndex.toString());
+              setPageInputValue(currentIndex.toString());
+            }
+          } else {
+            setCurrentPageLabel(currentIndex.toString());
+            setPageInputValue(currentIndex.toString());
+          }
         }
       });
 
@@ -145,7 +167,31 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
 
       // Get table of contents
       bookInstance.loaded.navigation.then((navigation: any) => {
-        setChapters(navigation.toc);
+        // Filter out page-list and guide entries from TOC
+        // EPub.js sometimes includes these in the toc array
+        const filteredToc = navigation.toc.filter((item: any) => {
+          const label = item.label?.toLowerCase() || '';
+          // Filter out "Guide", "Pages", and entries that are just numbers (page numbers)
+          return label !== 'guide' &&
+                 label !== 'pages' &&
+                 label !== 'صفحات' &&
+                 !/^\d+$/.test(label);  // Exclude entries that are just numbers
+        });
+
+        console.log("Original TOC length:", navigation.toc.length);
+        console.log("Filtered TOC length:", filteredToc.length);
+        setChapters(filteredToc);
+
+        // Get page list (actual page numbers from the book)
+        if (navigation.pageList && navigation.pageList.length > 0) {
+          console.log("Page list found:", navigation.pageList);
+          setPageList(navigation.pageList);
+          setTotalPages(navigation.pageList.length);
+        } else {
+          console.log("No page list found, using section count");
+          setPageList([]);
+          setTotalPages(0);
+        }
       });
 
     }).catch((err) => {
@@ -241,24 +287,77 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
     setShowSidebar(!showSidebar);
   };
 
+  const renderChapters = (items: any[], depth: number = 0): JSX.Element[] => {
+    return items.map((item, index) => {
+      const hasSubitems = item.subitems && item.subitems.length > 0;
+
+      return (
+        <div key={`${depth}-${index}`}>
+          <button
+            onClick={() => goToChapter(item.href)}
+            className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm transition-colors"
+            style={{ paddingRight: `${depth * 12 + 12}px` }}
+          >
+            {item.label}
+          </button>
+          {hasSubitems && (
+            <div>
+              {renderChapters(item.subitems, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPageInputValue(e.target.value);
   };
 
   const handlePageInputSubmit = (e: React.FormEvent | React.FocusEvent) => {
     e.preventDefault();
-    const pageNum = parseInt(pageInputValue, 10);
-    if (pageNum >= 1 && pageNum <= totalSections && renditionRef.current && bookRef.current) {
-      // Navigate to the section (spine item) at index pageNum - 1
-      bookRef.current.loaded.spine.then((spine: any) => {
-        const section = spine.get(pageNum - 1);
-        if (section && renditionRef.current) {
-          renditionRef.current.display(section.href);
+
+    if (!renditionRef.current || !bookRef.current) return;
+
+    // If we have a page list, try to find the page by label
+    if (pageList.length > 0) {
+      const pageIndex = pageList.findIndex((page: any) => page.label === pageInputValue);
+      if (pageIndex !== -1) {
+        const page = pageList[pageIndex];
+        if (page && page.href) {
+          renditionRef.current.display(page.href);
         }
-      });
+      } else {
+        // Try parsing as number
+        const pageNum = parseInt(pageInputValue, 10);
+        if (!isNaN(pageNum)) {
+          // Find page with this label
+          const foundPage = pageList.find((page: any) => page.label === pageNum.toString());
+          if (foundPage && foundPage.href) {
+            renditionRef.current.display(foundPage.href);
+          } else {
+            // Reset to current page if invalid
+            setPageInputValue(currentPageLabel || currentSection.toString());
+          }
+        } else {
+          // Reset to current page if invalid
+          setPageInputValue(currentPageLabel || currentSection.toString());
+        }
+      }
     } else {
-      // Reset to current page if invalid
-      setPageInputValue(currentSection.toString());
+      // Fallback to section-based navigation
+      const pageNum = parseInt(pageInputValue, 10);
+      if (pageNum >= 1 && pageNum <= totalSections) {
+        bookRef.current.loaded.spine.then((spine: any) => {
+          const section = spine.get(pageNum - 1);
+          if (section && renditionRef.current) {
+            renditionRef.current.display(section.href);
+          }
+        });
+      } else {
+        // Reset to current page if invalid
+        setPageInputValue(currentSection.toString());
+      }
     }
   };
 
@@ -285,9 +384,13 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
                 value={pageInputValue}
                 onChange={handlePageInputChange}
                 onBlur={handlePageInputSubmit}
-                className="w-8 text-sm text-muted-foreground text-center bg-transparent border-b border-gray-300 focus:border-gray-500 focus:outline-none"
+                className="w-12 text-sm text-muted-foreground text-center bg-transparent border-b border-gray-300 focus:border-gray-500 focus:outline-none"
               />
-              <span className="text-sm text-muted-foreground">of {totalSections}</span>
+              <span className="text-sm text-muted-foreground">
+                {pageList.length > 0
+                  ? `(of ${pageList[pageList.length - 1]?.label || totalSections})`
+                  : `of ${totalSections}`}
+              </span>
             </form>
           )}
           <div className="flex items-center gap-2 ml-3">
@@ -352,15 +455,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
             <p className="text-sm text-muted-foreground">No chapters available</p>
           ) : (
             <div className="space-y-1">
-              {chapters.map((chapter, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToChapter(chapter.href)}
-                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm transition-colors"
-                >
-                  {chapter.label}
-                </button>
-              ))}
+              {renderChapters(chapters)}
             </div>
           )}
         </div>
