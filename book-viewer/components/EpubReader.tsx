@@ -25,6 +25,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
   const viewerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<Rendition | null>(null);
   const bookRef = useRef<Book | null>(null);
+  const currentHrefRef = useRef<string>("");  // Track current href to prevent unnecessary updates
   const [isReady, setIsReady] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
   const [totalSections, setTotalSections] = useState(0);
@@ -138,24 +139,40 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
           const currentIndex = (location.start.index ?? 0) + 1;
           setCurrentSection(currentIndex);
 
-          // Try to find the current page label from page list
-          // The page list has pages with their corresponding CFI locations
-          // We need to find which page corresponds to the current location
-          if (pageList.length > 0) {
-            // For now, use section index to find page
-            // This is a simplified approach - ideally we'd compare CFIs
-            const pageIndex = Math.min(currentIndex - 1, pageList.length - 1);
-            const page = pageList[pageIndex];
-            if (page && page.label) {
-              setCurrentPageLabel(page.label);
-              setPageInputValue(page.label);
+          // Extract the href from the current location
+          const currentHref = location.start.href;
+
+          // Only update page number if we've actually moved to a different file
+          if (currentHref !== currentHrefRef.current) {
+            console.log(`Href changed from ${currentHrefRef.current} to ${currentHref}`);
+            currentHrefRef.current = currentHref;
+
+            // Try to find the current page label from page list
+            // Match by href to get the correct printed page number
+            if (pageList.length > 0) {
+              console.log(`Relocated - href: ${currentHref}, index: ${location.start.index}`);
+
+              // Find the page in the page list that matches this href
+              const foundPage = pageList.find((page: any) => page.href === currentHref);
+
+              if (foundPage && foundPage.label) {
+                console.log(`Found page number: ${foundPage.label} for ${currentHref}`);
+                setCurrentPageLabel(foundPage.label);
+                setPageInputValue(foundPage.label);
+              } else {
+                // Fallback: No matching page in page-list (e.g., page 0 overview)
+                // Use a placeholder or section index
+                console.log(`No page number found for ${currentHref}, using section ${currentIndex}`);
+                setCurrentPageLabel("—");  // Em dash for pages without printed numbers
+                setPageInputValue("—");
+              }
             } else {
+              // No page list at all, use section index
               setCurrentPageLabel(currentIndex.toString());
               setPageInputValue(currentIndex.toString());
             }
           } else {
-            setCurrentPageLabel(currentIndex.toString());
-            setPageInputValue(currentIndex.toString());
+            console.log(`Still on same href: ${currentHref}, not updating page number`);
           }
         }
       });
@@ -182,17 +199,60 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
         console.log("Filtered TOC length:", filteredToc.length);
         setChapters(filteredToc);
 
-        // Get page list (actual page numbers from the book)
-        if (navigation.pageList && navigation.pageList.length > 0) {
-          console.log("Page list found:", navigation.pageList);
-          setPageList(navigation.pageList);
-          setTotalPages(navigation.pageList.length);
-        } else {
-          console.log("No page list found, using section count");
+        // EPub.js doesn't automatically parse page-list nav elements
+        // We need to manually fetch and parse the nav.xhtml file
+        console.log("Attempting to manually parse page-list from nav.xhtml");
+        parsePageList(bookInstance);
+      });
+
+      // Manually parse page-list from nav.xhtml
+      async function parsePageList(book: Book) {
+        try {
+          // Get the nav document
+          const navItem = book.spine.get('nav');
+          if (!navItem) {
+            // Nav might not be in spine, try to load it directly
+            const navPath = 'EPUB/nav.xhtml';
+            const response = await fetch(`/books/${bookMetadata.filename}`);
+            const blob = await response.blob();
+
+            // Use JSZip to extract nav.xhtml
+            const JSZip = (await import('jszip')).default;
+            const zip = await JSZip.loadAsync(blob);
+            const navFile = zip.file(navPath);
+
+            if (navFile) {
+              const navContent = await navFile.async('text');
+              const parser = new DOMParser();
+              const navDoc = parser.parseFromString(navContent, 'application/xhtml+xml');
+
+              // Find page-list nav element
+              const pageListNav = navDoc.querySelector('nav[*|type="page-list"]');
+
+              if (pageListNav) {
+                const pageLinks = pageListNav.querySelectorAll('a');
+                const pages = Array.from(pageLinks).map(link => ({
+                  label: link.textContent || '',
+                  href: link.getAttribute('href') || ''
+                }));
+
+                console.log("Manually parsed page-list:", pages.length, "pages");
+                console.log("First 5 pages:", pages.slice(0, 5));
+                setPageList(pages);
+                setTotalPages(pages.length);
+              } else {
+                console.log("No page-list nav found in nav.xhtml");
+                setPageList([]);
+                setTotalPages(0);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing page-list:", error);
           setPageList([]);
           setTotalPages(0);
         }
-      });
+      }
 
     }).catch((err) => {
       console.error("Book ready error:", err);
@@ -244,6 +304,30 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
       }
     };
   }, []); // Empty deps - only initialize once
+
+  // Update page number when pageList becomes available
+  // This handles the case where relocated fires before pageList is loaded
+  useEffect(() => {
+    if (pageList.length > 0 && renditionRef.current && currentSection > 0) {
+      // Get the current location and update the page label
+      const location = renditionRef.current.currentLocation();
+      if (location && location.start) {
+        const currentHref = location.start.href;
+        const foundPage = pageList.find((page: any) => page.href === currentHref);
+
+        if (foundPage && foundPage.label) {
+          console.log(`Updating page label after pageList loaded: ${foundPage.label} for ${currentHref}`);
+          setCurrentPageLabel(foundPage.label);
+          setPageInputValue(foundPage.label);
+        } else {
+          // Page not in page-list (e.g., page 0 overview)
+          console.log(`Page ${currentHref} not in page-list, using em dash`);
+          setCurrentPageLabel("—");
+          setPageInputValue("—");
+        }
+      }
+    }
+  }, [pageList, currentSection]); // Run when pageList or currentSection changes
 
   const goBack = () => {
     router.push("/");
