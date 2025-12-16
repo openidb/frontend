@@ -18,20 +18,20 @@ export default function RootLayout({
       <body className="antialiased">
         <div className="flex h-screen">
           {/* Sidebar */}
-          <aside className="w-64 border-r bg-white p-6">
+          <aside className="w-48 border-r bg-white p-4">
             <nav className="space-y-2">
               <Link
                 href="/"
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100"
               >
-                <BookOpen className="h-5 w-5" />
+                <BookOpen className="h-4 w-4" />
                 Books
               </Link>
               <Link
                 href="/authors"
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100"
               >
-                <Users className="h-5 w-5" />
+                <Users className="h-4 w-4" />
                 Authors
               </Link>
             </nav>

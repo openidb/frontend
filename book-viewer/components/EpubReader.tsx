@@ -60,20 +60,42 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
 
       renditionRef.current = renditionInstance;
 
-      // Inject normalization CSS to prevent layout issues
+      // Inject normalization CSS with diacritics support
       renditionInstance.hooks.content.register((contents: any) => {
         const style = contents.document.createElement("style");
         style.textContent = `
           * {
             max-width: 100% !important;
+            box-sizing: border-box !important;
           }
-          img {
+          html, body {
+            height: auto !important;
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+          }
+          body {
+            overflow: visible !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            font-family: "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif !important;
+            line-height: 2.0 !important;
+            font-feature-settings: "liga" 1, "calt" 1 !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+          }
+          section {
+            display: block !important;
+          }
+          img, svg {
             max-width: 100% !important;
             height: auto !important;
           }
-          body {
-            margin: 0 !important;
-            padding: 20px !important;
+          p {
+            line-height: 2.0 !important;
+            letter-spacing: 0.01em !important;
+            margin: 0.8em 0 !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
           }
         `;
         contents.document.head.appendChild(style);
@@ -182,14 +204,29 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
   };
 
   const goToPrevPage = () => {
-    if (renditionRef.current && isReady) {
-      renditionRef.current.prev();
+    if (renditionRef.current && bookRef.current && isReady && currentSection > 1) {
+      bookRef.current.loaded.spine.then((spine: any) => {
+        const section = spine.get(currentSection - 2);
+        if (section && renditionRef.current) {
+          renditionRef.current.display(section.href);
+        }
+      });
     }
   };
 
   const goToNextPage = () => {
-    if (renditionRef.current && isReady) {
-      renditionRef.current.next();
+    console.log("goToNextPage called:", { currentSection, totalSections, isReady });
+    if (renditionRef.current && bookRef.current && isReady && currentSection < totalSections) {
+      bookRef.current.loaded.spine.then((spine: any) => {
+        const section = spine.get(currentSection);
+        console.log("Attempting to navigate to section:", currentSection, section);
+        if (section && renditionRef.current) {
+          console.log("Displaying section href:", section.href);
+          renditionRef.current.display(section.href);
+        }
+      });
+    } else {
+      console.log("Navigation blocked - conditions not met");
     }
   };
 
@@ -288,8 +325,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
         ref={viewerRef}
         className="flex-1 min-h-0 relative"
         style={{
-          position: "relative",
-          overflow: "hidden"
+          position: "relative"
         }}
       />
 
