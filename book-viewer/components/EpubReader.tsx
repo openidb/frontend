@@ -163,8 +163,8 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
                 // Fallback: No matching page in page-list (e.g., page 0 overview)
                 // Use a placeholder or section index
                 console.log(`No page number found for ${currentHref}, using section ${currentIndex}`);
-                setCurrentPageLabel("—");  // Em dash for pages without printed numbers
-                setPageInputValue("—");
+                setCurrentPageLabel("i");  // Roman numeral for overview/intro pages
+                setPageInputValue("i");
               }
             } else {
               // No page list at all, use section index
@@ -321,9 +321,9 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
           setPageInputValue(foundPage.label);
         } else {
           // Page not in page-list (e.g., page 0 overview)
-          console.log(`Page ${currentHref} not in page-list, using em dash`);
-          setCurrentPageLabel("—");
-          setPageInputValue("—");
+          console.log(`Page ${currentHref} not in page-list, using 'i'`);
+          setCurrentPageLabel("i");
+          setPageInputValue("i");
         }
       }
     }
