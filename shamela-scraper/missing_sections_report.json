@@ -1,0 +1,3023 @@
+{
+  "summary": {
+    "total_books_analyzed": 637,
+    "books_with_gaps": 87,
+    "books_missing_section_1": 80,
+    "books_starting_after_1": 80,
+    "total_missing_sections": 204
+  },
+  "books_with_gaps": [
+    {
+      "book_id": "11",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 4625,
+      "total_sections": 4623,
+      "expected_sections": 4625,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "12",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 546,
+      "total_sections": 545,
+      "expected_sections": 546,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "13",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 349,
+      "total_sections": 348,
+      "expected_sections": 349,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "14",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 896,
+      "total_sections": 893,
+      "expected_sections": 896,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "15",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 871,
+      "total_sections": 870,
+      "expected_sections": 871,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "17",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 90,
+      "total_sections": 89,
+      "expected_sections": 90,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "19",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 189,
+      "total_sections": 188,
+      "expected_sections": 189,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "25",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 88,
+      "total_sections": 87,
+      "expected_sections": 88,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "32",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 966,
+      "total_sections": 965,
+      "expected_sections": 966,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "34",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 574,
+      "total_sections": 571,
+      "expected_sections": 574,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "39",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1204,
+      "total_sections": 1201,
+      "expected_sections": 1204,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "44",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 2275,
+      "total_sections": 2273,
+      "expected_sections": 2275,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "46",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1570,
+      "total_sections": 1567,
+      "expected_sections": 1570,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "47",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 6373,
+      "total_sections": 6370,
+      "expected_sections": 6373,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "50",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 3488,
+      "total_sections": 3485,
+      "expected_sections": 3488,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "54",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 99,
+      "total_sections": 98,
+      "expected_sections": 99,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "66",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1617,
+      "total_sections": 1612,
+      "expected_sections": 1617,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "missing_count": 5,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "67",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 994,
+      "total_sections": 984,
+      "expected_sections": 994,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "missing_count": 10,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "77",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 6,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "78",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 2088,
+      "total_sections": 2086,
+      "expected_sections": 2088,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "80",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 105,
+      "total_sections": 104,
+      "expected_sections": 105,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "81",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 442,
+      "total_sections": 440,
+      "expected_sections": 442,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "84",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 5004,
+      "total_sections": 5001,
+      "expected_sections": 5004,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "85",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 80,
+      "total_sections": 77,
+      "expected_sections": 80,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "87",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 340,
+      "total_sections": 338,
+      "expected_sections": 340,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "89",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 3586,
+      "total_sections": 3585,
+      "expected_sections": 3586,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "93",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 243,
+      "total_sections": 242,
+      "expected_sections": 243,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "97",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 76,
+      "total_sections": 75,
+      "expected_sections": 76,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "100",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 122,
+      "total_sections": 121,
+      "expected_sections": 122,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "106",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 353,
+      "total_sections": 351,
+      "expected_sections": 353,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "109",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 160,
+      "total_sections": 158,
+      "expected_sections": 160,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "110",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 241,
+      "total_sections": 238,
+      "expected_sections": 241,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "113",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 5239,
+      "total_sections": 5236,
+      "expected_sections": 5239,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "116",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 510,
+      "total_sections": 509,
+      "expected_sections": 510,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "117",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 789,
+      "total_sections": 786,
+      "expected_sections": 789,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "121",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 107,
+      "total_sections": 105,
+      "expected_sections": 107,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "123",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 669,
+      "total_sections": 666,
+      "expected_sections": 669,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "124",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 741,
+      "total_sections": 738,
+      "expected_sections": 741,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "131",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 3514,
+      "total_sections": 3508,
+      "expected_sections": 3514,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "missing_count": 6,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "133",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 5295,
+      "total_sections": 5293,
+      "expected_sections": 5295,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "138",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 211,
+      "total_sections": 210,
+      "expected_sections": 211,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "142",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 466,
+      "total_sections": 465,
+      "expected_sections": 466,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "143",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1091,
+      "total_sections": 1088,
+      "expected_sections": 1091,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "146",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 4889,
+      "total_sections": 4887,
+      "expected_sections": 4889,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "148",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 207,
+      "total_sections": 200,
+      "expected_sections": 207,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "missing_count": 7,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "149",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 203,
+      "total_sections": 202,
+      "expected_sections": 203,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "154",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 5489,
+      "total_sections": 5487,
+      "expected_sections": 5489,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "160",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 151,
+      "total_sections": 149,
+      "expected_sections": 151,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "161",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1491,
+      "total_sections": 1489,
+      "expected_sections": 1491,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "163",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 366,
+      "total_sections": 363,
+      "expected_sections": 366,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "165",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 5313,
+      "total_sections": 5312,
+      "expected_sections": 5313,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "168",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1273,
+      "total_sections": 1272,
+      "expected_sections": 1273,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "169",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 317,
+      "total_sections": 316,
+      "expected_sections": 317,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "174",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 2189,
+      "total_sections": 2187,
+      "expected_sections": 2189,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "177",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 343,
+      "total_sections": 341,
+      "expected_sections": 343,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "181",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 5496,
+      "total_sections": 5493,
+      "expected_sections": 5496,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "182",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 432,
+      "total_sections": 428,
+      "expected_sections": 432,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "missing_count": 4,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "184",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1217,
+      "total_sections": 1216,
+      "expected_sections": 1217,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "191",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 64,
+      "total_sections": 63,
+      "expected_sections": 64,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "198",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 227,
+      "total_sections": 226,
+      "expected_sections": 227,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "199",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 2526,
+      "total_sections": 2525,
+      "expected_sections": 2526,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "203",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 241,
+      "total_sections": 239,
+      "expected_sections": 241,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "205",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1033,
+      "total_sections": 1032,
+      "expected_sections": 1033,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "208",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 366,
+      "total_sections": 365,
+      "expected_sections": 366,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "218",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1163,
+      "total_sections": 1162,
+      "expected_sections": 1163,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "229",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 505,
+      "total_sections": 504,
+      "expected_sections": 505,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "232",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1229,
+      "total_sections": 1228,
+      "expected_sections": 1229,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "234",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 131,
+      "total_sections": 126,
+      "expected_sections": 131,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "missing_count": 5,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "237",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 139,
+      "total_sections": 138,
+      "expected_sections": 139,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "249",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 12,
+      "total_sections": 11,
+      "expected_sections": 12,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "251",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 888,
+      "total_sections": 886,
+      "expected_sections": 888,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "263",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 117,
+      "total_sections": 113,
+      "expected_sections": 117,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "missing_count": 4,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "269",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 218,
+      "total_sections": 216,
+      "expected_sections": 218,
+      "missing_sections": [
+        2,
+        3
+      ],
+      "missing_count": 2,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "277",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 34,
+      "total_sections": 33,
+      "expected_sections": 34,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "291",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 194,
+      "total_sections": 193,
+      "expected_sections": 194,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "294",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 160,
+      "total_sections": 159,
+      "expected_sections": 160,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "296",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 131,
+      "total_sections": 130,
+      "expected_sections": 131,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "303",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 218,
+      "total_sections": 217,
+      "expected_sections": 218,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "305",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 222,
+      "total_sections": 221,
+      "expected_sections": 222,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "312",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 52,
+      "total_sections": 51,
+      "expected_sections": 52,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "321",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 210,
+      "total_sections": 207,
+      "expected_sections": 210,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "323",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1471,
+      "total_sections": 1461,
+      "expected_sections": 1471,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "missing_count": 10,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "326",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 1169,
+      "total_sections": 1168,
+      "expected_sections": 1169,
+      "missing_sections": [
+        2
+      ],
+      "missing_count": 1,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "347",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 15,
+      "total_sections": 7,
+      "expected_sections": 15,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "missing_count": 8,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "388",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 29,
+      "total_sections": 26,
+      "expected_sections": 29,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "420",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 309,
+      "total_sections": 297,
+      "expected_sections": 309,
+      "missing_sections": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "missing_count": 12,
+      "missing_section_1": false
+    },
+    {
+      "book_id": "616",
+      "has_sections": true,
+      "min_section": 1,
+      "max_section": 76,
+      "total_sections": 73,
+      "expected_sections": 76,
+      "missing_sections": [
+        2,
+        3,
+        4
+      ],
+      "missing_count": 3,
+      "missing_section_1": false
+    }
+  ],
+  "books_missing_section_1": [
+    {
+      "book_id": "336",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 281,
+      "total_sections": 279,
+      "expected_sections": 279,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "337",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 1489,
+      "total_sections": 1487,
+      "expected_sections": 1487,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "339",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 505,
+      "total_sections": 503,
+      "expected_sections": 503,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "340",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 305,
+      "total_sections": 303,
+      "expected_sections": 303,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "341",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 244,
+      "total_sections": 242,
+      "expected_sections": 242,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "342",
+      "has_sections": true,
+      "min_section": 71,
+      "max_section": 326,
+      "total_sections": 256,
+      "expected_sections": 256,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "407",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 64,
+      "total_sections": 63,
+      "expected_sections": 63,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "409",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 9,
+      "total_sections": 8,
+      "expected_sections": 8,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "413",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 52,
+      "total_sections": 51,
+      "expected_sections": 51,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "415",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 70,
+      "total_sections": 69,
+      "expected_sections": 69,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "431",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 16,
+      "total_sections": 14,
+      "expected_sections": 14,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "436",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 14,
+      "total_sections": 13,
+      "expected_sections": 13,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "437",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 979,
+      "total_sections": 978,
+      "expected_sections": 978,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "438",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 55,
+      "total_sections": 54,
+      "expected_sections": 54,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "439",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "440",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 34,
+      "total_sections": 33,
+      "expected_sections": 33,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "442",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 38,
+      "total_sections": 37,
+      "expected_sections": 37,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "443",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 14,
+      "total_sections": 13,
+      "expected_sections": 13,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "444",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 59,
+      "total_sections": 58,
+      "expected_sections": 58,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "445",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 117,
+      "total_sections": 116,
+      "expected_sections": 116,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "446",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 13,
+      "total_sections": 12,
+      "expected_sections": 12,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "447",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 13,
+      "total_sections": 12,
+      "expected_sections": 12,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "448",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 18,
+      "total_sections": 17,
+      "expected_sections": 17,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "449",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 39,
+      "total_sections": 38,
+      "expected_sections": 38,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "450",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 107,
+      "total_sections": 106,
+      "expected_sections": 106,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "451",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 148,
+      "total_sections": 147,
+      "expected_sections": 147,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "453",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 26,
+      "total_sections": 25,
+      "expected_sections": 25,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "454",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 18,
+      "total_sections": 17,
+      "expected_sections": 17,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "455",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 7,
+      "total_sections": 6,
+      "expected_sections": 6,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "456",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 11,
+      "total_sections": 10,
+      "expected_sections": 10,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "457",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 50,
+      "total_sections": 49,
+      "expected_sections": 49,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "459",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 207,
+      "total_sections": 206,
+      "expected_sections": 206,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "460",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "461",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 54,
+      "total_sections": 53,
+      "expected_sections": 53,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "462",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 217,
+      "total_sections": 216,
+      "expected_sections": 216,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "464",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 5,
+      "total_sections": 4,
+      "expected_sections": 4,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "467",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "468",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 3,
+      "total_sections": 2,
+      "expected_sections": 2,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "469",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 3,
+      "total_sections": 2,
+      "expected_sections": 2,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "470",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 10,
+      "total_sections": 9,
+      "expected_sections": 9,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "472",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "479",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 14,
+      "total_sections": 13,
+      "expected_sections": 13,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "480",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 5,
+      "total_sections": 4,
+      "expected_sections": 4,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "481",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "484",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 8,
+      "total_sections": 7,
+      "expected_sections": 7,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "485",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 121,
+      "total_sections": 120,
+      "expected_sections": 120,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "486",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 17,
+      "total_sections": 16,
+      "expected_sections": 16,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "488",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 28,
+      "total_sections": 26,
+      "expected_sections": 26,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "490",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 191,
+      "total_sections": 189,
+      "expected_sections": 189,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "493",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 32,
+      "total_sections": 31,
+      "expected_sections": 31,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "494",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 71,
+      "total_sections": 70,
+      "expected_sections": 70,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "495",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 35,
+      "total_sections": 34,
+      "expected_sections": 34,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "497",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 278,
+      "total_sections": 276,
+      "expected_sections": 276,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "500",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "501",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 33,
+      "total_sections": 31,
+      "expected_sections": 31,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "506",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 5,
+      "total_sections": 4,
+      "expected_sections": 4,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "508",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 35,
+      "total_sections": 34,
+      "expected_sections": 34,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "510",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 40,
+      "total_sections": 39,
+      "expected_sections": 39,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "511",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 69,
+      "total_sections": 67,
+      "expected_sections": 67,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "513",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 29,
+      "total_sections": 28,
+      "expected_sections": 28,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "516",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 10,
+      "total_sections": 9,
+      "expected_sections": 9,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "517",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 56,
+      "total_sections": 55,
+      "expected_sections": 55,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "518",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "521",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 8,
+      "total_sections": 7,
+      "expected_sections": 7,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "523",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 565,
+      "total_sections": 564,
+      "expected_sections": 564,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "524",
+      "has_sections": true,
+      "min_section": 5,
+      "max_section": 507,
+      "total_sections": 503,
+      "expected_sections": 503,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "525",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 78,
+      "total_sections": 77,
+      "expected_sections": 77,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "526",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 16,
+      "total_sections": 15,
+      "expected_sections": 15,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "528",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 139,
+      "total_sections": 138,
+      "expected_sections": 138,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "530",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 54,
+      "total_sections": 53,
+      "expected_sections": 53,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "531",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "532",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 151,
+      "total_sections": 150,
+      "expected_sections": 150,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "534",
+      "has_sections": true,
+      "min_section": 4,
+      "max_section": 305,
+      "total_sections": 302,
+      "expected_sections": 302,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "536",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 738,
+      "total_sections": 736,
+      "expected_sections": 736,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "537",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 450,
+      "total_sections": 449,
+      "expected_sections": 449,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "538",
+      "has_sections": true,
+      "min_section": 5,
+      "max_section": 448,
+      "total_sections": 444,
+      "expected_sections": 444,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "539",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 265,
+      "total_sections": 263,
+      "expected_sections": 263,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "540",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 835,
+      "total_sections": 834,
+      "expected_sections": 834,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "541",
+      "has_sections": true,
+      "min_section": 5,
+      "max_section": 626,
+      "total_sections": 622,
+      "expected_sections": 622,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "543",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 615,
+      "total_sections": 614,
+      "expected_sections": 614,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    }
+  ],
+  "books_starting_after_1": [
+    {
+      "book_id": "336",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 281,
+      "total_sections": 279,
+      "expected_sections": 279,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "337",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 1489,
+      "total_sections": 1487,
+      "expected_sections": 1487,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "339",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 505,
+      "total_sections": 503,
+      "expected_sections": 503,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "340",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 305,
+      "total_sections": 303,
+      "expected_sections": 303,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "341",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 244,
+      "total_sections": 242,
+      "expected_sections": 242,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "342",
+      "has_sections": true,
+      "min_section": 71,
+      "max_section": 326,
+      "total_sections": 256,
+      "expected_sections": 256,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "407",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 64,
+      "total_sections": 63,
+      "expected_sections": 63,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "409",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 9,
+      "total_sections": 8,
+      "expected_sections": 8,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "413",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 52,
+      "total_sections": 51,
+      "expected_sections": 51,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "415",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 70,
+      "total_sections": 69,
+      "expected_sections": 69,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "431",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 16,
+      "total_sections": 14,
+      "expected_sections": 14,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "436",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 14,
+      "total_sections": 13,
+      "expected_sections": 13,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "437",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 979,
+      "total_sections": 978,
+      "expected_sections": 978,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "438",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 55,
+      "total_sections": 54,
+      "expected_sections": 54,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "439",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "440",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 34,
+      "total_sections": 33,
+      "expected_sections": 33,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "442",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 38,
+      "total_sections": 37,
+      "expected_sections": 37,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "443",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 14,
+      "total_sections": 13,
+      "expected_sections": 13,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "444",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 59,
+      "total_sections": 58,
+      "expected_sections": 58,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "445",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 117,
+      "total_sections": 116,
+      "expected_sections": 116,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "446",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 13,
+      "total_sections": 12,
+      "expected_sections": 12,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "447",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 13,
+      "total_sections": 12,
+      "expected_sections": 12,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "448",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 18,
+      "total_sections": 17,
+      "expected_sections": 17,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "449",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 39,
+      "total_sections": 38,
+      "expected_sections": 38,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "450",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 107,
+      "total_sections": 106,
+      "expected_sections": 106,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "451",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 148,
+      "total_sections": 147,
+      "expected_sections": 147,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "453",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 26,
+      "total_sections": 25,
+      "expected_sections": 25,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "454",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 18,
+      "total_sections": 17,
+      "expected_sections": 17,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "455",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 7,
+      "total_sections": 6,
+      "expected_sections": 6,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "456",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 11,
+      "total_sections": 10,
+      "expected_sections": 10,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "457",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 50,
+      "total_sections": 49,
+      "expected_sections": 49,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "459",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 207,
+      "total_sections": 206,
+      "expected_sections": 206,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "460",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "461",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 54,
+      "total_sections": 53,
+      "expected_sections": 53,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "462",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 217,
+      "total_sections": 216,
+      "expected_sections": 216,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "464",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 5,
+      "total_sections": 4,
+      "expected_sections": 4,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "467",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "468",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 3,
+      "total_sections": 2,
+      "expected_sections": 2,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "469",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 3,
+      "total_sections": 2,
+      "expected_sections": 2,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "470",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 10,
+      "total_sections": 9,
+      "expected_sections": 9,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "472",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "479",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 14,
+      "total_sections": 13,
+      "expected_sections": 13,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "480",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 5,
+      "total_sections": 4,
+      "expected_sections": 4,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "481",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 6,
+      "total_sections": 5,
+      "expected_sections": 5,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "484",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 8,
+      "total_sections": 7,
+      "expected_sections": 7,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "485",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 121,
+      "total_sections": 120,
+      "expected_sections": 120,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "486",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 17,
+      "total_sections": 16,
+      "expected_sections": 16,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "488",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 28,
+      "total_sections": 26,
+      "expected_sections": 26,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "490",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 191,
+      "total_sections": 189,
+      "expected_sections": 189,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "493",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 32,
+      "total_sections": 31,
+      "expected_sections": 31,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "494",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 71,
+      "total_sections": 70,
+      "expected_sections": 70,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "495",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 35,
+      "total_sections": 34,
+      "expected_sections": 34,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "497",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 278,
+      "total_sections": 276,
+      "expected_sections": 276,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "500",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "501",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 33,
+      "total_sections": 31,
+      "expected_sections": 31,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "506",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 5,
+      "total_sections": 4,
+      "expected_sections": 4,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "508",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 35,
+      "total_sections": 34,
+      "expected_sections": 34,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "510",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 40,
+      "total_sections": 39,
+      "expected_sections": 39,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "511",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 69,
+      "total_sections": 67,
+      "expected_sections": 67,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "513",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 29,
+      "total_sections": 28,
+      "expected_sections": 28,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "516",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 10,
+      "total_sections": 9,
+      "expected_sections": 9,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "517",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 56,
+      "total_sections": 55,
+      "expected_sections": 55,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "518",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "521",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 8,
+      "total_sections": 7,
+      "expected_sections": 7,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "523",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 565,
+      "total_sections": 564,
+      "expected_sections": 564,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "524",
+      "has_sections": true,
+      "min_section": 5,
+      "max_section": 507,
+      "total_sections": 503,
+      "expected_sections": 503,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "525",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 78,
+      "total_sections": 77,
+      "expected_sections": 77,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "526",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 16,
+      "total_sections": 15,
+      "expected_sections": 15,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "528",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 139,
+      "total_sections": 138,
+      "expected_sections": 138,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "530",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 54,
+      "total_sections": 53,
+      "expected_sections": 53,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "531",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 21,
+      "total_sections": 20,
+      "expected_sections": 20,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "532",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 151,
+      "total_sections": 150,
+      "expected_sections": 150,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "534",
+      "has_sections": true,
+      "min_section": 4,
+      "max_section": 305,
+      "total_sections": 302,
+      "expected_sections": 302,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "536",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 738,
+      "total_sections": 736,
+      "expected_sections": 736,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "537",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 450,
+      "total_sections": 449,
+      "expected_sections": 449,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "538",
+      "has_sections": true,
+      "min_section": 5,
+      "max_section": 448,
+      "total_sections": 444,
+      "expected_sections": 444,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "539",
+      "has_sections": true,
+      "min_section": 3,
+      "max_section": 265,
+      "total_sections": 263,
+      "expected_sections": 263,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "540",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 835,
+      "total_sections": 834,
+      "expected_sections": 834,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "541",
+      "has_sections": true,
+      "min_section": 5,
+      "max_section": 626,
+      "total_sections": 622,
+      "expected_sections": 622,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    },
+    {
+      "book_id": "543",
+      "has_sections": true,
+      "min_section": 2,
+      "max_section": 615,
+      "total_sections": 614,
+      "expected_sections": 614,
+      "missing_sections": [],
+      "missing_count": 0,
+      "missing_section_1": true
+    }
+  ]
+}

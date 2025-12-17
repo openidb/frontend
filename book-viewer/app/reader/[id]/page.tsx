@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { EpubReader } from "@/components/EpubReader";
-import catalog from "@/lib/catalog.json";
+import { prisma } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 interface BookMetadata {
   id: string;
@@ -12,25 +14,45 @@ interface BookMetadata {
   filename: string;
 }
 
-export function generateStaticParams() {
-  return (catalog as BookMetadata[]).map((book) => ({
-    id: book.id,
+export async function generateStaticParams() {
+  const books = await prisma.book.findMany({
+    select: { shamelaBookId: true },
+  });
+
+  return books.map((book) => ({
+    id: book.shamelaBookId,
   }));
 }
 
 export default async function ReaderPage({
   params
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const bookMetadata = (catalog as BookMetadata[]).find(
-    (b) => b.id === id
-  );
 
-  if (!bookMetadata) {
+  // Fetch book from database
+  const book = await prisma.book.findUnique({
+    where: { shamelaBookId: id },
+    include: {
+      author: true,
+    },
+  });
+
+  if (!book) {
     notFound();
   }
+
+  // Transform to expected format
+  const bookMetadata: BookMetadata = {
+    id: book.shamelaBookId,
+    title: book.titleArabic,
+    titleLatin: book.titleLatin,
+    author: book.author.nameArabic,
+    authorLatin: book.author.nameLatin,
+    datePublished: book.publicationYearGregorian || "",
+    filename: book.filename,
+  };
 
   return <EpubReader bookMetadata={bookMetadata} />;
 }
