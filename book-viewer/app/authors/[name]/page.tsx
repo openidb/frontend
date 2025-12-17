@@ -1,40 +1,16 @@
-import catalogData from "@/lib/catalog.json";
-import authorsMetadata from "@/lib/authors-metadata.json";
+import { prisma } from "@/lib/db";
+import { notFound } from "next/navigation";
 import AuthorDetailClient from "./AuthorDetailClient";
 
-interface Book {
-  id: string;
-  title: string;
-  titleLatin: string;
-  author: string;
-  authorLatin: string;
-  datePublished: string;
-  filename: string;
-  category: string;
-  subcategory?: string | null;
-  yearAH: number;
-  timePeriod: string;
-}
-
-interface AuthorMetadata {
-  name_arabic: string;
-  name_latin: string;
-  shamela_author_id?: string;
-  death_date_hijri?: string;
-  birth_date_hijri?: string;
-  death_date_gregorian?: string;
-  birth_date_gregorian?: string;
-  biography?: string;
-  biography_source?: string;
-  books_count?: number;
-}
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
-  const catalog = catalogData as Book[];
-  const authors = new Set(catalog.map((book) => book.authorLatin));
+  const authors = await prisma.author.findMany({
+    select: { nameLatin: true },
+  });
 
-  return Array.from(authors).map((author) => ({
-    name: encodeURIComponent(author),
+  return authors.map((author) => ({
+    name: encodeURIComponent(author.nameLatin),
   }));
 }
 
@@ -45,17 +21,65 @@ export default async function AuthorDetailPage({
 }) {
   const { name } = await params;
   const authorLatin = decodeURIComponent(name);
-  const catalog = catalogData as Book[];
-  const books = catalog.filter((book) => book.authorLatin === authorLatin);
 
-  // Load author metadata if available (keyed by Latin name)
-  const metadata = (authorsMetadata as Record<string, AuthorMetadata>)[authorLatin];
-  const authorName = metadata?.name_arabic || books[0]?.author || authorLatin;
+  // Fetch author with all books from database
+  const author = await prisma.author.findUnique({
+    where: { nameLatin: authorLatin },
+    include: {
+      books: {
+        include: {
+          category: {
+            select: {
+              id: true,
+              nameArabic: true,
+              nameEnglish: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
+  });
+
+  if (!author) {
+    notFound();
+  }
+
+  // Transform author data to match the expected format for AuthorDetailClient
+  const metadata = {
+    name_arabic: author.nameArabic,
+    name_latin: author.nameLatin,
+    shamela_author_id: author.shamelaAuthorId || undefined,
+    death_date_hijri: author.deathDateHijri || undefined,
+    birth_date_hijri: author.birthDateHijri || undefined,
+    death_date_gregorian: author.deathDateGregorian || undefined,
+    birth_date_gregorian: author.birthDateGregorian || undefined,
+    biography: author.biography || undefined,
+    biography_source: author.biographySource || undefined,
+    books_count: author.books.length,
+  };
+
+  // Transform books data to match the expected format
+  const books = author.books.map((book) => ({
+    id: book.shamelaBookId,
+    title: book.titleArabic,
+    titleLatin: book.titleLatin,
+    author: author.nameArabic,
+    authorLatin: author.nameLatin,
+    datePublished: book.publicationYearGregorian || "",
+    filename: book.filename,
+    category: book.category?.nameArabic || "",
+    subcategory: null,
+    yearAH: parseInt(book.publicationYearHijri || "0"),
+    timePeriod: book.timePeriod || "",
+  }));
 
   return (
     <AuthorDetailClient
-      authorName={authorName}
-      authorLatin={authorLatin}
+      authorName={author.nameArabic}
+      authorLatin={author.nameLatin}
       books={books}
       metadata={metadata}
     />
