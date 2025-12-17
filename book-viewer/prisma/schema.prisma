@@ -77,7 +77,7 @@ model Publisher {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name     String
+  name     String @unique
   location String?
 
   // Relationships
@@ -91,7 +91,7 @@ model Editor {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name String
+  name String @unique
 
   // Relationships
   books Book[]

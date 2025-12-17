@@ -8,22 +8,9 @@
  */
 
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { prisma } from "../lib/db";
 import catalog from "../lib/catalog.json";
 import authorsMetadata from "../lib/authors-metadata.json";
-
-// Create PostgreSQL connection pool
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-// Create Prisma adapter
-const adapter = new PrismaPg(pool);
-
-// Initialize Prisma Client with adapter
-const prisma = new PrismaClient({ adapter });
 
 // Helper function to convert Arabic numerals to Western numerals
 function arabicToWestern(str: string): string {
