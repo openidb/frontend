@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  // Temporarily disabled for development - re-enable for production build
+  // output: 'export',
   images: {
     unoptimized: true,
   },
