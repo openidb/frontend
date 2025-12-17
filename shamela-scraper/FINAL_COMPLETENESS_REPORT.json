@@ -1,0 +1,5068 @@
+{
+  "summary": {
+    "total_books": 637,
+    "perfect": 266,
+    "complete_with_errors": 161,
+    "usable_books": 427,
+    "incomplete": 6,
+    "failed": 204,
+    "total_pages_perfect": 162564,
+    "total_pages_with_errors": 80610,
+    "total_pages_usable": 243174
+  },
+  "perfect_books": [
+    {
+      "book_id": "100",
+      "title": "تأملات في السور والآيات",
+      "expected_pages": 120,
+      "actual_pages": 120,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-122"
+    },
+    {
+      "book_id": "101",
+      "title": "تاريخ ابن معين - رواية ابن محرز",
+      "expected_pages": 352,
+      "actual_pages": 352,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-352"
+    },
+    {
+      "book_id": "102",
+      "title": "البهجة الوفية بحجة الخلاصة الألفية",
+      "expected_pages": 753,
+      "actual_pages": 753,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-754"
+    },
+    {
+      "book_id": "104",
+      "title": "المدخل إلى صحيح البخاري",
+      "expected_pages": 290,
+      "actual_pages": 290,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-291"
+    },
+    {
+      "book_id": "105",
+      "title": "الوفية باختصار الألفية",
+      "expected_pages": 89,
+      "actual_pages": 89,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-90"
+    },
+    {
+      "book_id": "106",
+      "title": "بغية الرائد لما تضمنه حديث أم زرع من الفوائد ت الدسوقي",
+      "expected_pages": 350,
+      "actual_pages": 350,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-353"
+    },
+    {
+      "book_id": "108",
+      "title": "منتقى الألفاظ بتقريب علوم الحديث للحفاظ",
+      "expected_pages": 484,
+      "actual_pages": 484,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-485"
+    },
+    {
+      "book_id": "109",
+      "title": "تأملات في رؤيا يوسف عليه السلام",
+      "expected_pages": 157,
+      "actual_pages": 157,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-160"
+    },
+    {
+      "book_id": "10",
+      "title": "تجريد القواعد والفوائد الأصولية",
+      "expected_pages": 186,
+      "actual_pages": 186,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-187"
+    },
+    {
+      "book_id": "110",
+      "title": "ذيل العراقي على العبر",
+      "expected_pages": 237,
+      "actual_pages": 237,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-241"
+    },
+    {
+      "book_id": "111",
+      "title": "ذيل المرشدي على العبر",
+      "expected_pages": 86,
+      "actual_pages": 86,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-87"
+    },
+    {
+      "book_id": "112",
+      "title": "ذيل ابن العراقي على العبر",
+      "expected_pages": 551,
+      "actual_pages": 551,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-551"
+    },
+    {
+      "book_id": "115",
+      "title": "أصل الزراري شرح صحيح البخاري - مخطوط",
+      "expected_pages": 749,
+      "actual_pages": 749,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-750"
+    },
+    {
+      "book_id": "116",
+      "title": "ابن حزم وموقفه من الإلهيات عرض ونقد",
+      "expected_pages": 508,
+      "actual_pages": 508,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-510"
+    },
+    {
+      "book_id": "117",
+      "title": "ابن رجب الحنبلي وأثره في توضيح عقيدة السلف",
+      "expected_pages": 785,
+      "actual_pages": 785,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-789"
+    },
+    {
+      "book_id": "118",
+      "title": "أثر الاستشراق على المنهج العقدي بالهند",
+      "expected_pages": 713,
+      "actual_pages": 713,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-713"
+    },
+    {
+      "book_id": "119",
+      "title": "العرف الشذي شرح سنن الترمذي",
+      "expected_pages": 2811,
+      "actual_pages": 2811,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-2812"
+    },
+    {
+      "book_id": "11",
+      "title": "توفيق الرب المنعم بشرح صحيح الإمام مسلم",
+      "expected_pages": 4622,
+      "actual_pages": 4622,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-4625"
+    },
+    {
+      "book_id": "120",
+      "title": "مفتاح الأفكار للتأهب لدار القرار",
+      "expected_pages": 1102,
+      "actual_pages": 1102,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1102"
+    },
+    {
+      "book_id": "121",
+      "title": "إجماع السلف في الاعتقاد كما حكاه حرب الكرماني",
+      "expected_pages": 104,
+      "actual_pages": 104,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-107"
+    },
+    {
+      "book_id": "122",
+      "title": "الأماكن، ما اتفق لفظه وافترق مسماه",
+      "expected_pages": 870,
+      "actual_pages": 870,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-871"
+    },
+    {
+      "book_id": "123",
+      "title": "أحاديث العقيدة التي يوهم ظاهرها التعارض في الصحيحين دراسة وترجيح",
+      "expected_pages": 665,
+      "actual_pages": 665,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-669"
+    },
+    {
+      "book_id": "124",
+      "title": "أحاديث العقيدة المتوهم إشكالها في الصحيحين جمعا ودراسة",
+      "expected_pages": 737,
+      "actual_pages": 737,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-741"
+    },
+    {
+      "book_id": "125",
+      "title": "الكوكب المنير في شرح الألفية بالتشطير",
+      "expected_pages": 193,
+      "actual_pages": 193,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-194"
+    },
+    {
+      "book_id": "126",
+      "title": "الكواكب الدرية على المنظومة البيقونية",
+      "expected_pages": 126,
+      "actual_pages": 126,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-126"
+    },
+    {
+      "book_id": "12",
+      "title": "استدراكات السمين الحلبي على ابن عطية",
+      "expected_pages": 544,
+      "actual_pages": 544,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-546"
+    },
+    {
+      "book_id": "130",
+      "title": "الاغتباط بمن رمي من الرواة بالاختلاط",
+      "expected_pages": 129,
+      "actual_pages": 129,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-129"
+    },
+    {
+      "book_id": "131",
+      "title": "أعيان العصر وأعوان النصر",
+      "expected_pages": 3507,
+      "actual_pages": 3507,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "8-3514"
+    },
+    {
+      "book_id": "132",
+      "title": "بيان فضل علم السلف على علم الخلف",
+      "expected_pages": 11,
+      "actual_pages": 11,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-11"
+    },
+    {
+      "book_id": "134",
+      "title": "إغاثة اللهفان في حكم طلاق الغضبان - ت الحفيان",
+      "expected_pages": 110,
+      "actual_pages": 110,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-111"
+    },
+    {
+      "book_id": "135",
+      "title": "الأمثال - أبو عبيد",
+      "expected_pages": 357,
+      "actual_pages": 357,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-357"
+    },
+    {
+      "book_id": "136",
+      "title": "الاختيارين المفضليات والأصمعيات",
+      "expected_pages": 738,
+      "actual_pages": 738,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-739"
+    },
+    {
+      "book_id": "137",
+      "title": "فتح الباري لابن رجب",
+      "expected_pages": 4834,
+      "actual_pages": 4834,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-4834"
+    },
+    {
+      "book_id": "138",
+      "title": "شمائل الحبيب المصطفى",
+      "expected_pages": 209,
+      "actual_pages": 209,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-211"
+    },
+    {
+      "book_id": "139",
+      "title": "الحواشي السابغات على أخصر المختصرات",
+      "expected_pages": 757,
+      "actual_pages": 757,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-758"
+    },
+    {
+      "book_id": "13",
+      "title": "استنباطات السمعاني في كتابه «تفسير القرآن» ومنهجه فيها",
+      "expected_pages": 347,
+      "actual_pages": 347,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-349"
+    },
+    {
+      "book_id": "140",
+      "title": "دليل الفالحين لطرق رياض الصالحين",
+      "expected_pages": 2250,
+      "actual_pages": 2250,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2250"
+    },
+    {
+      "book_id": "141",
+      "title": "مدارج تفقه الحنبلي",
+      "expected_pages": 211,
+      "actual_pages": 211,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-211"
+    },
+    {
+      "book_id": "142",
+      "title": "الاتصال والانقطاع",
+      "expected_pages": 464,
+      "actual_pages": 464,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-466"
+    },
+    {
+      "book_id": "143",
+      "title": "مقارنة المرويات",
+      "expected_pages": 1087,
+      "actual_pages": 1087,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-1091"
+    },
+    {
+      "book_id": "144",
+      "title": "التعريف بالإسلام",
+      "expected_pages": 351,
+      "actual_pages": 351,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-351"
+    },
+    {
+      "book_id": "145",
+      "title": "متن تسهيل العقيدة الإسلامية - ط 6",
+      "expected_pages": 15,
+      "actual_pages": 15,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-16"
+    },
+    {
+      "book_id": "146",
+      "title": "الطبقات الكبرى - ط الخانجي",
+      "expected_pages": 4886,
+      "actual_pages": 4886,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-4889"
+    },
+    {
+      "book_id": "147",
+      "title": "من شرح بلوغ المرام للطريفي",
+      "expected_pages": 84,
+      "actual_pages": 84,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-84"
+    },
+    {
+      "book_id": "148",
+      "title": "تاريخ ابن معين - رواية الدارمي",
+      "expected_pages": 199,
+      "actual_pages": 199,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "9-207"
+    },
+    {
+      "book_id": "149",
+      "title": "مختصر شرح تسهيل العقيدة الإسلامية - ط 6",
+      "expected_pages": 201,
+      "actual_pages": 201,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-203"
+    },
+    {
+      "book_id": "14",
+      "title": "استنباطات الشيخ عبد الرحمن السعدي من القرآن الكريم عرض ودراسة",
+      "expected_pages": 892,
+      "actual_pages": 892,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-896"
+    },
+    {
+      "book_id": "150",
+      "title": "أخبار القضاة",
+      "expected_pages": 1124,
+      "actual_pages": 1124,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1124"
+    },
+    {
+      "book_id": "151",
+      "title": "شرح عمدة الفقه - ابن تيمية - ط عطاءات العلم",
+      "expected_pages": 3319,
+      "actual_pages": 3319,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-3320"
+    },
+    {
+      "book_id": "152",
+      "title": "المشهور من أسانيد الحديث",
+      "expected_pages": 43,
+      "actual_pages": 43,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-44"
+    },
+    {
+      "book_id": "153",
+      "title": "القدر - ابن وهب - ت الحفيان",
+      "expected_pages": 74,
+      "actual_pages": 74,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-74"
+    },
+    {
+      "book_id": "155",
+      "title": "الجرح والتعديل - اللاحم",
+      "expected_pages": 548,
+      "actual_pages": 548,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-549"
+    },
+    {
+      "book_id": "156",
+      "title": "التحقيقات على شرح الجلال للورقات",
+      "expected_pages": 343,
+      "actual_pages": 343,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-344"
+    },
+    {
+      "book_id": "158",
+      "title": "الداء والدواء = الجواب الكافي - ط دار المعرفة",
+      "expected_pages": 237,
+      "actual_pages": 237,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-237"
+    },
+    {
+      "book_id": "159",
+      "title": "التكملة لوفيات النقلة",
+      "expected_pages": 3219,
+      "actual_pages": 3219,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-3220"
+    },
+    {
+      "book_id": "15",
+      "title": "الاستنباط عند الخطيب الشربيني في تفسيره السراج المنير",
+      "expected_pages": 869,
+      "actual_pages": 869,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-871"
+    },
+    {
+      "book_id": "160",
+      "title": "الحكم بغير ما أنزل الله - المحياني - ط 1437",
+      "expected_pages": 148,
+      "actual_pages": 148,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-151"
+    },
+    {
+      "book_id": "161",
+      "title": "سنن سعيد بن منصور - تكملة التفسير - ط الألوكة",
+      "expected_pages": 1488,
+      "actual_pages": 1488,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-1491"
+    },
+    {
+      "book_id": "162",
+      "title": "القطارة النحوية على المقدمة الآجرومية",
+      "expected_pages": 43,
+      "actual_pages": 43,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-44"
+    },
+    {
+      "book_id": "163",
+      "title": "هدم المنارة لمن صحح أحاديث التوسل والزيارة",
+      "expected_pages": 362,
+      "actual_pages": 362,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-366"
+    },
+    {
+      "book_id": "164",
+      "title": "عطر المجالس - دروس قصيرة فيما لا ينبغي للمسلم جهله",
+      "expected_pages": 134,
+      "actual_pages": 134,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-135"
+    },
+    {
+      "book_id": "166",
+      "title": "الفضل المأثور من سيرة السلطان الملك المنصور",
+      "expected_pages": 184,
+      "actual_pages": 184,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-185"
+    },
+    {
+      "book_id": "167",
+      "title": "المستملح من كتاب التكملة",
+      "expected_pages": 460,
+      "actual_pages": 460,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-461"
+    },
+    {
+      "book_id": "168",
+      "title": "تفسير مبهمات القرآن",
+      "expected_pages": 1271,
+      "actual_pages": 1271,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-1273"
+    },
+    {
+      "book_id": "169",
+      "title": "مع المشككين في السنة",
+      "expected_pages": 315,
+      "actual_pages": 315,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-317"
+    },
+    {
+      "book_id": "170",
+      "title": "الجواب الصحيح لمن بدل دين المسيح لابن تيمية",
+      "expected_pages": 2831,
+      "actual_pages": 2831,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2831"
+    },
+    {
+      "book_id": "171",
+      "title": "صحيح الترغيب والترهيب",
+      "expected_pages": 1874,
+      "actual_pages": 1874,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1874"
+    },
+    {
+      "book_id": "172",
+      "title": "صحة نقل الإجماع عند شيخ الإسلام في حرمة الطواف بغير البيت الحرام",
+      "expected_pages": 18,
+      "actual_pages": 18,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-19"
+    },
+    {
+      "book_id": "173",
+      "title": "صلة التكملة لوفيات النقلة",
+      "expected_pages": 701,
+      "actual_pages": 701,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-701"
+    },
+    {
+      "book_id": "174",
+      "title": "شرح الفارضي على ألفية ابن مالك",
+      "expected_pages": 2186,
+      "actual_pages": 2186,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-2189"
+    },
+    {
+      "book_id": "175",
+      "title": "فتح الشكور في معرفة أعيان علماء التكرور",
+      "expected_pages": 238,
+      "actual_pages": 238,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-239"
+    },
+    {
+      "book_id": "176",
+      "title": "اتعاظ الحنفا بأخبار الأئمة الفاطميين الخلفا",
+      "expected_pages": 1046,
+      "actual_pages": 1046,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1046"
+    },
+    {
+      "book_id": "177",
+      "title": "مفتاح الوصول إلى علم الأصول في شرح خلاصة الأصول",
+      "expected_pages": 340,
+      "actual_pages": 340,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-343"
+    },
+    {
+      "book_id": "178",
+      "title": "اتباع السنن واجتناب البدع",
+      "expected_pages": 58,
+      "actual_pages": 58,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-58"
+    },
+    {
+      "book_id": "179",
+      "title": "ضعيف الترغيب والترهيب",
+      "expected_pages": 1103,
+      "actual_pages": 1103,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1103"
+    },
+    {
+      "book_id": "17",
+      "title": "حكم التقليد",
+      "expected_pages": 88,
+      "actual_pages": 88,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-90"
+    },
+    {
+      "book_id": "180",
+      "title": "المنثور",
+      "expected_pages": 13,
+      "actual_pages": 13,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-13"
+    },
+    {
+      "book_id": "182",
+      "title": "أشراط الساعة - الوابل",
+      "expected_pages": 427,
+      "actual_pages": 427,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "6-432"
+    },
+    {
+      "book_id": "184",
+      "title": "الصواعق المرسلة على الجهمية والمعطلة - ط عطاءات العلم",
+      "expected_pages": 1215,
+      "actual_pages": 1215,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-1217"
+    },
+    {
+      "book_id": "185",
+      "title": "العلل الواقعة في كتاب الجامع الصحيح للبخاري",
+      "expected_pages": 47,
+      "actual_pages": 47,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-47"
+    },
+    {
+      "book_id": "186",
+      "title": "الأربعين من رواية المحمدين المخرج ذلك من صحيح البخاري",
+      "expected_pages": 13,
+      "actual_pages": 13,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-14"
+    },
+    {
+      "book_id": "187",
+      "title": "الأحاديث المائة المخرجة من الصحيح المسلسلة بالمحمدين",
+      "expected_pages": 21,
+      "actual_pages": 21,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-22"
+    },
+    {
+      "book_id": "188",
+      "title": "تحقيق إزالة الدهش والوله",
+      "expected_pages": 31,
+      "actual_pages": 31,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-31"
+    },
+    {
+      "book_id": "189",
+      "title": "مجمع البحرين لليازجي = مقامات اليازجي",
+      "expected_pages": 414,
+      "actual_pages": 414,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-414"
+    },
+    {
+      "book_id": "18",
+      "title": "مجموع فيه أربع رسائل - الحجاوي",
+      "expected_pages": 54,
+      "actual_pages": 54,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-55"
+    },
+    {
+      "book_id": "190",
+      "title": "الفوائد المنتقاة على شرط الإمامين",
+      "expected_pages": 28,
+      "actual_pages": 28,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-29"
+    },
+    {
+      "book_id": "191",
+      "title": "ما رواه الأساطين في عدم المجيء إلى السلاطين",
+      "expected_pages": 62,
+      "actual_pages": 62,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-64"
+    },
+    {
+      "book_id": "192",
+      "title": "الأربعون العقدية",
+      "expected_pages": 1126,
+      "actual_pages": 1126,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1126"
+    },
+    {
+      "book_id": "193",
+      "title": "الغرر في فضائل عمر",
+      "expected_pages": 4,
+      "actual_pages": 4,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-4"
+    },
+    {
+      "book_id": "194",
+      "title": "الروض الأنيق في فضل الصديق",
+      "expected_pages": 3,
+      "actual_pages": 3,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-3"
+    },
+    {
+      "book_id": "195",
+      "title": "إسرائيل والتلمود - دراسة تحليلية",
+      "expected_pages": 177,
+      "actual_pages": 177,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-178"
+    },
+    {
+      "book_id": "196",
+      "title": "السعادة والفلاح في فهم مقاصد النكاح",
+      "expected_pages": 53,
+      "actual_pages": 53,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-53"
+    },
+    {
+      "book_id": "197",
+      "title": "زاد المعاد في هدي خير العباد - ط عطاءات العلم",
+      "expected_pages": 3982,
+      "actual_pages": 3982,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-3983"
+    },
+    {
+      "book_id": "198",
+      "title": "إصلاح الفقيه فصول في الإصلاح الفقهي",
+      "expected_pages": 225,
+      "actual_pages": 225,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-227"
+    },
+    {
+      "book_id": "199",
+      "title": "مدارج السالكين - ط عطاءات العلم",
+      "expected_pages": 2524,
+      "actual_pages": 2524,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-2526"
+    },
+    {
+      "book_id": "19",
+      "title": "قواعد الأصول ومعاقد الفصول",
+      "expected_pages": 187,
+      "actual_pages": 187,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-189"
+    },
+    {
+      "book_id": "200",
+      "title": "أسباب المغفرة",
+      "expected_pages": 6,
+      "actual_pages": 6,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-6"
+    },
+    {
+      "book_id": "201",
+      "title": "تهذيب سنن أبي داود - ط عطاءات العلم",
+      "expected_pages": 1726,
+      "actual_pages": 1726,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-1727"
+    },
+    {
+      "book_id": "202",
+      "title": "مشيخة أبي المواهب الحنبلي",
+      "expected_pages": 28,
+      "actual_pages": 28,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-28"
+    },
+    {
+      "book_id": "203",
+      "title": "ذيل لسان الميزان",
+      "expected_pages": 238,
+      "actual_pages": 238,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-241"
+    },
+    {
+      "book_id": "204",
+      "title": "المجالس الفقهية",
+      "expected_pages": 260,
+      "actual_pages": 260,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-260"
+    },
+    {
+      "book_id": "205",
+      "title": "شفاء العليل في مسائل القضاء والقدر والحكمة والتعليل - ط عطاءات العلم",
+      "expected_pages": 1031,
+      "actual_pages": 1031,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-1033"
+    },
+    {
+      "book_id": "207",
+      "title": "رسالة في جمع أشكال الحديث الضعيف",
+      "expected_pages": 12,
+      "actual_pages": 12,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-13"
+    },
+    {
+      "book_id": "208",
+      "title": "اختيارات القاضي أبي يعلى الحنبلي الفقهية من أول كتاب الطهارة إلى آخر باب التيمم",
+      "expected_pages": 364,
+      "actual_pages": 364,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-366"
+    },
+    {
+      "book_id": "209",
+      "title": "أسرار الكون = الهيئة السنية في الهيئة السنية",
+      "expected_pages": 96,
+      "actual_pages": 96,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-96"
+    },
+    {
+      "book_id": "20",
+      "title": "مختصر تحفة المحتاج بشرح المنهاج",
+      "expected_pages": 2141,
+      "actual_pages": 2141,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-2142"
+    },
+    {
+      "book_id": "211",
+      "title": "فتح الكريم المنان في آداب حملة القرآن",
+      "expected_pages": 7,
+      "actual_pages": 7,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-7"
+    },
+    {
+      "book_id": "212",
+      "title": "الفوائد لابن القيم - ط عطاءات العلم",
+      "expected_pages": 308,
+      "actual_pages": 308,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-308"
+    },
+    {
+      "book_id": "213",
+      "title": "بزوغ الهلال في الخصال الموجبة للظلال",
+      "expected_pages": 6,
+      "actual_pages": 6,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-6"
+    },
+    {
+      "book_id": "214",
+      "title": "طبقات فقهاء اليمن",
+      "expected_pages": 293,
+      "actual_pages": 293,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-294"
+    },
+    {
+      "book_id": "215",
+      "title": "التعريف بما أنست الهجرة من معالم دار الهجرة",
+      "expected_pages": 203,
+      "actual_pages": 203,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-203"
+    },
+    {
+      "book_id": "216",
+      "title": "الوابل الصيب - ط دار الحديث",
+      "expected_pages": 148,
+      "actual_pages": 148,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-148"
+    },
+    {
+      "book_id": "217",
+      "title": "الهلال - مشهور",
+      "expected_pages": 5,
+      "actual_pages": 5,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-6"
+    },
+    {
+      "book_id": "218",
+      "title": "أحكام أهل الذمة - ط عطاءات العلم",
+      "expected_pages": 1161,
+      "actual_pages": 1161,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-1163"
+    },
+    {
+      "book_id": "219",
+      "title": "الرعاية الصغرى في الفقه",
+      "expected_pages": 1236,
+      "actual_pages": 1236,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1236"
+    },
+    {
+      "book_id": "21",
+      "title": "تجريد أحاديث عمدة الفقه",
+      "expected_pages": 64,
+      "actual_pages": 64,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-65"
+    },
+    {
+      "book_id": "221",
+      "title": "مؤلفات ابن قيم الجوزية - نسخها الخطية وطبعاتها",
+      "expected_pages": 150,
+      "actual_pages": 150,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-151"
+    },
+    {
+      "book_id": "222",
+      "title": "تمهيد الفرش في الخصال الموجبة لظل العرش",
+      "expected_pages": 17,
+      "actual_pages": 17,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-17"
+    },
+    {
+      "book_id": "224",
+      "title": "المعارضات الفكرية المعاصرة لأحاديث الصحيحين",
+      "expected_pages": 1715,
+      "actual_pages": 1715,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-1716"
+    },
+    {
+      "book_id": "225",
+      "title": "الحق والثبات في الأسماء والصفات",
+      "expected_pages": 51,
+      "actual_pages": 51,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-51"
+    },
+    {
+      "book_id": "226",
+      "title": "التنبيهات على أغاليط الرواة",
+      "expected_pages": 36,
+      "actual_pages": 36,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-36"
+    },
+    {
+      "book_id": "227",
+      "title": "المعنى في صفات الله تعالى معلوم والكيف مجهول",
+      "expected_pages": 117,
+      "actual_pages": 117,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-117"
+    },
+    {
+      "book_id": "229",
+      "title": "تحفة المودود بأحكام المولود - ط عطاءات العلم",
+      "expected_pages": 503,
+      "actual_pages": 503,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-505"
+    },
+    {
+      "book_id": "22",
+      "title": "أعمار الأعيان",
+      "expected_pages": 190,
+      "actual_pages": 190,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-191"
+    },
+    {
+      "book_id": "230",
+      "title": "موسوعة تفسير الأحلام",
+      "expected_pages": 188,
+      "actual_pages": 188,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-188"
+    },
+    {
+      "book_id": "231",
+      "title": "إتحاف الأنام بأحكام ومسائل الصيام",
+      "expected_pages": 326,
+      "actual_pages": 326,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-327"
+    },
+    {
+      "book_id": "232",
+      "title": "القسم الثالث من المعجم الأوسط للطبراني",
+      "expected_pages": 1227,
+      "actual_pages": 1227,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-1229"
+    },
+    {
+      "book_id": "233",
+      "title": "المجموع الثمين في حكم دعاء غير رب العالمين",
+      "expected_pages": 136,
+      "actual_pages": 136,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-137"
+    },
+    {
+      "book_id": "234",
+      "title": "الجامع لسيرة الإمام ابن قيم الجوزية خلال ستة قرون",
+      "expected_pages": 125,
+      "actual_pages": 125,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "7-131"
+    },
+    {
+      "book_id": "235",
+      "title": "الذكر والدعاء والعلاج بالرقى من الكتاب والسنة - ت ياسر فتحي",
+      "expected_pages": 1334,
+      "actual_pages": 1334,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-1335"
+    },
+    {
+      "book_id": "237",
+      "title": "عذابات العلم",
+      "expected_pages": 137,
+      "actual_pages": 137,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-139"
+    },
+    {
+      "book_id": "238",
+      "title": "فتح الكريم اللطيف في شرح باكورة التعريف بالمهم من التصريف",
+      "expected_pages": 74,
+      "actual_pages": 74,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-75"
+    },
+    {
+      "book_id": "239",
+      "title": "ثلاثة الأصول وشروط الصلاة والقواعد الأربع",
+      "expected_pages": 45,
+      "actual_pages": 45,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-46"
+    },
+    {
+      "book_id": "23",
+      "title": "سبيل المهتدين إلى شرح الأربعين النووية",
+      "expected_pages": 475,
+      "actual_pages": 475,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-476"
+    },
+    {
+      "book_id": "240",
+      "title": "الشامل في الصناعة الطبية",
+      "expected_pages": 449,
+      "actual_pages": 449,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-449"
+    },
+    {
+      "book_id": "241",
+      "title": "فوائد المستخرجات من خلال مسند أبي عوانة",
+      "expected_pages": 120,
+      "actual_pages": 120,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-120"
+    },
+    {
+      "book_id": "242",
+      "title": "استخراج الجدال من القرآن الكريم",
+      "expected_pages": 77,
+      "actual_pages": 77,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-77"
+    },
+    {
+      "book_id": "243",
+      "title": "اللطائف",
+      "expected_pages": 33,
+      "actual_pages": 33,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-33"
+    },
+    {
+      "book_id": "244",
+      "title": "بر الوالدين - ابن الجوزي",
+      "expected_pages": 12,
+      "actual_pages": 12,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-12"
+    },
+    {
+      "book_id": "245",
+      "title": "مجلة التنكيت والتبكيت",
+      "expected_pages": 356,
+      "actual_pages": 356,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-357"
+    },
+    {
+      "book_id": "246",
+      "title": "مذهب جمهور الأشاعرة في القرآن",
+      "expected_pages": 226,
+      "actual_pages": 226,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-227"
+    },
+    {
+      "book_id": "247",
+      "title": "تحقيق الآيات البينات في عدم سماع الأموات",
+      "expected_pages": 144,
+      "actual_pages": 144,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-144"
+    },
+    {
+      "book_id": "248",
+      "title": "حقيقه السنة والبدعة = الأمر بالاتباع والنهي عن الابتداع",
+      "expected_pages": 148,
+      "actual_pages": 148,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-148"
+    },
+    {
+      "book_id": "249",
+      "title": "الدعوة والدعاة من ظلال آية",
+      "expected_pages": 10,
+      "actual_pages": 10,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-12"
+    },
+    {
+      "book_id": "252",
+      "title": "عدة الصابرين وذخيرة الشاكرين - ط عطاءات العلم",
+      "expected_pages": 594,
+      "actual_pages": 594,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-594"
+    },
+    {
+      "book_id": "253",
+      "title": "الصلاة - ابن القيم - ط عطاءات العلم",
+      "expected_pages": 501,
+      "actual_pages": 501,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-501"
+    },
+    {
+      "book_id": "254",
+      "title": "دليل الطالبين لكلام النحويين",
+      "expected_pages": 86,
+      "actual_pages": 86,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-87"
+    },
+    {
+      "book_id": "255",
+      "title": "المقاصد القرآنية في سورة «ق»",
+      "expected_pages": 57,
+      "actual_pages": 57,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-57"
+    },
+    {
+      "book_id": "256",
+      "title": "أم المؤمنين جويرية بنت الحارث",
+      "expected_pages": 10,
+      "actual_pages": 10,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-10"
+    },
+    {
+      "book_id": "257",
+      "title": "رفع اليدين في الصلاة",
+      "expected_pages": 342,
+      "actual_pages": 342,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-343"
+    },
+    {
+      "book_id": "258",
+      "title": "النصيحة الكافية لمن خصه الله بالعافية",
+      "expected_pages": 19,
+      "actual_pages": 19,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-19"
+    },
+    {
+      "book_id": "25",
+      "title": "سير الحاث إلى علم الطلاق الثلاث - ط النوادر",
+      "expected_pages": 86,
+      "actual_pages": 86,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-88"
+    },
+    {
+      "book_id": "263",
+      "title": "الزهد لأسد بن موسى",
+      "expected_pages": 112,
+      "actual_pages": 112,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "6-117"
+    },
+    {
+      "book_id": "267",
+      "title": "الإقناع في حجية الإجماع",
+      "expected_pages": 81,
+      "actual_pages": 81,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-81"
+    },
+    {
+      "book_id": "269",
+      "title": "غرر البيان من سورة يوسف -عليه السلام- في القرآن",
+      "expected_pages": 215,
+      "actual_pages": 215,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-218"
+    },
+    {
+      "book_id": "26",
+      "title": "الإخوة والأخوات - الدارقطني",
+      "expected_pages": 67,
+      "actual_pages": 67,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-68"
+    },
+    {
+      "book_id": "270",
+      "title": "إدامة النظر في تحرير نخبة الفكر",
+      "expected_pages": 82,
+      "actual_pages": 82,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-83"
+    },
+    {
+      "book_id": "271",
+      "title": "الانتصار في حجية قول الصحابة الأخيار",
+      "expected_pages": 48,
+      "actual_pages": 48,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-48"
+    },
+    {
+      "book_id": "272",
+      "title": "الحكم من المعاملات والمواريث والنكاح والأطعمة في آيات القرآن الكريم",
+      "expected_pages": 354,
+      "actual_pages": 354,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-355"
+    },
+    {
+      "book_id": "273",
+      "title": "تتمة صوان الحكمة",
+      "expected_pages": 35,
+      "actual_pages": 35,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-35"
+    },
+    {
+      "book_id": "274",
+      "title": "المحصول في شرح صفوة الأصول",
+      "expected_pages": 108,
+      "actual_pages": 108,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-109"
+    },
+    {
+      "book_id": "276",
+      "title": "الحافظ ابن الجارود وكتابه المنتقى",
+      "expected_pages": 39,
+      "actual_pages": 39,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-40"
+    },
+    {
+      "book_id": "277",
+      "title": "أطواق الذهب في المواعظ والخطب = كتاب المقالات",
+      "expected_pages": 32,
+      "actual_pages": 32,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-34"
+    },
+    {
+      "book_id": "278",
+      "title": "المنتقى - ابن الجارود - قسم من أوله",
+      "expected_pages": 150,
+      "actual_pages": 150,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-150"
+    },
+    {
+      "book_id": "279",
+      "title": "إتحاف الأريب بشرح الغاية والتقريب",
+      "expected_pages": 499,
+      "actual_pages": 499,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-499"
+    },
+    {
+      "book_id": "27",
+      "title": "أخبار مكة - الفاكهي - ط 4",
+      "expected_pages": 1827,
+      "actual_pages": 1827,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1827"
+    },
+    {
+      "book_id": "280",
+      "title": "البيت السعيد وخلاف الزوجين",
+      "expected_pages": 28,
+      "actual_pages": 28,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-28"
+    },
+    {
+      "book_id": "281",
+      "title": "دفع إيهام الاضطراب عن آيات الكتاب - ط عطاءات العلم",
+      "expected_pages": 383,
+      "actual_pages": 383,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-383"
+    },
+    {
+      "book_id": "282",
+      "title": "مذكرة أصول الفقه على روضة الناظر- ط عطاءات العلم",
+      "expected_pages": 527,
+      "actual_pages": 527,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-528"
+    },
+    {
+      "book_id": "284",
+      "title": "محاضرات الشنقيطي",
+      "expected_pages": 181,
+      "actual_pages": 181,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-182"
+    },
+    {
+      "book_id": "285",
+      "title": "المداخل إلى آثار شيخ الإسلام ابن تيمية",
+      "expected_pages": 96,
+      "actual_pages": 96,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-97"
+    },
+    {
+      "book_id": "287",
+      "title": "الفتاوى - محمد الأمين الشنقيطي",
+      "expected_pages": 99,
+      "actual_pages": 99,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-100"
+    },
+    {
+      "book_id": "28",
+      "title": "تاريخ البرزالي المقتفي لتاريخ أبي شامة - ت تدمري",
+      "expected_pages": 2138,
+      "actual_pages": 2138,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2138"
+    },
+    {
+      "book_id": "291",
+      "title": "جواب الاعتراضات المصرية على الفتيا الحموية",
+      "expected_pages": 192,
+      "actual_pages": 192,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-194"
+    },
+    {
+      "book_id": "292",
+      "title": "رحلة الحج إلى بيت الله الحرام",
+      "expected_pages": 321,
+      "actual_pages": 321,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-322"
+    },
+    {
+      "book_id": "293",
+      "title": "الدروس المهمة لعامة الأمة",
+      "expected_pages": 30,
+      "actual_pages": 30,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-30"
+    },
+    {
+      "book_id": "294",
+      "title": "شفاء العليل في اختصار إبطال التحليل",
+      "expected_pages": 158,
+      "actual_pages": 158,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-160"
+    },
+    {
+      "book_id": "295",
+      "title": "أخبار النحويين - أبو طاهر بن أبي هاشم - ت مجدي السيد",
+      "expected_pages": 35,
+      "actual_pages": 35,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-35"
+    },
+    {
+      "book_id": "296",
+      "title": "مختصر الصارم المسلول على شاتم الرسول",
+      "expected_pages": 129,
+      "actual_pages": 129,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-131"
+    },
+    {
+      "book_id": "297",
+      "title": "الأجوبة العيثاوية عن المسائل الطرابلسية",
+      "expected_pages": 60,
+      "actual_pages": 60,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-60"
+    },
+    {
+      "book_id": "299",
+      "title": "رسالة في الوضوء والغسل والصلاة",
+      "expected_pages": 15,
+      "actual_pages": 15,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-15"
+    },
+    {
+      "book_id": "29",
+      "title": "تيسير التفسير للقطان",
+      "expected_pages": 1460,
+      "actual_pages": 1460,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1460"
+    },
+    {
+      "book_id": "301",
+      "title": "تحقيق الاحتجاج بالقدر لابن تيمية",
+      "expected_pages": 27,
+      "actual_pages": 27,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-27"
+    },
+    {
+      "book_id": "302",
+      "title": "حول شبهة الرقيق - ضمن «محاضرات الشنقيطي»",
+      "expected_pages": 12,
+      "actual_pages": 12,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-13"
+    },
+    {
+      "book_id": "30",
+      "title": "قواعد ابن رجب - ط ركائز",
+      "expected_pages": 1463,
+      "actual_pages": 1463,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1463"
+    },
+    {
+      "book_id": "311",
+      "title": "العقيدة الصحيحة وما يضادها ونواقض الإسلام",
+      "expected_pages": 39,
+      "actual_pages": 39,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-39"
+    },
+    {
+      "book_id": "319",
+      "title": "شرح بيت ومعناه - ضمن «آثار المعلمي»",
+      "expected_pages": 3,
+      "actual_pages": 3,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-3"
+    },
+    {
+      "book_id": "31",
+      "title": "إعراب القراءات السبع وعللها ت العثيمين",
+      "expected_pages": 1097,
+      "actual_pages": 1097,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-1097"
+    },
+    {
+      "book_id": "32",
+      "title": "مختصر الفتاوى المصرية - ط ركائز",
+      "expected_pages": 964,
+      "actual_pages": 964,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-966"
+    },
+    {
+      "book_id": "33",
+      "title": "الإعراب عن الحيرة والالتباس الموجودين في مذاهب أهل الرأي والقياس",
+      "expected_pages": 1215,
+      "actual_pages": 1215,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-1216"
+    },
+    {
+      "book_id": "34",
+      "title": "الإعلان بالتوبيخ لمن ذم أهل التوريخ ت الظفيري",
+      "expected_pages": 570,
+      "actual_pages": 570,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-574"
+    },
+    {
+      "book_id": "36",
+      "title": "لباب التفاسير للكرماني (ناقص)",
+      "expected_pages": 3778,
+      "actual_pages": 3778,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-3779"
+    },
+    {
+      "book_id": "383",
+      "title": "إعراب قوله: {أن كان ذا مال وبنين} - ضمن «آثار المعلمي»",
+      "expected_pages": 8,
+      "actual_pages": 8,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-8"
+    },
+    {
+      "book_id": "385",
+      "title": "إعراب: {الحاقة ما الحاقة} ونحوه - ضمن «آثار المعلمي»",
+      "expected_pages": 4,
+      "actual_pages": 4,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-4"
+    },
+    {
+      "book_id": "389",
+      "title": "فوائد من تفسير الرازي مع التعليق على بعضها - ضمن «آثار المعلمي»",
+      "expected_pages": 4,
+      "actual_pages": 4,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-5"
+    },
+    {
+      "book_id": "393",
+      "title": "إشكالات في الجرح والتعديل - ضمن «آثار المعلمي»",
+      "expected_pages": 3,
+      "actual_pages": 3,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-4"
+    },
+    {
+      "book_id": "394",
+      "title": "الحاجة إلى معرفة علم الجرح والتعديل - ضمن «آثار المعلمي»",
+      "expected_pages": 6,
+      "actual_pages": 6,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-7"
+    },
+    {
+      "book_id": "395",
+      "title": "الأحاديث التي استشهد بها مسلم في بحث الخلاف في اشتراط العلم باللقاء - ضمن «آثار المعلمي»",
+      "expected_pages": 19,
+      "actual_pages": 19,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-20"
+    },
+    {
+      "book_id": "396",
+      "title": "في الصيغ المحتملة للتدليس ــ أظاهرة هي في السماع أم لا؟ - ضمن «آثار المعلمي»",
+      "expected_pages": 11,
+      "actual_pages": 11,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-12"
+    },
+    {
+      "book_id": "398",
+      "title": "فوائد في كتاب «العلل» لابن أبي حاتم - ضمن «آثار المعلمي»",
+      "expected_pages": 9,
+      "actual_pages": 9,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-9"
+    },
+    {
+      "book_id": "39",
+      "title": "أحكام القرآن لبكر بن العلاء - ط جائزة دبي",
+      "expected_pages": 1200,
+      "actual_pages": 1200,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-1204"
+    },
+    {
+      "book_id": "401",
+      "title": "النفحة النسرينية واللمحة المرينية",
+      "expected_pages": 15,
+      "actual_pages": 15,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-15"
+    },
+    {
+      "book_id": "40",
+      "title": "أحاديث العطار عن شيوخه",
+      "expected_pages": 10,
+      "actual_pages": 10,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-10"
+    },
+    {
+      "book_id": "414",
+      "title": "صفة الارتباط بين العلماء في القديم - ضمن «آثار المعلمي»",
+      "expected_pages": 10,
+      "actual_pages": 10,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-11"
+    },
+    {
+      "book_id": "416",
+      "title": "حكم تارك الصلاة - الألباني",
+      "expected_pages": 65,
+      "actual_pages": 65,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-65"
+    },
+    {
+      "book_id": "41",
+      "title": "تفسير البغوي - طيبة",
+      "expected_pages": 3553,
+      "actual_pages": 3553,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-3553"
+    },
+    {
+      "book_id": "424",
+      "title": "فائدة في السواك - ضمن «آثار المعلمي»",
+      "expected_pages": 3,
+      "actual_pages": 3,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-4"
+    },
+    {
+      "book_id": "425",
+      "title": "مسألة بطلان الصلاة بتغيير الآيات في القراءة - ضمن «آثار المعلمي»",
+      "expected_pages": 18,
+      "actual_pages": 18,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-19"
+    },
+    {
+      "book_id": "426",
+      "title": "هل يدرك المأموم الركعة بإدراكه الركوع مع الإمام - ضمن «آثار المعلمي»",
+      "expected_pages": 31,
+      "actual_pages": 31,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-32"
+    },
+    {
+      "book_id": "428",
+      "title": "بحث في حديث قيس بن عمرو في قضاء سنة الفجر بعد الفريضة - ضمن «آثار المعلمي»",
+      "expected_pages": 10,
+      "actual_pages": 10,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-11"
+    },
+    {
+      "book_id": "42",
+      "title": "تفسير السعدي = تيسير الكريم الرحمن",
+      "expected_pages": 2175,
+      "actual_pages": 2175,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2175"
+    },
+    {
+      "book_id": "44",
+      "title": "الانحراف العقدي في أدب الحداثة وفكرها",
+      "expected_pages": 2272,
+      "actual_pages": 2272,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-2275"
+    },
+    {
+      "book_id": "45",
+      "title": "بدر التمام شرح لامية شيخ الإسلام",
+      "expected_pages": 111,
+      "actual_pages": 111,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-111"
+    },
+    {
+      "book_id": "46",
+      "title": "المسبوك على منحة السلوك في شرح تحفة الملوك",
+      "expected_pages": 1566,
+      "actual_pages": 1566,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-1570"
+    },
+    {
+      "book_id": "48",
+      "title": "المختصر من أخبار فاطمة بنت سيد البشر صلى الله عليه وآله وسلم",
+      "expected_pages": 175,
+      "actual_pages": 175,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-175"
+    },
+    {
+      "book_id": "49",
+      "title": "قصة الحياة",
+      "expected_pages": 446,
+      "actual_pages": 446,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-447"
+    },
+    {
+      "book_id": "50",
+      "title": "فاطمة بنت النبي - صلى الله عليه وسلم - سيرتها، فضائلها، مسندها - رضي الله عنها -",
+      "expected_pages": 3484,
+      "actual_pages": 3484,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-3488"
+    },
+    {
+      "book_id": "51",
+      "title": "عقيدة الإيمان باليوم الآخر وآثرها في إصلاح المجتمع",
+      "expected_pages": 65,
+      "actual_pages": 65,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-66"
+    },
+    {
+      "book_id": "529",
+      "title": "نصيحة لطالب الحق - ضمن «آثار المعلمي»",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2"
+    },
+    {
+      "book_id": "52",
+      "title": "المحدث الفاصل ت أبو زيد",
+      "expected_pages": 696,
+      "actual_pages": 696,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-696"
+    },
+    {
+      "book_id": "53",
+      "title": "الاغتيالات",
+      "expected_pages": 33,
+      "actual_pages": 33,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-34"
+    },
+    {
+      "book_id": "54",
+      "title": "منظومة الآداب = الألفية في الآداب الشرعية",
+      "expected_pages": 97,
+      "actual_pages": 97,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-99"
+    },
+    {
+      "book_id": "55",
+      "title": "التباريح في صلاة التراويح",
+      "expected_pages": 150,
+      "actual_pages": 150,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-150"
+    },
+    {
+      "book_id": "56",
+      "title": "التحفة الندية شرح العقيدة الواسطية - عبد الرحمن العقل",
+      "expected_pages": 217,
+      "actual_pages": 217,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-217"
+    },
+    {
+      "book_id": "57",
+      "title": "البدور الزاهرة في القراءات العشر المتواترة - عبد الفتاح القاضي",
+      "expected_pages": 363,
+      "actual_pages": 363,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-363"
+    },
+    {
+      "book_id": "58",
+      "title": "العمل بالأغلبية",
+      "expected_pages": 34,
+      "actual_pages": 34,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-34"
+    },
+    {
+      "book_id": "59",
+      "title": "حينما يعتكف القلب",
+      "expected_pages": 58,
+      "actual_pages": 58,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-58"
+    },
+    {
+      "book_id": "60",
+      "title": "مدخل إلى علوم الشريعة",
+      "expected_pages": 88,
+      "actual_pages": 88,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-88"
+    },
+    {
+      "book_id": "61",
+      "title": "مجمع الزوائد ومنبع الفوائد",
+      "expected_pages": 3484,
+      "actual_pages": 3484,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-3485"
+    },
+    {
+      "book_id": "62",
+      "title": "المسائل الجلية في أحكام الأضحية",
+      "expected_pages": 47,
+      "actual_pages": 47,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-47"
+    },
+    {
+      "book_id": "63",
+      "title": "الاستغراب",
+      "expected_pages": 35,
+      "actual_pages": 35,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-36"
+    },
+    {
+      "book_id": "64",
+      "title": "الماتريدية",
+      "expected_pages": 81,
+      "actual_pages": 81,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-82"
+    },
+    {
+      "book_id": "65",
+      "title": "المتشابه",
+      "expected_pages": 34,
+      "actual_pages": 34,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-35"
+    },
+    {
+      "book_id": "66",
+      "title": "التمذهب – دراسة نظرية نقدية",
+      "expected_pages": 1611,
+      "actual_pages": 1611,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "7-1617"
+    },
+    {
+      "book_id": "67",
+      "title": "تفسير ابن عرفة",
+      "expected_pages": 983,
+      "actual_pages": 983,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "12-994"
+    },
+    {
+      "book_id": "68",
+      "title": "حجج الأشاعرة العامة على ما نفوه من الصفات والعلو والجواب عن أدلتهم العقلية",
+      "expected_pages": 21,
+      "actual_pages": 21,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-22"
+    },
+    {
+      "book_id": "69",
+      "title": "دراسة علم الأديان - أهميتها ومناهج الباحثين فيها -",
+      "expected_pages": 52,
+      "actual_pages": 52,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-53"
+    },
+    {
+      "book_id": "70",
+      "title": "عقيدة الإيمان بالقضاء والقدر عند السلف وأثرها على المؤمن",
+      "expected_pages": 51,
+      "actual_pages": 51,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-52"
+    },
+    {
+      "book_id": "72",
+      "title": "النجوم الزاهرات في فضائل الباقيات الصالحات",
+      "expected_pages": 70,
+      "actual_pages": 70,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-70"
+    },
+    {
+      "book_id": "73",
+      "title": "قواعد وفوائد في الأمر بالمعروف والنهي عن المنكر من كلام شيخ الإسلام ابن تيمية",
+      "expected_pages": 58,
+      "actual_pages": 58,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-59"
+    },
+    {
+      "book_id": "74",
+      "title": "مذاهب الناس في صفة المحبة لله عز وجل",
+      "expected_pages": 22,
+      "actual_pages": 22,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-23"
+    },
+    {
+      "book_id": "75",
+      "title": "منهج السلف في الدفاع عن العقيدة",
+      "expected_pages": 50,
+      "actual_pages": 50,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-51"
+    },
+    {
+      "book_id": "76",
+      "title": "موقف المستشرقين من المعتزلة",
+      "expected_pages": 40,
+      "actual_pages": 40,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-41"
+    },
+    {
+      "book_id": "77",
+      "title": "الهجرة النبوية الشريفة دروس وفوائد ولطائف",
+      "expected_pages": 4,
+      "actual_pages": 4,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-6"
+    },
+    {
+      "book_id": "78",
+      "title": "الجامع المسند الصحيح",
+      "expected_pages": 2085,
+      "actual_pages": 2085,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-2088"
+    },
+    {
+      "book_id": "79",
+      "title": "إبرام عقود النكاح عبر وسائل الاتصالات الحديثة - دراسة فقهية حديثية",
+      "expected_pages": 16,
+      "actual_pages": 16,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-16"
+    },
+    {
+      "book_id": "80",
+      "title": "السلاسل المختارة من صحيح الإمام البخاري",
+      "expected_pages": 103,
+      "actual_pages": 103,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-105"
+    },
+    {
+      "book_id": "81",
+      "title": "رباعيات وثمانيات الإمام البخاري",
+      "expected_pages": 439,
+      "actual_pages": 439,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-442"
+    },
+    {
+      "book_id": "82",
+      "title": "مناجم الأسرار في فضل الاستغفار",
+      "expected_pages": 7,
+      "actual_pages": 7,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-7"
+    },
+    {
+      "book_id": "83",
+      "title": "المحيط في اللغة",
+      "expected_pages": 4576,
+      "actual_pages": 4576,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-4577"
+    },
+    {
+      "book_id": "85",
+      "title": "واحفظوا أيمانكم",
+      "expected_pages": 76,
+      "actual_pages": 76,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "5-80"
+    },
+    {
+      "book_id": "86",
+      "title": "إعراب القرآن الكريم - ط دار الصحابة",
+      "expected_pages": 2714,
+      "actual_pages": 2714,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2714"
+    },
+    {
+      "book_id": "87",
+      "title": "مسائل العبادات المختصة بالزوجين",
+      "expected_pages": 337,
+      "actual_pages": 337,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "4-340"
+    },
+    {
+      "book_id": "89",
+      "title": "إكمال تهذيب الكمال - ط العلمية",
+      "expected_pages": 3584,
+      "actual_pages": 3584,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-3586"
+    },
+    {
+      "book_id": "8",
+      "title": "دروس للشيخ عطية سالم",
+      "expected_pages": 124,
+      "actual_pages": 124,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-124"
+    },
+    {
+      "book_id": "90",
+      "title": "الكمال في أسماء الرجال",
+      "expected_pages": 4521,
+      "actual_pages": 4521,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-4522"
+    },
+    {
+      "book_id": "91",
+      "title": "شرح الخرشي على مختصر خليل - ومعه حاشية العدوي",
+      "expected_pages": 2292,
+      "actual_pages": 2292,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-2292"
+    },
+    {
+      "book_id": "92",
+      "title": "أحكام القرآن للشافعي - جمع البيهقي ت الشوامي",
+      "expected_pages": 380,
+      "actual_pages": 380,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-380"
+    },
+    {
+      "book_id": "93",
+      "title": "المطرب من أشعار أهل المغرب",
+      "expected_pages": 241,
+      "actual_pages": 241,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-243"
+    },
+    {
+      "book_id": "94",
+      "title": "القصيدة العجيبة والمفردة الغريبة ذات الأسئلة المفحمة والمعاني المحكمة",
+      "expected_pages": 27,
+      "actual_pages": 27,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-28"
+    },
+    {
+      "book_id": "95",
+      "title": "الصحيح من الأخبار المجتمع على صحته - مخطوط",
+      "expected_pages": 562,
+      "actual_pages": 562,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-562"
+    },
+    {
+      "book_id": "96",
+      "title": "سبيل الرشاد ط 2",
+      "expected_pages": 3108,
+      "actual_pages": 3108,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-3109"
+    },
+    {
+      "book_id": "97",
+      "title": "الموفي بمعرفة التصوف والصوفي",
+      "expected_pages": 74,
+      "actual_pages": 74,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "3-76"
+    },
+    {
+      "book_id": "98",
+      "title": "جامع الورع وقامع البدع",
+      "expected_pages": 265,
+      "actual_pages": 265,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-266"
+    },
+    {
+      "book_id": "99",
+      "title": "المذكر والمؤنث",
+      "expected_pages": 8,
+      "actual_pages": 8,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "1-8"
+    },
+    {
+      "book_id": "9",
+      "title": "مختصر خوقير في فقه الإمام أحمد",
+      "expected_pages": 160,
+      "actual_pages": 160,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "2-161"
+    }
+  ],
+  "complete_with_errors": [
+    {
+      "book_id": "103",
+      "title": "العتيق مصنف جامع لفتاوى أصحاب النبي صلى الله عليه وسلم",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "2-5001"
+    },
+    {
+      "book_id": "107",
+      "title": "فتاوى نور على الدرب لابن باز - بعناية الشويعر",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "1-5000"
+    },
+    {
+      "book_id": "113",
+      "title": "التاريخ الكبير للبخاري - ت الدباسي والنحال",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "5-5004"
+    },
+    {
+      "book_id": "133",
+      "title": "الأحاديث الواردة في فضائل الصحابة",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "4-5003"
+    },
+    {
+      "book_id": "154",
+      "title": "زهر الفردوس = الغرائب الملتقطة من مسند الفردوس",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "4-5003"
+    },
+    {
+      "book_id": "157",
+      "title": "موسوعة أحكام الطهارة - الدبيان - ط 3",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "2-5001"
+    },
+    {
+      "book_id": "165",
+      "title": "فتح العلام في دراسة أحاديث بلوغ المرام ط 4",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "3-5002"
+    },
+    {
+      "book_id": "16",
+      "title": "ديوان السنة - قسم الطهارة",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "2-5001"
+    },
+    {
+      "book_id": "181",
+      "title": "مسند أبي يعلى - ت السناري",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "5-5004"
+    },
+    {
+      "book_id": "183",
+      "title": "زوائد تاريخ بغداد على الكتب الستة",
+      "expected_pages": 4866,
+      "actual_pages": 4866,
+      "errors": [
+        "Failed to fetch page 4867"
+      ],
+      "error_count": 1,
+      "page_range": "2-4867"
+    },
+    {
+      "book_id": "236",
+      "title": "التمهيد - ابن عبد البر - ت بشار",
+      "expected_pages": 1498,
+      "actual_pages": 1498,
+      "errors": [
+        "Failed to fetch page 1499"
+      ],
+      "error_count": 1,
+      "page_range": "2-1499"
+    },
+    {
+      "book_id": "250",
+      "title": "الذخر الحرير بشرح مختصر التحرير",
+      "expected_pages": 858,
+      "actual_pages": 858,
+      "errors": [
+        "Failed to fetch page 859"
+      ],
+      "error_count": 1,
+      "page_range": "1-858"
+    },
+    {
+      "book_id": "251",
+      "title": "طريق الهجرتين وباب السعادتين - ط عطاءات العلم",
+      "expected_pages": 861,
+      "actual_pages": 861,
+      "errors": [
+        "Failed to fetch page 862"
+      ],
+      "error_count": 1,
+      "page_range": "4-864"
+    },
+    {
+      "book_id": "259",
+      "title": "كشف الظنون عن أسامي الكتب والفنون - ط الفرقان",
+      "expected_pages": 334,
+      "actual_pages": 334,
+      "errors": [
+        "Failed to fetch page 335"
+      ],
+      "error_count": 1,
+      "page_range": "1-334"
+    },
+    {
+      "book_id": "260",
+      "title": "إرشاد الفقيه إلى معرفة أدلة التنبيه",
+      "expected_pages": 349,
+      "actual_pages": 349,
+      "errors": [
+        "Failed to fetch page 350"
+      ],
+      "error_count": 1,
+      "page_range": "1-349"
+    },
+    {
+      "book_id": "261",
+      "title": "فضل الرحيم الودود تخريج سنن أبي داود",
+      "expected_pages": 305,
+      "actual_pages": 305,
+      "errors": [
+        "Failed to fetch page 306"
+      ],
+      "error_count": 1,
+      "page_range": "1-305"
+    },
+    {
+      "book_id": "262",
+      "title": "الطهور - أبو عبيد - ت مشهور",
+      "expected_pages": 312,
+      "actual_pages": 312,
+      "errors": [
+        "Failed to fetch page 313"
+      ],
+      "error_count": 1,
+      "page_range": "2-313"
+    },
+    {
+      "book_id": "264",
+      "title": "تحقيق الإيمان لابن تيمية",
+      "expected_pages": 61,
+      "actual_pages": 61,
+      "errors": [
+        "Failed to fetch page 62"
+      ],
+      "error_count": 1,
+      "page_range": "1-61"
+    },
+    {
+      "book_id": "265",
+      "title": "مرويات فضائل علي بن أبي طالب في المستدرك",
+      "expected_pages": 51,
+      "actual_pages": 51,
+      "errors": [
+        "Failed to fetch page 52"
+      ],
+      "error_count": 1,
+      "page_range": "2-52"
+    },
+    {
+      "book_id": "275",
+      "title": "دفع دعوى المعارض العقلي عن الأحاديث المتعلقة بمسائل الاعتقاد",
+      "expected_pages": 733,
+      "actual_pages": 733,
+      "errors": [
+        "Failed to fetch page 734"
+      ],
+      "error_count": 1,
+      "page_range": "2-734"
+    },
+    {
+      "book_id": "283",
+      "title": "نثر الورود شرح مراقي السعود",
+      "expected_pages": 593,
+      "actual_pages": 593,
+      "errors": [
+        "Failed to fetch page 594"
+      ],
+      "error_count": 1,
+      "page_range": "2-594"
+    },
+    {
+      "book_id": "288",
+      "title": "التعليق والإيضاح على تفسير الجلالين - جـ 1",
+      "expected_pages": 524,
+      "actual_pages": 524,
+      "errors": [
+        "Failed to fetch page 525"
+      ],
+      "error_count": 1,
+      "page_range": "1-524"
+    },
+    {
+      "book_id": "298",
+      "title": "سلافة العصر في محاسن الشعراء بكل مصر",
+      "expected_pages": 317,
+      "actual_pages": 317,
+      "errors": [
+        "Failed to fetch page 318"
+      ],
+      "error_count": 1,
+      "page_range": "1-317"
+    },
+    {
+      "book_id": "300",
+      "title": "البستان في إعراب مشكلات القرآن",
+      "expected_pages": 248,
+      "actual_pages": 248,
+      "errors": [
+        "Failed to fetch page 249"
+      ],
+      "error_count": 1,
+      "page_range": "2-249"
+    },
+    {
+      "book_id": "303",
+      "title": "الانتصار لأهل الأثر المطبوع باسم «نقض المنطق»",
+      "expected_pages": 216,
+      "actual_pages": 216,
+      "errors": [
+        "Failed to fetch page 217"
+      ],
+      "error_count": 1,
+      "page_range": "3-218"
+    },
+    {
+      "book_id": "305",
+      "title": "السياسة الشرعية في إصلاح الراعي والرعية - ط عطاءات العلم",
+      "expected_pages": 219,
+      "actual_pages": 219,
+      "errors": [
+        "Failed to fetch page 220"
+      ],
+      "error_count": 1,
+      "page_range": "3-221"
+    },
+    {
+      "book_id": "306",
+      "title": "الثمر المستطاب في فقه السنة والكتاب",
+      "expected_pages": 220,
+      "actual_pages": 220,
+      "errors": [
+        "Failed to fetch page 221"
+      ],
+      "error_count": 1,
+      "page_range": "1-220"
+    },
+    {
+      "book_id": "308",
+      "title": "مدونة أحكام الوقف الفقهية",
+      "expected_pages": 142,
+      "actual_pages": 142,
+      "errors": [
+        "Failed to fetch page 143"
+      ],
+      "error_count": 1,
+      "page_range": "1-142"
+    },
+    {
+      "book_id": "309",
+      "title": "الكواكب النيرات في معرفة من اختلط من الرواة الثقات",
+      "expected_pages": 150,
+      "actual_pages": 150,
+      "errors": [
+        "Failed to fetch page 151"
+      ],
+      "error_count": 1,
+      "page_range": "1-150"
+    },
+    {
+      "book_id": "312",
+      "title": "الترياق بأحاديث قواها الألباني وضعفها الحويني أبو إسحاق",
+      "expected_pages": 50,
+      "actual_pages": 50,
+      "errors": [
+        "Failed to fetch page 51"
+      ],
+      "error_count": 1,
+      "page_range": "3-52"
+    },
+    {
+      "book_id": "313",
+      "title": "فضائل بيت المقدس - ابن الجوزي - ت عمرو عبد العظيم الحويني",
+      "expected_pages": 47,
+      "actual_pages": 47,
+      "errors": [
+        "Failed to fetch page 48"
+      ],
+      "error_count": 1,
+      "page_range": "1-47"
+    },
+    {
+      "book_id": "314",
+      "title": "الرد المفحم",
+      "expected_pages": 46,
+      "actual_pages": 46,
+      "errors": [
+        "Failed to fetch page 47"
+      ],
+      "error_count": 1,
+      "page_range": "1-46"
+    },
+    {
+      "book_id": "315",
+      "title": "قلائد الجمان في التعريف بقبائل عرب الزمان",
+      "expected_pages": 49,
+      "actual_pages": 49,
+      "errors": [
+        "Failed to fetch page 50"
+      ],
+      "error_count": 1,
+      "page_range": "1-49"
+    },
+    {
+      "book_id": "316",
+      "title": "نزهة النظر في توضيح نخبة الفكر - ت القاسم",
+      "expected_pages": 49,
+      "actual_pages": 49,
+      "errors": [
+        "Failed to fetch page 50"
+      ],
+      "error_count": 1,
+      "page_range": "1-49"
+    },
+    {
+      "book_id": "317",
+      "title": "المنهل العذب الروي",
+      "expected_pages": 46,
+      "actual_pages": 46,
+      "errors": [
+        "Failed to fetch page 47"
+      ],
+      "error_count": 1,
+      "page_range": "1-46"
+    },
+    {
+      "book_id": "318",
+      "title": "آل الجرباء في التاريخ والأدب",
+      "expected_pages": 47,
+      "actual_pages": 47,
+      "errors": [
+        "Failed to fetch page 48"
+      ],
+      "error_count": 1,
+      "page_range": "1-47"
+    },
+    {
+      "book_id": "320",
+      "title": "حاشية الخرشي منتهى الرغبة في حل ألفاظ النخبة",
+      "expected_pages": 40,
+      "actual_pages": 40,
+      "errors": [
+        "Failed to fetch page 41"
+      ],
+      "error_count": 1,
+      "page_range": "1-40"
+    },
+    {
+      "book_id": "321",
+      "title": "تحفة الطالبين في ترجمة الإمام محيي الدين",
+      "expected_pages": 45,
+      "actual_pages": 45,
+      "errors": [
+        "Failed to fetch page 46"
+      ],
+      "error_count": 1,
+      "page_range": "5-49"
+    },
+    {
+      "book_id": "322",
+      "title": "الطبقات السنية في تراجم الحنفية",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "323",
+      "title": "السنة لعبد الله بن أحمد",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "12-12"
+    },
+    {
+      "book_id": "326",
+      "title": "رفع الاشتباه عن معنى العبادة والإله - ضمن «آثار المعلمي»",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "3-4"
+    },
+    {
+      "book_id": "333",
+      "title": "المصنف - ابن أبي شيبة - ت الشثري",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "335",
+      "title": "التعقيب على تفسير سورة الفيل للفراهي - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "338",
+      "title": "الأموال لابن زنجويه",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "343",
+      "title": "تحقيق المسح على الجوربين والنعلين",
+      "expected_pages": 7,
+      "actual_pages": 7,
+      "errors": [
+        "Failed to fetch page 8"
+      ],
+      "error_count": 1,
+      "page_range": "1-7"
+    },
+    {
+      "book_id": "347",
+      "title": "تغليق التعليق",
+      "expected_pages": 6,
+      "actual_pages": 6,
+      "errors": [
+        "Failed to fetch page 7"
+      ],
+      "error_count": 1,
+      "page_range": "10-15"
+    },
+    {
+      "book_id": "351",
+      "title": "معجم الشواهد الشعرية - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "352",
+      "title": "الإكليل",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "353",
+      "title": "أثر تعليل النص على دلالته",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "355",
+      "title": "لباب الأنساب والألقاب والأعقاب",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "357",
+      "title": "المغني في ضبط الأسماء لرواة الأنباء",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "360",
+      "title": "حاشية السيوطي على سنن النسائي",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "367",
+      "title": "الشفاعة - ضمن «آثار المعلمي»",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "368",
+      "title": "التفضيل بين الخلفاء الأربعة - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "371",
+      "title": "تفسير البسملة - ضمن «آثار المعلمي»",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "374",
+      "title": "ارتباط الآيات في سورة البقرة - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "375",
+      "title": "ارتباط قوله تعالى: {حافظوا على الصلوات. . .} بما قبله وما بعده - ضمن «آثار المعلمي»",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "382",
+      "title": "إعراب قوله تعالى: {وأن ليس للإنسان إلا ما سعى} - ضمن «آثار المعلمي»",
+      "expected_pages": 3,
+      "actual_pages": 3,
+      "errors": [
+        "Failed to fetch page 4"
+      ],
+      "error_count": 1,
+      "page_range": "1-3"
+    },
+    {
+      "book_id": "384",
+      "title": "الفقه الإسلامي وأدلته للزحيلي",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "388",
+      "title": "حول تفسير الفخر الرازي وتكملته - ضمن «آثار المعلمي»",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "5-5"
+    },
+    {
+      "book_id": "390",
+      "title": "الروح - ابن القيم - ط عطاءات العلم",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "391",
+      "title": "الاستبصار في نقد الأخبار - ضمن «آثار المعلمي»",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "392",
+      "title": "في أحكام الجرح والتعديل - ضمن «آثار المعلمي»",
+      "expected_pages": 23,
+      "actual_pages": 23,
+      "errors": [
+        "Failed to fetch page 24"
+      ],
+      "error_count": 1,
+      "page_range": "2-24"
+    },
+    {
+      "book_id": "397",
+      "title": "يوميات شامية",
+      "expected_pages": 23,
+      "actual_pages": 23,
+      "errors": [
+        "Failed to fetch page 24"
+      ],
+      "error_count": 1,
+      "page_range": "2-24"
+    },
+    {
+      "book_id": "399",
+      "title": "حجة النبي",
+      "expected_pages": 19,
+      "actual_pages": 19,
+      "errors": [
+        "Failed to fetch page 20"
+      ],
+      "error_count": 1,
+      "page_range": "1-19"
+    },
+    {
+      "book_id": "400",
+      "title": "الحوادث الجامعة والتجارب النافعة",
+      "expected_pages": 18,
+      "actual_pages": 18,
+      "errors": [
+        "Failed to fetch page 19"
+      ],
+      "error_count": 1,
+      "page_range": "1-18"
+    },
+    {
+      "book_id": "402",
+      "title": "أحكام الحديث الضعيف - ضمن «آثار المعلمي»",
+      "expected_pages": 16,
+      "actual_pages": 16,
+      "errors": [
+        "Failed to fetch page 17"
+      ],
+      "error_count": 1,
+      "page_range": "2-17"
+    },
+    {
+      "book_id": "403",
+      "title": "محاضرة في علم الرجال وأهميته - ضمن «آثار المعلمي»",
+      "expected_pages": 14,
+      "actual_pages": 14,
+      "errors": [
+        "Failed to fetch page 15"
+      ],
+      "error_count": 1,
+      "page_range": "2-15"
+    },
+    {
+      "book_id": "404",
+      "title": "حوادث دمشق اليومية",
+      "expected_pages": 4,
+      "actual_pages": 4,
+      "errors": [
+        "Failed to fetch page 5"
+      ],
+      "error_count": 1,
+      "page_range": "1-4"
+    },
+    {
+      "book_id": "405",
+      "title": "فضائل مصر المحروسة",
+      "expected_pages": 5,
+      "actual_pages": 5,
+      "errors": [
+        "Failed to fetch page 6"
+      ],
+      "error_count": 1,
+      "page_range": "1-5"
+    },
+    {
+      "book_id": "406",
+      "title": "ملخص طبقات المدلسين - ضمن «آثار المعلمي»",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "408",
+      "title": "نوادر الخلفاء = إعلام الناس بما وقع للبرامكة مع بني العباس",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "412",
+      "title": "مراقي الفلاح شرح نور الإيضاح",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "417",
+      "title": "روضة المحبين ونزهة المشتاقين - ط عطاءات العلم",
+      "expected_pages": 73,
+      "actual_pages": 73,
+      "errors": [
+        "Failed to fetch page 74"
+      ],
+      "error_count": 1,
+      "page_range": "1-73"
+    },
+    {
+      "book_id": "418",
+      "title": "لباب الآداب للثعالبي",
+      "expected_pages": 78,
+      "actual_pages": 78,
+      "errors": [
+        "Failed to fetch page 79"
+      ],
+      "error_count": 1,
+      "page_range": "1-78"
+    },
+    {
+      "book_id": "419",
+      "title": "تفسير الحداد المطبوع خطأ باسم التفسير الكبير للطبراني",
+      "expected_pages": 76,
+      "actual_pages": 76,
+      "errors": [
+        "Failed to fetch page 77"
+      ],
+      "error_count": 1,
+      "page_range": "2-77"
+    },
+    {
+      "book_id": "420",
+      "title": "العقود المضافة إلى مثلها",
+      "expected_pages": 74,
+      "actual_pages": 74,
+      "errors": [
+        "Failed to fetch page 75"
+      ],
+      "error_count": 1,
+      "page_range": "14-87"
+    },
+    {
+      "book_id": "421",
+      "title": "دفاع عن الحديث النبوي",
+      "expected_pages": 80,
+      "actual_pages": 80,
+      "errors": [
+        "Failed to fetch page 81"
+      ],
+      "error_count": 1,
+      "page_range": "1-80"
+    },
+    {
+      "book_id": "422",
+      "title": "الإنصاف في بيان أسباب الاختلاف للدهلوي",
+      "expected_pages": 84,
+      "actual_pages": 84,
+      "errors": [
+        "Failed to fetch page 85"
+      ],
+      "error_count": 1,
+      "page_range": "1-84"
+    },
+    {
+      "book_id": "423",
+      "title": "الفهارس الشاملة لآثار الشيخ العلامة محمد الأمين الشنقيطي",
+      "expected_pages": 74,
+      "actual_pages": 74,
+      "errors": [
+        "Failed to fetch page 75"
+      ],
+      "error_count": 1,
+      "page_range": "2-75"
+    },
+    {
+      "book_id": "427",
+      "title": "البناية شرح الهداية",
+      "expected_pages": 39,
+      "actual_pages": 39,
+      "errors": [
+        "Failed to fetch page 40"
+      ],
+      "error_count": 1,
+      "page_range": "1-39"
+    },
+    {
+      "book_id": "429",
+      "title": "تعريف بالأماكن الواردة في البداية والنهاية لابن كثير",
+      "expected_pages": 21,
+      "actual_pages": 21,
+      "errors": [
+        "Failed to fetch page 22"
+      ],
+      "error_count": 1,
+      "page_range": "1-21"
+    },
+    {
+      "book_id": "430",
+      "title": "إعادة الصلاة - ضمن «آثار المعلمي»",
+      "expected_pages": 14,
+      "actual_pages": 14,
+      "errors": [
+        "Failed to fetch page 15"
+      ],
+      "error_count": 1,
+      "page_range": "2-15"
+    },
+    {
+      "book_id": "432",
+      "title": "فتاوى دار الإفتاء المصرية",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "433",
+      "title": "موسوعة المفاهيم الإسلامية العامة",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "2-2"
+    },
+    {
+      "book_id": "435",
+      "title": "موسوعة الأعلام - الأوقاف المصرية",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "436",
+      "title": "بحث في حديث معاذ بن جبل رضي الله عنه في صلاته بقومه - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "437",
+      "title": "موسوعة جمال عبد الناصر في الفقه الإسلامي",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "43",
+      "title": "تفسير الطبري جامع البيان - ط دار التربية والتراث",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "1-5000"
+    },
+    {
+      "book_id": "454",
+      "title": "أسئلة وأجوبة في المعاملات - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "455",
+      "title": "الإسلام والتسعير ونحوه أو حول أجور العقار - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "460",
+      "title": "مسألة في إعادة الإمام الصلاة دون من صلى وراءه في الجماعة - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "464",
+      "title": "كشف الخفاء عن حكم بيع الوفاء - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "477",
+      "title": "نفاضة الجراب في علالة الاغتراب",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "47",
+      "title": "الجامع الكامل في الحديث الصحيح الشامل المرتب على أبواب الفقه",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "5-5004"
+    },
+    {
+      "book_id": "482",
+      "title": "قوت القلوب في معاملة المحبوب ووصف طريق المريد إلى مقام التوحيد",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "485",
+      "title": "إرشاد العامه إلى معرفة الكذب وأحكامه - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "486",
+      "title": "رسالة في أصول الفقه - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "489",
+      "title": "الوساطه بين المتنبي وخصومه ونقد شعره",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "491",
+      "title": "الأنساب للصحاري",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "497",
+      "title": "فتاوى النووي",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "498",
+      "title": "عشائر العراق",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "499",
+      "title": "روضة الطالبين وعمدة المفتين",
+      "expected_pages": 6,
+      "actual_pages": 6,
+      "errors": [
+        "Failed to fetch page 7"
+      ],
+      "error_count": 1,
+      "page_range": "1-6"
+    },
+    {
+      "book_id": "503",
+      "title": "إشكال صرفي وجوابه - ضمن «آثار المعلمي»",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "506",
+      "title": "رسالة في التعصب المذهبي - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "510",
+      "title": "أصول التصحيح العلمي - المبيضة - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "513",
+      "title": "أصول التصحيح العلمي - مسودة - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "514",
+      "title": "نصرة الثائر على المثل السائر",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "516",
+      "title": "رسالة أصول التصحيح - مسودة - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "519",
+      "title": "تنبيهات على الكامل للمبرد نشرة زكي مبارك - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "523",
+      "title": "مزيد فتح الباري بشرح البخاري - مخطوط",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "526",
+      "title": "الفوائد العقدية - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "527",
+      "title": "الجهاد سنام الدين - ضمن «آثار المعلمي»",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "530",
+      "title": "الفوائد الفقهية - ضمن «آثار المعلمي»",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "533",
+      "title": "تفسير القرآن العظيم - السخاوي",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "537",
+      "title": "صحيح ابن حبان: التقاسيم والأنواع",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "540",
+      "title": "نجاح القاري شرح صحيح البخاري - كتاب الجنائز",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "544",
+      "title": "تفسير العثيمين: الفاتحة والبقرة",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "545",
+      "title": "تفسير العثيمين: آل عمران",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "547",
+      "title": "تفسير العثيمين: النساء",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "548",
+      "title": "تفسير العثيمين: المائدة",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "550",
+      "title": "تفسير العثيمين: الكهف",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "551",
+      "title": "شرح الزرقاني على الموطأ",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "552",
+      "title": "عثمان بن عفان ذو النورين",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "553",
+      "title": "تفسير العثيمين: النور",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "558",
+      "title": "بهجة المجالس وأنس المجالس",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "559",
+      "title": "القواعد والضوابط الفقهية في الضمان المالي",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "564",
+      "title": "المحاسن والمساوئ",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "566",
+      "title": "الإيمان باليوم الآخر وأثره على الفرد والمجتمع",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "568",
+      "title": "متون طالب العلم - المستوى التمهيدي",
+      "expected_pages": 9,
+      "actual_pages": 9,
+      "errors": [
+        "Failed to fetch page 10"
+      ],
+      "error_count": 1,
+      "page_range": "1-9"
+    },
+    {
+      "book_id": "569",
+      "title": "مواهب الجليل في شرح مختصر خليل",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "570",
+      "title": "متون طالب العلم - المستوى الأول",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "578",
+      "title": "المقدمة في الأصول - ابن القصار - ط العلمية",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "584",
+      "title": "الإفادات والإنشادات",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "585",
+      "title": "الآثار الواردة عن السلف في العقيدة من خلال كتب المسائل المروية عن الإمام أحمد",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "587",
+      "title": "المدونة",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "593",
+      "title": "المطر والسحاب",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "603",
+      "title": "معجم التوحيد",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "605",
+      "title": "مجالس ثعلب",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "611",
+      "title": "دليل مؤلفات مختار السوسي",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "613",
+      "title": "نتائج الفكر في النحو",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "616",
+      "title": "نخبة الفكر - ت القاسم",
+      "expected_pages": 13,
+      "actual_pages": 13,
+      "errors": [
+        "Failed to fetch page 14"
+      ],
+      "error_count": 1,
+      "page_range": "5-17"
+    },
+    {
+      "book_id": "617",
+      "title": "عقود الجوهر الثمين نظم قواعد الترجيح عند المفسرين",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "619",
+      "title": "القوافي الندية في السيرة المحمدية",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "622",
+      "title": "كشاف القناع عن متن الإقناع - ط وزارة العدل",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "623",
+      "title": "رسائل الثعالبي",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "625",
+      "title": "الأسامي والكنى - أبو أحمد الحاكم - ت الأزهري",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "637",
+      "title": "خزانة المفتين - قسم العبادات",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "639",
+      "title": "موسوعة التفسير المأثور",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "640",
+      "title": "فرحة الأديب",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "641",
+      "title": "التعليقات الحسان على صحيح ابن حبان",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "2-2"
+    },
+    {
+      "book_id": "650",
+      "title": "فقه العبادات على المذهب الحنفي",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "651",
+      "title": "أمالي ابن المزرع",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "2-2"
+    },
+    {
+      "book_id": "654",
+      "title": "سنن أبي داود - ط دهلي مع عون المعبود",
+      "expected_pages": 2,
+      "actual_pages": 2,
+      "errors": [
+        "Failed to fetch page 3"
+      ],
+      "error_count": 1,
+      "page_range": "2-3"
+    },
+    {
+      "book_id": "657",
+      "title": "صفة صلاة النبي صلى الله عليه وسلم - الألباني",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "660",
+      "title": "فتح القريب المجيب على الترغيب والترهيب",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "663",
+      "title": "الدرر البهية من الفتاوى الكويتية",
+      "expected_pages": 0,
+      "actual_pages": 0,
+      "errors": [
+        "Failed to fetch page 1"
+      ],
+      "error_count": 1,
+      "page_range": "none"
+    },
+    {
+      "book_id": "664",
+      "title": "التعليقات والنوادر",
+      "expected_pages": 1,
+      "actual_pages": 1,
+      "errors": [
+        "Failed to fetch page 2"
+      ],
+      "error_count": 1,
+      "page_range": "1-1"
+    },
+    {
+      "book_id": "71",
+      "title": "تاريخ دمشق لابن عساكر",
+      "expected_pages": 1511,
+      "actual_pages": 1511,
+      "errors": [
+        "Failed to fetch page 1512"
+      ],
+      "error_count": 1,
+      "page_range": "1-1511"
+    },
+    {
+      "book_id": "84",
+      "title": "المصنف - عبد الرزاق - ط التأصيل الثانية",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "5-5004"
+    },
+    {
+      "book_id": "88",
+      "title": "روضة المحدثين",
+      "expected_pages": 5000,
+      "actual_pages": 5000,
+      "errors": [
+        "Hit safety limit of 5000 pages"
+      ],
+      "error_count": 1,
+      "page_range": "1-5000"
+    }
+  ],
+  "incomplete_books": [
+    {
+      "book_id": "1",
+      "title": "الفواكه العذاب في الرد على من لم يحكم السنة والكتاب",
+      "expected_pages": 90,
+      "actual_pages": 0,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "none",
+      "missing_count": 0,
+      "missing_pages": []
+    },
+    {
+      "book_id": "2",
+      "title": "النوازل في الرضاع",
+      "expected_pages": 600,
+      "actual_pages": 0,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "none",
+      "missing_count": 0,
+      "missing_pages": []
+    },
+    {
+      "book_id": "3",
+      "title": "إعراب القراءات السبع وعللها ط العلمية",
+      "expected_pages": 555,
+      "actual_pages": 0,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "none",
+      "missing_count": 0,
+      "missing_pages": []
+    },
+    {
+      "book_id": "4",
+      "title": "الطريق المستقيم في نظم علامات الترقيم",
+      "expected_pages": 16,
+      "actual_pages": 0,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "none",
+      "missing_count": 0,
+      "missing_pages": []
+    },
+    {
+      "book_id": "5",
+      "title": "أسماء المدلسين",
+      "expected_pages": 71,
+      "actual_pages": 0,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "none",
+      "missing_count": 0,
+      "missing_pages": []
+    },
+    {
+      "book_id": "6",
+      "title": "زوائد ابن الجوزي على مقاتل في الوجوه والنظائر",
+      "expected_pages": 979,
+      "actual_pages": 0,
+      "errors": [],
+      "error_count": 0,
+      "page_range": "none",
+      "missing_count": 0,
+      "missing_pages": []
+    }
+  ],
+  "failed_books": [
+    {
+      "book_id": "266",
+      "title": "آداب البحث والمناظرة"
+    },
+    {
+      "book_id": "310",
+      "title": "خير الكلام في التقصي عن أغلاط العوام"
+    },
+    {
+      "book_id": "324",
+      "title": "قاطع الأفراح ومزهق الأرواح الموت"
+    },
+    {
+      "book_id": "325",
+      "title": "أنظام لغوية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "327",
+      "title": "تخريج الكلم الطيب"
+    },
+    {
+      "book_id": "328",
+      "title": "تحقيق الكلام في المسائل الثلاث - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "329",
+      "title": "فضائل البيت المقدس - الواسطي"
+    },
+    {
+      "book_id": "330",
+      "title": "عمارة القبور في الإسلام - المبيضة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "331",
+      "title": "عمارة القبور في الإسلام - المسودة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "332",
+      "title": "يسر العقيدة الإسلامية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "334",
+      "title": "إرشاد الأنام إلى أصول ومهمات دين الإسلام"
+    },
+    {
+      "book_id": "336",
+      "title": "طليعة التنكيل وتعزيز الطليعة وشكر الترحيب - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "337",
+      "title": "التنكيل بما في تأنيب الكوثري من الأباطيل - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "339",
+      "title": "الأنوار الكاشفة لما في كتاب «أضواء على السنة» - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "340",
+      "title": "الوحدان - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "341",
+      "title": "تراجم منتخبة من «التهذيب» و «الميزان» - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "342",
+      "title": "الأصل لمحمد بن الحسن - ت شحاته"
+    },
+    {
+      "book_id": "344",
+      "title": "لامية الأفعال - ت القاسم"
+    },
+    {
+      "book_id": "348",
+      "title": "تحقيق بداية السول"
+    },
+    {
+      "book_id": "349",
+      "title": "تحذير الساجد من اتخاذ القبور مساجد"
+    },
+    {
+      "book_id": "350",
+      "title": "أصول الدين الإسلامي مع قواعده الأربع"
+    },
+    {
+      "book_id": "354",
+      "title": "ألفية العراقي التبصرة والتذكرة - ت القاسم"
+    },
+    {
+      "book_id": "356",
+      "title": "ألفية ابن مالك - ت القاسم"
+    },
+    {
+      "book_id": "358",
+      "title": "حقيقة التأويل - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "359",
+      "title": "حقيقة البدعة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "361",
+      "title": "صدع الدجنة في فصل البدعة عن السنة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "362",
+      "title": "الحنيفية والعرب - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "363",
+      "title": "عقيدة العرب في وثنيتهم - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "364",
+      "title": "الرد على حسن الضالعي - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "365",
+      "title": "تخريج مشكلة الفقر"
+    },
+    {
+      "book_id": "366",
+      "title": "ما وقع لبعض المسلمين من الرياضة الصوفية والغلو فيها - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "369",
+      "title": "تعلق العقائد بالزمان والمكان - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "370",
+      "title": "الحمادية"
+    },
+    {
+      "book_id": "372",
+      "title": "تفسير سورة الفاتحة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "373",
+      "title": "تفسير أول البقرة (1 - 5) - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "376",
+      "title": "تفسير قوله تعالى: {وآتوا اليتامى أموالهم .. } الآيات - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "377",
+      "title": "تفسير أول المائدة (1 - 3) - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "378",
+      "title": "تفسير قوله: {كلوا من ثمره إذا أثمر .. } - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "379",
+      "title": "تفسير قوله تعالى: {ولقد فتنا سليمان. . .} - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "380",
+      "title": "عقد الجمان في تاريخ أهل الزمان [565 - 628 هـ]"
+    },
+    {
+      "book_id": "381",
+      "title": "تفسير قوله تعالى: {وما آتاكم الرسول فخذوه} ومعنى «أهل البيت»"
+    },
+    {
+      "book_id": "386",
+      "title": "تفسير آيات خلق الأرض والسماوات - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "387",
+      "title": "معنى {أغنى عنه} - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "407",
+      "title": "تنزيه الإمام الشافعي عن مطاعن الكوثري - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "409",
+      "title": "شرح حديث «آية المنافق ثلاث. . .» - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "410",
+      "title": "الدرر المفاخر في أخبار العرب الأواخر"
+    },
+    {
+      "book_id": "411",
+      "title": "تحقيق حقوق النساء في الإسلام"
+    },
+    {
+      "book_id": "413",
+      "title": "التعليق على «الأربعين في التصوف» للسلمي - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "415",
+      "title": "القبلة وقضاء الحاجة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "431",
+      "title": "الأحاديث الورادة في خبر القحطاني"
+    },
+    {
+      "book_id": "434",
+      "title": "شبهات المشككين"
+    },
+    {
+      "book_id": "438",
+      "title": "حقيقة الوتر ومسماه في الشرع - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "439",
+      "title": "فرضية الجمعة وسبب تسميتها - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "440",
+      "title": "سنة الجمعة القبلية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "441",
+      "title": "بحث في وقت تشريع ونزول آية صلاة الخوف - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "442",
+      "title": "قيام رمضان - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "443",
+      "title": "مسألة اشتراط الصوم في الاعتكاف - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "444",
+      "title": "مقام إبراهيم - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "445",
+      "title": "رسالة في فرضية اتباع السنة، والكلام على تقسيم الأخبار وحجية أخبار الآحاد - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "446",
+      "title": "رسالة في توسعة المسعى بين الصفا والمروة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "447",
+      "title": "رسالة في سير النبي - صلى الله عليه وسلم - في الحج والكلام على وادي محسر - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "448",
+      "title": "فلسفة الأعياد وحكمة الإسلام - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "449",
+      "title": "توكيل الولي غير المجبر بتزويج موليته - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "450",
+      "title": "الحكم المشروع في الطلاق المجموع - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "451",
+      "title": "رسالة في المواريث - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "452",
+      "title": "زيج الصابئ"
+    },
+    {
+      "book_id": "453",
+      "title": "مسألة منع بيع الأحرار - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "456",
+      "title": "مناقشة لحكم بعض القضاة في قضية تنازع فيها رجلان - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "457",
+      "title": "رسالة في الكلام على أحكام خبر الواحد وشرائطه - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "458",
+      "title": "الفهارس العلمية لآثار الإمام ابن قيم الجوزية"
+    },
+    {
+      "book_id": "459",
+      "title": "مسائل القراءة في الصلاة، والرد على أحد شراح الترمذي - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "461",
+      "title": "صيام ستة أيام من شوال - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "462",
+      "title": "جواب الاستفتاء عن حقيقة الربا - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "463",
+      "title": "الجغرافيا"
+    },
+    {
+      "book_id": "465",
+      "title": "اليواقيت والضرب في تاريخ حلب"
+    },
+    {
+      "book_id": "466",
+      "title": "آداب المواكلة"
+    },
+    {
+      "book_id": "467",
+      "title": "النظر في ورقة إقرار - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "468",
+      "title": "قضية في سكوت المدعى عليه عن الإقرار والإنكار - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "469",
+      "title": "الفسخ بالإعسار - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "470",
+      "title": "مسألتان في الضمان والالتزام - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "471",
+      "title": "تاريخ المستبصر"
+    },
+    {
+      "book_id": "472",
+      "title": "مسألة الوقف في مرض الموت - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "473",
+      "title": "المحاضرات في اللغة والأدب"
+    },
+    {
+      "book_id": "474",
+      "title": "خطرة الطيف في رحلة الشتاء والصيف"
+    },
+    {
+      "book_id": "475",
+      "title": "غرائب الاغتراب"
+    },
+    {
+      "book_id": "476",
+      "title": "حادي الأظعان النجدية إلى الديار المصرية"
+    },
+    {
+      "book_id": "478",
+      "title": "تاج المفرق في تحلية علماء المشرق"
+    },
+    {
+      "book_id": "479",
+      "title": "الفوضى الدينية وتعدد الزوجات - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "480",
+      "title": "مسألة في رجل حنفي تزوج صغيرة بولاية أمها - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "481",
+      "title": "مسألة في صبيين مسلمين أخذهما رئيس الكنيسة فنشآ على دينه وبلغا عليه وتزوجا، ثم أسلما - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "483",
+      "title": "الاستعداد للموت وسؤال القبر"
+    },
+    {
+      "book_id": "484",
+      "title": "بحث في قصة بني هشام بن المغيرة واستئذانهم النبي - صلى الله عليه وسلم - أن يزوجوا عليا رضي الله عنه - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "487",
+      "title": "التعريف بالأنساب والتنويه بذوي الأحساب"
+    },
+    {
+      "book_id": "488",
+      "title": "اللطيفة البكرية والنتيجة الفكرية في المهمات النحوية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "490",
+      "title": "إسعاف الأعيان في أنساب أهل عمان"
+    },
+    {
+      "book_id": "492",
+      "title": "الإيناس بعلم الأنساب"
+    },
+    {
+      "book_id": "493",
+      "title": "حقائق في النحو مستقربة - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "494",
+      "title": "المنتخب في ذكر نسب قبائل العرب"
+    },
+    {
+      "book_id": "495",
+      "title": "مختصر شرح ابن جماعة على القواعد الصغرى - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "496",
+      "title": "حذف من نسب قريش"
+    },
+    {
+      "book_id": "500",
+      "title": "نظم قواعد الإعراب الصغرى - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "501",
+      "title": "طرائف في العربية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "502",
+      "title": "الكلام على تصريف «ذو» - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "504",
+      "title": "جمهرة النسب - ابن الكلبي - ت فراج"
+    },
+    {
+      "book_id": "505",
+      "title": "ضبط فعلين في متن الأزهار و (فائدتان) - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "507",
+      "title": "اختصار كتاب «درة الغواص» - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "508",
+      "title": "فوائد منتقاة من كتاب الكنز المدفون - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "509",
+      "title": "مناظرة أدبية بين المعلمي والشاعر الأديب علي بن محمد السنوسي - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "511",
+      "title": "مختصر متن الكافي في العروض والقوافي - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "512",
+      "title": "تحقيق رياض الصالحين للألباني"
+    },
+    {
+      "book_id": "515",
+      "title": "أخبار أبي تمام"
+    },
+    {
+      "book_id": "517",
+      "title": "تخريج أحاديث شواهد التوضيح وملاحظات على طبعة فؤاد عبد الباقي - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "518",
+      "title": "تصحيحات وتعليقات على سبل السلام للأمير الصنعاني - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "520",
+      "title": "تنبيهات على الجزء الأول من معجم الأدباء ط أحمد فريد الرفاعي. - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "521",
+      "title": "من نوادر مخطوطات مكتبة الحرم المكي الشريف - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "522",
+      "title": "حاشية السندي على سنن النسائي"
+    },
+    {
+      "book_id": "524",
+      "title": "كشف الغمة عن أدلة الحجاب في الكتاب والسنة"
+    },
+    {
+      "book_id": "525",
+      "title": "الفوائد التفسيرية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "528",
+      "title": "الفوائد الحديثية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "531",
+      "title": "الفوائد الأصولية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "532",
+      "title": "الفوائد اللغوية - ضمن «آثار المعلمي»"
+    },
+    {
+      "book_id": "534",
+      "title": "وأد الفتنة دراسة نقدية لشبهات المرجفين وفتنة الجمل وصفين على منهج المحدثين"
+    },
+    {
+      "book_id": "535",
+      "title": "سؤالات السجزي للحاكم"
+    },
+    {
+      "book_id": "536",
+      "title": "آراء السمعاني العقدية"
+    },
+    {
+      "book_id": "538",
+      "title": "عمدة الأحكام - ت القاسم"
+    },
+    {
+      "book_id": "539",
+      "title": "الأثر الثمين في نصرة عائشة - رضي الله عنها - أم المؤمنين"
+    },
+    {
+      "book_id": "541",
+      "title": "القسم الثاني من المعجم الأوسط للطبراني"
+    },
+    {
+      "book_id": "543",
+      "title": "آراء ابن عجيبة العقدية عرضا ونقدا"
+    },
+    {
+      "book_id": "546",
+      "title": "خطورة التسرع في التكفير والقيام بالتفجير وما ينشأ عنهما من سفك للدماء وتخريب للمنشآت"
+    },
+    {
+      "book_id": "549",
+      "title": "تفسير العثيمين: الأنعام"
+    },
+    {
+      "book_id": "554",
+      "title": "تفسير العثيمين: الفرقان"
+    },
+    {
+      "book_id": "555",
+      "title": "تفسير العثيمين: الشعراء"
+    },
+    {
+      "book_id": "556",
+      "title": "مختصر كشف الغمة عن أدلة الحجاب في الكتاب والسنة"
+    },
+    {
+      "book_id": "557",
+      "title": "الدرة الثمينة في أخبار المدينة - ط بحوث المدينة"
+    },
+    {
+      "book_id": "560",
+      "title": "حاشيتان لابن هشام على ألفية ابن مالك"
+    },
+    {
+      "book_id": "561",
+      "title": "صحيح الكتب التسعة وزوائده"
+    },
+    {
+      "book_id": "563",
+      "title": "رسالة الصاهل والشاجح"
+    },
+    {
+      "book_id": "565",
+      "title": "أقضية الحسن البصري في كتاب أخبار القضاة لوكيع"
+    },
+    {
+      "book_id": "567",
+      "title": "بلوغ الأمل في فن الزجل"
+    },
+    {
+      "book_id": "571",
+      "title": "متون طالب العلم - المستوى الثاني"
+    },
+    {
+      "book_id": "572",
+      "title": "إقامة البراهين على حكم من استغاث بغير الله أو صدق الكهنة والعرافين"
+    },
+    {
+      "book_id": "573",
+      "title": "متون طالب العلم - المستوى الثالث"
+    },
+    {
+      "book_id": "574",
+      "title": "متون طالب العلم - المستوى الرابع"
+    },
+    {
+      "book_id": "575",
+      "title": "نسيم الصبا"
+    },
+    {
+      "book_id": "576",
+      "title": "مختصر الأذكار والآداب"
+    },
+    {
+      "book_id": "577",
+      "title": "إشراقات الأصول في علم حديث الرسول - مجلة التراث النبوي"
+    },
+    {
+      "book_id": "579",
+      "title": "نفحة الريحانة ورشحة طلاء الحانة"
+    },
+    {
+      "book_id": "580",
+      "title": "ديوان الصبابة"
+    },
+    {
+      "book_id": "581",
+      "title": "المقدمة الجزرية - ت القاسم"
+    },
+    {
+      "book_id": "582",
+      "title": "أقوال الطحاوي في التفسير: الفاتحة - التوبة"
+    },
+    {
+      "book_id": "583",
+      "title": "كشف الشبهات - ت القاسم"
+    },
+    {
+      "book_id": "589",
+      "title": "الديارات للشابشتي"
+    },
+    {
+      "book_id": "592",
+      "title": "صحيح السيرة النبوية - الألباني"
+    },
+    {
+      "book_id": "594",
+      "title": "الآمل والمأمول"
+    },
+    {
+      "book_id": "595",
+      "title": "اللطف واللطائف"
+    },
+    {
+      "book_id": "596",
+      "title": "منهج ابن عقيل الحنبلي وأقواله في التفسير جمعا ودراسة"
+    },
+    {
+      "book_id": "597",
+      "title": "أسماء الصحابة التي اتفق فيها البخاري ومسلم وما انفرد به كل واحد"
+    },
+    {
+      "book_id": "598",
+      "title": "آداب التربية في تراث الآل والأصحاب"
+    },
+    {
+      "book_id": "599",
+      "title": "مختصر المختصر في بيان عقيدة أهل السنة والأثر"
+    },
+    {
+      "book_id": "600",
+      "title": "منهج الصحابة في دعوة المشركين من غير أهل الكتاب"
+    },
+    {
+      "book_id": "601",
+      "title": "الأنوار ومحاسن الأشعار"
+    },
+    {
+      "book_id": "602",
+      "title": "الأحاديث التي سقطت من مطبوع المعجم الأوسط للطبراني"
+    },
+    {
+      "book_id": "604",
+      "title": "القواعد في توحيد العبادة"
+    },
+    {
+      "book_id": "606",
+      "title": "التفسير البياني لما في سورة النحل من دقائق المعاني"
+    },
+    {
+      "book_id": "607",
+      "title": "عون المتين على نظم رسالة القرويين"
+    },
+    {
+      "book_id": "608",
+      "title": "أسماء من اتفق البخاري ومسلم تصحيح الرواية عنه من الصحابة ومن انفرد كل واحد بإخراج حديثه"
+    },
+    {
+      "book_id": "609",
+      "title": "فتح المنان بسيرة أمير المؤمنين معاوية بن أبي سفيان"
+    },
+    {
+      "book_id": "612",
+      "title": "الفصول والغايات"
+    },
+    {
+      "book_id": "614",
+      "title": "التوحيد لابن منده - ت الوهيبي والغصن"
+    },
+    {
+      "book_id": "615",
+      "title": "الرفعة في بعض متون فقه المذاهب الأربعة"
+    },
+    {
+      "book_id": "618",
+      "title": "الورقة"
+    },
+    {
+      "book_id": "620",
+      "title": "تحريم كتابة القرآن الكريم بحروف غير عربية أعجمية أو لاتينية"
+    },
+    {
+      "book_id": "621",
+      "title": "جمع الجواهر في الملح والنوادر"
+    },
+    {
+      "book_id": "626",
+      "title": "المسلمون في بلاد الغربة"
+    },
+    {
+      "book_id": "627",
+      "title": "المنتقى - ابن الجارود - ت الحويني"
+    },
+    {
+      "book_id": "628",
+      "title": "در المهتدي وذخر المقتدي نظم بداية المبتدي المعروف بالهاملية - ضمن مجموع «الرفعة»"
+    },
+    {
+      "book_id": "629",
+      "title": "نضرة الإغريض في نصرة القريض"
+    },
+    {
+      "book_id": "630",
+      "title": "تزيين الأسواق في أخبار العشاق"
+    },
+    {
+      "book_id": "631",
+      "title": "أسهل المسالك في مذهب الإمام مالك - ضمن مجموع «الرفعة»"
+    },
+    {
+      "book_id": "632",
+      "title": "منظومة البهجة الوردية - ضمن مجموع «الرفعة»"
+    },
+    {
+      "book_id": "633",
+      "title": "متن الموثق من عمدة الموفق - ضمن مجموع «الرفعة»"
+    },
+    {
+      "book_id": "634",
+      "title": "الحلل في شرح أبيات الجمل"
+    },
+    {
+      "book_id": "635",
+      "title": "موسوعة صناعة الحلال"
+    },
+    {
+      "book_id": "636",
+      "title": "الديباج لأبي عبيدة"
+    },
+    {
+      "book_id": "638",
+      "title": "الأدب - ابن أبي شيبة (235)"
+    },
+    {
+      "book_id": "642",
+      "title": "كتاب العلل الواقع بآخر جامع الترمذي - ت بشار"
+    },
+    {
+      "book_id": "643",
+      "title": "الحديث الضعيف وحكم الاحتجاج به"
+    },
+    {
+      "book_id": "644",
+      "title": "المقامات الزينية"
+    },
+    {
+      "book_id": "645",
+      "title": "تقريب البغية بترتيب أحاديث الحلية"
+    },
+    {
+      "book_id": "646",
+      "title": "زوائد الأحاديث الواردة في فضائل الصحابة"
+    },
+    {
+      "book_id": "647",
+      "title": "موسوعة بيت المقدس وبلاد الشام الحديثية"
+    },
+    {
+      "book_id": "648",
+      "title": "التوجيهات الصحيحة للنوازل العقدية المتعلقة بوباء كورونا"
+    },
+    {
+      "book_id": "649",
+      "title": "آداب العلماء والمتعلمين"
+    },
+    {
+      "book_id": "652",
+      "title": "العقل والهوى"
+    },
+    {
+      "book_id": "653",
+      "title": "حديث إنما الأعمال بالنيات - من البدر المنير الساري في الكلام على صحيح البخاري"
+    },
+    {
+      "book_id": "655",
+      "title": "سلوة الأحزان للاجتناب عن مجالسة الأحداث والنسوان"
+    },
+    {
+      "book_id": "656",
+      "title": "فص الخواتم فيما قيل في الولائم"
+    },
+    {
+      "book_id": "658",
+      "title": "القسطاس في علم العروض"
+    },
+    {
+      "book_id": "659",
+      "title": "اللآلي"
+    },
+    {
+      "book_id": "661",
+      "title": "مبلغ الأرب في فخر العرب"
+    },
+    {
+      "book_id": "662",
+      "title": "تحفة المشتاق إلى شرح أبيات المولى إسحق"
+    },
+    {
+      "book_id": "665",
+      "title": "المرقصات والمطربات"
+    },
+    {
+      "book_id": "666",
+      "title": "أخبار أبي القاسم الزجاجي"
+    },
+    {
+      "book_id": "667",
+      "title": "أحكام الاختلاف في رؤية هلال ذي الحجة"
+    }
+  ]
+}

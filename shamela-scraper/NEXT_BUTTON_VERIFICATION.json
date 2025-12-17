@@ -1,0 +1,3289 @@
+{
+  "summary": {
+    "total_checked": 433,
+    "verified_complete": 24,
+    "incomplete": 345,
+    "no_html_files": 64,
+    "errors": 0,
+    "verification_rate": 5.542725173210162
+  },
+  "verified_complete_books": [
+    {
+      "book_id": "105",
+      "status": "verified_complete",
+      "last_section": "90",
+      "total_sections": 89,
+      "has_clickable_next": false,
+      "last_file": "book_105_section_90.html"
+    },
+    {
+      "book_id": "17",
+      "status": "verified_complete",
+      "last_section": "90",
+      "total_sections": 88,
+      "has_clickable_next": false,
+      "last_file": "book_17_section_90.html"
+    },
+    {
+      "book_id": "193",
+      "status": "verified_complete",
+      "last_section": "4",
+      "total_sections": 4,
+      "has_clickable_next": false,
+      "last_file": "book_193_section_4.html"
+    },
+    {
+      "book_id": "194",
+      "status": "verified_complete",
+      "last_section": "3",
+      "total_sections": 3,
+      "has_clickable_next": false,
+      "last_file": "book_194_section_3.html"
+    },
+    {
+      "book_id": "200",
+      "status": "verified_complete",
+      "last_section": "6",
+      "total_sections": 6,
+      "has_clickable_next": false,
+      "last_file": "book_200_section_6.html"
+    },
+    {
+      "book_id": "209",
+      "status": "verified_complete",
+      "last_section": "96",
+      "total_sections": 96,
+      "has_clickable_next": false,
+      "last_file": "book_209_section_96.html"
+    },
+    {
+      "book_id": "211",
+      "status": "verified_complete",
+      "last_section": "7",
+      "total_sections": 7,
+      "has_clickable_next": false,
+      "last_file": "book_211_section_7.html"
+    },
+    {
+      "book_id": "213",
+      "status": "verified_complete",
+      "last_section": "6",
+      "total_sections": 6,
+      "has_clickable_next": false,
+      "last_file": "book_213_section_6.html"
+    },
+    {
+      "book_id": "217",
+      "status": "verified_complete",
+      "last_section": "6",
+      "total_sections": 5,
+      "has_clickable_next": false,
+      "last_file": "book_217_section_6.html"
+    },
+    {
+      "book_id": "285",
+      "status": "verified_complete",
+      "last_section": "97",
+      "total_sections": 96,
+      "has_clickable_next": false,
+      "last_file": "book_285_section_97.html"
+    },
+    {
+      "book_id": "319",
+      "status": "verified_complete",
+      "last_section": "3",
+      "total_sections": 3,
+      "has_clickable_next": false,
+      "last_file": "book_319_section_3.html"
+    },
+    {
+      "book_id": "383",
+      "status": "verified_complete",
+      "last_section": "8",
+      "total_sections": 8,
+      "has_clickable_next": false,
+      "last_file": "book_383_section_8.html"
+    },
+    {
+      "book_id": "385",
+      "status": "verified_complete",
+      "last_section": "4",
+      "total_sections": 4,
+      "has_clickable_next": false,
+      "last_file": "book_385_section_4.html"
+    },
+    {
+      "book_id": "389",
+      "status": "verified_complete",
+      "last_section": "5",
+      "total_sections": 4,
+      "has_clickable_next": false,
+      "last_file": "book_389_section_5.html"
+    },
+    {
+      "book_id": "393",
+      "status": "verified_complete",
+      "last_section": "4",
+      "total_sections": 3,
+      "has_clickable_next": false,
+      "last_file": "book_393_section_4.html"
+    },
+    {
+      "book_id": "394",
+      "status": "verified_complete",
+      "last_section": "7",
+      "total_sections": 6,
+      "has_clickable_next": false,
+      "last_file": "book_394_section_7.html"
+    },
+    {
+      "book_id": "398",
+      "status": "verified_complete",
+      "last_section": "9",
+      "total_sections": 9,
+      "has_clickable_next": false,
+      "last_file": "book_398_section_9.html"
+    },
+    {
+      "book_id": "424",
+      "status": "verified_complete",
+      "last_section": "4",
+      "total_sections": 3,
+      "has_clickable_next": false,
+      "last_file": "book_424_section_4.html"
+    },
+    {
+      "book_id": "529",
+      "status": "verified_complete",
+      "last_section": "2",
+      "total_sections": 2,
+      "has_clickable_next": false,
+      "last_file": "book_529_section_2.html"
+    },
+    {
+      "book_id": "54",
+      "status": "verified_complete",
+      "last_section": "99",
+      "total_sections": 97,
+      "has_clickable_next": false,
+      "last_file": "book_54_section_99.html"
+    },
+    {
+      "book_id": "67",
+      "status": "verified_complete",
+      "last_section": "994",
+      "total_sections": 983,
+      "has_clickable_next": false,
+      "last_file": "book_67_section_994.html"
+    },
+    {
+      "book_id": "77",
+      "status": "verified_complete",
+      "last_section": "6",
+      "total_sections": 4,
+      "has_clickable_next": false,
+      "last_file": "book_77_section_6.html"
+    },
+    {
+      "book_id": "82",
+      "status": "verified_complete",
+      "last_section": "7",
+      "total_sections": 7,
+      "has_clickable_next": false,
+      "last_file": "book_82_section_7.html"
+    },
+    {
+      "book_id": "99",
+      "status": "verified_complete",
+      "last_section": "8",
+      "total_sections": 8,
+      "has_clickable_next": false,
+      "last_file": "book_99_section_8.html"
+    }
+  ],
+  "incomplete_books": [
+    {
+      "book_id": "100",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 120,
+      "has_clickable_next": true,
+      "last_file": "book_100_section_99.html"
+    },
+    {
+      "book_id": "101",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 352,
+      "has_clickable_next": true,
+      "last_file": "book_101_section_99.html"
+    },
+    {
+      "book_id": "102",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 753,
+      "has_clickable_next": true,
+      "last_file": "book_102_section_99.html"
+    },
+    {
+      "book_id": "103",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_103_section_999.html"
+    },
+    {
+      "book_id": "104",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 290,
+      "has_clickable_next": true,
+      "last_file": "book_104_section_99.html"
+    },
+    {
+      "book_id": "106",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 350,
+      "has_clickable_next": true,
+      "last_file": "book_106_section_99.html"
+    },
+    {
+      "book_id": "107",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_107_section_999.html"
+    },
+    {
+      "book_id": "108",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 484,
+      "has_clickable_next": true,
+      "last_file": "book_108_section_99.html"
+    },
+    {
+      "book_id": "109",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 157,
+      "has_clickable_next": true,
+      "last_file": "book_109_section_99.html"
+    },
+    {
+      "book_id": "10",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 186,
+      "has_clickable_next": true,
+      "last_file": "book_10_section_99.html"
+    },
+    {
+      "book_id": "110",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 237,
+      "has_clickable_next": true,
+      "last_file": "book_110_section_99.html"
+    },
+    {
+      "book_id": "111",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 86,
+      "has_clickable_next": true,
+      "last_file": "book_111_section_9.html"
+    },
+    {
+      "book_id": "112",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 551,
+      "has_clickable_next": true,
+      "last_file": "book_112_section_99.html"
+    },
+    {
+      "book_id": "113",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_113_section_999.html"
+    },
+    {
+      "book_id": "115",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 749,
+      "has_clickable_next": true,
+      "last_file": "book_115_section_99.html"
+    },
+    {
+      "book_id": "116",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 508,
+      "has_clickable_next": true,
+      "last_file": "book_116_section_99.html"
+    },
+    {
+      "book_id": "117",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 785,
+      "has_clickable_next": true,
+      "last_file": "book_117_section_99.html"
+    },
+    {
+      "book_id": "118",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 713,
+      "has_clickable_next": true,
+      "last_file": "book_118_section_99.html"
+    },
+    {
+      "book_id": "119",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2811,
+      "has_clickable_next": true,
+      "last_file": "book_119_section_999.html"
+    },
+    {
+      "book_id": "11",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 4622,
+      "has_clickable_next": true,
+      "last_file": "book_11_section_999.html"
+    },
+    {
+      "book_id": "120",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1102,
+      "has_clickable_next": true,
+      "last_file": "book_120_section_999.html"
+    },
+    {
+      "book_id": "121",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 104,
+      "has_clickable_next": true,
+      "last_file": "book_121_section_99.html"
+    },
+    {
+      "book_id": "122",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 870,
+      "has_clickable_next": true,
+      "last_file": "book_122_section_99.html"
+    },
+    {
+      "book_id": "123",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 665,
+      "has_clickable_next": true,
+      "last_file": "book_123_section_99.html"
+    },
+    {
+      "book_id": "124",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 737,
+      "has_clickable_next": true,
+      "last_file": "book_124_section_99.html"
+    },
+    {
+      "book_id": "125",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 193,
+      "has_clickable_next": true,
+      "last_file": "book_125_section_99.html"
+    },
+    {
+      "book_id": "126",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 126,
+      "has_clickable_next": true,
+      "last_file": "book_126_section_99.html"
+    },
+    {
+      "book_id": "12",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 544,
+      "has_clickable_next": true,
+      "last_file": "book_12_section_99.html"
+    },
+    {
+      "book_id": "130",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 129,
+      "has_clickable_next": true,
+      "last_file": "book_130_section_99.html"
+    },
+    {
+      "book_id": "131",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3507,
+      "has_clickable_next": true,
+      "last_file": "book_131_section_999.html"
+    },
+    {
+      "book_id": "132",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 11,
+      "has_clickable_next": true,
+      "last_file": "book_132_section_9.html"
+    },
+    {
+      "book_id": "133",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_133_section_999.html"
+    },
+    {
+      "book_id": "134",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 110,
+      "has_clickable_next": true,
+      "last_file": "book_134_section_99.html"
+    },
+    {
+      "book_id": "135",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 357,
+      "has_clickable_next": true,
+      "last_file": "book_135_section_99.html"
+    },
+    {
+      "book_id": "136",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 738,
+      "has_clickable_next": true,
+      "last_file": "book_136_section_99.html"
+    },
+    {
+      "book_id": "137",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 4834,
+      "has_clickable_next": true,
+      "last_file": "book_137_section_999.html"
+    },
+    {
+      "book_id": "138",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 209,
+      "has_clickable_next": true,
+      "last_file": "book_138_section_99.html"
+    },
+    {
+      "book_id": "139",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 757,
+      "has_clickable_next": true,
+      "last_file": "book_139_section_99.html"
+    },
+    {
+      "book_id": "13",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 347,
+      "has_clickable_next": true,
+      "last_file": "book_13_section_99.html"
+    },
+    {
+      "book_id": "140",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2250,
+      "has_clickable_next": true,
+      "last_file": "book_140_section_999.html"
+    },
+    {
+      "book_id": "141",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 211,
+      "has_clickable_next": true,
+      "last_file": "book_141_section_99.html"
+    },
+    {
+      "book_id": "142",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 464,
+      "has_clickable_next": true,
+      "last_file": "book_142_section_99.html"
+    },
+    {
+      "book_id": "143",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1087,
+      "has_clickable_next": true,
+      "last_file": "book_143_section_999.html"
+    },
+    {
+      "book_id": "144",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 351,
+      "has_clickable_next": true,
+      "last_file": "book_144_section_99.html"
+    },
+    {
+      "book_id": "145",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 15,
+      "has_clickable_next": true,
+      "last_file": "book_145_section_9.html"
+    },
+    {
+      "book_id": "146",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 4886,
+      "has_clickable_next": true,
+      "last_file": "book_146_section_999.html"
+    },
+    {
+      "book_id": "147",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 84,
+      "has_clickable_next": true,
+      "last_file": "book_147_section_9.html"
+    },
+    {
+      "book_id": "148",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 199,
+      "has_clickable_next": true,
+      "last_file": "book_148_section_99.html"
+    },
+    {
+      "book_id": "149",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 201,
+      "has_clickable_next": true,
+      "last_file": "book_149_section_99.html"
+    },
+    {
+      "book_id": "14",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 892,
+      "has_clickable_next": true,
+      "last_file": "book_14_section_99.html"
+    },
+    {
+      "book_id": "150",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1124,
+      "has_clickable_next": true,
+      "last_file": "book_150_section_999.html"
+    },
+    {
+      "book_id": "151",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3319,
+      "has_clickable_next": true,
+      "last_file": "book_151_section_999.html"
+    },
+    {
+      "book_id": "152",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 43,
+      "has_clickable_next": true,
+      "last_file": "book_152_section_9.html"
+    },
+    {
+      "book_id": "153",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 74,
+      "has_clickable_next": true,
+      "last_file": "book_153_section_9.html"
+    },
+    {
+      "book_id": "154",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_154_section_999.html"
+    },
+    {
+      "book_id": "155",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 548,
+      "has_clickable_next": true,
+      "last_file": "book_155_section_99.html"
+    },
+    {
+      "book_id": "156",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 343,
+      "has_clickable_next": true,
+      "last_file": "book_156_section_99.html"
+    },
+    {
+      "book_id": "157",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_157_section_999.html"
+    },
+    {
+      "book_id": "158",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 237,
+      "has_clickable_next": true,
+      "last_file": "book_158_section_99.html"
+    },
+    {
+      "book_id": "159",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3219,
+      "has_clickable_next": true,
+      "last_file": "book_159_section_999.html"
+    },
+    {
+      "book_id": "15",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 869,
+      "has_clickable_next": true,
+      "last_file": "book_15_section_99.html"
+    },
+    {
+      "book_id": "160",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 148,
+      "has_clickable_next": true,
+      "last_file": "book_160_section_99.html"
+    },
+    {
+      "book_id": "161",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1488,
+      "has_clickable_next": true,
+      "last_file": "book_161_section_999.html"
+    },
+    {
+      "book_id": "162",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 43,
+      "has_clickable_next": true,
+      "last_file": "book_162_section_9.html"
+    },
+    {
+      "book_id": "163",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 362,
+      "has_clickable_next": true,
+      "last_file": "book_163_section_99.html"
+    },
+    {
+      "book_id": "164",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 134,
+      "has_clickable_next": true,
+      "last_file": "book_164_section_99.html"
+    },
+    {
+      "book_id": "165",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_165_section_999.html"
+    },
+    {
+      "book_id": "166",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 184,
+      "has_clickable_next": true,
+      "last_file": "book_166_section_99.html"
+    },
+    {
+      "book_id": "167",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 460,
+      "has_clickable_next": true,
+      "last_file": "book_167_section_99.html"
+    },
+    {
+      "book_id": "168",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1271,
+      "has_clickable_next": true,
+      "last_file": "book_168_section_999.html"
+    },
+    {
+      "book_id": "169",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 315,
+      "has_clickable_next": true,
+      "last_file": "book_169_section_99.html"
+    },
+    {
+      "book_id": "16",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_16_section_999.html"
+    },
+    {
+      "book_id": "170",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2831,
+      "has_clickable_next": true,
+      "last_file": "book_170_section_999.html"
+    },
+    {
+      "book_id": "171",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1874,
+      "has_clickable_next": true,
+      "last_file": "book_171_section_999.html"
+    },
+    {
+      "book_id": "172",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 18,
+      "has_clickable_next": true,
+      "last_file": "book_172_section_9.html"
+    },
+    {
+      "book_id": "173",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 701,
+      "has_clickable_next": true,
+      "last_file": "book_173_section_99.html"
+    },
+    {
+      "book_id": "174",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2186,
+      "has_clickable_next": true,
+      "last_file": "book_174_section_999.html"
+    },
+    {
+      "book_id": "175",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 238,
+      "has_clickable_next": true,
+      "last_file": "book_175_section_99.html"
+    },
+    {
+      "book_id": "176",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1046,
+      "has_clickable_next": true,
+      "last_file": "book_176_section_999.html"
+    },
+    {
+      "book_id": "177",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 340,
+      "has_clickable_next": true,
+      "last_file": "book_177_section_99.html"
+    },
+    {
+      "book_id": "178",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 58,
+      "has_clickable_next": true,
+      "last_file": "book_178_section_9.html"
+    },
+    {
+      "book_id": "179",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1103,
+      "has_clickable_next": true,
+      "last_file": "book_179_section_999.html"
+    },
+    {
+      "book_id": "180",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 13,
+      "has_clickable_next": true,
+      "last_file": "book_180_section_9.html"
+    },
+    {
+      "book_id": "181",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_181_section_999.html"
+    },
+    {
+      "book_id": "182",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 427,
+      "has_clickable_next": true,
+      "last_file": "book_182_section_99.html"
+    },
+    {
+      "book_id": "183",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 4866,
+      "has_clickable_next": true,
+      "last_file": "book_183_section_999.html"
+    },
+    {
+      "book_id": "184",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1215,
+      "has_clickable_next": true,
+      "last_file": "book_184_section_999.html"
+    },
+    {
+      "book_id": "185",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 47,
+      "has_clickable_next": true,
+      "last_file": "book_185_section_9.html"
+    },
+    {
+      "book_id": "186",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 13,
+      "has_clickable_next": true,
+      "last_file": "book_186_section_9.html"
+    },
+    {
+      "book_id": "187",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 21,
+      "has_clickable_next": true,
+      "last_file": "book_187_section_9.html"
+    },
+    {
+      "book_id": "188",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 31,
+      "has_clickable_next": true,
+      "last_file": "book_188_section_9.html"
+    },
+    {
+      "book_id": "189",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 414,
+      "has_clickable_next": true,
+      "last_file": "book_189_section_99.html"
+    },
+    {
+      "book_id": "18",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 54,
+      "has_clickable_next": true,
+      "last_file": "book_18_section_9.html"
+    },
+    {
+      "book_id": "190",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 28,
+      "has_clickable_next": true,
+      "last_file": "book_190_section_9.html"
+    },
+    {
+      "book_id": "191",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 62,
+      "has_clickable_next": true,
+      "last_file": "book_191_section_9.html"
+    },
+    {
+      "book_id": "192",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1126,
+      "has_clickable_next": true,
+      "last_file": "book_192_section_999.html"
+    },
+    {
+      "book_id": "195",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 177,
+      "has_clickable_next": true,
+      "last_file": "book_195_section_99.html"
+    },
+    {
+      "book_id": "196",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 53,
+      "has_clickable_next": true,
+      "last_file": "book_196_section_9.html"
+    },
+    {
+      "book_id": "197",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3982,
+      "has_clickable_next": true,
+      "last_file": "book_197_section_999.html"
+    },
+    {
+      "book_id": "198",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 225,
+      "has_clickable_next": true,
+      "last_file": "book_198_section_99.html"
+    },
+    {
+      "book_id": "199",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2524,
+      "has_clickable_next": true,
+      "last_file": "book_199_section_999.html"
+    },
+    {
+      "book_id": "19",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 187,
+      "has_clickable_next": true,
+      "last_file": "book_19_section_99.html"
+    },
+    {
+      "book_id": "201",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1726,
+      "has_clickable_next": true,
+      "last_file": "book_201_section_999.html"
+    },
+    {
+      "book_id": "202",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 28,
+      "has_clickable_next": true,
+      "last_file": "book_202_section_9.html"
+    },
+    {
+      "book_id": "203",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 238,
+      "has_clickable_next": true,
+      "last_file": "book_203_section_99.html"
+    },
+    {
+      "book_id": "204",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 260,
+      "has_clickable_next": true,
+      "last_file": "book_204_section_99.html"
+    },
+    {
+      "book_id": "205",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1031,
+      "has_clickable_next": true,
+      "last_file": "book_205_section_999.html"
+    },
+    {
+      "book_id": "207",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 12,
+      "has_clickable_next": true,
+      "last_file": "book_207_section_9.html"
+    },
+    {
+      "book_id": "208",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 364,
+      "has_clickable_next": true,
+      "last_file": "book_208_section_99.html"
+    },
+    {
+      "book_id": "20",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2141,
+      "has_clickable_next": true,
+      "last_file": "book_20_section_999.html"
+    },
+    {
+      "book_id": "212",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 308,
+      "has_clickable_next": true,
+      "last_file": "book_212_section_99.html"
+    },
+    {
+      "book_id": "214",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 293,
+      "has_clickable_next": true,
+      "last_file": "book_214_section_99.html"
+    },
+    {
+      "book_id": "215",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 203,
+      "has_clickable_next": true,
+      "last_file": "book_215_section_99.html"
+    },
+    {
+      "book_id": "216",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 148,
+      "has_clickable_next": true,
+      "last_file": "book_216_section_99.html"
+    },
+    {
+      "book_id": "218",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1161,
+      "has_clickable_next": true,
+      "last_file": "book_218_section_999.html"
+    },
+    {
+      "book_id": "219",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1236,
+      "has_clickable_next": true,
+      "last_file": "book_219_section_999.html"
+    },
+    {
+      "book_id": "21",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 64,
+      "has_clickable_next": true,
+      "last_file": "book_21_section_9.html"
+    },
+    {
+      "book_id": "221",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 150,
+      "has_clickable_next": true,
+      "last_file": "book_221_section_99.html"
+    },
+    {
+      "book_id": "222",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 17,
+      "has_clickable_next": true,
+      "last_file": "book_222_section_9.html"
+    },
+    {
+      "book_id": "224",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1715,
+      "has_clickable_next": true,
+      "last_file": "book_224_section_999.html"
+    },
+    {
+      "book_id": "225",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 51,
+      "has_clickable_next": true,
+      "last_file": "book_225_section_9.html"
+    },
+    {
+      "book_id": "226",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 36,
+      "has_clickable_next": true,
+      "last_file": "book_226_section_9.html"
+    },
+    {
+      "book_id": "227",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 117,
+      "has_clickable_next": true,
+      "last_file": "book_227_section_99.html"
+    },
+    {
+      "book_id": "229",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 503,
+      "has_clickable_next": true,
+      "last_file": "book_229_section_99.html"
+    },
+    {
+      "book_id": "22",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 190,
+      "has_clickable_next": true,
+      "last_file": "book_22_section_99.html"
+    },
+    {
+      "book_id": "230",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 188,
+      "has_clickable_next": true,
+      "last_file": "book_230_section_99.html"
+    },
+    {
+      "book_id": "231",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 326,
+      "has_clickable_next": true,
+      "last_file": "book_231_section_99.html"
+    },
+    {
+      "book_id": "232",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1227,
+      "has_clickable_next": true,
+      "last_file": "book_232_section_999.html"
+    },
+    {
+      "book_id": "233",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 136,
+      "has_clickable_next": true,
+      "last_file": "book_233_section_99.html"
+    },
+    {
+      "book_id": "234",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 125,
+      "has_clickable_next": true,
+      "last_file": "book_234_section_99.html"
+    },
+    {
+      "book_id": "235",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1334,
+      "has_clickable_next": true,
+      "last_file": "book_235_section_999.html"
+    },
+    {
+      "book_id": "236",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1498,
+      "has_clickable_next": true,
+      "last_file": "book_236_section_999.html"
+    },
+    {
+      "book_id": "237",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 137,
+      "has_clickable_next": true,
+      "last_file": "book_237_section_99.html"
+    },
+    {
+      "book_id": "238",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 74,
+      "has_clickable_next": true,
+      "last_file": "book_238_section_9.html"
+    },
+    {
+      "book_id": "239",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 45,
+      "has_clickable_next": true,
+      "last_file": "book_239_section_9.html"
+    },
+    {
+      "book_id": "23",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 475,
+      "has_clickable_next": true,
+      "last_file": "book_23_section_99.html"
+    },
+    {
+      "book_id": "240",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 449,
+      "has_clickable_next": true,
+      "last_file": "book_240_section_99.html"
+    },
+    {
+      "book_id": "241",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 120,
+      "has_clickable_next": true,
+      "last_file": "book_241_section_99.html"
+    },
+    {
+      "book_id": "242",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 77,
+      "has_clickable_next": true,
+      "last_file": "book_242_section_9.html"
+    },
+    {
+      "book_id": "243",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 33,
+      "has_clickable_next": true,
+      "last_file": "book_243_section_9.html"
+    },
+    {
+      "book_id": "244",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 12,
+      "has_clickable_next": true,
+      "last_file": "book_244_section_9.html"
+    },
+    {
+      "book_id": "245",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 356,
+      "has_clickable_next": true,
+      "last_file": "book_245_section_99.html"
+    },
+    {
+      "book_id": "246",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 226,
+      "has_clickable_next": true,
+      "last_file": "book_246_section_99.html"
+    },
+    {
+      "book_id": "247",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 144,
+      "has_clickable_next": true,
+      "last_file": "book_247_section_99.html"
+    },
+    {
+      "book_id": "248",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 148,
+      "has_clickable_next": true,
+      "last_file": "book_248_section_99.html"
+    },
+    {
+      "book_id": "249",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 10,
+      "has_clickable_next": true,
+      "last_file": "book_249_section_9.html"
+    },
+    {
+      "book_id": "250",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 858,
+      "has_clickable_next": true,
+      "last_file": "book_250_section_99.html"
+    },
+    {
+      "book_id": "251",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 861,
+      "has_clickable_next": true,
+      "last_file": "book_251_section_99.html"
+    },
+    {
+      "book_id": "252",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 594,
+      "has_clickable_next": true,
+      "last_file": "book_252_section_99.html"
+    },
+    {
+      "book_id": "253",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 501,
+      "has_clickable_next": true,
+      "last_file": "book_253_section_99.html"
+    },
+    {
+      "book_id": "254",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 86,
+      "has_clickable_next": true,
+      "last_file": "book_254_section_9.html"
+    },
+    {
+      "book_id": "255",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 57,
+      "has_clickable_next": true,
+      "last_file": "book_255_section_9.html"
+    },
+    {
+      "book_id": "256",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 10,
+      "has_clickable_next": true,
+      "last_file": "book_256_section_9.html"
+    },
+    {
+      "book_id": "257",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 342,
+      "has_clickable_next": true,
+      "last_file": "book_257_section_99.html"
+    },
+    {
+      "book_id": "258",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 19,
+      "has_clickable_next": true,
+      "last_file": "book_258_section_9.html"
+    },
+    {
+      "book_id": "259",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 334,
+      "has_clickable_next": true,
+      "last_file": "book_259_section_99.html"
+    },
+    {
+      "book_id": "25",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 86,
+      "has_clickable_next": true,
+      "last_file": "book_25_section_9.html"
+    },
+    {
+      "book_id": "260",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 349,
+      "has_clickable_next": true,
+      "last_file": "book_260_section_99.html"
+    },
+    {
+      "book_id": "261",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 305,
+      "has_clickable_next": true,
+      "last_file": "book_261_section_99.html"
+    },
+    {
+      "book_id": "262",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 312,
+      "has_clickable_next": true,
+      "last_file": "book_262_section_99.html"
+    },
+    {
+      "book_id": "263",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 112,
+      "has_clickable_next": true,
+      "last_file": "book_263_section_99.html"
+    },
+    {
+      "book_id": "264",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 61,
+      "has_clickable_next": true,
+      "last_file": "book_264_section_9.html"
+    },
+    {
+      "book_id": "265",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 51,
+      "has_clickable_next": true,
+      "last_file": "book_265_section_9.html"
+    },
+    {
+      "book_id": "267",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 81,
+      "has_clickable_next": true,
+      "last_file": "book_267_section_9.html"
+    },
+    {
+      "book_id": "269",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 215,
+      "has_clickable_next": true,
+      "last_file": "book_269_section_99.html"
+    },
+    {
+      "book_id": "26",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 67,
+      "has_clickable_next": true,
+      "last_file": "book_26_section_9.html"
+    },
+    {
+      "book_id": "270",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 82,
+      "has_clickable_next": true,
+      "last_file": "book_270_section_9.html"
+    },
+    {
+      "book_id": "271",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 48,
+      "has_clickable_next": true,
+      "last_file": "book_271_section_9.html"
+    },
+    {
+      "book_id": "272",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 354,
+      "has_clickable_next": true,
+      "last_file": "book_272_section_99.html"
+    },
+    {
+      "book_id": "273",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 35,
+      "has_clickable_next": true,
+      "last_file": "book_273_section_9.html"
+    },
+    {
+      "book_id": "274",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 108,
+      "has_clickable_next": true,
+      "last_file": "book_274_section_99.html"
+    },
+    {
+      "book_id": "275",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 733,
+      "has_clickable_next": true,
+      "last_file": "book_275_section_99.html"
+    },
+    {
+      "book_id": "276",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 39,
+      "has_clickable_next": true,
+      "last_file": "book_276_section_9.html"
+    },
+    {
+      "book_id": "277",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 32,
+      "has_clickable_next": true,
+      "last_file": "book_277_section_9.html"
+    },
+    {
+      "book_id": "278",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 150,
+      "has_clickable_next": true,
+      "last_file": "book_278_section_99.html"
+    },
+    {
+      "book_id": "279",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 499,
+      "has_clickable_next": true,
+      "last_file": "book_279_section_99.html"
+    },
+    {
+      "book_id": "27",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1827,
+      "has_clickable_next": true,
+      "last_file": "book_27_section_999.html"
+    },
+    {
+      "book_id": "280",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 28,
+      "has_clickable_next": true,
+      "last_file": "book_280_section_9.html"
+    },
+    {
+      "book_id": "281",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 383,
+      "has_clickable_next": true,
+      "last_file": "book_281_section_99.html"
+    },
+    {
+      "book_id": "282",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 527,
+      "has_clickable_next": true,
+      "last_file": "book_282_section_99.html"
+    },
+    {
+      "book_id": "283",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 593,
+      "has_clickable_next": true,
+      "last_file": "book_283_section_99.html"
+    },
+    {
+      "book_id": "284",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 181,
+      "has_clickable_next": true,
+      "last_file": "book_284_section_99.html"
+    },
+    {
+      "book_id": "287",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 99,
+      "has_clickable_next": true,
+      "last_file": "book_287_section_99.html"
+    },
+    {
+      "book_id": "288",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 524,
+      "has_clickable_next": true,
+      "last_file": "book_288_section_99.html"
+    },
+    {
+      "book_id": "28",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2138,
+      "has_clickable_next": true,
+      "last_file": "book_28_section_999.html"
+    },
+    {
+      "book_id": "291",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 192,
+      "has_clickable_next": true,
+      "last_file": "book_291_section_99.html"
+    },
+    {
+      "book_id": "292",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 321,
+      "has_clickable_next": true,
+      "last_file": "book_292_section_99.html"
+    },
+    {
+      "book_id": "293",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 30,
+      "has_clickable_next": true,
+      "last_file": "book_293_section_9.html"
+    },
+    {
+      "book_id": "294",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 158,
+      "has_clickable_next": true,
+      "last_file": "book_294_section_99.html"
+    },
+    {
+      "book_id": "295",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 35,
+      "has_clickable_next": true,
+      "last_file": "book_295_section_9.html"
+    },
+    {
+      "book_id": "296",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 129,
+      "has_clickable_next": true,
+      "last_file": "book_296_section_99.html"
+    },
+    {
+      "book_id": "297",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 60,
+      "has_clickable_next": true,
+      "last_file": "book_297_section_9.html"
+    },
+    {
+      "book_id": "298",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 317,
+      "has_clickable_next": true,
+      "last_file": "book_298_section_99.html"
+    },
+    {
+      "book_id": "299",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 15,
+      "has_clickable_next": true,
+      "last_file": "book_299_section_9.html"
+    },
+    {
+      "book_id": "29",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1460,
+      "has_clickable_next": true,
+      "last_file": "book_29_section_999.html"
+    },
+    {
+      "book_id": "300",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 248,
+      "has_clickable_next": true,
+      "last_file": "book_300_section_99.html"
+    },
+    {
+      "book_id": "301",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 27,
+      "has_clickable_next": true,
+      "last_file": "book_301_section_9.html"
+    },
+    {
+      "book_id": "302",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 12,
+      "has_clickable_next": true,
+      "last_file": "book_302_section_9.html"
+    },
+    {
+      "book_id": "303",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 216,
+      "has_clickable_next": true,
+      "last_file": "book_303_section_99.html"
+    },
+    {
+      "book_id": "305",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 219,
+      "has_clickable_next": true,
+      "last_file": "book_305_section_99.html"
+    },
+    {
+      "book_id": "306",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 220,
+      "has_clickable_next": true,
+      "last_file": "book_306_section_99.html"
+    },
+    {
+      "book_id": "308",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 142,
+      "has_clickable_next": true,
+      "last_file": "book_308_section_99.html"
+    },
+    {
+      "book_id": "309",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 150,
+      "has_clickable_next": true,
+      "last_file": "book_309_section_99.html"
+    },
+    {
+      "book_id": "30",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1463,
+      "has_clickable_next": true,
+      "last_file": "book_30_section_999.html"
+    },
+    {
+      "book_id": "311",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 39,
+      "has_clickable_next": true,
+      "last_file": "book_311_section_9.html"
+    },
+    {
+      "book_id": "312",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 50,
+      "has_clickable_next": true,
+      "last_file": "book_312_section_9.html"
+    },
+    {
+      "book_id": "313",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 47,
+      "has_clickable_next": true,
+      "last_file": "book_313_section_9.html"
+    },
+    {
+      "book_id": "314",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 46,
+      "has_clickable_next": true,
+      "last_file": "book_314_section_9.html"
+    },
+    {
+      "book_id": "315",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 49,
+      "has_clickable_next": true,
+      "last_file": "book_315_section_9.html"
+    },
+    {
+      "book_id": "316",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 49,
+      "has_clickable_next": true,
+      "last_file": "book_316_section_9.html"
+    },
+    {
+      "book_id": "317",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 46,
+      "has_clickable_next": true,
+      "last_file": "book_317_section_9.html"
+    },
+    {
+      "book_id": "318",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 47,
+      "has_clickable_next": true,
+      "last_file": "book_318_section_9.html"
+    },
+    {
+      "book_id": "31",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1097,
+      "has_clickable_next": true,
+      "last_file": "book_31_section_999.html"
+    },
+    {
+      "book_id": "320",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 40,
+      "has_clickable_next": true,
+      "last_file": "book_320_section_9.html"
+    },
+    {
+      "book_id": "321",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 45,
+      "has_clickable_next": true,
+      "last_file": "book_321_section_9.html"
+    },
+    {
+      "book_id": "322",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_322_section_3.html"
+    },
+    {
+      "book_id": "323",
+      "status": "incomplete",
+      "last_section": "12",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_323_section_12.html"
+    },
+    {
+      "book_id": "326",
+      "status": "incomplete",
+      "last_section": "4",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_326_section_4.html"
+    },
+    {
+      "book_id": "32",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 964,
+      "has_clickable_next": true,
+      "last_file": "book_32_section_99.html"
+    },
+    {
+      "book_id": "33",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1215,
+      "has_clickable_next": true,
+      "last_file": "book_33_section_999.html"
+    },
+    {
+      "book_id": "343",
+      "status": "incomplete",
+      "last_section": "7",
+      "total_sections": 7,
+      "has_clickable_next": true,
+      "last_file": "book_343_section_7.html"
+    },
+    {
+      "book_id": "347",
+      "status": "incomplete",
+      "last_section": "15",
+      "total_sections": 6,
+      "has_clickable_next": true,
+      "last_file": "book_347_section_15.html"
+    },
+    {
+      "book_id": "34",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 570,
+      "has_clickable_next": true,
+      "last_file": "book_34_section_99.html"
+    },
+    {
+      "book_id": "367",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_367_section_3.html"
+    },
+    {
+      "book_id": "36",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3778,
+      "has_clickable_next": true,
+      "last_file": "book_36_section_999.html"
+    },
+    {
+      "book_id": "371",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_371_section_3.html"
+    },
+    {
+      "book_id": "375",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_375_section_1.html"
+    },
+    {
+      "book_id": "382",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 3,
+      "has_clickable_next": true,
+      "last_file": "book_382_section_3.html"
+    },
+    {
+      "book_id": "384",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_384_section_1.html"
+    },
+    {
+      "book_id": "388",
+      "status": "incomplete",
+      "last_section": "5",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_388_section_5.html"
+    },
+    {
+      "book_id": "390",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_390_section_3.html"
+    },
+    {
+      "book_id": "391",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_391_section_3.html"
+    },
+    {
+      "book_id": "392",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 23,
+      "has_clickable_next": true,
+      "last_file": "book_392_section_9.html"
+    },
+    {
+      "book_id": "395",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 19,
+      "has_clickable_next": true,
+      "last_file": "book_395_section_9.html"
+    },
+    {
+      "book_id": "396",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 11,
+      "has_clickable_next": true,
+      "last_file": "book_396_section_9.html"
+    },
+    {
+      "book_id": "397",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 23,
+      "has_clickable_next": true,
+      "last_file": "book_397_section_9.html"
+    },
+    {
+      "book_id": "399",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 19,
+      "has_clickable_next": true,
+      "last_file": "book_399_section_9.html"
+    },
+    {
+      "book_id": "39",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1200,
+      "has_clickable_next": true,
+      "last_file": "book_39_section_999.html"
+    },
+    {
+      "book_id": "400",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 18,
+      "has_clickable_next": true,
+      "last_file": "book_400_section_9.html"
+    },
+    {
+      "book_id": "401",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 15,
+      "has_clickable_next": true,
+      "last_file": "book_401_section_9.html"
+    },
+    {
+      "book_id": "402",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 16,
+      "has_clickable_next": true,
+      "last_file": "book_402_section_9.html"
+    },
+    {
+      "book_id": "403",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 14,
+      "has_clickable_next": true,
+      "last_file": "book_403_section_9.html"
+    },
+    {
+      "book_id": "404",
+      "status": "incomplete",
+      "last_section": "4",
+      "total_sections": 4,
+      "has_clickable_next": true,
+      "last_file": "book_404_section_4.html"
+    },
+    {
+      "book_id": "405",
+      "status": "incomplete",
+      "last_section": "5",
+      "total_sections": 5,
+      "has_clickable_next": true,
+      "last_file": "book_405_section_5.html"
+    },
+    {
+      "book_id": "406",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_406_section_3.html"
+    },
+    {
+      "book_id": "40",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 10,
+      "has_clickable_next": true,
+      "last_file": "book_40_section_9.html"
+    },
+    {
+      "book_id": "412",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_412_section_1.html"
+    },
+    {
+      "book_id": "414",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 10,
+      "has_clickable_next": true,
+      "last_file": "book_414_section_9.html"
+    },
+    {
+      "book_id": "416",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 65,
+      "has_clickable_next": true,
+      "last_file": "book_416_section_9.html"
+    },
+    {
+      "book_id": "417",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 73,
+      "has_clickable_next": true,
+      "last_file": "book_417_section_9.html"
+    },
+    {
+      "book_id": "418",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 78,
+      "has_clickable_next": true,
+      "last_file": "book_418_section_9.html"
+    },
+    {
+      "book_id": "419",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 76,
+      "has_clickable_next": true,
+      "last_file": "book_419_section_9.html"
+    },
+    {
+      "book_id": "41",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3553,
+      "has_clickable_next": true,
+      "last_file": "book_41_section_999.html"
+    },
+    {
+      "book_id": "420",
+      "status": "incomplete",
+      "last_section": "87",
+      "total_sections": 74,
+      "has_clickable_next": true,
+      "last_file": "book_420_section_87.html"
+    },
+    {
+      "book_id": "421",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 80,
+      "has_clickable_next": true,
+      "last_file": "book_421_section_9.html"
+    },
+    {
+      "book_id": "422",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 84,
+      "has_clickable_next": true,
+      "last_file": "book_422_section_9.html"
+    },
+    {
+      "book_id": "423",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 74,
+      "has_clickable_next": true,
+      "last_file": "book_423_section_9.html"
+    },
+    {
+      "book_id": "425",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 18,
+      "has_clickable_next": true,
+      "last_file": "book_425_section_9.html"
+    },
+    {
+      "book_id": "426",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 31,
+      "has_clickable_next": true,
+      "last_file": "book_426_section_9.html"
+    },
+    {
+      "book_id": "427",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 39,
+      "has_clickable_next": true,
+      "last_file": "book_427_section_9.html"
+    },
+    {
+      "book_id": "428",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 10,
+      "has_clickable_next": true,
+      "last_file": "book_428_section_9.html"
+    },
+    {
+      "book_id": "429",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 21,
+      "has_clickable_next": true,
+      "last_file": "book_429_section_9.html"
+    },
+    {
+      "book_id": "42",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2175,
+      "has_clickable_next": true,
+      "last_file": "book_42_section_999.html"
+    },
+    {
+      "book_id": "430",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 14,
+      "has_clickable_next": true,
+      "last_file": "book_430_section_9.html"
+    },
+    {
+      "book_id": "433",
+      "status": "incomplete",
+      "last_section": "2",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_433_section_2.html"
+    },
+    {
+      "book_id": "435",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_435_section_1.html"
+    },
+    {
+      "book_id": "43",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_43_section_999.html"
+    },
+    {
+      "book_id": "44",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2272,
+      "has_clickable_next": true,
+      "last_file": "book_44_section_999.html"
+    },
+    {
+      "book_id": "45",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 111,
+      "has_clickable_next": true,
+      "last_file": "book_45_section_99.html"
+    },
+    {
+      "book_id": "46",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1566,
+      "has_clickable_next": true,
+      "last_file": "book_46_section_999.html"
+    },
+    {
+      "book_id": "47",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_47_section_999.html"
+    },
+    {
+      "book_id": "48",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 175,
+      "has_clickable_next": true,
+      "last_file": "book_48_section_99.html"
+    },
+    {
+      "book_id": "498",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_498_section_1.html"
+    },
+    {
+      "book_id": "499",
+      "status": "incomplete",
+      "last_section": "6",
+      "total_sections": 6,
+      "has_clickable_next": true,
+      "last_file": "book_499_section_6.html"
+    },
+    {
+      "book_id": "49",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 446,
+      "has_clickable_next": true,
+      "last_file": "book_49_section_99.html"
+    },
+    {
+      "book_id": "503",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_503_section_1.html"
+    },
+    {
+      "book_id": "50",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3484,
+      "has_clickable_next": true,
+      "last_file": "book_50_section_999.html"
+    },
+    {
+      "book_id": "51",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 65,
+      "has_clickable_next": true,
+      "last_file": "book_51_section_9.html"
+    },
+    {
+      "book_id": "527",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_527_section_1.html"
+    },
+    {
+      "book_id": "52",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 696,
+      "has_clickable_next": true,
+      "last_file": "book_52_section_99.html"
+    },
+    {
+      "book_id": "533",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_533_section_1.html"
+    },
+    {
+      "book_id": "53",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 33,
+      "has_clickable_next": true,
+      "last_file": "book_53_section_9.html"
+    },
+    {
+      "book_id": "544",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_544_section_1.html"
+    },
+    {
+      "book_id": "545",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_545_section_1.html"
+    },
+    {
+      "book_id": "547",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_547_section_1.html"
+    },
+    {
+      "book_id": "550",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_550_section_1.html"
+    },
+    {
+      "book_id": "558",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_558_section_1.html"
+    },
+    {
+      "book_id": "55",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 150,
+      "has_clickable_next": true,
+      "last_file": "book_55_section_99.html"
+    },
+    {
+      "book_id": "564",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_564_section_1.html"
+    },
+    {
+      "book_id": "568",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 9,
+      "has_clickable_next": true,
+      "last_file": "book_568_section_9.html"
+    },
+    {
+      "book_id": "569",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_569_section_1.html"
+    },
+    {
+      "book_id": "56",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 217,
+      "has_clickable_next": true,
+      "last_file": "book_56_section_99.html"
+    },
+    {
+      "book_id": "57",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 363,
+      "has_clickable_next": true,
+      "last_file": "book_57_section_99.html"
+    },
+    {
+      "book_id": "584",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_584_section_1.html"
+    },
+    {
+      "book_id": "587",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_587_section_1.html"
+    },
+    {
+      "book_id": "58",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 34,
+      "has_clickable_next": true,
+      "last_file": "book_58_section_9.html"
+    },
+    {
+      "book_id": "593",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_593_section_1.html"
+    },
+    {
+      "book_id": "59",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 58,
+      "has_clickable_next": true,
+      "last_file": "book_59_section_9.html"
+    },
+    {
+      "book_id": "60",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 88,
+      "has_clickable_next": true,
+      "last_file": "book_60_section_9.html"
+    },
+    {
+      "book_id": "616",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 13,
+      "has_clickable_next": true,
+      "last_file": "book_616_section_9.html"
+    },
+    {
+      "book_id": "61",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3484,
+      "has_clickable_next": true,
+      "last_file": "book_61_section_999.html"
+    },
+    {
+      "book_id": "623",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_623_section_1.html"
+    },
+    {
+      "book_id": "625",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_625_section_1.html"
+    },
+    {
+      "book_id": "62",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 47,
+      "has_clickable_next": true,
+      "last_file": "book_62_section_9.html"
+    },
+    {
+      "book_id": "63",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 35,
+      "has_clickable_next": true,
+      "last_file": "book_63_section_9.html"
+    },
+    {
+      "book_id": "640",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_640_section_1.html"
+    },
+    {
+      "book_id": "641",
+      "status": "incomplete",
+      "last_section": "2",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_641_section_2.html"
+    },
+    {
+      "book_id": "64",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 81,
+      "has_clickable_next": true,
+      "last_file": "book_64_section_9.html"
+    },
+    {
+      "book_id": "650",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_650_section_1.html"
+    },
+    {
+      "book_id": "651",
+      "status": "incomplete",
+      "last_section": "2",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_651_section_2.html"
+    },
+    {
+      "book_id": "654",
+      "status": "incomplete",
+      "last_section": "3",
+      "total_sections": 2,
+      "has_clickable_next": true,
+      "last_file": "book_654_section_3.html"
+    },
+    {
+      "book_id": "65",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 34,
+      "has_clickable_next": true,
+      "last_file": "book_65_section_9.html"
+    },
+    {
+      "book_id": "664",
+      "status": "incomplete",
+      "last_section": "1",
+      "total_sections": 1,
+      "has_clickable_next": true,
+      "last_file": "book_664_section_1.html"
+    },
+    {
+      "book_id": "66",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1611,
+      "has_clickable_next": true,
+      "last_file": "book_66_section_999.html"
+    },
+    {
+      "book_id": "68",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 21,
+      "has_clickable_next": true,
+      "last_file": "book_68_section_9.html"
+    },
+    {
+      "book_id": "69",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 52,
+      "has_clickable_next": true,
+      "last_file": "book_69_section_9.html"
+    },
+    {
+      "book_id": "70",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 51,
+      "has_clickable_next": true,
+      "last_file": "book_70_section_9.html"
+    },
+    {
+      "book_id": "71",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 1511,
+      "has_clickable_next": true,
+      "last_file": "book_71_section_999.html"
+    },
+    {
+      "book_id": "72",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 70,
+      "has_clickable_next": true,
+      "last_file": "book_72_section_9.html"
+    },
+    {
+      "book_id": "73",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 58,
+      "has_clickable_next": true,
+      "last_file": "book_73_section_9.html"
+    },
+    {
+      "book_id": "74",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 22,
+      "has_clickable_next": true,
+      "last_file": "book_74_section_9.html"
+    },
+    {
+      "book_id": "75",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 50,
+      "has_clickable_next": true,
+      "last_file": "book_75_section_9.html"
+    },
+    {
+      "book_id": "76",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 40,
+      "has_clickable_next": true,
+      "last_file": "book_76_section_9.html"
+    },
+    {
+      "book_id": "78",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2085,
+      "has_clickable_next": true,
+      "last_file": "book_78_section_999.html"
+    },
+    {
+      "book_id": "79",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 16,
+      "has_clickable_next": true,
+      "last_file": "book_79_section_9.html"
+    },
+    {
+      "book_id": "80",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 103,
+      "has_clickable_next": true,
+      "last_file": "book_80_section_99.html"
+    },
+    {
+      "book_id": "81",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 439,
+      "has_clickable_next": true,
+      "last_file": "book_81_section_99.html"
+    },
+    {
+      "book_id": "83",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 4576,
+      "has_clickable_next": true,
+      "last_file": "book_83_section_999.html"
+    },
+    {
+      "book_id": "84",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_84_section_999.html"
+    },
+    {
+      "book_id": "85",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 76,
+      "has_clickable_next": true,
+      "last_file": "book_85_section_9.html"
+    },
+    {
+      "book_id": "86",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2714,
+      "has_clickable_next": true,
+      "last_file": "book_86_section_999.html"
+    },
+    {
+      "book_id": "87",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 337,
+      "has_clickable_next": true,
+      "last_file": "book_87_section_99.html"
+    },
+    {
+      "book_id": "88",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 5000,
+      "has_clickable_next": true,
+      "last_file": "book_88_section_999.html"
+    },
+    {
+      "book_id": "89",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3584,
+      "has_clickable_next": true,
+      "last_file": "book_89_section_999.html"
+    },
+    {
+      "book_id": "8",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 124,
+      "has_clickable_next": true,
+      "last_file": "book_8_section_99.html"
+    },
+    {
+      "book_id": "90",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 4521,
+      "has_clickable_next": true,
+      "last_file": "book_90_section_999.html"
+    },
+    {
+      "book_id": "91",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 2292,
+      "has_clickable_next": true,
+      "last_file": "book_91_section_999.html"
+    },
+    {
+      "book_id": "92",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 380,
+      "has_clickable_next": true,
+      "last_file": "book_92_section_99.html"
+    },
+    {
+      "book_id": "93",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 241,
+      "has_clickable_next": true,
+      "last_file": "book_93_section_99.html"
+    },
+    {
+      "book_id": "94",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 27,
+      "has_clickable_next": true,
+      "last_file": "book_94_section_9.html"
+    },
+    {
+      "book_id": "95",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 562,
+      "has_clickable_next": true,
+      "last_file": "book_95_section_99.html"
+    },
+    {
+      "book_id": "96",
+      "status": "incomplete",
+      "last_section": "999",
+      "total_sections": 3108,
+      "has_clickable_next": true,
+      "last_file": "book_96_section_999.html"
+    },
+    {
+      "book_id": "97",
+      "status": "incomplete",
+      "last_section": "9",
+      "total_sections": 74,
+      "has_clickable_next": true,
+      "last_file": "book_97_section_9.html"
+    },
+    {
+      "book_id": "98",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 265,
+      "has_clickable_next": true,
+      "last_file": "book_98_section_99.html"
+    },
+    {
+      "book_id": "9",
+      "status": "incomplete",
+      "last_section": "99",
+      "total_sections": 160,
+      "has_clickable_next": true,
+      "last_file": "book_9_section_99.html"
+    }
+  ],
+  "no_html_files": [
+    {
+      "book_id": "1",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "2",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "333",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "335",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "338",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "351",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "352",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "353",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "355",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "357",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "360",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "368",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "374",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "3",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "408",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "432",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "436",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "437",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "454",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "455",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "460",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "464",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "477",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "482",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "485",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "486",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "489",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "491",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "497",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "4",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "506",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "510",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "513",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "514",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "516",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "519",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "523",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "526",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "530",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "537",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "540",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "548",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "551",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "552",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "553",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "559",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "566",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "570",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "578",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "585",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "5",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "603",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "605",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "611",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "613",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "617",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "619",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "622",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "637",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "639",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "657",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "660",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "663",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    },
+    {
+      "book_id": "6",
+      "status": "no_html_files",
+      "error": "No HTML files found"
+    }
+  ],
+  "errors": []
+}
