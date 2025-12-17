@@ -66,8 +66,8 @@ class AuthorScraper:
             death_date_greg = self._extract_gregorian_death_date(text)
             birth_date_greg = self._extract_gregorian_birth_date(text)
 
-            # Extract biography text
-            biography = self._extract_biography(soup)
+            # Extract biography text and source citation
+            biography, biography_source = self._extract_biography(soup)
 
             # Extract list of works
             other_works = self._extract_works_list(soup)
@@ -81,6 +81,7 @@ class AuthorScraper:
                 death_date_gregorian=death_date_greg,
                 birth_date_gregorian=birth_date_greg,
                 biography=biography,
+                biography_source=biography_source,
                 other_works=other_works,
                 **name_components
             )
@@ -112,9 +113,15 @@ class AuthorScraper:
 
     def _extract_gregorian_death_date(self, text: str) -> Optional[str]:
         """Extract Gregorian death date (format: 1109 CE or 1109م)"""
+        # Try the compact format first: (508 - 597 هـ = 1114 - 1201 م)
+        compact_match = re.search(r'[\d٠-٩]+\s*-\s*[\d٠-٩]+\s*هـ\s*=\s*[\d٠-٩]+\s*-\s*([\d٠-٩]+)\s*م', text)
+        if compact_match:
+            return compact_match.group(1)
+
+        # Fallback patterns
         patterns = [
-            r'(?:وفاته|توفي|المتوفى).*?(\d{3,4})\s*(?:م|CE)',
-            r'(\d{3,4})\s*(?:م|CE).*?(?:وفاته|توفي)'
+            r'(?:وفاته|توفي|المتوفى).*?([\d٠-٩]{3,4})\s*(?:م|CE)',
+            r'([\d٠-٩]{3,4})\s*(?:م|CE).*?(?:وفاته|توفي)'
         ]
 
         for pattern in patterns:
@@ -126,9 +133,15 @@ class AuthorScraper:
 
     def _extract_gregorian_birth_date(self, text: str) -> Optional[str]:
         """Extract Gregorian birth date (format: 1030 CE or 1030م)"""
+        # Try the compact format first: (508 - 597 هـ = 1114 - 1201 م)
+        compact_match = re.search(r'[\d٠-٩]+\s*-\s*[\d٠-٩]+\s*هـ\s*=\s*([\d٠-٩]+)\s*-\s*[\d٠-٩]+\s*م', text)
+        if compact_match:
+            return compact_match.group(1)
+
+        # Fallback patterns
         patterns = [
-            r'(?:ولد|ولادته|مولده).*?(\d{3,4})\s*(?:م|CE)',
-            r'(\d{3,4})\s*(?:م|CE).*?(?:ولد|ولادته)'
+            r'(?:ولد|ولادته|مولده).*?([\d٠-٩]{3,4})\s*(?:م|CE)',
+            r'([\d٠-٩]{3,4})\s*(?:م|CE).*?(?:ولد|ولادته)'
         ]
 
         for pattern in patterns:
@@ -138,39 +151,91 @@ class AuthorScraper:
 
         return None
 
-    def _extract_biography(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract biography text"""
-        # Look for biography section
-        # Common patterns: div with biography text, or paragraphs after heading
+    def _extract_biography(self, soup: BeautifulSoup) -> tuple[Optional[str], Optional[str]]:
+        """
+        Extract biography text and source citation from author page
 
-        # Try to find main content div
-        content_div = soup.find('div', class_=re.compile(r'content|biography|bio'))
-        if content_div:
-            # Get all paragraphs
-            paragraphs = content_div.find_all('p')
-            if paragraphs:
-                bio_text = '\n\n'.join(p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True))
-                if bio_text:
-                    return bio_text
+        Looks for the "تعريف بالمؤلف" (Author Introduction) section
+        which contains biographical information on Shamela author pages
 
-        # Fallback: get text from page and try to extract biography section
+        Returns:
+            Tuple of (biography_text, source_citation)
+        """
         text = soup.get_text()
 
-        # Look for patterns that indicate biography section
+        # Primary: Look for "تعريف بالمؤلف" section
+        # Pattern: Extract everything after this heading until end
+        # Note: There may not be a newline after the heading, just spaces
         bio_match = re.search(
-            r'(?:نبذة|ترجمة|السيرة|حياته).*?\n((?:.*?\n){3,50})',
+            r'تعريف بالمؤلف[:\s]+(.*?)$',
             text,
             re.MULTILINE | re.DOTALL
         )
-        if bio_match:
-            bio_text = bio_match.group(1).strip()
-            # Clean up: limit to reasonable length
-            lines = bio_text.split('\n')
-            # Take first 20 lines of biography
-            bio_lines = [line.strip() for line in lines[:20] if line.strip()]
-            return '\n'.join(bio_lines)
 
-        return None
+        if bio_match:
+            full_section = bio_match.group(1).strip()
+
+            # Remove navigation/search UI elements from the end
+            full_section = re.split(r'(?:×|البحث في|تنبيهات|افتراضيا)', full_section)[0].strip()
+
+            biography_text = full_section
+            source_citation = None
+
+            # Clean up the biography text (including footer)
+            lines = []
+            for line in biography_text.split('\n'):
+                line = line.strip()
+                # Skip empty lines, navigation elements, and table of contents markers
+                if line and not line.startswith('نسخ الرابط') and not line.startswith('نشر ') and not line.startswith('فهرس الكتب'):
+                    lines.append(line)
+
+            # Join lines
+            full_bio = '\n'.join(lines)
+
+            # Add formatting: insert newlines after bullet points and section breaks
+            # Replace bullet points with newline + bullet for better readability
+            full_bio = re.sub(r'•\s*', '\n• ', full_bio)
+
+            # Add newlines after main header line (dates line)
+            full_bio = re.sub(r'([\d٠-٩]+\s*م\))', r'\1\n', full_bio, count=1)
+
+            # Add spacing after main name/title line
+            full_bio = re.sub(r'(أبو\s+[\w\s]+)', r'\1\n', full_bio, count=1)
+
+            # Format the footer section (if present)
+            # Add newlines before and after the separator line
+            full_bio = re.sub(r'(\.\)?)(_+)', r'\1\n\n\2', full_bio)
+            full_bio = re.sub(r'(_+)\s*\(', r'\1\n(', full_bio)
+
+            # Add spacing before the citation line
+            full_bio = re.sub(r'([^\.\n])\s*نقلا عن:', r'\1\n\nنقلا عن:', full_bio)
+
+            # Clean up multiple consecutive newlines
+            full_bio = re.sub(r'\n{3,}', '\n\n', full_bio)
+
+            # Clean up leading newlines on bullets
+            full_bio = re.sub(r'\n+•', '\n•', full_bio)
+
+            # Limit biography length (increased to 10000 chars to capture full biographies)
+            if len(full_bio) > 10000:
+                full_bio = full_bio[:10000] + '...'
+
+            return (full_bio if full_bio else None, source_citation)
+
+        # Fallback: Look for other common biography section headings
+        fallback_patterns = [
+            r'(?:نبذة عن المؤلف|ترجمة المؤلف|السيرة الذاتية)[:\s]*\n(.*?)$',
+            r'(?:نبذة|ترجمة|السيرة|حياته)[:\s]*\n(.*?)$'
+        ]
+
+        for pattern in fallback_patterns:
+            match = re.search(pattern, text, re.MULTILINE | re.DOTALL)
+            if match:
+                bio_text = match.group(1).strip()
+                lines = [line.strip() for line in bio_text.split('\n')[:30] if line.strip()]
+                return ('\n'.join(lines) if lines else None, None)
+
+        return (None, None)
 
     def _extract_works_list(self, soup: BeautifulSoup) -> list:
         """Extract list of author's works"""

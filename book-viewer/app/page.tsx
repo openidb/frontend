@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
 import catalog from "@/lib/catalog.json";
+import authorsMetadata from "@/lib/authors-metadata.json";
 
 interface Book {
   id: string;
@@ -26,6 +27,65 @@ interface Book {
   subcategory?: string | null;
   yearAH: number;
   timePeriod: string;
+}
+
+interface AuthorMetadata {
+  name_arabic: string;
+  name_latin: string;
+  shamela_author_id?: string;
+  death_date_hijri?: string;
+  birth_date_hijri?: string;
+  death_date_gregorian?: string;
+  birth_date_gregorian?: string;
+  biography?: string;
+  biography_source?: string;
+  books_count?: number;
+}
+
+// Helper function to convert Arabic numerals to Western numerals
+function arabicToWestern(str: string): string {
+  if (!str) return str;
+  return str
+    .replace(/٠/g, '0')
+    .replace(/١/g, '1')
+    .replace(/٢/g, '2')
+    .replace(/٣/g, '3')
+    .replace(/٤/g, '4')
+    .replace(/٥/g, '5')
+    .replace(/٦/g, '6')
+    .replace(/٧/g, '7')
+    .replace(/٨/g, '8')
+    .replace(/٩/g, '9');
+}
+
+// Get author's death year for a book
+function getBookYear(book: Book): string {
+  const metadata = (authorsMetadata as Record<string, AuthorMetadata>)[book.authorLatin];
+
+  if (metadata) {
+    const gregorian = metadata.death_date_gregorian
+      ? arabicToWestern(metadata.death_date_gregorian)
+      : null;
+    const hijri = metadata.death_date_hijri
+      ? arabicToWestern(metadata.death_date_hijri)
+      : null;
+
+    if (gregorian || hijri) {
+      const parts = [];
+      if (gregorian) parts.push(`${gregorian} CE`);
+      if (hijri) parts.push(`${hijri} AH`);
+      return parts.join(' / ');
+    }
+  }
+
+  // Fallback to catalog data
+  if (book.datePublished && book.datePublished !== "TEST") {
+    return book.datePublished;
+  }
+  if (book.yearAH && book.yearAH > 0) {
+    return `${book.yearAH} AH`;
+  }
+  return "—";
 }
 
 export default function BooksPage() {
@@ -123,7 +183,7 @@ export default function BooksPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Author</TableHead>
-              <TableHead>Date Published</TableHead>
+              <TableHead>Year</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -153,7 +213,7 @@ export default function BooksPage() {
                       {book.authorLatin}
                     </div>
                   </TableCell>
-                  <TableCell>{book.datePublished}</TableCell>
+                  <TableCell>{getBookYear(book)}</TableCell>
                 </TableRow>
               ))
             )}

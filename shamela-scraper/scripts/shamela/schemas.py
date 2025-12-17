@@ -21,6 +21,7 @@ class Author:
     nisba: Optional[str] = None
     laqab: Optional[str] = None
     biography: Optional[str] = None
+    biography_source: Optional[str] = None  # Citation/source for biography
     other_works: List[Dict[str, str]] = field(default_factory=list)
 
     def to_dict(self):
@@ -35,6 +36,7 @@ class Publication:
     edition: Optional[str] = None
     year_hijri: Optional[str] = None
     year_gregorian: Optional[str] = None
+    isbn: Optional[str] = None
 
     def to_dict(self):
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -47,6 +49,8 @@ class Editorial:
     type: Optional[str] = None
     institution: Optional[str] = None
     supervisor: Optional[str] = None
+    verification_status: Optional[str] = None  # تحقيق/authentication status
+    manuscript_source: Optional[str] = None  # Original manuscript details
 
     def to_dict(self):
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -68,9 +72,14 @@ class Classification:
     """Book classification/categorization"""
     category: Optional[str] = None
     category_id: Optional[str] = None
+    keywords: List[str] = field(default_factory=list)  # Subject tags/keywords
 
     def to_dict(self):
-        return {k: v for k, v in asdict(self).items() if v is not None}
+        result = {k: v for k, v in asdict(self).items() if v is not None}
+        # Don't include empty keywords list
+        if 'keywords' in result and not result['keywords']:
+            del result['keywords']
+        return result
 
 
 @dataclass
@@ -83,7 +92,8 @@ class BookMetadata:
     structure: Structure = field(default_factory=Structure)
     classification: Classification = field(default_factory=Classification)
     editorial: Editorial = field(default_factory=Editorial)
-    description: Optional[str] = None  # Book card and TOC from description page
+    description: Optional[str] = None  # Book card and TOC from description page (HTML)
+    summary: Optional[str] = None  # Plain text summary/description
 
     def to_dict(self):
         result = {
@@ -97,6 +107,8 @@ class BookMetadata:
         }
         if self.description:
             result["description"] = self.description
+        if self.summary:
+            result["summary"] = self.summary
         return result
 
     def to_json(self, filepath: str):
@@ -118,7 +130,8 @@ class BookMetadata:
             structure=Structure(**data.get('structure', {})),
             classification=Classification(**data.get('classification', {})),
             editorial=Editorial(**data.get('editorial', {})),
-            description=data.get('description')
+            description=data.get('description'),
+            summary=data.get('summary')
         )
 
 

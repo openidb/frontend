@@ -1,4 +1,5 @@
-import catalog from "@/lib/catalog.json";
+import catalogData from "@/lib/catalog.json";
+import authorsMetadata from "@/lib/authors-metadata.json";
 import AuthorDetailClient from "./AuthorDetailClient";
 
 interface Book {
@@ -15,12 +16,25 @@ interface Book {
   timePeriod: string;
 }
 
-export async function generateStaticParams() {
-  const books = catalog as Book[];
-  const authors = new Set(books.map((book) => book.authorLatin));
+interface AuthorMetadata {
+  name_arabic: string;
+  name_latin: string;
+  shamela_author_id?: string;
+  death_date_hijri?: string;
+  birth_date_hijri?: string;
+  death_date_gregorian?: string;
+  birth_date_gregorian?: string;
+  biography?: string;
+  biography_source?: string;
+  books_count?: number;
+}
 
-  return Array.from(authors).map((authorLatin) => ({
-    name: encodeURIComponent(authorLatin),
+export async function generateStaticParams() {
+  const catalog = catalogData as Book[];
+  const authors = new Set(catalog.map((book) => book.authorLatin));
+
+  return Array.from(authors).map((author) => ({
+    name: encodeURIComponent(author),
   }));
 }
 
@@ -30,10 +44,20 @@ export default async function AuthorDetailPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
-  const authorLatinParam = decodeURIComponent(name);
-  const books = (catalog as Book[]).filter((book) => book.authorLatin === authorLatinParam);
-  const authorName = books.length > 0 ? books[0].author : "";
-  const authorLatin = books.length > 0 ? books[0].authorLatin : "";
+  const authorLatin = decodeURIComponent(name);
+  const catalog = catalogData as Book[];
+  const books = catalog.filter((book) => book.authorLatin === authorLatin);
 
-  return <AuthorDetailClient authorName={authorName} authorLatin={authorLatin} books={books} />;
+  // Load author metadata if available (keyed by Latin name)
+  const metadata = (authorsMetadata as Record<string, AuthorMetadata>)[authorLatin];
+  const authorName = metadata?.name_arabic || books[0]?.author || authorLatin;
+
+  return (
+    <AuthorDetailClient
+      authorName={authorName}
+      authorLatin={authorLatin}
+      books={books}
+      metadata={metadata}
+    />
+  );
 }

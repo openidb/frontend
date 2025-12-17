@@ -167,10 +167,15 @@ def extract_birth_date(text: str) -> Optional[str]:
     Returns:
         Birth date in Hijri (numeric string) or None
     """
+    # Try compact format first: (508 - 597 هـ = 1114 - 1201 م)
+    compact_match = re.search(r'\(?([\d٠-٩]+)\s*-\s*[\d٠-٩]+\s*هـ\s*=', text)
+    if compact_match:
+        return compact_match.group(1)
+
     patterns = [
-        r'ولد\s+(?:عام|سنة)?\s*(\d+)\s*هـ',
-        r'من مواليد عام\s+(\d+)\s*هـ',
-        r'ولادته[:]?\s*(\d+)\s*هـ'
+        r'ولد\s+(?:عام|سنة)?\s*([\d٠-٩]+)\s*هـ',
+        r'من مواليد عام\s+([\d٠-٩]+)\s*هـ',
+        r'ولادته[:]?\s*([\d٠-٩]+)\s*هـ'
     ]
 
     for pattern in patterns:

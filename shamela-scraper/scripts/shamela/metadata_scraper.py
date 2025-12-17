@@ -20,6 +20,7 @@ from .schemas import (
 from .utils import (
     ShamelaHTTPClient,
     extract_death_date,
+    extract_birth_date,
     parse_author_name,
     extract_author_id_from_url
 )
@@ -30,14 +31,23 @@ logger = logging.getLogger(__name__)
 class MetadataScraper:
     """Scraper for book metadata from Shamela book pages"""
 
-    def __init__(self, http_client: Optional[ShamelaHTTPClient] = None):
+    def __init__(self, http_client: Optional[ShamelaHTTPClient] = None, enrich_authors: bool = False):
         """
         Initialize metadata scraper
 
         Args:
             http_client: HTTP client for requests (creates new one if None)
+            enrich_authors: If True, enrich author data by scraping author pages
         """
         self.client = http_client or ShamelaHTTPClient()
+        self.enrich_authors = enrich_authors
+
+        # Lazy import to avoid circular dependency
+        if enrich_authors:
+            from .author_scraper import AuthorScraper
+            self.author_scraper = AuthorScraper(http_client=self.client)
+        else:
+            self.author_scraper = None
 
     def scrape_book(self, book_id: str) -> Optional[BookMetadata]:
         """
@@ -65,6 +75,33 @@ class MetadataScraper:
             structure = self._extract_structure_info(soup)
             classification = self._extract_classification(soup)
             description = self._extract_description(soup)
+            summary = self._extract_summary(soup)
+
+            # Enrich author data if enabled and author ID is available
+            if self.enrich_authors and self.author_scraper and author_info.shamela_author_id:
+                logger.info(f"Enriching author data for author ID {author_info.shamela_author_id}")
+                enriched_author = self.author_scraper.scrape_author(author_info.shamela_author_id)
+
+                if enriched_author:
+                    # Merge enriched data with book page data
+                    # Book page data takes precedence for name and name components
+                    # Author page provides biography and other works
+                    author_info.biography = enriched_author.biography
+                    author_info.other_works = enriched_author.other_works
+
+                    # Use author page dates if book page didn't have them
+                    if not author_info.birth_date_hijri:
+                        author_info.birth_date_hijri = enriched_author.birth_date_hijri
+                    if not author_info.death_date_hijri:
+                        author_info.death_date_hijri = enriched_author.death_date_hijri
+                    if not author_info.birth_date_gregorian:
+                        author_info.birth_date_gregorian = enriched_author.birth_date_gregorian
+                    if not author_info.death_date_gregorian:
+                        author_info.death_date_gregorian = enriched_author.death_date_gregorian
+
+                    logger.info(f"Successfully enriched author data")
+                else:
+                    logger.warning(f"Could not enrich author data for ID {author_info.shamela_author_id}")
 
             # Create metadata object
             metadata = BookMetadata(
@@ -75,7 +112,8 @@ class MetadataScraper:
                 editorial=editorial,
                 structure=structure,
                 classification=classification,
-                description=description
+                description=description,
+                summary=summary
             )
 
             logger.info(f"Successfully scraped metadata for book {book_id}: {title.get('arabic', '')}")
@@ -157,12 +195,25 @@ class MetadataScraper:
         # Parse name components
         name_components = parse_author_name(author_name)
 
-        # Extract death date
-        death_date = extract_death_date(text)
+        # Extract birth and death dates from the "المؤلف:" section
+        # Pattern: المؤلف: Name (510 هـ - 597 هـ)
+        birth_date = None
+        death_date = None
+
+        # Look for date range pattern (birth - death)
+        author_section_match = re.search(r'المؤلف:.*?\((\d+)\s*هـ\s*-\s*(\d+)\s*هـ\)', text)
+        if author_section_match:
+            birth_date = author_section_match.group(1)
+            death_date = author_section_match.group(2)
+        else:
+            # Fallback to individual date extraction
+            birth_date = extract_birth_date(text)
+            death_date = extract_death_date(text)
 
         return Author(
             name=author_name,
             shamela_author_id=author_id,
+            birth_date_hijri=birth_date,
             death_date_hijri=death_date,
             **name_components
         )
@@ -177,16 +228,27 @@ class MetadataScraper:
         year_hijri = None
         year_gregorian = None
 
-        # Extract publisher (الناشر:)
-        pub_match = re.search(r'الناشر:\s*([^\n]+)', text)
+        # Extract publisher (الناشر:) - stop at common delimiters
+        pub_match = re.search(r'الناشر:\s*([^،\n]+?)(?:\s*(?:الطبعة|عدد|ترقيم)|،|$)', text)
         if pub_match:
             pub_text = pub_match.group(1).strip()
-            # Split by dash if location included
-            if ' - ' in pub_text:
-                parts = pub_text.split(' - ')
-                publisher = parts[0].strip()
-                if len(parts) > 1:
-                    location = parts[1].strip()
+            # Split by dash if location included (format: "Publisher - Location")
+            if ' - ' in pub_text or '،' in pub_text:
+                # Try dash separator first
+                if ' - ' in pub_text:
+                    parts = pub_text.split(' - ', 1)
+                    publisher = parts[0].strip()
+                    if len(parts) > 1:
+                        # Location might have more text, clean it
+                        location_part = parts[1].strip()
+                        # Stop at first field marker or comma
+                        location = re.split(r'(?:الطبعة|عدد|ترقيم)', location_part)[0].strip()
+                # Try comma separator
+                elif '،' in pub_text:
+                    parts = pub_text.split('،', 1)
+                    publisher = parts[0].strip()
+                    if len(parts) > 1:
+                        location = parts[1].strip()
             else:
                 publisher = pub_text
 
@@ -205,12 +267,19 @@ class MetadataScraper:
         if greg_match:
             year_gregorian = greg_match.group(1)
 
+        # Extract ISBN if available
+        isbn = None
+        isbn_match = re.search(r'ISBN:?\s*([\d-]+)', text, re.IGNORECASE)
+        if isbn_match:
+            isbn = isbn_match.group(1).strip()
+
         return Publication(
             publisher=publisher,
             location=location,
             edition=edition,
             year_hijri=year_hijri,
-            year_gregorian=year_gregorian
+            year_gregorian=year_gregorian,
+            isbn=isbn
         )
 
     def _extract_editorial_info(self, soup: BeautifulSoup) -> Editorial:
@@ -223,7 +292,8 @@ class MetadataScraper:
         supervisor = None
 
         # Extract editor/muhaqiq (تحقيق: or المحقق:)
-        editor_match = re.search(r'(?:تحقيق|المحقق):\s*([^\n]+)', text)
+        # Stop at common delimiters: newline, "الناشر:", "الطبعة:", or start of next field
+        editor_match = re.search(r'(?:تحقيق|المحقق):\s*([^،\n]+?)(?:\s*(?:الناشر|الطبعة|عدد|ترقيم)|$)', text)
         if editor_match:
             editor = editor_match.group(1).strip()
 
@@ -245,11 +315,33 @@ class MetadataScraper:
         if sup_match:
             supervisor = sup_match.group(1).strip()
 
+        # Extract verification status
+        verification_status = None
+        if 'محقق' in text or 'التحقيق' in text:
+            verification_status = 'محقق'
+        elif 'غير محقق' in text:
+            verification_status = 'غير محقق'
+
+        # Extract manuscript source
+        manuscript_source = None
+        ms_patterns = [
+            r'نسخة خطية:\s*([^\n]+)',
+            r'المخطوط:\s*([^\n]+)',
+            r'من نسخة\s+([^\n،]+)'
+        ]
+        for pattern in ms_patterns:
+            ms_match = re.search(pattern, text)
+            if ms_match:
+                manuscript_source = ms_match.group(1).strip()
+                break
+
         return Editorial(
             editor=editor,
             type=doc_type,
             institution=institution,
-            supervisor=supervisor
+            supervisor=supervisor,
+            verification_status=verification_status,
+            manuscript_source=manuscript_source
         )
 
     def _extract_structure_info(self, soup: BeautifulSoup) -> Structure:
@@ -296,6 +388,7 @@ class MetadataScraper:
         """Extract book category/classification"""
         category = None
         category_id = None
+        keywords = []
 
         # Find category link (updated to use /category/ pattern)
         category_link = soup.find('a', href=re.compile(r'/category/\d+'))
@@ -306,9 +399,31 @@ class MetadataScraper:
             if cat_match:
                 category_id = cat_match.group(1)
 
+        # Extract keywords/tags if available
+        # Look for meta keywords or structured tags
+        text = soup.get_text()
+
+        # Try to find keywords from the description or title
+        # Use category as first keyword
+        if category:
+            keywords.append(category)
+
+        # Extract common subject keywords from text
+        # This is a simple extraction - can be improved
+        subject_patterns = [
+            r'(?:موضوع|مجال):\s*([^\n،]+)',
+            r'(?:كلمات مفتاحية|الكلمات الدالة):\s*([^\n]+)'
+        ]
+        for pattern in subject_patterns:
+            match = re.search(pattern, text)
+            if match:
+                tags = match.group(1).strip().split('،')
+                keywords.extend([tag.strip() for tag in tags if tag.strip()])
+
         return Classification(
             category=category,
-            category_id=category_id
+            category_id=category_id,
+            keywords=keywords
         )
 
     def _parse_toc_structure(self, toc_div) -> list:
@@ -441,4 +556,49 @@ class MetadataScraper:
 
         except Exception as e:
             logger.warning(f"Could not extract book description: {e}")
+            return None
+
+    def _extract_summary(self, soup: BeautifulSoup) -> Optional[str]:
+        """
+        Extract book summary/description as plain text
+
+        This extracts the text content from the book card (بطاقة الكتاب)
+
+        Returns:
+            Plain text summary or None if not found
+        """
+        try:
+            # Get the book card content
+            nass_container = soup.find('div', class_='nass')
+            if not nass_container:
+                return None
+
+            # Extract text content, ignoring TOC
+            text_parts = []
+
+            # Get the book card section (before TOC)
+            for element in nass_container.children:
+                if hasattr(element, 'get') and element.get('class'):
+                    # Stop at TOC section
+                    if 'betaka-index' in element.get('class', []):
+                        break
+
+                # Extract text from this element
+                if hasattr(element, 'get_text'):
+                    text = element.get_text(strip=True)
+                    if text:
+                        text_parts.append(text)
+
+            # Combine and clean
+            if text_parts:
+                summary = '\n'.join(text_parts)
+                # Limit length to reasonable summary size
+                if len(summary) > 1000:
+                    summary = summary[:1000] + '...'
+                return summary
+
+            return None
+
+        except Exception as e:
+            logger.warning(f"Could not extract book summary: {e}")
             return None

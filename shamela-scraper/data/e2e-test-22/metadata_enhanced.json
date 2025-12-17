@@ -1,0 +1,290 @@
+{
+  "shamela_id": "22",
+  "title": {
+    "arabic": "كتاب أعمار الأعيان"
+  },
+  "author": {
+    "name": "ابن الجوزي",
+    "shamela_author_id": "51",
+    "death_date_hijri": "٥٩٧",
+    "birth_date_hijri": "٥١٠",
+    "death_date_gregorian": "١٣١٩",
+    "birth_date_gregorian": "١٣١٩",
+    "nasab": "بن الجوزي",
+    "nisba": "الجوزي",
+    "other_works": [
+      {
+        "shamela_id": "11068",
+        "title": "أخبار الحمقى والمغفلين"
+      },
+      {
+        "shamela_id": "6952",
+        "title": "أخبار الظراف والمتماجنين"
+      },
+      {
+        "shamela_id": "21563",
+        "title": "أخبار النساء لابن الجوزي"
+      },
+      {
+        "shamela_id": "22",
+        "title": "أعمار الأعيان"
+      },
+      {
+        "shamela_id": "22002",
+        "title": "إخبار أهل الرسوخ في الفقه والتحديث بمقدار المنسوخ من الحديث"
+      },
+      {
+        "shamela_id": "9369",
+        "title": "إعلام العالم بعد رسوخه بناسخ الحديث ومنسوخه"
+      },
+      {
+        "shamela_id": "6938",
+        "title": "الأذكياء"
+      },
+      {
+        "shamela_id": "9379",
+        "title": "البر والصلة لابن الجوزي"
+      },
+      {
+        "shamela_id": "26351",
+        "title": "التبصرة لابن الجوزي"
+      },
+      {
+        "shamela_id": "5907",
+        "title": "التحقيق في أحاديث الخلاف"
+      },
+      {
+        "shamela_id": "6858",
+        "title": "التذكرة في الوعظ"
+      },
+      {
+        "shamela_id": "6789",
+        "title": "الثبات عند الممات"
+      },
+      {
+        "shamela_id": "22340",
+        "title": "الحث على حفظ العلم وذكر كبار الحفاظ"
+      },
+      {
+        "shamela_id": "5830",
+        "title": "الضعفاء والمتروكون لابن الجوزي"
+      },
+      {
+        "shamela_id": "7351",
+        "title": "العلل المتناهية في الأحاديث الواهية"
+      },
+      {
+        "shamela_id": "3617",
+        "title": "القصاص والمذكرين"
+      },
+      {
+        "shamela_id": "659",
+        "title": "اللآلي"
+      },
+      {
+        "shamela_id": "243",
+        "title": "اللطائف"
+      },
+      {
+        "shamela_id": "122409",
+        "title": "المجتبى من المجتنى"
+      },
+      {
+        "shamela_id": "6940",
+        "title": "المدهش"
+      },
+      {
+        "shamela_id": "8554",
+        "title": "المصفى بأكف أهل الرسوخ من علم الناسخ والمنسوخ"
+      },
+      {
+        "shamela_id": "26892",
+        "title": "المقلق لابن الجوزي"
+      },
+      {
+        "shamela_id": "12406",
+        "title": "المنتظم في تاريخ الملوك والأمم"
+      },
+      {
+        "shamela_id": "180",
+        "title": "المنثور"
+      },
+      {
+        "shamela_id": "882",
+        "title": "الموضوعات لابن الجوزي"
+      },
+      {
+        "shamela_id": "2506",
+        "title": "بحر الدموع"
+      },
+      {
+        "shamela_id": "244",
+        "title": "بر الوالدين - ابن الجوزي"
+      },
+      {
+        "shamela_id": "6948",
+        "title": "بستان الواعظين ورياض السامعين"
+      },
+      {
+        "shamela_id": "10927",
+        "title": "تاريخ بيت المقدس"
+      },
+      {
+        "shamela_id": "10450",
+        "title": "تذكرة الأريب في تفسير الغريب"
+      },
+      {
+        "shamela_id": "26894",
+        "title": "تعظيم الفتيا - ابن الجوزي"
+      },
+      {
+        "shamela_id": "16541",
+        "title": "تقويم اللسان"
+      },
+      {
+        "shamela_id": "11302",
+        "title": "تلبيس إبليس - ت المزيد والسحيباني"
+      },
+      {
+        "shamela_id": "30085",
+        "title": "تلبيس إبليس - ت خير الدين وائلي"
+      },
+      {
+        "shamela_id": "11438",
+        "title": "تلبيس إبليس - ط الفكر"
+      },
+      {
+        "shamela_id": "11405",
+        "title": "تلبيس ابليس - ط المنيرية"
+      },
+      {
+        "shamela_id": "6700",
+        "title": "تلقيح فهوم أهل الأثر"
+      },
+      {
+        "shamela_id": "11023",
+        "title": "تنبيه النائم الغمر على مواسم العمر - ط ابن حزم"
+      },
+      {
+        "shamela_id": "26678",
+        "title": "تنبيه النائم الغمر على مواسم العمر - ط البشائر"
+      },
+      {
+        "shamela_id": "5748",
+        "title": "تنوير الغبش في فضل السودان والحبش"
+      },
+      {
+        "shamela_id": "148271",
+        "title": "جامع المسانيد لابن الجوزي"
+      },
+      {
+        "shamela_id": "26677",
+        "title": "حفظ العمر لابن الجوزي"
+      },
+      {
+        "shamela_id": "6870",
+        "title": "ذم الهوى"
+      },
+      {
+        "shamela_id": "23619",
+        "title": "زاد المسير في علم التفسير"
+      },
+      {
+        "shamela_id": "12031",
+        "title": "صفة الصفوة"
+      },
+      {
+        "shamela_id": "12028",
+        "title": "صيد الخاطر"
+      },
+      {
+        "shamela_id": "2911",
+        "title": "غريب الحديث - ابن الجوزي"
+      },
+      {
+        "shamela_id": "313",
+        "title": "فضائل بيت المقدس - ابن الجوزي - ت عمرو عبد العظيم الحويني"
+      },
+      {
+        "shamela_id": "1599",
+        "title": "فضائل بيت المقدس - ابن الجوزي - ط الآفاق"
+      },
+      {
+        "shamela_id": "1402",
+        "title": "فنون الأفنان في عيون علوم القرآن"
+      },
+      {
+        "shamela_id": "12131",
+        "title": "كتاب المسلسلات لابن الجوزي"
+      },
+      {
+        "shamela_id": "5906",
+        "title": "كشف المشكل من حديث الصحيحين"
+      },
+      {
+        "shamela_id": "26674",
+        "title": "مثير العزم الساكن إلى أشرف الأماكن ط الراية"
+      },
+      {
+        "shamela_id": "10437",
+        "title": "مثير الغرام الساكن إلى أشرف الأماكن ط دار الحديث"
+      },
+      {
+        "shamela_id": "9619",
+        "title": "مشيخة ابن الجوزي"
+      },
+      {
+        "shamela_id": "13250",
+        "title": "مناقب الإمام أحمد"
+      },
+      {
+        "shamela_id": "8160",
+        "title": "مواعظ ابن الجوزي - الياقوتة"
+      },
+      {
+        "shamela_id": "6334",
+        "title": "نزهة الأعين النواظر في علم الوجوه والنظائر"
+      },
+      {
+        "shamela_id": "38121",
+        "title": "نواسخ القرآن = ناسخ القرآن ومنسوخه ت آل زهوي"
+      },
+      {
+        "shamela_id": "2176",
+        "title": "نواسخ القرآن = ناسخ القرآن ومنسوخه ت المليباري"
+      },
+      {
+        "shamela_id": "11407",
+        "title": "تلبيس إبليس - ط المنهاج"
+      },
+      {
+        "shamela_id": "11408",
+        "title": "تلبيس ابليس - ط الكتاب العربي"
+      }
+    ]
+  },
+  "publication": {
+    "publisher": "مكتبة الخانجي",
+    "edition": "الأولى",
+    "year_hijri": "١٤١٤",
+    "year_gregorian": "١٩٩٤"
+  },
+  "structure": {
+    "total_volumes": 1,
+    "page_alignment_note": "موافق للمطبوع"
+  },
+  "classification": {
+    "category": "التراجم والطبقات",
+    "category_id": "26",
+    "keywords": [
+      "التراجم والطبقات"
+    ]
+  },
+  "editorial": {
+    "editor": "د محمود محمد الطناحي",
+    "type": "بحث",
+    "verification_status": "محقق"
+  },
+  "description": "<div class=\"nass margin-top-10\"> <h3 class=\"text-center\">بطاقة الكتاب وفهرس الموضوعات</h3>الكتاب: أعمار الأعيان<br/>المؤلف: ابن الجوزي، جمال الدين أبي الفرج عبد الرحمن بن علي بن محمد (٥١٠ هـ - ٥٩٧ هـ)<br/>المحقق: د محمود محمد الطناحي<br/>الناشر: مكتبة الخانجي، القاهرة<br/>الطبعة: الأولى، ١٤١٤ هـ - ١٩٩٤ م<br/>عدد الصفحات: ٢٠٠<br/>[ترقيم الكتاب موافق للمطبوع] <div>صفحة المؤلف: [<a href=\"https://shamela.ws/author/51\">ابن الجوزي</a>]</div>  <div class=\"betaka-index\"> <h4>فهرس الموضوعات</h4> <ul><li><a href=\"https://shamela.ws/book/22/2\">مقدمة التحقيق</a><ul><li>-<a href=\"https://shamela.ws/book/22/13\">هذا الكتاب</a></li><li>-<a href=\"https://shamela.ws/book/22/14\">الكتاب بين مؤلفات ابن الجوزى التاريخية</a></li><li>-<a href=\"https://shamela.ws/book/22/15\">فوائد هذا المنهج من التراجم</a></li><li>-<a href=\"https://shamela.ws/book/22/18\">مصادر الكتاب</a></li><li>-<a href=\"https://shamela.ws/book/22/19\">نقول المتأخرين عنه</a></li><li>-<a href=\"https://shamela.ws/book/22/21\">نسخة الكتاب</a></li><li>-<a href=\"https://shamela.ws/book/22/24\">حواشى النسخة</a></li><li>-<a href=\"https://shamela.ws/book/22/27\">كلمة عن ابن الجوزى</a></li></ul></li><li><a href=\"https://shamela.ws/book/22/39\">مقدمة المؤلف</a><ul><li>-<a href=\"https://shamela.ws/book/22/42\">فصل</a></li><li>-<a href=\"https://shamela.ws/book/22/43\">ذكر فضيلة طول العمر فى الخير</a></li></ul></li><li><a href=\"https://shamela.ws/book/22/45\">عقد العشرة فما زاد</a><ul><li>-<a href=\"https://shamela.ws/book/22/46\">أبو منصور هِبةُ الله بن علىّ بن عَقِيل</a></li><li>-<a href=\"https://shamela.ws/book/22/48\">عُميْر بن أبى وَقَّاص</a></li><li>-<a href=\"https://shamela.ws/book/22/49\">عبد الملك بن عُمر بن عبد العزيز</a></li><li>-<a href=\"https://shamela.ws/book/22/51\">علىّ بن الفُضيل</a></li></ul></li><li>-<a href=\"https://shamela.ws/book/22/52\">عقد العشرين فما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/56\">عقد الثلاثين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/61\">عقد الأربعين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/68\">عقد الخمسين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/73\">عقد الستين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/80\">عقد السبعين وما زاد</a></li><li><a href=\"https://shamela.ws/book/22/92\">عقد الثمانين فما زاد</a><ul><li>-<a href=\"https://shamela.ws/book/22/100\">فصل ثلاث وثمانين</a></li></ul></li><li>-<a href=\"https://shamela.ws/book/22/112\">عقد التسعين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/125\">عقد المائة وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/141\">عقد المائتين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/148\">عقد الثلاثمائة وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/156\">عقد الأربعمائة وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/158\">عقد الخمسمائة وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/159\">عقد الستمائة</a></li><li>-<a href=\"https://shamela.ws/book/22/160\">عقد السبعمائة</a></li><li>-<a href=\"https://shamela.ws/book/22/160\">عقد الثمانمائة وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/161\">عقد التسعمائة وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/162\">عقد الألف وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/163\">عقد الألفين وما زاد</a></li><li>-<a href=\"https://shamela.ws/book/22/164\">عقد الثلاثة آلاف وما زاد</a></li><li><a href=\"https://shamela.ws/book/22/166\">فهرس المراجع</a><ul><li>-<a href=\"https://shamela.ws/book/22/166\">(أ)</a></li><li>-<a href=\"https://shamela.ws/book/22/168\">(ب)</a></li><li>-<a href=\"https://shamela.ws/book/22/169\">(ت)</a></li><li>-<a href=\"https://shamela.ws/book/22/172\">(ث)</a></li><li>-<a href=\"https://shamela.ws/book/22/172\">(ج)</a></li><li>-<a href=\"https://shamela.ws/book/22/173\">(ح)</a></li><li>-<a href=\"https://shamela.ws/book/22/173\">(خ)</a></li><li>-<a href=\"https://shamela.ws/book/22/173\">(د)</a></li><li>-<a href=\"https://shamela.ws/book/22/175\">(ذ)</a></li><li>-<a href=\"https://shamela.ws/book/22/175\">(ر)</a></li><li>-<a href=\"https://shamela.ws/book/22/176\">(ز)</a></li><li>-<a href=\"https://shamela.ws/book/22/176\">(س)</a></li><li>-<a href=\"https://shamela.ws/book/22/177\">(ش)</a></li><li>-<a href=\"https://shamela.ws/book/22/178\">(ص)</a></li><li>-<a href=\"https://shamela.ws/book/22/179\">(ض)</a></li><li>-<a href=\"https://shamela.ws/book/22/179\">(ط)</a></li><li>-<a href=\"https://shamela.ws/book/22/180\">(ع)</a></li><li>-<a href=\"https://shamela.ws/book/22/181\">(غ)</a></li><li>-<a href=\"https://shamela.ws/book/22/181\">(ف)</a></li><li>-<a href=\"https://shamela.ws/book/22/182\">(ق)</a></li><li>-<a href=\"https://shamela.ws/book/22/183\">(ك)</a></li><li>-<a href=\"https://shamela.ws/book/22/184\">(ل)</a></li><li>-<a href=\"https://shamela.ws/book/22/184\">(م)</a></li><li>-<a href=\"https://shamela.ws/book/22/188\">(ن)</a></li><li>-<a href=\"https://shamela.ws/book/22/189\">(هـ)</a></li><li>-<a href=\"https://shamela.ws/book/22/189\">(و)</a></li><li>-<a href=\"https://shamela.ws/book/22/189\">(ي)</a></li></ul></li><li>-<a href=\"https://shamela.ws/book/22/190\">محققات ومؤلفات للمحقق</a></li></ul> </div> </div>",
+  "summary": "بطاقة الكتاب وفهرس الموضوعات\nالكتاب: أعمار الأعيان\nالمؤلف: ابن الجوزي، جمال الدين أبي الفرج عبد الرحمن بن علي بن محمد (٥١٠ هـ - ٥٩٧ هـ)\nالمحقق: د محمود محمد الطناحي\nالناشر: مكتبة الخانجي، القاهرة\nالطبعة: الأولى، ١٤١٤ هـ - ١٩٩٤ م\nعدد الصفحات: ٢٠٠\n[ترقيم الكتاب موافق للمطبوع]\nصفحة المؤلف: [ابن الجوزي]\nنسخ الرابطنشر لفيسيوكنشر لتويتربحــث"
+}
