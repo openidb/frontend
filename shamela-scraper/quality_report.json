@@ -1,14 +1,14 @@
 {
   "summary": {
     "total_books": 637,
-    "excellent": 487,
-    "moderate": 139,
-    "poor": 1,
-    "failed": 4,
+    "excellent": 498,
+    "moderate": 102,
+    "poor": 28,
+    "failed": 3,
     "no_sections": 6,
-    "total_sections_crawled": 389100,
-    "total_errors": 193,
-    "total_missing_sections": 1
+    "total_sections_crawled": 446303,
+    "total_errors": 275,
+    "total_missing_sections": 29
   },
   "books_needing_attention": [
     {
@@ -17,31 +17,14 @@
       "author": "عدنان العرعور",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 5461,
+      "total_sections": 10576,
       "min_section": 1,
-      "max_section": 5461,
+      "max_section": 10576,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
         "Hit safety limit of 5000 pages",
         "Failed to fetch page at section 5461"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "43",
-      "title": "تفسير الطبري جامع البيان - ط دار التربية والتراث",
-      "author": "ابن جرير الطبري",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 11816,
-      "min_section": 1,
-      "max_section": 11816,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 11817"
       ],
       "error_count": 2
     },
@@ -57,9 +40,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 8688: https://shamela.ws/book/47/8688",
+        "Failed to fetch section 8689: https://shamela.ws/book/47/8689",
+        "Failed to fetch section 8690: https://shamela.ws/book/47/8690",
+        "Failed to fetch section 8691: https://shamela.ws/book/47/8691",
+        "Failed to fetch section 8692: https://shamela.ws/book/47/8692"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "71",
@@ -67,9 +54,9 @@
       "author": "أبو القاسم ابن عساكر",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 3138,
+      "total_sections": 5794,
       "min_section": 1,
-      "max_section": 3138,
+      "max_section": 5794,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -89,9 +76,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 5445: https://shamela.ws/book/84/5445",
+        "Failed to fetch section 5446: https://shamela.ws/book/84/5446",
+        "Failed to fetch section 5447: https://shamela.ws/book/84/5447",
+        "Failed to fetch section 5448: https://shamela.ws/book/84/5448",
+        "Failed to fetch section 5449: https://shamela.ws/book/84/5449"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "88",
@@ -105,9 +96,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 5893: https://shamela.ws/book/88/5893",
+        "Failed to fetch section 5894: https://shamela.ws/book/88/5894",
+        "Failed to fetch section 5895: https://shamela.ws/book/88/5895",
+        "Failed to fetch section 5896: https://shamela.ws/book/88/5896",
+        "Failed to fetch section 5897: https://shamela.ws/book/88/5897"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "103",
@@ -115,9 +110,9 @@
       "author": "محمد بن مبارك حكيمي",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 5413,
+      "total_sections": 10088,
       "min_section": 1,
-      "max_section": 5413,
+      "max_section": 10088,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -132,31 +127,14 @@
       "author": "ابن باز",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 5332,
+      "total_sections": 8882,
       "min_section": 1,
-      "max_section": 5332,
+      "max_section": 8882,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
         "Hit safety limit of 5000 pages",
         "Failed to fetch page at section 5333"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "113",
-      "title": "التاريخ الكبير للبخاري - ت الدباسي والنحال",
-      "author": "البخاري",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5239,
-      "min_section": 1,
-      "max_section": 5239,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5236"
       ],
       "error_count": 2
     },
@@ -172,94 +150,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 5296: https://shamela.ws/book/133/5296",
+        "Failed to fetch section 5297: https://shamela.ws/book/133/5297",
+        "Failed to fetch section 5298: https://shamela.ws/book/133/5298",
+        "Failed to fetch section 5299: https://shamela.ws/book/133/5299",
+        "Failed to fetch section 5300: https://shamela.ws/book/133/5300"
       ],
-      "error_count": 1
-    },
-    {
-      "book_id": "154",
-      "title": "زهر الفردوس = الغرائب الملتقطة من مسند الفردوس",
-      "author": "ابن حجر العسقلاني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5489,
-      "min_section": 1,
-      "max_section": 5489,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5487"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "157",
-      "title": "موسوعة أحكام الطهارة - الدبيان - ط 3",
-      "author": "دبيان الدبيان",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5321,
-      "min_section": 1,
-      "max_section": 5321,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5321"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "165",
-      "title": "فتح العلام في دراسة أحاديث بلوغ المرام ط 4",
-      "author": "محمد بن علي بن حزام البعداني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5313,
-      "min_section": 1,
-      "max_section": 5313,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5312"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "181",
-      "title": "مسند أبي يعلى - ت السناري",
-      "author": "أبو يعلى الموصلي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5496,
-      "min_section": 1,
-      "max_section": 5496,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5493"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "183",
-      "title": "زوائد تاريخ بغداد على الكتب الستة",
-      "author": "خلدون الأحدب",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5298,
-      "min_section": 1,
-      "max_section": 5298,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 4867",
-        "Failed to fetch page at section 5298"
-      ],
-      "error_count": 2
+      "error_count": 5
     },
     {
       "book_id": "236",
@@ -267,9 +164,9 @@
       "author": "ابن عبد البر",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 1661,
+      "total_sections": 6526,
       "min_section": 1,
-      "max_section": 1661,
+      "max_section": 6526,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -290,434 +187,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 859"
+        "Failed to fetch section 883: https://shamela.ws/book/250/883",
+        "Failed to fetch section 884: https://shamela.ws/book/250/884",
+        "Failed to fetch section 885: https://shamela.ws/book/250/885",
+        "Failed to fetch section 886: https://shamela.ws/book/250/886",
+        "Failed to fetch section 887: https://shamela.ws/book/250/887"
       ],
-      "error_count": 1
-    },
-    {
-      "book_id": "251",
-      "title": "طريق الهجرتين وباب السعادتين - ط عطاءات العلم",
-      "author": "ابن القيم",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 888,
-      "min_section": 1,
-      "max_section": 888,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 862",
-        "Failed to fetch page at section 887"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "259",
-      "title": "كشف الظنون عن أسامي الكتب والفنون - ط الفرقان",
-      "author": "حاجي خليفة",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 357,
-      "min_section": 1,
-      "max_section": 357,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 335",
-        "Failed to fetch page at section 358"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "260",
-      "title": "إرشاد الفقيه إلى معرفة أدلة التنبيه",
-      "author": "ابن كثير",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 376,
-      "min_section": 1,
-      "max_section": 376,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 350",
-        "Failed to fetch page at section 377"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "261",
-      "title": "فضل الرحيم الودود تخريج سنن أبي داود",
-      "author": "ياسر فتحي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 332,
-      "min_section": 1,
-      "max_section": 332,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 306",
-        "Failed to fetch page at section 333"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "262",
-      "title": "الطهور - أبو عبيد - ت مشهور",
-      "author": "أبو عبيد القاسم بن سلام",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 338,
-      "min_section": 1,
-      "max_section": 338,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 313",
-        "Failed to fetch page at section 339"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "264",
-      "title": "تحقيق الإيمان لابن تيمية",
-      "author": "ابن تيمية",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 90,
-      "min_section": 1,
-      "max_section": 90,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 62",
-        "Failed to fetch page at section 91"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "265",
-      "title": "مرويات فضائل علي بن أبي طالب في المستدرك",
-      "author": "أحمد الجابري",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 80,
-      "min_section": 1,
-      "max_section": 80,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 52",
-        "Failed to fetch page at section 81"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "275",
-      "title": "دفع دعوى المعارض العقلي عن الأحاديث المتعلقة بمسائل الاعتقاد",
-      "author": "عيسى النعمي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 757,
-      "min_section": 1,
-      "max_section": 757,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 734",
-        "Failed to fetch page at section 758"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "283",
-      "title": "نثر الورود شرح مراقي السعود",
-      "author": "محمد الأمين الشنقيطي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 617,
-      "min_section": 1,
-      "max_section": 617,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 594",
-        "Failed to fetch page at section 618"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "288",
-      "title": "التعليق والإيضاح على تفسير الجلالين - جـ 1",
-      "author": "عبد الرحمن بن ناصر البراك",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 527,
-      "min_section": 1,
-      "max_section": 527,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 525",
-        "Failed to fetch page at section 528"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "298",
-      "title": "سلافة العصر في محاسن الشعراء بكل مصر",
-      "author": "ابن معصوم الحسني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 317,
-      "min_section": 1,
-      "max_section": 317,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 318",
-        "Failed to fetch page at section 318"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "300",
-      "title": "البستان في إعراب مشكلات القرآن",
-      "author": "ابن الأحنف اليمني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 249,
-      "min_section": 1,
-      "max_section": 249,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 249",
-        "Failed to fetch page at section 250"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "303",
-      "title": "الانتصار لأهل الأثر المطبوع باسم «نقض المنطق»",
-      "author": "ابن تيمية",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 218,
-      "min_section": 1,
-      "max_section": 218,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 217",
-        "Failed to fetch page at section 218"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "305",
-      "title": "السياسة الشرعية في إصلاح الراعي والرعية - ط عطاءات العلم",
-      "author": "ابن تيمية",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 222,
-      "min_section": 1,
-      "max_section": 222,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 220",
-        "Failed to fetch page at section 222"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "306",
-      "title": "الثمر المستطاب في فقه السنة والكتاب",
-      "author": "ناصر الدين الألباني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 220,
-      "min_section": 1,
-      "max_section": 220,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 221",
-        "Failed to fetch page at section 221"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "308",
-      "title": "مدونة أحكام الوقف الفقهية",
-      "author": "مجموعة من المؤلفين",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 142,
-      "min_section": 1,
-      "max_section": 142,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 143",
-        "Failed to fetch page at section 143"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "309",
-      "title": "الكواكب النيرات في معرفة من اختلط من الرواة الثقات",
-      "author": "ابن الكيال",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 151,
-      "min_section": 1,
-      "max_section": 151,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 151",
-        "Failed to fetch page at section 152"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "312",
-      "title": "الترياق بأحاديث قواها الألباني وضعفها الحويني أبو إسحاق",
-      "author": "عمرو عبد العظيم الحويني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 52,
-      "min_section": 1,
-      "max_section": 52,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 51",
-        "Failed to fetch page at section 52"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "313",
-      "title": "فضائل بيت المقدس - ابن الجوزي - ت عمرو عبد العظيم الحويني",
-      "author": "ابن الجوزي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 47,
-      "min_section": 1,
-      "max_section": 47,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 48",
-        "Failed to fetch page at section 48"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "314",
-      "title": "الرد المفحم",
-      "author": "ناصر الدين الألباني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 46,
-      "min_section": 1,
-      "max_section": 46,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 47",
-        "Failed to fetch page at section 47"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "315",
-      "title": "قلائد الجمان في التعريف بقبائل عرب الزمان",
-      "author": "القلقشندي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 49,
-      "min_section": 1,
-      "max_section": 49,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 50",
-        "Failed to fetch page at section 50"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "316",
-      "title": "نزهة النظر في توضيح نخبة الفكر - ت القاسم",
-      "author": "ابن حجر العسقلاني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 49,
-      "min_section": 1,
-      "max_section": 49,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 50",
-        "Failed to fetch page at section 50"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "317",
-      "title": "المنهل العذب الروي",
-      "author": "السخاوي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 46,
-      "min_section": 1,
-      "max_section": 46,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 47",
-        "Failed to fetch page at section 47"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "318",
-      "title": "آل الجرباء في التاريخ والأدب",
-      "author": "ابن عقيل الظاهري",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 47,
-      "min_section": 1,
-      "max_section": 47,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 48",
-        "Failed to fetch page at section 48"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "320",
-      "title": "حاشية الخرشي منتهى الرغبة في حل ألفاظ النخبة",
-      "author": "الخرشي = الخراشي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 40,
-      "min_section": 1,
-      "max_section": 40,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 41",
-        "Failed to fetch page at section 41"
-      ],
-      "error_count": 2
+      "error_count": 5
     },
     {
       "book_id": "321",
@@ -731,9 +207,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 46"
+        "Failed to fetch section 211: https://shamela.ws/book/321/211",
+        "Failed to fetch section 212: https://shamela.ws/book/321/212",
+        "Failed to fetch section 213: https://shamela.ws/book/321/213",
+        "Failed to fetch section 214: https://shamela.ws/book/321/214",
+        "Failed to fetch section 215: https://shamela.ws/book/321/215"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "322",
@@ -747,9 +227,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 3"
+        "Failed to fetch section 1430: https://shamela.ws/book/322/1430",
+        "Failed to fetch section 1431: https://shamela.ws/book/322/1431",
+        "Failed to fetch section 1432: https://shamela.ws/book/322/1432",
+        "Failed to fetch section 1433: https://shamela.ws/book/322/1433",
+        "Failed to fetch section 1434: https://shamela.ws/book/322/1434"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "323",
@@ -763,9 +247,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 2"
+        "Failed to fetch section 1472: https://shamela.ws/book/323/1472",
+        "Failed to fetch section 1473: https://shamela.ws/book/323/1473",
+        "Failed to fetch section 1474: https://shamela.ws/book/323/1474",
+        "Failed to fetch section 1475: https://shamela.ws/book/323/1475",
+        "Failed to fetch section 1476: https://shamela.ws/book/323/1476"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "326",
@@ -779,9 +267,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 3"
+        "Failed to fetch section 1170: https://shamela.ws/book/326/1170",
+        "Failed to fetch section 1171: https://shamela.ws/book/326/1171",
+        "Failed to fetch section 1172: https://shamela.ws/book/326/1172",
+        "Failed to fetch section 1173: https://shamela.ws/book/326/1173",
+        "Failed to fetch section 1174: https://shamela.ws/book/326/1174"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "333",
@@ -789,63 +281,13 @@
       "author": null,
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 3971,
+      "total_sections": 4309,
       "min_section": 1,
-      "max_section": 3971,
+      "max_section": 4309,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
         "Failed to fetch page 3972: https://shamela.ws/book/333/3972"
-      ],
-      "error_count": 1
-    },
-    {
-      "book_id": "343",
-      "title": "تحقيق المسح على الجوربين والنعلين",
-      "author": "جمال الدين القاسمي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 7,
-      "min_section": 1,
-      "max_section": 7,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 8",
-        "Failed to fetch page at section 8"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "347",
-      "title": "تغليق التعليق",
-      "author": "ابن حجر العسقلاني",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 15,
-      "min_section": 1,
-      "max_section": 15,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 7",
-        "Failed to fetch page at section 8"
-      ],
-      "error_count": 2
-    },
-    {
-      "book_id": "351",
-      "title": "Book 351",
-      "author": null,
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 2,
-      "min_section": 1,
-      "max_section": 2,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 3: https://shamela.ws/book/351/3"
       ],
       "error_count": 1
     },
@@ -1785,8 +1227,8 @@
       "author": null,
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 134,
-      "min_section": 5,
+      "total_sections": 138,
+      "min_section": 1,
       "max_section": 138,
       "missing_sections": [],
       "missing_count": 0,
@@ -2231,38 +1673,6 @@
       "error_count": 2
     },
     {
-      "book_id": "660",
-      "title": "فتح القريب المجيب على الترغيب والترهيب",
-      "author": "حسن بن علي الفيومي",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 1178,
-      "min_section": 1,
-      "max_section": 1178,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 1"
-      ],
-      "error_count": 1
-    },
-    {
-      "book_id": "663",
-      "title": "الدرر البهية من الفتاوى الكويتية",
-      "author": "مجموعة من المؤلفين",
-      "status": "complete",
-      "quality": "moderate",
-      "total_sections": 753,
-      "min_section": 1,
-      "max_section": 753,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 1"
-      ],
-      "error_count": 1
-    },
-    {
       "book_id": "664",
       "title": "التعليقات والنوادر",
       "author": "أبو علي الهجري",
@@ -2275,6 +1685,584 @@
       "missing_count": 0,
       "errors": [
         "Failed to fetch page 2"
+      ],
+      "error_count": 1
+    },
+    {
+      "book_id": "251",
+      "title": "طريق الهجرتين وباب السعادتين - ط عطاءات العلم",
+      "author": "ابن القيم",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 1040,
+      "min_section": 1,
+      "max_section": 1041,
+      "missing_sections": [
+        889
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 889: https://shamela.ws/book/251/889",
+        "Failed to fetch section 1042: https://shamela.ws/book/251/1042",
+        "Failed to fetch section 1043: https://shamela.ws/book/251/1043",
+        "Failed to fetch section 1044: https://shamela.ws/book/251/1044",
+        "Failed to fetch section 1045: https://shamela.ws/book/251/1045"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "259",
+      "title": "كشف الظنون عن أسامي الكتب والفنون - ط الفرقان",
+      "author": "حاجي خليفة",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 5323,
+      "min_section": 1,
+      "max_section": 5324,
+      "missing_sections": [
+        358
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch page 335",
+        "Failed to fetch page at section 358"
+      ],
+      "error_count": 2
+    },
+    {
+      "book_id": "260",
+      "title": "إرشاد الفقيه إلى معرفة أدلة التنبيه",
+      "author": "ابن كثير",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 794,
+      "min_section": 1,
+      "max_section": 795,
+      "missing_sections": [
+        377
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 377: https://shamela.ws/book/260/377",
+        "Failed to fetch section 796: https://shamela.ws/book/260/796",
+        "Failed to fetch section 797: https://shamela.ws/book/260/797",
+        "Failed to fetch section 798: https://shamela.ws/book/260/798",
+        "Failed to fetch section 799: https://shamela.ws/book/260/799"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "261",
+      "title": "فضل الرحيم الودود تخريج سنن أبي داود",
+      "author": "ياسر فتحي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 4586,
+      "min_section": 1,
+      "max_section": 4587,
+      "missing_sections": [
+        333
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch page 306",
+        "Failed to fetch page at section 333"
+      ],
+      "error_count": 2
+    },
+    {
+      "book_id": "262",
+      "title": "الطهور - أبو عبيد - ت مشهور",
+      "author": "أبو عبيد القاسم بن سلام",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 445,
+      "min_section": 1,
+      "max_section": 446,
+      "missing_sections": [
+        339
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 339: https://shamela.ws/book/262/339",
+        "Failed to fetch section 447: https://shamela.ws/book/262/447",
+        "Failed to fetch section 448: https://shamela.ws/book/262/448",
+        "Failed to fetch section 449: https://shamela.ws/book/262/449",
+        "Failed to fetch section 450: https://shamela.ws/book/262/450"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "264",
+      "title": "تحقيق الإيمان لابن تيمية",
+      "author": "ابن تيمية",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 166,
+      "min_section": 1,
+      "max_section": 167,
+      "missing_sections": [
+        91
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 91: https://shamela.ws/book/264/91",
+        "Failed to fetch section 168: https://shamela.ws/book/264/168",
+        "Failed to fetch section 169: https://shamela.ws/book/264/169",
+        "Failed to fetch section 170: https://shamela.ws/book/264/170",
+        "Failed to fetch section 171: https://shamela.ws/book/264/171"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "265",
+      "title": "مرويات فضائل علي بن أبي طالب في المستدرك",
+      "author": "أحمد الجابري",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 465,
+      "min_section": 1,
+      "max_section": 466,
+      "missing_sections": [
+        81
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 81: https://shamela.ws/book/265/81",
+        "Failed to fetch section 467: https://shamela.ws/book/265/467",
+        "Failed to fetch section 468: https://shamela.ws/book/265/468",
+        "Failed to fetch section 469: https://shamela.ws/book/265/469",
+        "Failed to fetch section 470: https://shamela.ws/book/265/470"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "275",
+      "title": "دفع دعوى المعارض العقلي عن الأحاديث المتعلقة بمسائل الاعتقاد",
+      "author": "عيسى النعمي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 832,
+      "min_section": 1,
+      "max_section": 833,
+      "missing_sections": [
+        758
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 758: https://shamela.ws/book/275/758",
+        "Failed to fetch section 834: https://shamela.ws/book/275/834",
+        "Failed to fetch section 835: https://shamela.ws/book/275/835",
+        "Failed to fetch section 836: https://shamela.ws/book/275/836",
+        "Failed to fetch section 837: https://shamela.ws/book/275/837"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "283",
+      "title": "نثر الورود شرح مراقي السعود",
+      "author": "محمد الأمين الشنقيطي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 729,
+      "min_section": 1,
+      "max_section": 730,
+      "missing_sections": [
+        618
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 618: https://shamela.ws/book/283/618",
+        "Failed to fetch section 731: https://shamela.ws/book/283/731",
+        "Failed to fetch section 732: https://shamela.ws/book/283/732",
+        "Failed to fetch section 733: https://shamela.ws/book/283/733",
+        "Failed to fetch section 734: https://shamela.ws/book/283/734"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "288",
+      "title": "التعليق والإيضاح على تفسير الجلالين - جـ 1",
+      "author": "عبد الرحمن بن ناصر البراك",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 687,
+      "min_section": 1,
+      "max_section": 688,
+      "missing_sections": [
+        528
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 528: https://shamela.ws/book/288/528",
+        "Failed to fetch section 689: https://shamela.ws/book/288/689",
+        "Failed to fetch section 690: https://shamela.ws/book/288/690",
+        "Failed to fetch section 691: https://shamela.ws/book/288/691",
+        "Failed to fetch section 692: https://shamela.ws/book/288/692"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "298",
+      "title": "سلافة العصر في محاسن الشعراء بكل مصر",
+      "author": "ابن معصوم الحسني",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 349,
+      "min_section": 1,
+      "max_section": 350,
+      "missing_sections": [
+        318
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 318: https://shamela.ws/book/298/318",
+        "Failed to fetch section 351: https://shamela.ws/book/298/351",
+        "Failed to fetch section 352: https://shamela.ws/book/298/352",
+        "Failed to fetch section 353: https://shamela.ws/book/298/353",
+        "Failed to fetch section 354: https://shamela.ws/book/298/354"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "300",
+      "title": "البستان في إعراب مشكلات القرآن",
+      "author": "ابن الأحنف اليمني",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 2127,
+      "min_section": 1,
+      "max_section": 2128,
+      "missing_sections": [
+        250
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 250: https://shamela.ws/book/300/250",
+        "Failed to fetch section 2129: https://shamela.ws/book/300/2129",
+        "Failed to fetch section 2130: https://shamela.ws/book/300/2130",
+        "Failed to fetch section 2131: https://shamela.ws/book/300/2131",
+        "Failed to fetch section 2132: https://shamela.ws/book/300/2132"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "303",
+      "title": "الانتصار لأهل الأثر المطبوع باسم «نقض المنطق»",
+      "author": "ابن تيمية",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 389,
+      "min_section": 1,
+      "max_section": 390,
+      "missing_sections": [
+        219
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 219: https://shamela.ws/book/303/219",
+        "Failed to fetch section 391: https://shamela.ws/book/303/391",
+        "Failed to fetch section 392: https://shamela.ws/book/303/392",
+        "Failed to fetch section 393: https://shamela.ws/book/303/393",
+        "Failed to fetch section 394: https://shamela.ws/book/303/394"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "305",
+      "title": "السياسة الشرعية في إصلاح الراعي والرعية - ط عطاءات العلم",
+      "author": "ابن تيمية",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 306,
+      "min_section": 1,
+      "max_section": 307,
+      "missing_sections": [
+        223
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 223: https://shamela.ws/book/305/223",
+        "Failed to fetch section 308: https://shamela.ws/book/305/308",
+        "Failed to fetch section 309: https://shamela.ws/book/305/309",
+        "Failed to fetch section 310: https://shamela.ws/book/305/310",
+        "Failed to fetch section 311: https://shamela.ws/book/305/311"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "306",
+      "title": "الثمر المستطاب في فقه السنة والكتاب",
+      "author": "ناصر الدين الألباني",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 851,
+      "min_section": 1,
+      "max_section": 852,
+      "missing_sections": [
+        221
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 221: https://shamela.ws/book/306/221",
+        "Failed to fetch section 853: https://shamela.ws/book/306/853",
+        "Failed to fetch section 854: https://shamela.ws/book/306/854",
+        "Failed to fetch section 855: https://shamela.ws/book/306/855",
+        "Failed to fetch section 856: https://shamela.ws/book/306/856"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "308",
+      "title": "مدونة أحكام الوقف الفقهية",
+      "author": "مجموعة من المؤلفين",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 1457,
+      "min_section": 1,
+      "max_section": 1458,
+      "missing_sections": [
+        143
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 143: https://shamela.ws/book/308/143",
+        "Failed to fetch section 1459: https://shamela.ws/book/308/1459",
+        "Failed to fetch section 1460: https://shamela.ws/book/308/1460",
+        "Failed to fetch section 1461: https://shamela.ws/book/308/1461",
+        "Failed to fetch section 1462: https://shamela.ws/book/308/1462"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "309",
+      "title": "الكواكب النيرات في معرفة من اختلط من الرواة الثقات",
+      "author": "ابن الكيال",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 516,
+      "min_section": 1,
+      "max_section": 518,
+      "missing_sections": [
+        152,
+        516
+      ],
+      "missing_count": 2,
+      "errors": [
+        "Failed to fetch section 152: https://shamela.ws/book/309/152",
+        "Failed to fetch section 516: https://shamela.ws/book/309/516",
+        "Failed to fetch section 519: https://shamela.ws/book/309/519",
+        "Failed to fetch section 520: https://shamela.ws/book/309/520",
+        "Failed to fetch section 521: https://shamela.ws/book/309/521"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "313",
+      "title": "فضائل بيت المقدس - ابن الجوزي - ت عمرو عبد العظيم الحويني",
+      "author": "ابن الجوزي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 118,
+      "min_section": 1,
+      "max_section": 119,
+      "missing_sections": [
+        48
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 48: https://shamela.ws/book/313/48",
+        "Failed to fetch section 120: https://shamela.ws/book/313/120",
+        "Failed to fetch section 121: https://shamela.ws/book/313/121",
+        "Failed to fetch section 122: https://shamela.ws/book/313/122",
+        "Failed to fetch section 123: https://shamela.ws/book/313/123"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "314",
+      "title": "الرد المفحم",
+      "author": "ناصر الدين الألباني",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 213,
+      "min_section": 1,
+      "max_section": 214,
+      "missing_sections": [
+        47
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 47: https://shamela.ws/book/314/47",
+        "Failed to fetch section 215: https://shamela.ws/book/314/215",
+        "Failed to fetch section 216: https://shamela.ws/book/314/216",
+        "Failed to fetch section 217: https://shamela.ws/book/314/217",
+        "Failed to fetch section 218: https://shamela.ws/book/314/218"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "315",
+      "title": "قلائد الجمان في التعريف بقبائل عرب الزمان",
+      "author": "القلقشندي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 174,
+      "min_section": 1,
+      "max_section": 175,
+      "missing_sections": [
+        50
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 50: https://shamela.ws/book/315/50",
+        "Failed to fetch section 176: https://shamela.ws/book/315/176",
+        "Failed to fetch section 177: https://shamela.ws/book/315/177",
+        "Failed to fetch section 178: https://shamela.ws/book/315/178",
+        "Failed to fetch section 179: https://shamela.ws/book/315/179"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "316",
+      "title": "نزهة النظر في توضيح نخبة الفكر - ت القاسم",
+      "author": "ابن حجر العسقلاني",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 246,
+      "min_section": 1,
+      "max_section": 247,
+      "missing_sections": [
+        50
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 50: https://shamela.ws/book/316/50",
+        "Failed to fetch section 248: https://shamela.ws/book/316/248",
+        "Failed to fetch section 249: https://shamela.ws/book/316/249",
+        "Failed to fetch section 250: https://shamela.ws/book/316/250",
+        "Failed to fetch section 251: https://shamela.ws/book/316/251"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "317",
+      "title": "المنهل العذب الروي",
+      "author": "السخاوي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 48,
+      "min_section": 1,
+      "max_section": 49,
+      "missing_sections": [
+        47
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 47: https://shamela.ws/book/317/47",
+        "Failed to fetch section 50: https://shamela.ws/book/317/50",
+        "Failed to fetch section 51: https://shamela.ws/book/317/51",
+        "Failed to fetch section 52: https://shamela.ws/book/317/52",
+        "Failed to fetch section 53: https://shamela.ws/book/317/53"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "318",
+      "title": "آل الجرباء في التاريخ والأدب",
+      "author": "ابن عقيل الظاهري",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 60,
+      "min_section": 1,
+      "max_section": 61,
+      "missing_sections": [
+        48
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 48: https://shamela.ws/book/318/48",
+        "Failed to fetch section 62: https://shamela.ws/book/318/62",
+        "Failed to fetch section 63: https://shamela.ws/book/318/63",
+        "Failed to fetch section 64: https://shamela.ws/book/318/64",
+        "Failed to fetch section 65: https://shamela.ws/book/318/65"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "320",
+      "title": "حاشية الخرشي منتهى الرغبة في حل ألفاظ النخبة",
+      "author": "الخرشي = الخراشي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 929,
+      "min_section": 1,
+      "max_section": 930,
+      "missing_sections": [
+        41
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 41: https://shamela.ws/book/320/41"
+      ],
+      "error_count": 1
+    },
+    {
+      "book_id": "343",
+      "title": "تحقيق المسح على الجوربين والنعلين",
+      "author": "جمال الدين القاسمي",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 135,
+      "min_section": 1,
+      "max_section": 136,
+      "missing_sections": [
+        8
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 8: https://shamela.ws/book/343/8",
+        "Failed to fetch section 137: https://shamela.ws/book/343/137",
+        "Failed to fetch section 138: https://shamela.ws/book/343/138",
+        "Failed to fetch section 139: https://shamela.ws/book/343/139",
+        "Failed to fetch section 140: https://shamela.ws/book/343/140"
+      ],
+      "error_count": 5
+    },
+    {
+      "book_id": "347",
+      "title": "تغليق التعليق",
+      "author": "ابن حجر العسقلاني",
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 165,
+      "min_section": 1,
+      "max_section": 166,
+      "missing_sections": [
+        16
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch page 7",
+        "Failed to fetch page at section 8"
+      ],
+      "error_count": 2
+    },
+    {
+      "book_id": "351",
+      "title": "Book 351",
+      "author": null,
+      "status": "complete",
+      "quality": "poor",
+      "total_sections": 68,
+      "min_section": 1,
+      "max_section": 69,
+      "missing_sections": [
+        3
+      ],
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch page 3: https://shamela.ws/book/351/3"
       ],
       "error_count": 1
     },
@@ -2293,22 +2281,6 @@
       "missing_count": 1,
       "errors": [
         "Failed to fetch section 2: https://shamela.ws/book/368/2"
-      ],
-      "error_count": 1
-    },
-    {
-      "book_id": "645",
-      "title": "تقريب البغية بترتيب أحاديث الحلية",
-      "author": "نور الدين الهيثمي",
-      "status": "failed",
-      "quality": "failed",
-      "total_sections": 1149,
-      "min_section": 1,
-      "max_section": 1149,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch TOC"
       ],
       "error_count": 1
     },
@@ -2564,9 +2536,9 @@
       "author": "عدنان العرعور",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 5461,
+      "total_sections": 10576,
       "min_section": 1,
-      "max_section": 5461,
+      "max_section": 10576,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -2888,17 +2860,14 @@
       "title": "تفسير الطبري جامع البيان - ط دار التربية والتراث",
       "author": "ابن جرير الطبري",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 11816,
+      "quality": "excellent",
+      "total_sections": 14577,
       "min_section": 1,
-      "max_section": 11816,
+      "max_section": 14577,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 11817"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "44",
@@ -2954,9 +2923,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 8688: https://shamela.ws/book/47/8688",
+        "Failed to fetch section 8689: https://shamela.ws/book/47/8689",
+        "Failed to fetch section 8690: https://shamela.ws/book/47/8690",
+        "Failed to fetch section 8691: https://shamela.ws/book/47/8691",
+        "Failed to fetch section 8692: https://shamela.ws/book/47/8692"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "48",
@@ -3286,9 +3259,9 @@
       "author": "أبو القاسم ابن عساكر",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 3138,
+      "total_sections": 5794,
       "min_section": 1,
-      "max_section": 3138,
+      "max_section": 5794,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -3476,9 +3449,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 5445: https://shamela.ws/book/84/5445",
+        "Failed to fetch section 5446: https://shamela.ws/book/84/5446",
+        "Failed to fetch section 5447: https://shamela.ws/book/84/5447",
+        "Failed to fetch section 5448: https://shamela.ws/book/84/5448",
+        "Failed to fetch section 5449: https://shamela.ws/book/84/5449"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "85",
@@ -3534,9 +3511,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 5893: https://shamela.ws/book/88/5893",
+        "Failed to fetch section 5894: https://shamela.ws/book/88/5894",
+        "Failed to fetch section 5895: https://shamela.ws/book/88/5895",
+        "Failed to fetch section 5896: https://shamela.ws/book/88/5896",
+        "Failed to fetch section 5897: https://shamela.ws/book/88/5897"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "89",
@@ -3740,9 +3721,9 @@
       "author": "محمد بن مبارك حكيمي",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 5413,
+      "total_sections": 10088,
       "min_section": 1,
-      "max_section": 5413,
+      "max_section": 10088,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -3799,9 +3780,9 @@
       "author": "ابن باز",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 5332,
+      "total_sections": 8882,
       "min_section": 1,
-      "max_section": 5332,
+      "max_section": 8882,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -3885,17 +3866,14 @@
       "title": "التاريخ الكبير للبخاري - ت الدباسي والنحال",
       "author": "البخاري",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5239,
+      "quality": "excellent",
+      "total_sections": 6576,
       "min_section": 1,
-      "max_section": 5239,
+      "max_section": 6576,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5236"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "115",
@@ -4119,9 +4097,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Hit safety limit of 5000 pages"
+        "Failed to fetch section 5296: https://shamela.ws/book/133/5296",
+        "Failed to fetch section 5297: https://shamela.ws/book/133/5297",
+        "Failed to fetch section 5298: https://shamela.ws/book/133/5298",
+        "Failed to fetch section 5299: https://shamela.ws/book/133/5299",
+        "Failed to fetch section 5300: https://shamela.ws/book/133/5300"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "134",
@@ -4408,17 +4390,14 @@
       "title": "زهر الفردوس = الغرائب الملتقطة من مسند الفردوس",
       "author": "ابن حجر العسقلاني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5489,
+      "quality": "excellent",
+      "total_sections": 5773,
       "min_section": 1,
-      "max_section": 5489,
+      "max_section": 5773,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5487"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "155",
@@ -4453,17 +4432,14 @@
       "title": "موسوعة أحكام الطهارة - الدبيان - ط 3",
       "author": "دبيان الدبيان",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5321,
+      "quality": "excellent",
+      "total_sections": 5371,
       "min_section": 1,
-      "max_section": 5321,
+      "max_section": 5371,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5321"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "158",
@@ -4568,17 +4544,14 @@
       "title": "فتح العلام في دراسة أحاديث بلوغ المرام ط 4",
       "author": "محمد بن علي بن حزام البعداني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5313,
+      "quality": "excellent",
+      "total_sections": 5956,
       "min_section": 1,
-      "max_section": 5313,
+      "max_section": 5956,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5312"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "166",
@@ -4795,17 +4768,14 @@
       "title": "مسند أبي يعلى - ت السناري",
       "author": "أبو يعلى الموصلي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5496,
+      "quality": "excellent",
+      "total_sections": 6158,
       "min_section": 1,
-      "max_section": 5496,
+      "max_section": 6158,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Hit safety limit of 5000 pages",
-        "Failed to fetch page at section 5493"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "182",
@@ -4826,17 +4796,14 @@
       "title": "زوائد تاريخ بغداد على الكتب الستة",
       "author": "خلدون الأحدب",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 5298,
+      "quality": "excellent",
+      "total_sections": 5439,
       "min_section": 1,
-      "max_section": 5298,
+      "max_section": 5439,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 4867",
-        "Failed to fetch page at section 5298"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "184",
@@ -5502,9 +5469,9 @@
       "author": "ابن عبد البر",
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 1661,
+      "total_sections": 6526,
       "min_section": 1,
-      "max_section": 1661,
+      "max_section": 6526,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -5707,26 +5674,35 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 859"
+        "Failed to fetch section 883: https://shamela.ws/book/250/883",
+        "Failed to fetch section 884: https://shamela.ws/book/250/884",
+        "Failed to fetch section 885: https://shamela.ws/book/250/885",
+        "Failed to fetch section 886: https://shamela.ws/book/250/886",
+        "Failed to fetch section 887: https://shamela.ws/book/250/887"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "251",
       "title": "طريق الهجرتين وباب السعادتين - ط عطاءات العلم",
       "author": "ابن القيم",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 888,
+      "quality": "poor",
+      "total_sections": 1040,
       "min_section": 1,
-      "max_section": 888,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 862",
-        "Failed to fetch page at section 887"
+      "max_section": 1041,
+      "missing_sections": [
+        889
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 889: https://shamela.ws/book/251/889",
+        "Failed to fetch section 1042: https://shamela.ws/book/251/1042",
+        "Failed to fetch section 1043: https://shamela.ws/book/251/1043",
+        "Failed to fetch section 1044: https://shamela.ws/book/251/1044",
+        "Failed to fetch section 1045: https://shamela.ws/book/251/1045"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "252",
@@ -5831,12 +5807,14 @@
       "title": "كشف الظنون عن أسامي الكتب والفنون - ط الفرقان",
       "author": "حاجي خليفة",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 357,
+      "quality": "poor",
+      "total_sections": 5323,
       "min_section": 1,
-      "max_section": 357,
-      "missing_sections": [],
-      "missing_count": 0,
+      "max_section": 5324,
+      "missing_sections": [
+        358
+      ],
+      "missing_count": 1,
       "errors": [
         "Failed to fetch page 335",
         "Failed to fetch page at section 358"
@@ -5848,29 +5826,36 @@
       "title": "إرشاد الفقيه إلى معرفة أدلة التنبيه",
       "author": "ابن كثير",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 376,
+      "quality": "poor",
+      "total_sections": 794,
       "min_section": 1,
-      "max_section": 376,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 350",
-        "Failed to fetch page at section 377"
+      "max_section": 795,
+      "missing_sections": [
+        377
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 377: https://shamela.ws/book/260/377",
+        "Failed to fetch section 796: https://shamela.ws/book/260/796",
+        "Failed to fetch section 797: https://shamela.ws/book/260/797",
+        "Failed to fetch section 798: https://shamela.ws/book/260/798",
+        "Failed to fetch section 799: https://shamela.ws/book/260/799"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "261",
       "title": "فضل الرحيم الودود تخريج سنن أبي داود",
       "author": "ياسر فتحي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 332,
+      "quality": "poor",
+      "total_sections": 4586,
       "min_section": 1,
-      "max_section": 332,
-      "missing_sections": [],
-      "missing_count": 0,
+      "max_section": 4587,
+      "missing_sections": [
+        333
+      ],
+      "missing_count": 1,
       "errors": [
         "Failed to fetch page 306",
         "Failed to fetch page at section 333"
@@ -5882,17 +5867,22 @@
       "title": "الطهور - أبو عبيد - ت مشهور",
       "author": "أبو عبيد القاسم بن سلام",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 338,
+      "quality": "poor",
+      "total_sections": 445,
       "min_section": 1,
-      "max_section": 338,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 313",
-        "Failed to fetch page at section 339"
+      "max_section": 446,
+      "missing_sections": [
+        339
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 339: https://shamela.ws/book/262/339",
+        "Failed to fetch section 447: https://shamela.ws/book/262/447",
+        "Failed to fetch section 448: https://shamela.ws/book/262/448",
+        "Failed to fetch section 449: https://shamela.ws/book/262/449",
+        "Failed to fetch section 450: https://shamela.ws/book/262/450"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "263",
@@ -5913,34 +5903,44 @@
       "title": "تحقيق الإيمان لابن تيمية",
       "author": "ابن تيمية",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 90,
+      "quality": "poor",
+      "total_sections": 166,
       "min_section": 1,
-      "max_section": 90,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 62",
-        "Failed to fetch page at section 91"
+      "max_section": 167,
+      "missing_sections": [
+        91
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 91: https://shamela.ws/book/264/91",
+        "Failed to fetch section 168: https://shamela.ws/book/264/168",
+        "Failed to fetch section 169: https://shamela.ws/book/264/169",
+        "Failed to fetch section 170: https://shamela.ws/book/264/170",
+        "Failed to fetch section 171: https://shamela.ws/book/264/171"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "265",
       "title": "مرويات فضائل علي بن أبي طالب في المستدرك",
       "author": "أحمد الجابري",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 80,
+      "quality": "poor",
+      "total_sections": 465,
       "min_section": 1,
-      "max_section": 80,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 52",
-        "Failed to fetch page at section 81"
+      "max_section": 466,
+      "missing_sections": [
+        81
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 81: https://shamela.ws/book/265/81",
+        "Failed to fetch section 467: https://shamela.ws/book/265/467",
+        "Failed to fetch section 468: https://shamela.ws/book/265/468",
+        "Failed to fetch section 469: https://shamela.ws/book/265/469",
+        "Failed to fetch section 470: https://shamela.ws/book/265/470"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "266",
@@ -6059,17 +6059,22 @@
       "title": "دفع دعوى المعارض العقلي عن الأحاديث المتعلقة بمسائل الاعتقاد",
       "author": "عيسى النعمي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 757,
+      "quality": "poor",
+      "total_sections": 832,
       "min_section": 1,
-      "max_section": 757,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 734",
-        "Failed to fetch page at section 758"
+      "max_section": 833,
+      "missing_sections": [
+        758
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 758: https://shamela.ws/book/275/758",
+        "Failed to fetch section 834: https://shamela.ws/book/275/834",
+        "Failed to fetch section 835: https://shamela.ws/book/275/835",
+        "Failed to fetch section 836: https://shamela.ws/book/275/836",
+        "Failed to fetch section 837: https://shamela.ws/book/275/837"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "276",
@@ -6174,17 +6179,22 @@
       "title": "نثر الورود شرح مراقي السعود",
       "author": "محمد الأمين الشنقيطي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 617,
+      "quality": "poor",
+      "total_sections": 729,
       "min_section": 1,
-      "max_section": 617,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 594",
-        "Failed to fetch page at section 618"
+      "max_section": 730,
+      "missing_sections": [
+        618
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 618: https://shamela.ws/book/283/618",
+        "Failed to fetch section 731: https://shamela.ws/book/283/731",
+        "Failed to fetch section 732: https://shamela.ws/book/283/732",
+        "Failed to fetch section 733: https://shamela.ws/book/283/733",
+        "Failed to fetch section 734: https://shamela.ws/book/283/734"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "284",
@@ -6233,17 +6243,22 @@
       "title": "التعليق والإيضاح على تفسير الجلالين - جـ 1",
       "author": "عبد الرحمن بن ناصر البراك",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 527,
+      "quality": "poor",
+      "total_sections": 687,
       "min_section": 1,
-      "max_section": 527,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 525",
-        "Failed to fetch page at section 528"
+      "max_section": 688,
+      "missing_sections": [
+        528
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 528: https://shamela.ws/book/288/528",
+        "Failed to fetch section 689: https://shamela.ws/book/288/689",
+        "Failed to fetch section 690: https://shamela.ws/book/288/690",
+        "Failed to fetch section 691: https://shamela.ws/book/288/691",
+        "Failed to fetch section 692: https://shamela.ws/book/288/692"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "291",
@@ -6348,17 +6363,22 @@
       "title": "سلافة العصر في محاسن الشعراء بكل مصر",
       "author": "ابن معصوم الحسني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 317,
+      "quality": "poor",
+      "total_sections": 349,
       "min_section": 1,
-      "max_section": 317,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 318",
-        "Failed to fetch page at section 318"
+      "max_section": 350,
+      "missing_sections": [
+        318
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 318: https://shamela.ws/book/298/318",
+        "Failed to fetch section 351: https://shamela.ws/book/298/351",
+        "Failed to fetch section 352: https://shamela.ws/book/298/352",
+        "Failed to fetch section 353: https://shamela.ws/book/298/353",
+        "Failed to fetch section 354: https://shamela.ws/book/298/354"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "299",
@@ -6379,17 +6399,22 @@
       "title": "البستان في إعراب مشكلات القرآن",
       "author": "ابن الأحنف اليمني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 249,
+      "quality": "poor",
+      "total_sections": 2127,
       "min_section": 1,
-      "max_section": 249,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 249",
-        "Failed to fetch page at section 250"
+      "max_section": 2128,
+      "missing_sections": [
+        250
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 250: https://shamela.ws/book/300/250",
+        "Failed to fetch section 2129: https://shamela.ws/book/300/2129",
+        "Failed to fetch section 2130: https://shamela.ws/book/300/2130",
+        "Failed to fetch section 2131: https://shamela.ws/book/300/2131",
+        "Failed to fetch section 2132: https://shamela.ws/book/300/2132"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "301",
@@ -6424,85 +6449,111 @@
       "title": "الانتصار لأهل الأثر المطبوع باسم «نقض المنطق»",
       "author": "ابن تيمية",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 218,
+      "quality": "poor",
+      "total_sections": 389,
       "min_section": 1,
-      "max_section": 218,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 217",
-        "Failed to fetch page at section 218"
+      "max_section": 390,
+      "missing_sections": [
+        219
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 219: https://shamela.ws/book/303/219",
+        "Failed to fetch section 391: https://shamela.ws/book/303/391",
+        "Failed to fetch section 392: https://shamela.ws/book/303/392",
+        "Failed to fetch section 393: https://shamela.ws/book/303/393",
+        "Failed to fetch section 394: https://shamela.ws/book/303/394"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "305",
       "title": "السياسة الشرعية في إصلاح الراعي والرعية - ط عطاءات العلم",
       "author": "ابن تيمية",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 222,
+      "quality": "poor",
+      "total_sections": 306,
       "min_section": 1,
-      "max_section": 222,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 220",
-        "Failed to fetch page at section 222"
+      "max_section": 307,
+      "missing_sections": [
+        223
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 223: https://shamela.ws/book/305/223",
+        "Failed to fetch section 308: https://shamela.ws/book/305/308",
+        "Failed to fetch section 309: https://shamela.ws/book/305/309",
+        "Failed to fetch section 310: https://shamela.ws/book/305/310",
+        "Failed to fetch section 311: https://shamela.ws/book/305/311"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "306",
       "title": "الثمر المستطاب في فقه السنة والكتاب",
       "author": "ناصر الدين الألباني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 220,
+      "quality": "poor",
+      "total_sections": 851,
       "min_section": 1,
-      "max_section": 220,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 221",
-        "Failed to fetch page at section 221"
+      "max_section": 852,
+      "missing_sections": [
+        221
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 221: https://shamela.ws/book/306/221",
+        "Failed to fetch section 853: https://shamela.ws/book/306/853",
+        "Failed to fetch section 854: https://shamela.ws/book/306/854",
+        "Failed to fetch section 855: https://shamela.ws/book/306/855",
+        "Failed to fetch section 856: https://shamela.ws/book/306/856"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "308",
       "title": "مدونة أحكام الوقف الفقهية",
       "author": "مجموعة من المؤلفين",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 142,
+      "quality": "poor",
+      "total_sections": 1457,
       "min_section": 1,
-      "max_section": 142,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 143",
-        "Failed to fetch page at section 143"
+      "max_section": 1458,
+      "missing_sections": [
+        143
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 143: https://shamela.ws/book/308/143",
+        "Failed to fetch section 1459: https://shamela.ws/book/308/1459",
+        "Failed to fetch section 1460: https://shamela.ws/book/308/1460",
+        "Failed to fetch section 1461: https://shamela.ws/book/308/1461",
+        "Failed to fetch section 1462: https://shamela.ws/book/308/1462"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "309",
       "title": "الكواكب النيرات في معرفة من اختلط من الرواة الثقات",
       "author": "ابن الكيال",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 151,
+      "quality": "poor",
+      "total_sections": 516,
       "min_section": 1,
-      "max_section": 151,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 151",
-        "Failed to fetch page at section 152"
+      "max_section": 518,
+      "missing_sections": [
+        152,
+        516
       ],
-      "error_count": 2
+      "missing_count": 2,
+      "errors": [
+        "Failed to fetch section 152: https://shamela.ws/book/309/152",
+        "Failed to fetch section 516: https://shamela.ws/book/309/516",
+        "Failed to fetch section 519: https://shamela.ws/book/309/519",
+        "Failed to fetch section 520: https://shamela.ws/book/309/520",
+        "Failed to fetch section 521: https://shamela.ws/book/309/521"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "310",
@@ -6537,119 +6588,146 @@
       "title": "الترياق بأحاديث قواها الألباني وضعفها الحويني أبو إسحاق",
       "author": "عمرو عبد العظيم الحويني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 52,
+      "quality": "excellent",
+      "total_sections": 121,
       "min_section": 1,
-      "max_section": 52,
+      "max_section": 121,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 51",
-        "Failed to fetch page at section 52"
-      ],
-      "error_count": 2
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "313",
       "title": "فضائل بيت المقدس - ابن الجوزي - ت عمرو عبد العظيم الحويني",
       "author": "ابن الجوزي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 47,
+      "quality": "poor",
+      "total_sections": 118,
       "min_section": 1,
-      "max_section": 47,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 48",
-        "Failed to fetch page at section 48"
+      "max_section": 119,
+      "missing_sections": [
+        48
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 48: https://shamela.ws/book/313/48",
+        "Failed to fetch section 120: https://shamela.ws/book/313/120",
+        "Failed to fetch section 121: https://shamela.ws/book/313/121",
+        "Failed to fetch section 122: https://shamela.ws/book/313/122",
+        "Failed to fetch section 123: https://shamela.ws/book/313/123"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "314",
       "title": "الرد المفحم",
       "author": "ناصر الدين الألباني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 46,
+      "quality": "poor",
+      "total_sections": 213,
       "min_section": 1,
-      "max_section": 46,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 47",
-        "Failed to fetch page at section 47"
+      "max_section": 214,
+      "missing_sections": [
+        47
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 47: https://shamela.ws/book/314/47",
+        "Failed to fetch section 215: https://shamela.ws/book/314/215",
+        "Failed to fetch section 216: https://shamela.ws/book/314/216",
+        "Failed to fetch section 217: https://shamela.ws/book/314/217",
+        "Failed to fetch section 218: https://shamela.ws/book/314/218"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "315",
       "title": "قلائد الجمان في التعريف بقبائل عرب الزمان",
       "author": "القلقشندي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 49,
+      "quality": "poor",
+      "total_sections": 174,
       "min_section": 1,
-      "max_section": 49,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 50",
-        "Failed to fetch page at section 50"
+      "max_section": 175,
+      "missing_sections": [
+        50
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 50: https://shamela.ws/book/315/50",
+        "Failed to fetch section 176: https://shamela.ws/book/315/176",
+        "Failed to fetch section 177: https://shamela.ws/book/315/177",
+        "Failed to fetch section 178: https://shamela.ws/book/315/178",
+        "Failed to fetch section 179: https://shamela.ws/book/315/179"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "316",
       "title": "نزهة النظر في توضيح نخبة الفكر - ت القاسم",
       "author": "ابن حجر العسقلاني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 49,
+      "quality": "poor",
+      "total_sections": 246,
       "min_section": 1,
-      "max_section": 49,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 50",
-        "Failed to fetch page at section 50"
+      "max_section": 247,
+      "missing_sections": [
+        50
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 50: https://shamela.ws/book/316/50",
+        "Failed to fetch section 248: https://shamela.ws/book/316/248",
+        "Failed to fetch section 249: https://shamela.ws/book/316/249",
+        "Failed to fetch section 250: https://shamela.ws/book/316/250",
+        "Failed to fetch section 251: https://shamela.ws/book/316/251"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "317",
       "title": "المنهل العذب الروي",
       "author": "السخاوي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 46,
+      "quality": "poor",
+      "total_sections": 48,
       "min_section": 1,
-      "max_section": 46,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 47",
-        "Failed to fetch page at section 47"
+      "max_section": 49,
+      "missing_sections": [
+        47
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 47: https://shamela.ws/book/317/47",
+        "Failed to fetch section 50: https://shamela.ws/book/317/50",
+        "Failed to fetch section 51: https://shamela.ws/book/317/51",
+        "Failed to fetch section 52: https://shamela.ws/book/317/52",
+        "Failed to fetch section 53: https://shamela.ws/book/317/53"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "318",
       "title": "آل الجرباء في التاريخ والأدب",
       "author": "ابن عقيل الظاهري",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 47,
+      "quality": "poor",
+      "total_sections": 60,
       "min_section": 1,
-      "max_section": 47,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 48",
-        "Failed to fetch page at section 48"
+      "max_section": 61,
+      "missing_sections": [
+        48
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 48: https://shamela.ws/book/318/48",
+        "Failed to fetch section 62: https://shamela.ws/book/318/62",
+        "Failed to fetch section 63: https://shamela.ws/book/318/63",
+        "Failed to fetch section 64: https://shamela.ws/book/318/64",
+        "Failed to fetch section 65: https://shamela.ws/book/318/65"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "319",
@@ -6670,17 +6748,18 @@
       "title": "حاشية الخرشي منتهى الرغبة في حل ألفاظ النخبة",
       "author": "الخرشي = الخراشي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 40,
+      "quality": "poor",
+      "total_sections": 929,
       "min_section": 1,
-      "max_section": 40,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 41",
-        "Failed to fetch page at section 41"
+      "max_section": 930,
+      "missing_sections": [
+        41
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 41: https://shamela.ws/book/320/41"
+      ],
+      "error_count": 1
     },
     {
       "book_id": "321",
@@ -6694,9 +6773,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 46"
+        "Failed to fetch section 211: https://shamela.ws/book/321/211",
+        "Failed to fetch section 212: https://shamela.ws/book/321/212",
+        "Failed to fetch section 213: https://shamela.ws/book/321/213",
+        "Failed to fetch section 214: https://shamela.ws/book/321/214",
+        "Failed to fetch section 215: https://shamela.ws/book/321/215"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "322",
@@ -6710,9 +6793,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 3"
+        "Failed to fetch section 1430: https://shamela.ws/book/322/1430",
+        "Failed to fetch section 1431: https://shamela.ws/book/322/1431",
+        "Failed to fetch section 1432: https://shamela.ws/book/322/1432",
+        "Failed to fetch section 1433: https://shamela.ws/book/322/1433",
+        "Failed to fetch section 1434: https://shamela.ws/book/322/1434"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "323",
@@ -6726,9 +6813,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 2"
+        "Failed to fetch section 1472: https://shamela.ws/book/323/1472",
+        "Failed to fetch section 1473: https://shamela.ws/book/323/1473",
+        "Failed to fetch section 1474: https://shamela.ws/book/323/1474",
+        "Failed to fetch section 1475: https://shamela.ws/book/323/1475",
+        "Failed to fetch section 1476: https://shamela.ws/book/323/1476"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "324",
@@ -6770,9 +6861,13 @@
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
-        "Failed to fetch page 3"
+        "Failed to fetch section 1170: https://shamela.ws/book/326/1170",
+        "Failed to fetch section 1171: https://shamela.ws/book/326/1171",
+        "Failed to fetch section 1172: https://shamela.ws/book/326/1172",
+        "Failed to fetch section 1173: https://shamela.ws/book/326/1173",
+        "Failed to fetch section 1174: https://shamela.ws/book/326/1174"
       ],
-      "error_count": 1
+      "error_count": 5
     },
     {
       "book_id": "327",
@@ -6864,9 +6959,9 @@
       "author": null,
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 3971,
+      "total_sections": 4309,
       "min_section": 1,
-      "max_section": 3971,
+      "max_section": 4309,
       "missing_sections": [],
       "missing_count": 0,
       "errors": [
@@ -7005,17 +7100,22 @@
       "title": "تحقيق المسح على الجوربين والنعلين",
       "author": "جمال الدين القاسمي",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 7,
+      "quality": "poor",
+      "total_sections": 135,
       "min_section": 1,
-      "max_section": 7,
-      "missing_sections": [],
-      "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 8",
-        "Failed to fetch page at section 8"
+      "max_section": 136,
+      "missing_sections": [
+        8
       ],
-      "error_count": 2
+      "missing_count": 1,
+      "errors": [
+        "Failed to fetch section 8: https://shamela.ws/book/343/8",
+        "Failed to fetch section 137: https://shamela.ws/book/343/137",
+        "Failed to fetch section 138: https://shamela.ws/book/343/138",
+        "Failed to fetch section 139: https://shamela.ws/book/343/139",
+        "Failed to fetch section 140: https://shamela.ws/book/343/140"
+      ],
+      "error_count": 5
     },
     {
       "book_id": "344",
@@ -7036,12 +7136,14 @@
       "title": "تغليق التعليق",
       "author": "ابن حجر العسقلاني",
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 15,
+      "quality": "poor",
+      "total_sections": 165,
       "min_section": 1,
-      "max_section": 15,
-      "missing_sections": [],
-      "missing_count": 0,
+      "max_section": 166,
+      "missing_sections": [
+        16
+      ],
+      "missing_count": 1,
       "errors": [
         "Failed to fetch page 7",
         "Failed to fetch page at section 8"
@@ -7095,12 +7197,14 @@
       "title": "Book 351",
       "author": null,
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 2,
+      "quality": "poor",
+      "total_sections": 68,
       "min_section": 1,
-      "max_section": 2,
-      "missing_sections": [],
-      "missing_count": 0,
+      "max_section": 69,
+      "missing_sections": [
+        3
+      ],
+      "missing_count": 1,
       "errors": [
         "Failed to fetch page 3: https://shamela.ws/book/351/3"
       ],
@@ -10802,8 +10906,8 @@
       "author": null,
       "status": "complete",
       "quality": "moderate",
-      "total_sections": 134,
-      "min_section": 5,
+      "total_sections": 138,
+      "min_section": 1,
       "max_section": 138,
       "missing_sections": [],
       "missing_count": 0,
@@ -11246,19 +11350,17 @@
     },
     {
       "book_id": "645",
-      "title": "تقريب البغية بترتيب أحاديث الحلية",
-      "author": "نور الدين الهيثمي",
-      "status": "failed",
-      "quality": "failed",
-      "total_sections": 1149,
+      "title": "Book 645",
+      "author": null,
+      "status": "complete",
+      "quality": "excellent",
+      "total_sections": 1524,
       "min_section": 1,
-      "max_section": 1149,
+      "max_section": 1524,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Failed to fetch TOC"
-      ],
-      "error_count": 1
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "646",
@@ -11467,19 +11569,17 @@
     },
     {
       "book_id": "660",
-      "title": "فتح القريب المجيب على الترغيب والترهيب",
-      "author": "حسن بن علي الفيومي",
+      "title": "Book 660",
+      "author": null,
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 1178,
+      "quality": "excellent",
+      "total_sections": 10687,
       "min_section": 1,
-      "max_section": 1178,
+      "max_section": 10687,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 1"
-      ],
-      "error_count": 1
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "661",
@@ -11511,19 +11611,17 @@
     },
     {
       "book_id": "663",
-      "title": "الدرر البهية من الفتاوى الكويتية",
-      "author": "مجموعة من المؤلفين",
+      "title": "Book 663",
+      "author": null,
       "status": "complete",
-      "quality": "moderate",
-      "total_sections": 753,
+      "quality": "excellent",
+      "total_sections": 3933,
       "min_section": 1,
-      "max_section": 753,
+      "max_section": 3933,
       "missing_sections": [],
       "missing_count": 0,
-      "errors": [
-        "Failed to fetch page 1"
-      ],
-      "error_count": 1
+      "errors": [],
+      "error_count": 0
     },
     {
       "book_id": "664",

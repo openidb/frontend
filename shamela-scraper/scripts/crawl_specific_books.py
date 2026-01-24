@@ -191,11 +191,26 @@ class SpecificBooksCrawler:
         max_consecutive_failures = 5  # Stop after 5 consecutive failures
 
         while current_url and current_url not in visited_urls and consecutive_failures < max_consecutive_failures:
-            html = self._fetch_url(current_url, thread_id)
-
-            # Extract current section ID
+            # Extract current section ID FIRST
             url_match = re.search(f'/book/{book_id}/(\\d+)', current_url)
             current_section = int(url_match.group(1)) if url_match else None
+
+            # Check if this section already exists - if so, skip HTTP request
+            if current_section:
+                section_filename = f'book_{book_id}_section_{current_section}.html'
+                section_file_path = book_dir / section_filename
+                if section_file_path.exists():
+                    logger.debug(f"[Book {book_id}] Section {current_section} already exists, skipping download")
+                    visited_urls.add(current_url)
+                    metadata['total_pages'] += 1
+
+                    # Move to next section
+                    next_section = current_section + 1
+                    current_url = f"{self.base_url}/book/{book_id}/{next_section}"
+                    page_number += 1
+                    continue
+
+            html = self._fetch_url(current_url, thread_id)
 
             if not html or len(html) < 500:
                 # Failed to fetch - log error and try next section
@@ -219,7 +234,8 @@ class SpecificBooksCrawler:
             # Save page in book subdirectory
             section_id = url_match.group(1) if url_match else 'unknown'
             filename = f'book_{book_id}_section_{section_id}.html'
-            self._save_html(book_dir / filename, html)
+            file_path = book_dir / filename
+            self._save_html(file_path, html)
             metadata['total_pages'] += 1
 
             # Find next button - look for link with ">" but not ">>"
@@ -338,8 +354,11 @@ def main():
     logger.info(f"Starting crawler with {args.workers} workers, {args.delay}s delay")
 
     # Get path to book IDs file
-    project_root = Path(__file__).parent.parent
-    books_file = project_root / args.books_file
+    books_file = Path(args.books_file)
+    if not books_file.is_absolute():
+        # If relative path, make it relative to project root
+        project_root = Path(__file__).parent.parent
+        books_file = project_root / args.books_file
 
     if not books_file.exists():
         logger.error(f"Book IDs file not found: {books_file}")

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -17,6 +17,7 @@ interface FilterOption {
   label: string
   labelArabic?: string
   count: number
+  disabled?: boolean
 }
 
 interface MultiSelectDropdownProps {
@@ -51,19 +52,7 @@ export function MultiSelectDropdown({
           className="border-gray-300 hover:bg-gray-50"
         >
           {displayTitle}
-          <svg
-            className="ml-2 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+          <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700" align="start">
@@ -73,19 +62,20 @@ export function MultiSelectDropdown({
           <DropdownMenuCheckboxItem
             key={option.value}
             checked={selected.includes(option.value)}
-            onCheckedChange={() => handleToggle(option.value)}
+            onCheckedChange={() => !option.disabled && handleToggle(option.value)}
             onSelect={(e) => e.preventDefault()}
+            disabled={option.disabled}
+            className={option.disabled ? "opacity-50 cursor-not-allowed" : ""}
           >
             <div className="flex items-center justify-between w-full">
-              <span>
-                {option.label}
+              <div className="flex flex-col">
+                <span>{option.label}</span>
                 {option.labelArabic && (
-                  <span className="mr-2 text-gray-500">
-                    {" / "}
+                  <span className="text-sm text-gray-500">
                     {option.labelArabic}
                   </span>
                 )}
-              </span>
+              </div>
               <span className="text-sm text-gray-400 ml-2">
                 {option.count}
               </span>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { parsePagination, createPaginationResponse } from "@/lib/api-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +18,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-
-    // Pagination
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
-    const skip = (page - 1) * limit;
+    const { page, limit, offset: skip } = parsePagination(request);
 
     // Filters
     const search = searchParams.get("search") || "";
@@ -92,12 +89,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       books,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      pagination: createPaginationResponse(page, limit, total),
     });
   } catch (error) {
     console.error("Error fetching books:", error);
