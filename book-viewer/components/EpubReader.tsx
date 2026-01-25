@@ -114,7 +114,7 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
 
         // Add a spacer div at the bottom for scroll padding
         const spacer = contents.document.createElement("div");
-        spacer.style.cssText = "height: 10vh; width: 100%; background: transparent;";
+        spacer.style.cssText = "height: 100px; width: 100%; background: transparent;";
         contents.document.body.appendChild(spacer);
       });
 
