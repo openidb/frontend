@@ -24,6 +24,7 @@ import {
   countTermsInText,
   countWords,
   normalizeBM25Score,
+  combineTsRankAndBM25,
   type CorpusStats,
 } from "@/lib/bm25";
 
@@ -182,7 +183,6 @@ async function getTermDocumentFrequencies(
 ): Promise<Map<string, number>> {
   if (terms.length === 0) return new Map();
 
-  const column = tableName === 'pages' ? 'content_plain' : 'text_plain';
   const frequencies = new Map<string, number>();
 
   // Query document frequency for each term in parallel
@@ -193,10 +193,27 @@ async function getTermDocumentFrequencies(
     }
 
     try {
-      const result = await prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(*) as count FROM ${Prisma.raw(tableName)}
-        WHERE to_tsvector('simple', ${Prisma.raw(column)}) @@ to_tsquery('simple', ${term})
-      `;
+      let result: [{ count: bigint }];
+
+      // Use normalized text for ayahs table to match search query normalization
+      if (tableName === 'ayahs') {
+        result = await prisma.$queryRaw<[{ count: bigint }]>`
+          SELECT COUNT(*) as count FROM ayahs
+          WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC}) @@ to_tsquery('simple', ${term})
+        `;
+      } else if (tableName === 'hadiths') {
+        result = await prisma.$queryRaw<[{ count: bigint }]>`
+          SELECT COUNT(*) as count FROM hadiths
+          WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC}) @@ to_tsquery('simple', ${term})
+        `;
+      } else {
+        // pages table uses content_plain without normalization (less Quran-specific text)
+        result = await prisma.$queryRaw<[{ count: bigint }]>`
+          SELECT COUNT(*) as count FROM pages
+          WHERE to_tsvector('simple', content_plain) @@ to_tsquery('simple', ${term})
+        `;
+      }
+
       frequencies.set(term, Number(result[0].count));
     } catch {
       // Term might have invalid characters for tsquery
@@ -211,6 +228,56 @@ async function getTermDocumentFrequencies(
 // Minimum character count for semantic search (queries below this skip semantic)
 // Short queries (≤3 chars) lack meaningful semantic content and produce noisy results
 const MIN_CHARS_FOR_SEMANTIC = 4;
+
+// ============================================================================
+// SQL Arabic Text Normalization
+// ============================================================================
+
+/**
+ * SQL expression to normalize Arabic text for consistent FTS matching.
+ * This mirrors the normalizeArabicText() function used on search queries.
+ *
+ * Normalization steps:
+ * 1. Remove diacritics (tashkeel): U+064B-U+065F, U+0670 (superscript alef)
+ * 2. Normalize alef variants: آأإٱ (U+0622, U+0623, U+0625, U+0671) → ا (U+0627)
+ * 3. Normalize teh marbuta: ة (U+0629) → ه (U+0647)
+ *
+ * Why this is needed:
+ * The database text_plain column was created with removeDiacritics() which preserves
+ * some special characters (like alef wasla ٱ), but search queries use normalizeArabicText()
+ * which normalizes these to plain alef. This causes mismatches in PostgreSQL FTS.
+ *
+ * Example: DB stores "ٱلقيوم" (with alef wasla), query normalizes to "القيوم" (plain alef)
+ */
+const SQL_NORMALIZE_ARABIC = Prisma.sql`
+  translate(
+    regexp_replace(text_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
+    E'\u0622\u0623\u0625\u0671\u0629',
+    E'\u0627\u0627\u0627\u0627\u0647'
+  )
+`;
+
+/**
+ * SQL expression to normalize Arabic text with table alias prefix (for ayahs table)
+ */
+const SQL_NORMALIZE_ARABIC_AYAHS = Prisma.sql`
+  translate(
+    regexp_replace(a.text_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
+    E'\u0622\u0623\u0625\u0671\u0629',
+    E'\u0627\u0627\u0627\u0627\u0647'
+  )
+`;
+
+/**
+ * SQL expression to normalize Arabic text with table alias prefix (for hadiths table)
+ */
+const SQL_NORMALIZE_ARABIC_HADITHS = Prisma.sql`
+  translate(
+    regexp_replace(h.text_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
+    E'\u0622\u0623\u0625\u0671\u0629',
+    E'\u0627\u0627\u0627\u0627\u0647'
+  )
+`;
 
 /**
  * Calculate dynamic similarity threshold based on query characteristics
@@ -821,22 +888,34 @@ async function keywordSearch(
     termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
   }
 
-  // Score each result with BM25
-  const scored = results.map((r) => {
+  // First pass: compute BM25 scores for all results
+  const withBM25 = results.map((r) => {
     const termFreqs = countTermsInText(r.content_plain, allTerms);
     const docLength = countWords(r.content_plain);
-    const bm25Score = calculateBM25Score(
+    const bm25Raw = calculateBM25Score(
       termFreqs,
       docLength,
       termIDFs,
       corpusStats.avgDocumentLength
     );
-    return { ...r, bm25Score };
+    return { ...r, bm25Raw };
   });
 
-  // Sort by BM25 score and return top results
+  // Find max values for normalization
+  // ts_rank is already in r.rank from SQL
+  const maxTsRank = Math.max(...withBM25.map((r) => r.rank), 0.0001);
+  const maxBM25 = Math.max(...withBM25.map((r) => r.bm25Raw), 0.0001);
+
+  // Second pass: compute combined ts_rank + BM25 score
+  // This preserves ts_rank's phrase matching while adding BM25's IDF weighting
+  const scored = withBM25.map((r) => ({
+    ...r,
+    combinedScore: combineTsRankAndBM25(r.rank, r.bm25Raw, maxTsRank, maxBM25),
+  }));
+
+  // Sort by combined score and return top results
   return scored
-    .sort((a, b) => b.bm25Score - a.bm25Score)
+    .sort((a, b) => b.combinedScore - a.combinedScore)
     .slice(0, limit)
     .map((r, index) => ({
       bookId: r.book_id,
@@ -845,7 +924,7 @@ async function keywordSearch(
       textSnippet: r.content_plain.slice(0, 300),
       highlightedSnippet: r.headline,
       keywordRank: index + 1,
-      keywordScore: r.bm25Score,
+      keywordScore: r.combinedScore,
     }));
 }
 
@@ -872,6 +951,7 @@ async function keywordSearchHadiths(
   // Over-fetch candidates for BM25 re-ranking
   const fetchLimit = limit * 3;
 
+  // Use SQL normalization for consistent matching with search queries
   const results = await prisma.$queryRaw<
     {
       id: number;
@@ -902,11 +982,11 @@ async function keywordSearchHadiths(
       c.slug as collection_slug,
       c.name_arabic as collection_name_arabic,
       c.name_english as collection_name_english,
-      ts_rank(to_tsvector('simple', h.text_plain), to_tsquery('simple', ${tsQuery})) as rank
+      ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}), to_tsquery('simple', ${tsQuery})) as rank
     FROM hadiths h
     JOIN hadith_books b ON h.book_id = b.id
     JOIN hadith_collections c ON b.collection_id = c.id
-    WHERE to_tsvector('simple', h.text_plain) @@ to_tsquery('simple', ${tsQuery})
+    WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}) @@ to_tsquery('simple', ${tsQuery})
     ORDER BY rank DESC
     LIMIT ${fetchLimit}
   `;
@@ -939,25 +1019,39 @@ async function keywordSearchHadiths(
     termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
   }
 
-  // Score each result with BM25
-  const scored = results.map((r) => {
-    const termFreqs = countTermsInText(r.text_plain, allTerms);
-    const docLength = countWords(r.text_plain);
-    const bm25Score = calculateBM25Score(
+  // First pass: compute BM25 scores for all results
+  // Use normalized text to match the SQL WHERE clause normalization
+  const withBM25 = results.map((r) => {
+    const normalizedText = normalizeArabicText(r.text_plain);
+    const termFreqs = countTermsInText(normalizedText, allTerms);
+    const docLength = countWords(normalizedText);
+    const bm25Raw = calculateBM25Score(
       termFreqs,
       docLength,
       termIDFs,
       corpusStats.avgDocumentLength
     );
-    return { ...r, bm25Score };
+    return { ...r, bm25Raw };
   });
 
-  // Sort by BM25 score and return top results
+  // Find max values for normalization
+  // ts_rank is already in r.rank from SQL
+  const maxTsRank = Math.max(...withBM25.map((r) => r.rank), 0.0001);
+  const maxBM25 = Math.max(...withBM25.map((r) => r.bm25Raw), 0.0001);
+
+  // Second pass: compute combined ts_rank + BM25 score
+  // This preserves ts_rank's phrase matching while adding BM25's IDF weighting
+  const scored = withBM25.map((r) => ({
+    ...r,
+    combinedScore: combineTsRankAndBM25(r.rank, r.bm25Raw, maxTsRank, maxBM25),
+  }));
+
+  // Sort by combined score and return top results
   return scored
-    .sort((a, b) => b.bm25Score - a.bm25Score)
+    .sort((a, b) => b.combinedScore - a.combinedScore)
     .slice(0, limit)
     .map((r, index) => ({
-      score: r.bm25Score,
+      score: r.combinedScore,
       collectionSlug: r.collection_slug,
       collectionNameArabic: r.collection_name_arabic,
       collectionNameEnglish: r.collection_name_english,
@@ -996,6 +1090,8 @@ async function keywordSearchAyahs(
   // Over-fetch candidates for BM25 re-ranking
   const fetchLimit = limit * 3;
 
+  // Use SQL normalization to match search query normalization (normalizeArabicText)
+  // This ensures characters like alef wasla (ٱ) match plain alef (ا) in queries
   const results = await prisma.$queryRaw<
     {
       id: number;
@@ -1020,10 +1116,10 @@ async function keywordSearchAyahs(
       s.number as surah_number,
       s.name_arabic as surah_name_arabic,
       s.name_english as surah_name_english,
-      ts_rank(to_tsvector('simple', a.text_plain), to_tsquery('simple', ${tsQuery})) as rank
+      ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}), to_tsquery('simple', ${tsQuery})) as rank
     FROM ayahs a
     JOIN surahs s ON a.surah_id = s.id
-    WHERE to_tsvector('simple', a.text_plain) @@ to_tsquery('simple', ${tsQuery})
+    WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}) @@ to_tsquery('simple', ${tsQuery})
     ORDER BY rank DESC
     LIMIT ${fetchLimit}
   `;
@@ -1056,25 +1152,39 @@ async function keywordSearchAyahs(
     termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
   }
 
-  // Score each result with BM25
-  const scored = results.map((r) => {
-    const termFreqs = countTermsInText(r.text_plain, allTerms);
-    const docLength = countWords(r.text_plain);
-    const bm25Score = calculateBM25Score(
+  // First pass: compute BM25 scores for all results
+  // Use normalized text to match the SQL WHERE clause normalization
+  const withBM25 = results.map((r) => {
+    const normalizedText = normalizeArabicText(r.text_plain);
+    const termFreqs = countTermsInText(normalizedText, allTerms);
+    const docLength = countWords(normalizedText);
+    const bm25Raw = calculateBM25Score(
       termFreqs,
       docLength,
       termIDFs,
       corpusStats.avgDocumentLength
     );
-    return { ...r, bm25Score };
+    return { ...r, bm25Raw };
   });
 
-  // Sort by BM25 score and return top results
+  // Find max values for normalization
+  // ts_rank is already in r.rank from SQL
+  const maxTsRank = Math.max(...withBM25.map((r) => r.rank), 0.0001);
+  const maxBM25 = Math.max(...withBM25.map((r) => r.bm25Raw), 0.0001);
+
+  // Second pass: compute combined ts_rank + BM25 score
+  // This preserves ts_rank's phrase matching while adding BM25's IDF weighting
+  const scored = withBM25.map((r) => ({
+    ...r,
+    combinedScore: combineTsRankAndBM25(r.rank, r.bm25Raw, maxTsRank, maxBM25),
+  }));
+
+  // Sort by combined score and return top results
   return scored
-    .sort((a, b) => b.bm25Score - a.bm25Score)
+    .sort((a, b) => b.combinedScore - a.combinedScore)
     .slice(0, limit)
     .map((r, index) => ({
-      score: r.bm25Score,
+      score: r.combinedScore,
       surahNumber: r.surah_number,
       ayahNumber: r.ayah_number,
       surahNameArabic: r.surah_name_arabic,
@@ -1158,6 +1268,7 @@ async function fuzzyKeywordSearchAyahs(
   const normalized = normalizeArabicText(query);
   if (normalized.trim().length < 2) return [];
 
+  // Use SQL normalization for consistent matching with search queries
   const results = await prisma.$queryRaw<
     {
       id: number;
@@ -1183,17 +1294,17 @@ async function fuzzyKeywordSearchAyahs(
         s.number as surah_number,
         s.name_arabic as surah_name_arabic,
         s.name_english as surah_name_english,
-        similarity(a.text_plain, ${normalized}) as similarity_score,
-        ts_rank(to_tsvector('simple', a.text_plain),
+        similarity(${SQL_NORMALIZE_ARABIC_AYAHS}, ${normalized}) as similarity_score,
+        ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}),
                 plainto_tsquery('simple', ${normalized})) as ts_rank_score,
-        (ts_rank(to_tsvector('simple', a.text_plain),
+        (ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}),
                 plainto_tsquery('simple', ${normalized})) * 2 +
-         similarity(a.text_plain, ${normalized})) as combined_score
+         similarity(${SQL_NORMALIZE_ARABIC_AYAHS}, ${normalized})) as combined_score
       FROM ayahs a
       JOIN surahs s ON a.surah_id = s.id
       WHERE (
-        a.text_plain % ${normalized}
-        OR to_tsvector('simple', a.text_plain) @@ plainto_tsquery('simple', ${normalized})
+        ${SQL_NORMALIZE_ARABIC_AYAHS} % ${normalized}
+        OR to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}) @@ plainto_tsquery('simple', ${normalized})
       )
     ) sub
     ORDER BY combined_score DESC
@@ -1225,6 +1336,7 @@ async function fuzzyKeywordSearchHadiths(
   const normalized = normalizeArabicText(query);
   if (normalized.trim().length < 2) return [];
 
+  // Use SQL normalization for consistent matching with search queries
   const results = await prisma.$queryRaw<
     {
       id: number;
@@ -1256,18 +1368,18 @@ async function fuzzyKeywordSearchHadiths(
         c.slug as collection_slug,
         c.name_arabic as collection_name_arabic,
         c.name_english as collection_name_english,
-        similarity(h.text_plain, ${normalized}) as similarity_score,
-        ts_rank(to_tsvector('simple', h.text_plain),
+        similarity(${SQL_NORMALIZE_ARABIC_HADITHS}, ${normalized}) as similarity_score,
+        ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}),
                 plainto_tsquery('simple', ${normalized})) as ts_rank_score,
-        (ts_rank(to_tsvector('simple', h.text_plain),
+        (ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}),
                 plainto_tsquery('simple', ${normalized})) * 2 +
-         similarity(h.text_plain, ${normalized})) as combined_score
+         similarity(${SQL_NORMALIZE_ARABIC_HADITHS}, ${normalized})) as combined_score
       FROM hadiths h
       JOIN hadith_books b ON h.book_id = b.id
       JOIN hadith_collections c ON b.collection_id = c.id
       WHERE (
-        h.text_plain % ${normalized}
-        OR to_tsvector('simple', h.text_plain) @@ plainto_tsquery('simple', ${normalized})
+        ${SQL_NORMALIZE_ARABIC_HADITHS} % ${normalized}
+        OR to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}) @@ plainto_tsquery('simple', ${normalized})
       )
     ) sub
     ORDER BY combined_score DESC

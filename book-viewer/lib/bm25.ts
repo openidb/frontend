@@ -148,6 +148,44 @@ export function normalizeBM25Score(score: number, k: number = 5): number {
   return score / (score + k);
 }
 
+/**
+ * Combine ts_rank (PostgreSQL FTS score) and BM25 scores with weighted fusion
+ *
+ * ts_rank captures:
+ * - Term proximity and phrase matching (adjacent terms score higher)
+ * - Position in document (earlier occurrences may score higher depending on config)
+ *
+ * BM25 captures:
+ * - IDF weighting (rare terms matter more than common ones)
+ * - Term frequency saturation (diminishing returns for repeated terms)
+ * - Document length normalization (long docs don't dominate)
+ *
+ * By combining both, we get the benefits of:
+ * - Exact phrase matching (from ts_rank)
+ * - Rare term boosting (from BM25)
+ *
+ * @param tsRank - ts_rank score from PostgreSQL FTS
+ * @param bm25 - Raw BM25 score
+ * @param maxTsRank - Maximum ts_rank in the result set (for normalization)
+ * @param maxBM25 - Maximum BM25 score in the result set (for normalization)
+ * @param tsWeight - Weight for ts_rank score (default: 0.5 = equal weighting)
+ * @returns Combined score in [0, 1] range
+ */
+export function combineTsRankAndBM25(
+  tsRank: number,
+  bm25: number,
+  maxTsRank: number,
+  maxBM25: number,
+  tsWeight: number = 0.5
+): number {
+  // Normalize both to 0-1 range using max normalization
+  const tsNorm = maxTsRank > 0 ? tsRank / maxTsRank : 0;
+  const bm25Norm = maxBM25 > 0 ? bm25 / maxBM25 : 0;
+
+  // Weighted combination
+  return tsNorm * tsWeight + bm25Norm * (1 - tsWeight);
+}
+
 export function rerankWithBM25<T>(
   results: T[],
   queryTerms: string[],
