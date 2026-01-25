@@ -86,7 +86,7 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           body {
             overflow: visible !important;
             margin: 0 !important;
-            padding: 20px !important;
+            padding: 20px 20px 50vh 20px !important;
             font-family: "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif !important;
             line-height: 2.0 !important;
             font-feature-settings: "liga" 1, "calt" 1 !important;
