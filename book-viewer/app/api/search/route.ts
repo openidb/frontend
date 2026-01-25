@@ -211,6 +211,15 @@ function prepareSearchTerms(query: string): string[] {
 }
 
 /**
+ * Check if query contains quoted phrases (user wants exact match)
+ * When quotes are present, semantic search should be skipped
+ */
+function hasQuotedPhrases(query: string): boolean {
+  const quoteRegex = /["«»„""](.*?)["«»„""]/;
+  return quoteRegex.test(query);
+}
+
+/**
  * Parsed search query with phrases and individual terms
  */
 interface ParsedQuery {
@@ -1026,6 +1035,12 @@ async function semanticSearch(
   bookId: string | null,
   similarityCutoff: number = 0.25
 ): Promise<RankedResult[]> {
+  // Skip semantic search for quoted phrase queries (user wants exact match)
+  if (hasQuotedPhrases(query)) {
+    console.log(`Query "${query}" contains quotes, skipping semantic search`);
+    return [];
+  }
+
   const normalizedQuery = normalizeArabicText(query);
 
   // Skip semantic search for very short queries (high noise risk)
@@ -1227,6 +1242,12 @@ async function searchAuthors(query: string, limit: number = 5): Promise<AuthorRe
  */
 async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28): Promise<AyahRankedResult[]> {
   try {
+    // Skip semantic search for quoted phrase queries (user wants exact match)
+    if (hasQuotedPhrases(query)) {
+      console.log(`Query "${query}" contains quotes, skipping ayah semantic search`);
+      return [];
+    }
+
     const normalizedQuery = normalizeArabicText(query);
 
     // Skip semantic search for very short queries (high noise risk)
@@ -1331,6 +1352,12 @@ async function searchAyahsHybrid(
  */
 async function searchHadithsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.25): Promise<HadithRankedResult[]> {
   try {
+    // Skip semantic search for quoted phrase queries (user wants exact match)
+    if (hasQuotedPhrases(query)) {
+      console.log(`Query "${query}" contains quotes, skipping hadith semantic search`);
+      return [];
+    }
+
     const normalizedQuery = normalizeArabicText(query);
 
     // Skip semantic search for very short queries (high noise risk)
