@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { qdrant, QDRANT_COLLECTION, QDRANT_AUTHORS_COLLECTION, QDRANT_QURAN_COLLECTION, QDRANT_QURAN_CHUNKS_COLLECTION, QDRANT_HADITH_COLLECTION } from "@/lib/qdrant";
+import { qdrant, QDRANT_COLLECTION, QDRANT_AUTHORS_COLLECTION, QDRANT_QURAN_COLLECTION, QDRANT_HADITH_COLLECTION } from "@/lib/qdrant";
 import { generateEmbedding, normalizeArabicText } from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -46,6 +46,7 @@ interface SearchResult {
     id: string;
     titleArabic: string;
     titleLatin: string;
+    titleTranslated?: string | null;
     filename: string;
     author: {
       nameArabic: string;
@@ -65,6 +66,7 @@ interface AyahResult {
   surahNameArabic: string;
   surahNameEnglish: string;
   text: string;
+  translation?: string;       // Translation text in user's preferred language
   juzNumber: number;
   pageNumber: number;
   quranComUrl: string;
@@ -121,13 +123,40 @@ interface AyahRankedResult extends AyahResult {
   keywordRank?: number;
 }
 
-// Environment variable to toggle chunked search (default: false)
-// Testing showed per-ayah embeddings outperform chunked for most queries (85%)
-// Chunked only helps for multi-ayah queries spanning consecutive verses
-const USE_CHUNKED_QURAN_SEARCH = process.env.USE_CHUNKED_QURAN_SEARCH === "true";
-
 // RRF constant (standard value is 60)
 const RRF_K = 60;
+
+// Minimum character count for semantic search (queries below this skip semantic)
+// Short queries (≤3 chars) lack meaningful semantic content and produce noisy results
+const MIN_CHARS_FOR_SEMANTIC = 4;
+
+/**
+ * Calculate dynamic similarity threshold based on query characteristics
+ * Shorter queries need higher thresholds to filter noise from sparse embeddings
+ */
+function getDynamicSimilarityThreshold(query: string, baseThreshold: number): number {
+  const normalized = normalizeArabicText(query).trim();
+  const wordCount = normalized.split(/\s+/).filter(w => w.length > 0).length;
+  const charCount = normalized.replace(/\s/g, '').length;
+
+  // Very short queries (1-3 chars): significantly boost threshold
+  if (charCount <= 3) {
+    return Math.max(baseThreshold, 0.55);
+  }
+
+  // Short queries (4-6 chars or single word): moderately boost
+  if (charCount <= 6 || wordCount === 1) {
+    return Math.max(baseThreshold, 0.40);
+  }
+
+  // Medium queries (7-12 chars): slight boost
+  if (charCount <= 12) {
+    return Math.max(baseThreshold, 0.30);
+  }
+
+  // Longer queries: use base threshold
+  return baseThreshold;
+}
 
 /**
  * Reciprocal Rank Fusion score calculation
@@ -179,6 +208,94 @@ function prepareSearchTerms(query: string): string[] {
     .filter((term) => term.length > 0)
     .map((term) => term.replace(/[^\u0600-\u06FF\w]/g, "")) // Keep Arabic and alphanumeric
     .filter((term) => term.length > 0);
+}
+
+/**
+ * Parsed search query with phrases and individual terms
+ */
+interface ParsedQuery {
+  phrases: string[];  // Exact phrases from quoted sections (use <-> operator)
+  terms: string[];    // Individual terms (use | OR operator)
+}
+
+/**
+ * Parse search query to extract quoted phrases and individual terms
+ * Supports regular quotes (""), Arabic quotes («»), and guillemets
+ */
+function parseSearchQuery(query: string): ParsedQuery {
+  const phrases: string[] = [];
+  const terms: string[] = [];
+
+  // Match quoted phrases: regular quotes, Arabic quotes, guillemets
+  const quoteRegex = /["«»„""](.*?)["«»„""]/g;
+  let match;
+  let lastIndex = 0;
+
+  while ((match = quoteRegex.exec(query)) !== null) {
+    // Unquoted text before this match → individual terms
+    const before = query.slice(lastIndex, match.index).trim();
+    if (before) {
+      terms.push(...prepareSearchTerms(before));
+    }
+
+    // Quoted phrase - normalize and clean
+    const phrase = normalizeArabicText(match[1]).trim();
+    if (phrase && phrase.includes(' ')) {
+      // Multi-word phrase: clean each word and add as phrase
+      const words = phrase.split(/\s+/)
+        .map((w) => w.replace(/[^\u0600-\u06FF\w]/g, ""))
+        .filter((w) => w.length > 0);
+      if (words.length > 1) {
+        phrases.push(words.join(' '));
+      } else if (words.length === 1) {
+        terms.push(words[0]); // Single word in quotes → regular term
+      }
+    } else if (phrase) {
+      // Single word in quotes → treat as regular term
+      const cleaned = phrase.replace(/[^\u0600-\u06FF\w]/g, "");
+      if (cleaned.length > 0) {
+        terms.push(cleaned);
+      }
+    }
+
+    lastIndex = quoteRegex.lastIndex;
+  }
+
+  // Remaining text after last quote → terms
+  const remaining = query.slice(lastIndex).trim();
+  if (remaining) {
+    terms.push(...prepareSearchTerms(remaining));
+  }
+
+  return { phrases, terms };
+}
+
+/**
+ * Build PostgreSQL tsquery from parsed query
+ * - Phrases use <-> (FOLLOWED BY) for exact sequence matching
+ * - Terms use | (OR) for broader matching
+ * - Combined with & (AND) when both present
+ */
+function buildTsQuery(parsed: ParsedQuery): string {
+  const queryParts: string[] = [];
+
+  // Phrases: use <-> for sequential matching
+  for (const phrase of parsed.phrases) {
+    const words = phrase.split(/\s+/).filter((w) => w.length > 0);
+    if (words.length > 1) {
+      queryParts.push(`(${words.join(' <-> ')})`);
+    } else if (words.length === 1) {
+      queryParts.push(words[0]);
+    }
+  }
+
+  // Terms: use | (OR)
+  if (parsed.terms.length > 0) {
+    queryParts.push(`(${parsed.terms.join(' | ')})`);
+  }
+
+  // Combine with & (AND) - phrases must match AND at least one term
+  return queryParts.join(' & ');
 }
 
 /**
@@ -466,15 +583,15 @@ async function keywordSearch(
 ): Promise<RankedResult[]> {
   const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
 
-  // Use shared term preparation (strips diacritics for matching text_plain)
-  const searchTerms = prepareSearchTerms(query);
+  // Parse query to extract phrases and terms
+  const parsed = parseSearchQuery(query);
 
-  if (searchTerms.length === 0) {
+  if (parsed.phrases.length === 0 && parsed.terms.length === 0) {
     return [];
   }
 
-  // Create tsquery - use | (OR) for better recall
-  const tsQuery = searchTerms.join(" | ");
+  // Build tsquery with phrase support (<-> for exact sequences)
+  const tsQuery = buildTsQuery(parsed);
 
   // Build the WHERE clause for optional book filter
   const bookFilter = bookId ? Prisma.sql`AND p.book_id = ${bookId}` : Prisma.empty;
@@ -519,10 +636,16 @@ async function keywordSearch(
     keywordScore: r.rank,
   }));
 
-  // If no results and fuzzy fallback is enabled, try fuzzy search
+  // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
+  // (phrases require exact match, so fuzzy doesn't make sense for them)
   if (mappedResults.length === 0 && fuzzyFallback) {
-    console.log(`No exact page matches for "${query}", trying fuzzy search...`);
-    return fuzzyKeywordSearch(query, limit, bookId, fuzzyThreshold);
+    if (parsed.terms.length > 0) {
+      console.log(`No exact page matches for "${query}", trying fuzzy search on terms...`);
+      const termsOnlyQuery = parsed.terms.join(' ');
+      return fuzzyKeywordSearch(termsOnlyQuery, limit, bookId, fuzzyThreshold);
+    }
+    // For phrase-only queries with no results, return empty (semantic search will help)
+    return [];
   }
 
   return mappedResults;
@@ -537,12 +660,16 @@ async function keywordSearchHadiths(
   options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
 ): Promise<HadithRankedResult[]> {
   const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
-  const searchTerms = prepareSearchTerms(query);
-  if (searchTerms.length === 0) {
+
+  // Parse query to extract phrases and terms
+  const parsed = parseSearchQuery(query);
+
+  if (parsed.phrases.length === 0 && parsed.terms.length === 0) {
     return [];
   }
 
-  const tsQuery = searchTerms.join(" | ");
+  // Build tsquery with phrase support (<-> for exact sequences)
+  const tsQuery = buildTsQuery(parsed);
 
   const results = await prisma.$queryRaw<
     {
@@ -597,10 +724,14 @@ async function keywordSearchHadiths(
     keywordRank: index + 1,
   }));
 
-  // If no results and fuzzy fallback is enabled, try fuzzy search
+  // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
   if (mappedResults.length === 0 && fuzzyFallback) {
-    console.log(`No exact hadith matches for "${query}", trying fuzzy search...`);
-    return fuzzyKeywordSearchHadiths(query, limit, fuzzyThreshold);
+    if (parsed.terms.length > 0) {
+      console.log(`No exact hadith matches for "${query}", trying fuzzy search on terms...`);
+      const termsOnlyQuery = parsed.terms.join(' ');
+      return fuzzyKeywordSearchHadiths(termsOnlyQuery, limit, fuzzyThreshold);
+    }
+    return [];
   }
 
   return mappedResults;
@@ -615,12 +746,16 @@ async function keywordSearchAyahs(
   options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
 ): Promise<AyahRankedResult[]> {
   const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
-  const searchTerms = prepareSearchTerms(query);
-  if (searchTerms.length === 0) {
+
+  // Parse query to extract phrases and terms
+  const parsed = parseSearchQuery(query);
+
+  if (parsed.phrases.length === 0 && parsed.terms.length === 0) {
     return [];
   }
 
-  const tsQuery = searchTerms.join(" | ");
+  // Build tsquery with phrase support (<-> for exact sequences)
+  const tsQuery = buildTsQuery(parsed);
 
   const results = await prisma.$queryRaw<
     {
@@ -665,10 +800,14 @@ async function keywordSearchAyahs(
     keywordRank: index + 1,
   }));
 
-  // If no results and fuzzy fallback is enabled, try fuzzy search
+  // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
   if (mappedResults.length === 0 && fuzzyFallback) {
-    console.log(`No exact ayah matches for "${query}", trying fuzzy search...`);
-    return fuzzyKeywordSearchAyahs(query, limit, fuzzyThreshold);
+    if (parsed.terms.length > 0) {
+      console.log(`No exact ayah matches for "${query}", trying fuzzy search on terms...`);
+      const termsOnlyQuery = parsed.terms.join(' ');
+      return fuzzyKeywordSearchAyahs(termsOnlyQuery, limit, fuzzyThreshold);
+    }
+    return [];
   }
 
   return mappedResults;
@@ -888,6 +1027,16 @@ async function semanticSearch(
   similarityCutoff: number = 0.25
 ): Promise<RankedResult[]> {
   const normalizedQuery = normalizeArabicText(query);
+
+  // Skip semantic search for very short queries (high noise risk)
+  if (normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC) {
+    console.log(`Query "${query}" too short for semantic search, skipping`);
+    return [];
+  }
+
+  // Apply dynamic threshold based on query length
+  const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
+
   const queryEmbedding = await generateEmbedding(normalizedQuery);
 
   // Filter by shamelaBookId (now the primary key)
@@ -907,7 +1056,7 @@ async function semanticSearch(
     limit: limit,
     filter: filter,
     with_payload: true,
-    score_threshold: similarityCutoff,
+    score_threshold: effectiveCutoff,
   });
 
   return searchResults.map((result, index) => {
@@ -1079,13 +1228,23 @@ async function searchAuthors(query: string, limit: number = 5): Promise<AuthorRe
 async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28): Promise<AyahRankedResult[]> {
   try {
     const normalizedQuery = normalizeArabicText(query);
+
+    // Skip semantic search for very short queries (high noise risk)
+    if (normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC) {
+      console.log(`Query "${query}" too short for ayah semantic search, skipping`);
+      return [];
+    }
+
+    // Apply dynamic threshold based on query length
+    const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
+
     const queryEmbedding = await generateEmbedding(normalizedQuery);
 
     const searchResults = await qdrant.search(QDRANT_QURAN_COLLECTION, {
       vector: queryEmbedding,
       limit: limit,
       with_payload: true,
-      score_threshold: similarityCutoff,
+      score_threshold: effectiveCutoff,
     });
 
     return searchResults.map((result, index) => {
@@ -1121,93 +1280,27 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
 }
 
 /**
- * Search for Quran ayah chunks using semantic search (returns ranked results)
- * Uses the smart chunked collection for better semantic density
- */
-async function searchQuranChunksSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28): Promise<AyahRankedResult[]> {
-  try {
-    const normalizedQuery = normalizeArabicText(query);
-    const queryEmbedding = await generateEmbedding(normalizedQuery);
-
-    const searchResults = await qdrant.search(QDRANT_QURAN_CHUNKS_COLLECTION, {
-      vector: queryEmbedding,
-      limit: limit,
-      with_payload: true,
-      score_threshold: similarityCutoff,
-    });
-
-    return searchResults.map((result, index) => {
-      const payload = result.payload as {
-        chunkId: string;
-        surahNumber: number;
-        ayahStart: number;
-        ayahEnd: number;
-        ayahCount: number;
-        ayahNumbers: number[];
-        text: string;
-        textPlain: string;
-        surahNameArabic: string;
-        surahNameEnglish: string;
-        juzNumbers: number[];
-        pageNumbers: number[];
-        wordCount: number;
-        isStandaloneAyah: boolean;
-        quranComUrl: string;
-      };
-
-      return {
-        score: result.score,
-        semanticScore: result.score,
-        surahNumber: payload.surahNumber,
-        ayahNumber: payload.ayahStart,
-        ayahEnd: payload.ayahEnd !== payload.ayahStart ? payload.ayahEnd : undefined,
-        ayahNumbers: payload.ayahNumbers,
-        surahNameArabic: payload.surahNameArabic,
-        surahNameEnglish: payload.surahNameEnglish,
-        text: payload.text,
-        juzNumber: payload.juzNumbers[0], // Use first juz
-        pageNumber: payload.pageNumbers[0], // Use first page
-        quranComUrl: payload.quranComUrl,
-        isChunk: payload.ayahCount > 1,
-        wordCount: payload.wordCount,
-        semanticRank: index + 1,
-      };
-    });
-  } catch (err) {
-    console.warn("Chunk semantic search failed, falling back to per-ayah:", err);
-    // Fall back to per-ayah search if chunks collection doesn't exist
-    return searchAyahsSemantic(query, limit, similarityCutoff);
-  }
-}
-
-/**
  * Hybrid search for Quran ayahs using RRF fusion + reranking
- * Uses chunked embeddings by default for better semantic matching of short ayahs
  */
 async function searchAyahsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; useChunks?: boolean } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
 ): Promise<AyahResult[]> {
-  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, useChunks = USE_CHUNKED_QURAN_SEARCH } = options;
+  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
-  // Use chunked semantic search by default for better short ayah matching
-  const semanticSearchFn = useChunks ? searchQuranChunksSemantic : searchAyahsSemantic;
-
   const [semanticResults, keywordResults] = await Promise.all([
-    semanticSearchFn(query, fetchLimit, similarityCutoff).catch(() => []),
+    searchAyahsSemantic(query, fetchLimit, similarityCutoff).catch(() => []),
     keywordSearchAyahs(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
 
-  // Use a key that handles both single ayahs and chunks
-  // For chunks: surah-ayahStart-ayahEnd, for single: surah-ayahNumber
   const merged = mergeWithRRFGeneric(
     semanticResults,
     keywordResults,
-    (a) => `${a.surahNumber}-${a.ayahNumber}${a.ayahEnd ? `-${a.ayahEnd}` : ""}`
+    (a) => `${a.surahNumber}-${a.ayahNumber}`
   );
 
   // Take top candidates for reranking
@@ -1239,13 +1332,23 @@ async function searchAyahsHybrid(
 async function searchHadithsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.25): Promise<HadithRankedResult[]> {
   try {
     const normalizedQuery = normalizeArabicText(query);
+
+    // Skip semantic search for very short queries (high noise risk)
+    if (normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC) {
+      console.log(`Query "${query}" too short for hadith semantic search, skipping`);
+      return [];
+    }
+
+    // Apply dynamic threshold based on query length
+    const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
+
     const queryEmbedding = await generateEmbedding(normalizedQuery);
 
     const searchResults = await qdrant.search(QDRANT_HADITH_COLLECTION, {
       vector: queryEmbedding,
       limit: limit,
       with_payload: true,
-      score_threshold: similarityCutoff,
+      score_threshold: effectiveCutoff,
     });
 
     return searchResults.map((result, index) => {
@@ -1357,6 +1460,12 @@ export async function GET(request: NextRequest) {
   const fuzzyEnabled = searchParams.get("fuzzy") !== "false"; // Default true
   const fuzzyThreshold = parseFloat(searchParams.get("fuzzyThreshold") || "0.3");
 
+  // Quran translation parameter (language code like "en", "ur", "fr", or "none")
+  const quranTranslation = searchParams.get("quranTranslation") || "none";
+
+  // Book title translation parameter (language code like "en", "fr", or "none"/"transliteration")
+  const bookTitleLang = searchParams.get("bookTitleLang");
+
   // Validate query
   if (!query || query.trim().length === 0) {
     return NextResponse.json(
@@ -1450,10 +1559,40 @@ export async function GET(request: NextRequest) {
     }
 
     // Wait for author, ayah, and hadith searches to complete
-    const [authorsRaw, ayahs, hadiths] = await Promise.all([authorsPromise, ayahsPromise, hadithsPromise]);
+    const [authorsRaw, ayahsRaw, hadiths] = await Promise.all([authorsPromise, ayahsPromise, hadithsPromise]);
 
     // Use all authors (no filtering by era)
     const authors = authorsRaw;
+
+    // Fetch translations for ayahs if translation language is specified
+    let ayahs = ayahsRaw;
+    if (quranTranslation && quranTranslation !== "none" && ayahsRaw.length > 0) {
+      const translations = await prisma.ayahTranslation.findMany({
+        where: {
+          language: quranTranslation,
+          OR: ayahsRaw.map((a) => ({
+            surahNumber: a.surahNumber,
+            ayahNumber: a.ayahNumber,
+          })),
+        },
+        select: {
+          surahNumber: true,
+          ayahNumber: true,
+          text: true,
+        },
+      });
+
+      // Create lookup map for translations
+      const translationMap = new Map(
+        translations.map((t) => [`${t.surahNumber}-${t.ayahNumber}`, t.text])
+      );
+
+      // Merge translations into ayah results
+      ayahs = ayahsRaw.map((ayah) => ({
+        ...ayah,
+        translation: translationMap.get(`${ayah.surahNumber}-${ayah.ayahNumber}`),
+      }));
+    }
 
     // Limit final results
     rankedResults = rankedResults.slice(0, limit);
@@ -1491,7 +1630,7 @@ export async function GET(request: NextRequest) {
     const bookIds = [...new Set(rankedResults.map((r) => r.bookId))];
 
     // Fetch book details from PostgreSQL
-    const books = await prisma.book.findMany({
+    const booksRaw = await prisma.book.findMany({
       where: { id: { in: bookIds } },
       select: {
         id: true,
@@ -1506,7 +1645,27 @@ export async function GET(request: NextRequest) {
             deathDateHijri: true,
           },
         },
+        ...(bookTitleLang && bookTitleLang !== "none" && bookTitleLang !== "transliteration"
+          ? {
+              titleTranslations: {
+                where: { language: bookTitleLang },
+                select: { title: true },
+                take: 1,
+              },
+            }
+          : {}),
       },
+    });
+
+    // Add titleTranslated field to each book
+    const books = booksRaw.map((book) => {
+      const { titleTranslations, ...rest } = book as typeof book & {
+        titleTranslations?: { title: string }[];
+      };
+      return {
+        ...rest,
+        titleTranslated: titleTranslations?.[0]?.title || null,
+      };
     });
 
     // Create lookup map for all books (no filtering by era)
