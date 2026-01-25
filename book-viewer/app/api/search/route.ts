@@ -18,6 +18,14 @@ import { generateEmbedding, normalizeArabicText } from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import OpenAI from "openai";
+import {
+  calculateIDF,
+  calculateBM25Score,
+  countTermsInText,
+  countWords,
+  normalizeBM25Score,
+  type CorpusStats,
+} from "@/lib/bm25";
 
 // OpenRouter client for Qwen embeddings
 const openrouter = new OpenAI({
@@ -126,6 +134,80 @@ interface AyahRankedResult extends AyahResult {
 // RRF constant (standard value is 60)
 const RRF_K = 60;
 
+// ============================================================================
+// BM25 Corpus Statistics Caching
+// ============================================================================
+
+// In-memory cache for corpus stats (refreshed hourly)
+const corpusStatsCache = new Map<string, { stats: CorpusStats; expires: number }>();
+const STATS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+type CorpusTable = 'pages' | 'ayahs' | 'hadiths';
+
+/**
+ * Get corpus statistics for BM25 scoring (cached)
+ * Returns total document count and average document length
+ */
+async function getCorpusStats(tableName: CorpusTable): Promise<CorpusStats> {
+  const cached = corpusStatsCache.get(tableName);
+  if (cached && cached.expires > Date.now()) {
+    return cached.stats;
+  }
+
+  const column = tableName === 'pages' ? 'content_plain' : 'text_plain';
+
+  const result = await prisma.$queryRaw<[{ count: bigint; avg_len: number }]>`
+    SELECT COUNT(*) as count,
+           AVG(array_length(regexp_split_to_array(${Prisma.raw(column)}, '\\s+'), 1)) as avg_len
+    FROM ${Prisma.raw(tableName)}
+  `;
+
+  const stats: CorpusStats = {
+    totalDocuments: Number(result[0].count),
+    avgDocumentLength: result[0].avg_len || 50,
+  };
+
+  corpusStatsCache.set(tableName, { stats, expires: Date.now() + STATS_CACHE_TTL });
+  console.log(`[BM25] Cached corpus stats for ${tableName}: ${stats.totalDocuments} docs, avg ${stats.avgDocumentLength.toFixed(1)} words`);
+  return stats;
+}
+
+/**
+ * Get document frequency for each term in the corpus
+ * Used to calculate IDF scores for BM25
+ */
+async function getTermDocumentFrequencies(
+  tableName: CorpusTable,
+  terms: string[]
+): Promise<Map<string, number>> {
+  if (terms.length === 0) return new Map();
+
+  const column = tableName === 'pages' ? 'content_plain' : 'text_plain';
+  const frequencies = new Map<string, number>();
+
+  // Query document frequency for each term in parallel
+  const queries = terms.map(async (term) => {
+    if (!term || term.length === 0) {
+      frequencies.set(term, 0);
+      return;
+    }
+
+    try {
+      const result = await prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM ${Prisma.raw(tableName)}
+        WHERE to_tsvector('simple', ${Prisma.raw(column)}) @@ to_tsquery('simple', ${term})
+      `;
+      frequencies.set(term, Number(result[0].count));
+    } catch {
+      // Term might have invalid characters for tsquery
+      frequencies.set(term, 0);
+    }
+  });
+
+  await Promise.all(queries);
+  return frequencies;
+}
+
 // Minimum character count for semantic search (queries below this skip semantic)
 // Short queries (≤3 chars) lack meaningful semantic content and produce noisy results
 const MIN_CHARS_FOR_SEMANTIC = 4;
@@ -219,6 +301,53 @@ function hasQuotedPhrases(query: string): boolean {
   return quoteRegex.test(query);
 }
 
+// ============================================================================
+// Score Fusion Weights
+// ============================================================================
+
+// Default weights: 40% semantic, 60% BM25 (prefer keyword precision for Arabic text)
+const DEFAULT_SEMANTIC_WEIGHT = 0.4;
+const DEFAULT_BM25_WEIGHT = 0.6;
+
+interface FusionWeights {
+  semantic: number;
+  bm25: number;
+}
+
+/**
+ * Get fusion weights based on query characteristics
+ *
+ * This adapts the balance between semantic and keyword scores based on:
+ * - Quoted phrases: heavily prefer keyword matching (user wants exact match)
+ * - Very short queries: prefer semantic (too little keyword signal)
+ * - Long queries: balanced (both signals valuable)
+ * - Default: prefer BM25 (keyword precision)
+ */
+function getFusionWeights(query: string): FusionWeights {
+  // Quoted phrases: heavily prefer keyword matching (85%)
+  if (hasQuotedPhrases(query)) {
+    return { semantic: 0.15, bm25: 0.85 };
+  }
+
+  const normalized = normalizeArabicText(query).trim();
+  const charCount = normalized.replace(/\s/g, '').length;
+
+  // Very short queries (1-3 chars): prefer semantic (70%)
+  // Short queries lack meaningful keyword signal
+  if (charCount <= 3) {
+    return { semantic: 0.7, bm25: 0.3 };
+  }
+
+  // Long queries (20+ chars): balanced (45% semantic, 55% BM25)
+  // Both signals are valuable for longer, more specific queries
+  if (charCount >= 20) {
+    return { semantic: 0.45, bm25: 0.55 };
+  }
+
+  // Default: prefer BM25 (60%)
+  return { semantic: DEFAULT_SEMANTIC_WEIGHT, bm25: DEFAULT_BM25_WEIGHT };
+}
+
 /**
  * Parsed search query with phrases and individual terms
  */
@@ -308,23 +437,26 @@ function buildTsQuery(parsed: ParsedQuery): string {
 }
 
 /**
- * Generic RRF merge function for any content type
+ * Generic RRF merge function for any content type with weighted score fusion
  *
- * IMPORTANT: Sorts by semantic score first, then RRF as tiebreaker.
- * This prioritizes results with higher semantic relevance over keyword-only matches,
- * while still using RRF to combine and deduplicate results from both sources.
+ * Uses normalized score fusion with query-aware weights:
+ * - BM25 scores are normalized to 0-1 using sigmoid function
+ * - Semantic and BM25 are combined with weights based on query characteristics
+ * - Results appearing in both searches get a 10% boost
+ * - RRF score is used as tiebreaker
  */
-function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: number; semanticScore?: number }>(
+function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: number; semanticScore?: number; score?: number }>(
   semanticResults: T[],
   keywordResults: T[],
-  getKey: (item: T) => string
-): (T & { rrfScore: number })[] {
-  const resultMap = new Map<string, T & { rrfScore: number }>();
+  getKey: (item: T) => string,
+  query: string
+): (T & { rrfScore: number; fusedScore: number })[] {
+  const resultMap = new Map<string, T & { rrfScore: number; fusedScore: number; keywordScore?: number }>();
 
   // Add semantic results
   for (const item of semanticResults) {
     const key = getKey(item);
-    resultMap.set(key, { ...item, semanticRank: item.semanticRank, rrfScore: 0 });
+    resultMap.set(key, { ...item, semanticRank: item.semanticRank, rrfScore: 0, fusedScore: 0 });
   }
 
   // Merge keyword results
@@ -333,24 +465,42 @@ function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: nu
     const existing = resultMap.get(key);
     if (existing) {
       existing.keywordRank = item.keywordRank;
+      // Keyword results have BM25 score in the `score` field
+      existing.keywordScore = item.score;
     } else {
-      resultMap.set(key, { ...item, rrfScore: 0 });
+      resultMap.set(key, { ...item, rrfScore: 0, fusedScore: 0, keywordScore: item.score });
     }
   }
 
-  // Calculate RRF scores and sort by semantic score first, then RRF as tiebreaker
-  return Array.from(resultMap.values())
-    .map((item) => ({
-      ...item,
-      rrfScore: calculateRRFScore([item.semanticRank, item.keywordRank]),
-    }))
-    .sort((a, b) => {
-      // Primary: semantic score (higher is better), default to 0 for keyword-only results
-      const semanticDiff = (b.semanticScore ?? 0) - (a.semanticScore ?? 0);
-      if (Math.abs(semanticDiff) > 0.01) return semanticDiff;
-      // Tiebreaker: RRF score (boosts results found in both searches)
-      return b.rrfScore - a.rrfScore;
-    });
+  // Get fusion weights based on query characteristics
+  const weights = getFusionWeights(query);
+
+  // Calculate fused scores and RRF scores
+  const merged = Array.from(resultMap.values()).map((item) => {
+    const semanticScore = item.semanticScore ?? 0;
+    const bm25Score = item.keywordScore ?? 0;
+    const normalizedBM25 = normalizeBM25Score(bm25Score);
+
+    // Weighted fusion: combine normalized semantic and BM25 scores
+    let fusedScore = weights.semantic * semanticScore + weights.bm25 * normalizedBM25;
+
+    // 10% boost for appearing in both searches (confirmation signal)
+    const inBoth = item.semanticRank !== undefined && item.keywordRank !== undefined;
+    if (inBoth) {
+      fusedScore *= 1.1;
+    }
+
+    const rrfScore = calculateRRFScore([item.semanticRank, item.keywordRank]);
+
+    return { ...item, fusedScore, rrfScore };
+  });
+
+  // Sort by fused score (primary), RRF as tiebreaker
+  return merged.sort((a, b) => {
+    const fusedDiff = b.fusedScore - a.fusedScore;
+    if (Math.abs(fusedDiff) > 0.001) return fusedDiff;
+    return b.rrfScore - a.rrfScore;
+  });
 }
 
 /**
@@ -582,7 +732,12 @@ async function rerank<T>(
 }
 
 /**
- * Perform keyword search using PostgreSQL full-text search
+ * Perform keyword search using PostgreSQL full-text search with BM25 re-ranking
+ *
+ * BM25 improves on ts_rank by adding:
+ * - IDF weighting: Rare terms score higher than common ones
+ * - Document length normalization: Long docs don't unfairly dominate
+ * - Term frequency saturation: Repeated terms have diminishing returns
  */
 async function keywordSearch(
   query: string,
@@ -604,6 +759,9 @@ async function keywordSearch(
 
   // Build the WHERE clause for optional book filter
   const bookFilter = bookId ? Prisma.sql`AND p.book_id = ${bookId}` : Prisma.empty;
+
+  // Over-fetch candidates for BM25 re-ranking (3x the requested limit)
+  const fetchLimit = limit * 3;
 
   // Execute raw SQL for full-text search with ts_headline for snippets
   const results = await prisma.$queryRaw<
@@ -632,36 +790,67 @@ async function keywordSearch(
     WHERE to_tsvector('simple', p.content_plain) @@ to_tsquery('simple', ${tsQuery})
     ${bookFilter}
     ORDER BY rank DESC
-    LIMIT ${limit}
+    LIMIT ${fetchLimit}
   `;
 
-  const mappedResults = results.map((r, index) => ({
-    bookId: r.book_id,
-    pageNumber: r.page_number,
-    volumeNumber: r.volume_number,
-    textSnippet: r.content_plain.slice(0, 300),
-    highlightedSnippet: r.headline,
-    keywordRank: index + 1,
-    keywordScore: r.rank,
-  }));
-
-  // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
-  // (phrases require exact match, so fuzzy doesn't make sense for them)
-  if (mappedResults.length === 0 && fuzzyFallback) {
-    if (parsed.terms.length > 0) {
+  if (results.length === 0) {
+    // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
+    if (fuzzyFallback && parsed.terms.length > 0) {
       console.log(`No exact page matches for "${query}", trying fuzzy search on terms...`);
       const termsOnlyQuery = parsed.terms.join(' ');
       return fuzzyKeywordSearch(termsOnlyQuery, limit, bookId, fuzzyThreshold);
     }
-    // For phrase-only queries with no results, return empty (semantic search will help)
     return [];
   }
 
-  return mappedResults;
+  // Get all query terms for BM25 scoring (combine phrases and individual terms)
+  const allTerms = [
+    ...parsed.phrases.flatMap((p) => p.split(/\s+/)),
+    ...parsed.terms,
+  ].filter((t) => t.length > 0);
+
+  // Get corpus statistics and term document frequencies for BM25
+  const [corpusStats, termDFs] = await Promise.all([
+    getCorpusStats('pages'),
+    getTermDocumentFrequencies('pages', allTerms),
+  ]);
+
+  // Calculate IDF for each term
+  const termIDFs = new Map<string, number>();
+  for (const [term, df] of termDFs) {
+    termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
+  }
+
+  // Score each result with BM25
+  const scored = results.map((r) => {
+    const termFreqs = countTermsInText(r.content_plain, allTerms);
+    const docLength = countWords(r.content_plain);
+    const bm25Score = calculateBM25Score(
+      termFreqs,
+      docLength,
+      termIDFs,
+      corpusStats.avgDocumentLength
+    );
+    return { ...r, bm25Score };
+  });
+
+  // Sort by BM25 score and return top results
+  return scored
+    .sort((a, b) => b.bm25Score - a.bm25Score)
+    .slice(0, limit)
+    .map((r, index) => ({
+      bookId: r.book_id,
+      pageNumber: r.page_number,
+      volumeNumber: r.volume_number,
+      textSnippet: r.content_plain.slice(0, 300),
+      highlightedSnippet: r.headline,
+      keywordRank: index + 1,
+      keywordScore: r.bm25Score,
+    }));
 }
 
 /**
- * Keyword search for hadiths using PostgreSQL full-text search
+ * Keyword search for hadiths using PostgreSQL full-text search with BM25 re-ranking
  */
 async function keywordSearchHadiths(
   query: string,
@@ -680,11 +869,15 @@ async function keywordSearchHadiths(
   // Build tsquery with phrase support (<-> for exact sequences)
   const tsQuery = buildTsQuery(parsed);
 
+  // Over-fetch candidates for BM25 re-ranking
+  const fetchLimit = limit * 3;
+
   const results = await prisma.$queryRaw<
     {
       id: number;
       hadith_number: string;
       text_arabic: string;
+      text_plain: string;
       chapter_arabic: string | null;
       chapter_english: string | null;
       book_number: number;
@@ -700,6 +893,7 @@ async function keywordSearchHadiths(
       h.id,
       h.hadith_number,
       h.text_arabic,
+      h.text_plain,
       h.chapter_arabic,
       h.chapter_english,
       b.book_number,
@@ -714,28 +908,12 @@ async function keywordSearchHadiths(
     JOIN hadith_collections c ON b.collection_id = c.id
     WHERE to_tsvector('simple', h.text_plain) @@ to_tsquery('simple', ${tsQuery})
     ORDER BY rank DESC
-    LIMIT ${limit}
+    LIMIT ${fetchLimit}
   `;
 
-  const mappedResults = results.map((r, index) => ({
-    score: r.rank,
-    collectionSlug: r.collection_slug,
-    collectionNameArabic: r.collection_name_arabic,
-    collectionNameEnglish: r.collection_name_english,
-    bookNumber: r.book_number,
-    bookNameArabic: r.book_name_arabic,
-    bookNameEnglish: r.book_name_english,
-    hadithNumber: r.hadith_number,
-    text: r.text_arabic,
-    chapterArabic: r.chapter_arabic,
-    chapterEnglish: r.chapter_english,
-    sunnahComUrl: `https://sunnah.com/${r.collection_slug}:${r.hadith_number.replace(/[A-Z]+$/, '')}`,
-    keywordRank: index + 1,
-  }));
-
-  // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
-  if (mappedResults.length === 0 && fuzzyFallback) {
-    if (parsed.terms.length > 0) {
+  if (results.length === 0) {
+    // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
+    if (fuzzyFallback && parsed.terms.length > 0) {
       console.log(`No exact hadith matches for "${query}", trying fuzzy search on terms...`);
       const termsOnlyQuery = parsed.terms.join(' ');
       return fuzzyKeywordSearchHadiths(termsOnlyQuery, limit, fuzzyThreshold);
@@ -743,11 +921,60 @@ async function keywordSearchHadiths(
     return [];
   }
 
-  return mappedResults;
+  // Get all query terms for BM25 scoring
+  const allTerms = [
+    ...parsed.phrases.flatMap((p) => p.split(/\s+/)),
+    ...parsed.terms,
+  ].filter((t) => t.length > 0);
+
+  // Get corpus statistics and term document frequencies for BM25
+  const [corpusStats, termDFs] = await Promise.all([
+    getCorpusStats('hadiths'),
+    getTermDocumentFrequencies('hadiths', allTerms),
+  ]);
+
+  // Calculate IDF for each term
+  const termIDFs = new Map<string, number>();
+  for (const [term, df] of termDFs) {
+    termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
+  }
+
+  // Score each result with BM25
+  const scored = results.map((r) => {
+    const termFreqs = countTermsInText(r.text_plain, allTerms);
+    const docLength = countWords(r.text_plain);
+    const bm25Score = calculateBM25Score(
+      termFreqs,
+      docLength,
+      termIDFs,
+      corpusStats.avgDocumentLength
+    );
+    return { ...r, bm25Score };
+  });
+
+  // Sort by BM25 score and return top results
+  return scored
+    .sort((a, b) => b.bm25Score - a.bm25Score)
+    .slice(0, limit)
+    .map((r, index) => ({
+      score: r.bm25Score,
+      collectionSlug: r.collection_slug,
+      collectionNameArabic: r.collection_name_arabic,
+      collectionNameEnglish: r.collection_name_english,
+      bookNumber: r.book_number,
+      bookNameArabic: r.book_name_arabic,
+      bookNameEnglish: r.book_name_english,
+      hadithNumber: r.hadith_number,
+      text: r.text_arabic,
+      chapterArabic: r.chapter_arabic,
+      chapterEnglish: r.chapter_english,
+      sunnahComUrl: `https://sunnah.com/${r.collection_slug}:${r.hadith_number.replace(/[A-Z]+$/, '')}`,
+      keywordRank: index + 1,
+    }));
 }
 
 /**
- * Keyword search for Quran ayahs using PostgreSQL full-text search
+ * Keyword search for Quran ayahs using PostgreSQL full-text search with BM25 re-ranking
  */
 async function keywordSearchAyahs(
   query: string,
@@ -766,11 +993,15 @@ async function keywordSearchAyahs(
   // Build tsquery with phrase support (<-> for exact sequences)
   const tsQuery = buildTsQuery(parsed);
 
+  // Over-fetch candidates for BM25 re-ranking
+  const fetchLimit = limit * 3;
+
   const results = await prisma.$queryRaw<
     {
       id: number;
       ayah_number: number;
       text_uthmani: string;
+      text_plain: string;
       juz_number: number;
       page_number: number;
       surah_number: number;
@@ -783,6 +1014,7 @@ async function keywordSearchAyahs(
       a.id,
       a.ayah_number,
       a.text_uthmani,
+      a.text_plain,
       a.juz_number,
       a.page_number,
       s.number as surah_number,
@@ -793,25 +1025,12 @@ async function keywordSearchAyahs(
     JOIN surahs s ON a.surah_id = s.id
     WHERE to_tsvector('simple', a.text_plain) @@ to_tsquery('simple', ${tsQuery})
     ORDER BY rank DESC
-    LIMIT ${limit}
+    LIMIT ${fetchLimit}
   `;
 
-  const mappedResults = results.map((r, index) => ({
-    score: r.rank,
-    surahNumber: r.surah_number,
-    ayahNumber: r.ayah_number,
-    surahNameArabic: r.surah_name_arabic,
-    surahNameEnglish: r.surah_name_english,
-    text: r.text_uthmani,
-    juzNumber: r.juz_number,
-    pageNumber: r.page_number,
-    quranComUrl: `https://quran.com/${r.surah_number}?startingVerse=${r.ayah_number}`,
-    keywordRank: index + 1,
-  }));
-
-  // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
-  if (mappedResults.length === 0 && fuzzyFallback) {
-    if (parsed.terms.length > 0) {
+  if (results.length === 0) {
+    // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
+    if (fuzzyFallback && parsed.terms.length > 0) {
       console.log(`No exact ayah matches for "${query}", trying fuzzy search on terms...`);
       const termsOnlyQuery = parsed.terms.join(' ');
       return fuzzyKeywordSearchAyahs(termsOnlyQuery, limit, fuzzyThreshold);
@@ -819,7 +1038,53 @@ async function keywordSearchAyahs(
     return [];
   }
 
-  return mappedResults;
+  // Get all query terms for BM25 scoring
+  const allTerms = [
+    ...parsed.phrases.flatMap((p) => p.split(/\s+/)),
+    ...parsed.terms,
+  ].filter((t) => t.length > 0);
+
+  // Get corpus statistics and term document frequencies for BM25
+  const [corpusStats, termDFs] = await Promise.all([
+    getCorpusStats('ayahs'),
+    getTermDocumentFrequencies('ayahs', allTerms),
+  ]);
+
+  // Calculate IDF for each term
+  const termIDFs = new Map<string, number>();
+  for (const [term, df] of termDFs) {
+    termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
+  }
+
+  // Score each result with BM25
+  const scored = results.map((r) => {
+    const termFreqs = countTermsInText(r.text_plain, allTerms);
+    const docLength = countWords(r.text_plain);
+    const bm25Score = calculateBM25Score(
+      termFreqs,
+      docLength,
+      termIDFs,
+      corpusStats.avgDocumentLength
+    );
+    return { ...r, bm25Score };
+  });
+
+  // Sort by BM25 score and return top results
+  return scored
+    .sort((a, b) => b.bm25Score - a.bm25Score)
+    .slice(0, limit)
+    .map((r, index) => ({
+      score: r.bm25Score,
+      surahNumber: r.surah_number,
+      ayahNumber: r.ayah_number,
+      surahNameArabic: r.surah_name_arabic,
+      surahNameEnglish: r.surah_name_english,
+      text: r.text_uthmani,
+      juzNumber: r.juz_number,
+      pageNumber: r.page_number,
+      quranComUrl: `https://quran.com/${r.surah_number}?startingVerse=${r.ayah_number}`,
+      keywordRank: index + 1,
+    }));
 }
 
 /**
@@ -1096,22 +1361,26 @@ async function semanticSearch(
 }
 
 /**
- * Merge results using Reciprocal Rank Fusion
+ * Merge results using weighted score fusion for books
  *
- * IMPORTANT: Sorts by semantic score first, then RRF as tiebreaker.
- * This prioritizes results with higher semantic relevance over keyword-only matches.
+ * Uses normalized score fusion with query-aware weights:
+ * - BM25 scores are normalized to 0-1 using sigmoid function
+ * - Semantic and BM25 are combined with weights based on query characteristics
+ * - Results appearing in both searches get a 10% boost
+ * - RRF score is used as tiebreaker
  */
 function mergeWithRRF(
   semanticResults: RankedResult[],
-  keywordResults: RankedResult[]
-): RankedResult[] {
+  keywordResults: RankedResult[],
+  query: string
+): (RankedResult & { fusedScore: number })[] {
   // Create a map keyed by (bookId, pageNumber)
-  const resultMap = new Map<string, RankedResult>();
+  const resultMap = new Map<string, RankedResult & { fusedScore: number }>();
 
   // Add semantic results
   for (const result of semanticResults) {
     const key = `${result.bookId}-${result.pageNumber}`;
-    resultMap.set(key, { ...result });
+    resultMap.set(key, { ...result, fusedScore: 0 });
   }
 
   // Merge keyword results
@@ -1125,22 +1394,37 @@ function mergeWithRRF(
       existing.keywordScore = result.keywordScore;
       existing.highlightedSnippet = result.highlightedSnippet;
     } else {
-      resultMap.set(key, { ...result });
+      resultMap.set(key, { ...result, fusedScore: 0 });
     }
   }
 
-  // Calculate RRF scores and sort by semantic score first, then RRF as tiebreaker
-  const merged = Array.from(resultMap.values()).map((result) => ({
-    ...result,
-    rrfScore: calculateRRFScore([result.semanticRank, result.keywordRank]),
-  }));
+  // Get fusion weights based on query characteristics
+  const weights = getFusionWeights(query);
 
-  // Sort by semantic score first, RRF as tiebreaker
+  // Calculate fused scores and RRF scores
+  const merged = Array.from(resultMap.values()).map((result) => {
+    const semanticScore = result.semanticScore ?? 0;
+    const bm25Score = result.keywordScore ?? 0;
+    const normalizedBM25 = normalizeBM25Score(bm25Score);
+
+    // Weighted fusion: combine normalized semantic and BM25 scores
+    let fusedScore = weights.semantic * semanticScore + weights.bm25 * normalizedBM25;
+
+    // 10% boost for appearing in both searches (confirmation signal)
+    const inBoth = result.semanticRank !== undefined && result.keywordRank !== undefined;
+    if (inBoth) {
+      fusedScore *= 1.1;
+    }
+
+    const rrfScore = calculateRRFScore([result.semanticRank, result.keywordRank]);
+
+    return { ...result, fusedScore, rrfScore };
+  });
+
+  // Sort by fused score (primary), RRF as tiebreaker
   merged.sort((a, b) => {
-    // Primary: semantic score (higher is better), default to 0 for keyword-only results
-    const semanticDiff = (b.semanticScore ?? 0) - (a.semanticScore ?? 0);
-    if (Math.abs(semanticDiff) > 0.01) return semanticDiff;
-    // Tiebreaker: RRF score (boosts results found in both searches)
+    const fusedDiff = b.fusedScore - a.fusedScore;
+    if (Math.abs(fusedDiff) > 0.001) return fusedDiff;
     return b.rrfScore - a.rrfScore;
   });
 
@@ -1321,7 +1605,8 @@ async function searchAyahsHybrid(
   const merged = mergeWithRRFGeneric(
     semanticResults,
     keywordResults,
-    (a) => `${a.surahNumber}-${a.ayahNumber}`
+    (a) => `${a.surahNumber}-${a.ayahNumber}`,
+    query
   );
 
   // Take top candidates for reranking
@@ -1438,7 +1723,8 @@ async function searchHadithsHybrid(
   const merged = mergeWithRRFGeneric(
     semanticResults,
     keywordResults,
-    (h) => `${h.collectionSlug}-${h.hadithNumber}`
+    (h) => `${h.collectionSlug}-${h.hadithNumber}`,
+    query
   );
 
   // Take top candidates for reranking (reranking is expensive, limit candidates)
@@ -1553,7 +1839,7 @@ export async function GET(request: NextRequest) {
         keywordPromise,
       ]);
 
-      const merged = mergeWithRRF(semanticResults, keywordResults);
+      const merged = mergeWithRRF(semanticResults, keywordResults, query);
 
       // Fetch book metadata before reranking for better context
       const preRerankCandidates = merged.slice(0, preRerankLimit);
