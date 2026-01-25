@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "Поиск",
+    "books": "Книги",
+    "authors": "Авторы",
+    "config": "Настройки"
+  },
+  "search": {
+    "title": "Поиск",
+    "subtitle": "Поиск в Quran.com, Sunnah.com и Maktaba Shamela",
+    "placeholder": "Поиск арабских текстов...",
+    "rerank": "Переранжировать",
+    "reranking": "Переранжирование...",
+    "results": "Найдено {count} результатов",
+    "noResults": "Результаты для \"{query}\" не найдены",
+    "minChars": "Введите минимум 2 символа",
+    "error": "Пожалуйста, попробуйте еще раз.",
+    "authorsSection": "Авторы",
+    "reranked": "Переранжировано"
+  },
+  "books": {
+    "title": "Книги",
+    "searchPlaceholder": "Поиск книг...",
+    "category": "Категория",
+    "century": "Век",
+    "tableHeaders": {
+      "name": "Название",
+      "author": "Автор",
+      "year": "Год"
+    },
+    "noBooks": "Книги не найдены",
+    "showing": "Показано {count} из {total} книг",
+    "publication": "(изд.)"
+  },
+  "authors": {
+    "title": "Авторы",
+    "searchPlaceholder": "Поиск авторов...",
+    "tableHeaders": {
+      "name": "Имя",
+      "deathYear": "Год смерти"
+    },
+    "loading": "Загрузка...",
+    "noAuthors": "Авторы не найдены",
+    "showing": "Показано {count} из {total} авторов",
+    "pagination": "(страница {page} из {totalPages})",
+    "previous": "Назад",
+    "next": "Далее",
+    "backToAuthors": "Назад к авторам",
+    "authorNotFound": "Автор не найден",
+    "showingBooks": "Показано {count} книг",
+    "bookSingular": "книга",
+    "bookPlural": "книг"
+  },
+  "config": {
+    "title": "Настройки",
+    "sections": {
+      "language": "Language",
+      "similarity": "Сходство",
+      "fuzzySearch": "Нечеткий поиск",
+      "reranking": "Переранжирование",
+      "booksDisplay": "Отображение книг"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "Порог",
+      "cutoffInfo": "Минимальный балл сходства. Более высокие значения возвращают меньше, но более релевантных результатов."
+    },
+    "fuzzy": {
+      "enableFallback": "Включить запасной вариант",
+      "enableFallbackInfo": "Включает нечеткое сопоставление, если семантический поиск возвращает мало результатов.",
+      "threshold": "Порог",
+      "thresholdInfo": "Насколько точно должен совпадать текст. Более низкие значения допускают больше вариаций."
+    },
+    "reranker": {
+      "model": "Модель",
+      "modelInfo": "ИИ-модель для переранжирования результатов. Большие модели точнее, но медленнее.",
+      "candidates": "Кандидаты",
+      "candidatesInfo": "Количество начальных результатов для рассмотрения. Больше кандидатов улучшает качество.",
+      "results": "Результаты",
+      "resultsInfo": "Количество финальных результатов после переранжирования."
+    },
+    "display": {
+      "showTransliterations": "Показать транслитерацию",
+      "showTransliterationsInfo": "Отображать латинскую транслитерацию арабских названий и имен авторов.",
+      "showPublicationDates": "Показать даты публикации",
+      "showPublicationDatesInfo": "Отображать год публикации, когда дата смерти недоступна."
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "Высшее качество (Рекомендуется)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "Высокое качество, быстрее",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "Быстрый, многоязычный",
+      "jina": "Jina",
+      "jinaDesc": "Самый быстрый",
+      "none": "Нет",
+      "noneDesc": "Пропустить переранжирование"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "Типы контента",
+    "quranVerses": "Аяты Корана",
+    "hadiths": "Хадисы",
+    "books": "Книги"
+  },
+  "results": {
+    "quran": "Коран",
+    "hadith": "Хадис",
+    "surah": "Сура",
+    "juz": "Джуз",
+    "page": "Страница",
+    "volume": "Том",
+    "book": "Книга",
+    "ayahs": "аятов",
+    "chapters": "Главы",
+    "noChapters": "Главы недоступны"
+  },
+  "reader": {
+    "page": "Страница",
+    "of": "из",
+    "loadingBook": "Загрузка книги...",
+    "chapters": "Главы",
+    "noChapters": "Главы недоступны",
+    "nextPage": "Следующая страница",
+    "prevPage": "Предыдущая страница"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "close": "Закрыть",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "confirm": "Подтвердить"
+  },
+  "metadata": {
+    "ayah": "аят",
+    "ayahs": "аятов",
+    "ayahRange": "аяты {start}-{end}"
+  },
+  "language": {
+    "selector": "Язык",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

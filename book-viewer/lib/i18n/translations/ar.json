@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "بحث",
+    "books": "الكتب",
+    "authors": "المؤلفون",
+    "config": "الإعدادات"
+  },
+  "search": {
+    "title": "بحث",
+    "subtitle": "البحث في القرآن والحديث ومكتبة الشاملة",
+    "placeholder": "ابحث في النصوص العربية...",
+    "rerank": "إعادة ترتيب",
+    "reranking": "جارٍ إعادة الترتيب...",
+    "results": "وُجدت {count} نتيجة",
+    "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
+    "minChars": "أدخل حرفين على الأقل للبحث",
+    "error": "يرجى المحاولة مرة أخرى.",
+    "authorsSection": "المؤلفون",
+    "reranked": "مُعاد ترتيبها"
+  },
+  "books": {
+    "title": "الكتب",
+    "searchPlaceholder": "البحث في الكتب...",
+    "category": "التصنيف",
+    "century": "القرن",
+    "tableHeaders": {
+      "name": "الاسم",
+      "author": "المؤلف",
+      "year": "السنة"
+    },
+    "noBooks": "لم يتم العثور على كتب",
+    "showing": "عرض {count} من {total} كتاب",
+    "publication": "(نشر)"
+  },
+  "authors": {
+    "title": "المؤلفون",
+    "searchPlaceholder": "البحث في المؤلفين...",
+    "tableHeaders": {
+      "name": "الاسم",
+      "deathYear": "سنة الوفاة"
+    },
+    "loading": "جارٍ التحميل...",
+    "noAuthors": "لم يتم العثور على مؤلفين",
+    "showing": "عرض {count} من {total} مؤلف",
+    "pagination": "(صفحة {page} من {totalPages})",
+    "previous": "السابق",
+    "next": "التالي",
+    "backToAuthors": "العودة إلى المؤلفين",
+    "authorNotFound": "المؤلف غير موجود",
+    "showingBooks": "عرض {count} كتاب",
+    "bookSingular": "كتاب",
+    "bookPlural": "كتب"
+  },
+  "config": {
+    "title": "الإعدادات",
+    "sections": {
+      "language": "Language",
+      "similarity": "التشابه",
+      "fuzzySearch": "البحث التقريبي",
+      "reranking": "إعادة الترتيب",
+      "booksDisplay": "عرض الكتب"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "الحد الأدنى",
+      "cutoffInfo": "الحد الأدنى لدرجة التشابه للنتائج. القيم الأعلى تُرجع نتائج أقل ولكن أكثر صلة."
+    },
+    "fuzzy": {
+      "enableFallback": "تفعيل البحث الاحتياطي",
+      "enableFallbackInfo": "عند التفعيل، يتم إجراء مطابقة نصية تقريبية إذا أرجع البحث الدلالي نتائج قليلة.",
+      "threshold": "العتبة",
+      "thresholdInfo": "مدى تطابق النص المطلوب. القيم الأقل تسمح بمزيد من التباين في التهجئة وأشكال الكلمات."
+    },
+    "reranker": {
+      "model": "النموذج",
+      "modelInfo": "نموذج الذكاء الاصطناعي المستخدم لإعادة تقييم وترتيب النتائج. النماذج الأكبر أكثر دقة ولكنها أبطأ.",
+      "candidates": "المرشحون",
+      "candidatesInfo": "عدد النتائج الأولية للنظر فيها لإعادة الترتيب. المزيد من المرشحين يحسن الجودة لكنه يستغرق وقتًا أطول.",
+      "results": "النتائج",
+      "resultsInfo": "عدد النتائج النهائية للعودة بعد إعادة الترتيب."
+    },
+    "display": {
+      "showTransliterations": "عرض التحويل الصوتي",
+      "showTransliterationsInfo": "عرض النقل الحرفي اللاتيني للعناوين العربية وأسماء المؤلفين.",
+      "showPublicationDates": "عرض تواريخ النشر",
+      "showPublicationDatesInfo": "عرض سنة النشر عندما تكون سنة وفاة المؤلف غير متاحة."
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "أعلى جودة (موصى به)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "جودة عالية، أسرع",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "سريع، متعدد اللغات",
+      "jina": "Jina",
+      "jinaDesc": "الأسرع",
+      "none": "بدون",
+      "noneDesc": "تخطي إعادة الترتيب"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "أنواع المحتوى",
+    "quranVerses": "آيات القرآن",
+    "hadiths": "الأحاديث",
+    "books": "الكتب"
+  },
+  "results": {
+    "quran": "القرآن",
+    "hadith": "الحديث",
+    "surah": "السورة",
+    "juz": "الجزء",
+    "page": "الصفحة",
+    "volume": "المجلد",
+    "book": "الكتاب",
+    "ayahs": "آيات",
+    "chapters": "الفصول",
+    "noChapters": "لا توجد فصول متاحة"
+  },
+  "reader": {
+    "page": "الصفحة",
+    "of": "من",
+    "loadingBook": "جارٍ تحميل الكتاب...",
+    "chapters": "الفصول",
+    "noChapters": "لا توجد فصول متاحة",
+    "nextPage": "الصفحة التالية",
+    "prevPage": "الصفحة السابقة"
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "confirm": "تأكيد"
+  },
+  "metadata": {
+    "ayah": "آية",
+    "ayahs": "آيات",
+    "ayahRange": "آيات {start}-{end}"
+  },
+  "language": {
+    "selector": "اللغة",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

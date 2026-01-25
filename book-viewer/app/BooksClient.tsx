@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,25 +12,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
-
-// Helper function to convert Arabic numerals to Western numerals
-function arabicToWestern(str: string): string {
-  if (!str) return str;
-  return str
-    .replace(/٠/g, "0")
-    .replace(/١/g, "1")
-    .replace(/٢/g, "2")
-    .replace(/٣/g, "3")
-    .replace(/٤/g, "4")
-    .replace(/٥/g, "5")
-    .replace(/٦/g, "6")
-    .replace(/٧/g, "7")
-    .replace(/٨/g, "8")
-    .replace(/٩/g, "9");
-}
+import { formatBookYear, getBookCentury, getCenturyLabel } from "@/lib/dates";
+import { defaultSearchConfig } from "@/components/SearchConfigDropdown";
+import { useTranslation } from "@/lib/i18n";
 
 interface Author {
-  id: number;
+  id: string;  // shamela_author_id is now the primary key
   nameArabic: string;
   nameLatin: string;
   deathDateHijri: string | null;
@@ -44,8 +31,7 @@ interface Category {
 }
 
 interface Book {
-  id: number;
-  shamelaBookId: string;
+  id: string;
   titleArabic: string;
   titleLatin: string;
   filename: string;
@@ -60,84 +46,131 @@ interface BooksClientProps {
   books: Book[];
 }
 
-// Get year display for a book
-function getBookYear(book: Book): string {
-  // Primary: Use author's death year
-  if (book.author.deathDateGregorian || book.author.deathDateHijri) {
-    const parts = [];
-    if (book.author.deathDateGregorian) {
-      parts.push(`${arabicToWestern(book.author.deathDateGregorian)} CE`);
-    }
-    if (book.author.deathDateHijri) {
-      parts.push(`${arabicToWestern(book.author.deathDateHijri)} AH`);
-    }
-    return parts.join(" / ");
-  }
-
-  // Fallback: Use publication year
-  if (book.publicationYearGregorian) {
-    return book.publicationYearGregorian;
-  }
-  if (book.publicationYearHijri) {
-    return `${book.publicationYearHijri} AH`;
-  }
-
-  return "—";
+// Get year display for a book using centralized utility
+function getBookYear(book: Book, showPublicationDates: boolean): string {
+  const result = formatBookYear(book);
+  if (!result.year) return "—";
+  if (result.isPublicationYear && !showPublicationDates) return "—";
+  return result.isPublicationYear ? `${result.year} (pub.)` : result.year;
 }
 
+const STORAGE_KEY = "searchConfig";
+
 export default function BooksClient({ books }: BooksClientProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedTimePeriods, setSelectedTimePeriods] = useState<string[]>([]);
+  const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
+  const [showPublicationDates, setShowPublicationDates] = useState(defaultSearchConfig.showPublicationDates);
+  const [showTransliterations, setShowTransliterations] = useState(defaultSearchConfig.showTransliterations);
 
-  const categoryOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
+  // Load display options from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.showPublicationDates === "boolean") {
+          setShowPublicationDates(parsed.showPublicationDates);
+        }
+        if (typeof parsed.showTransliterations === "boolean") {
+          setShowTransliterations(parsed.showTransliterations);
+        }
+      } catch {
+        // Invalid JSON, use defaults
+      }
+    }
+  }, []);
+
+  // Get all unique categories (for stable option list)
+  const allCategories = useMemo(() => {
+    const categories = new Set<string>();
     books.forEach((book) => {
       if (book.category) {
-        counts[book.category.nameArabic] =
-          (counts[book.category.nameArabic] || 0) + 1;
+        categories.add(book.category.nameArabic);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [books]);
+
+  // Get all unique centuries (for stable option list)
+  const allCenturies = useMemo(() => {
+    const centuries = new Set<number>();
+    books.forEach((book) => {
+      const century = getBookCentury(book);
+      if (century) {
+        centuries.add(century);
+      }
+    });
+    return Array.from(centuries).sort((a, b) => a - b);
+  }, [books]);
+
+  // Category options with counts filtered by selected centuries
+  const categoryOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    // Initialize all categories with 0
+    allCategories.forEach((cat) => {
+      counts[cat] = 0;
+    });
+
+    // Count books matching selected centuries (or all if none selected)
+    books.forEach((book) => {
+      if (!book.category) return;
+
+      const bookCentury = getBookCentury(book);
+      const matchesCentury =
+        selectedCenturies.length === 0 ||
+        (bookCentury && selectedCenturies.includes(bookCentury.toString()));
+
+      if (matchesCentury) {
+        counts[book.category.nameArabic] = (counts[book.category.nameArabic] || 0) + 1;
       }
     });
 
-    return Object.entries(counts).map(([category, count]) => ({
+    return allCategories.map((category) => ({
       value: category,
       label: category,
-      count,
+      count: counts[category],
+      disabled: counts[category] === 0,
     }));
-  }, [books]);
+  }, [books, allCategories, selectedCenturies]);
 
-  const timePeriodOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
+  // Century options with counts filtered by selected categories
+  const centuryOptions = useMemo(() => {
+    const counts: Record<number, number> = {};
+
+    // Initialize all centuries with 0
+    allCenturies.forEach((century) => {
+      counts[century] = 0;
+    });
+
+    // Count books matching selected categories (or all if none selected)
     books.forEach((book) => {
-      if (book.timePeriod) {
-        counts[book.timePeriod] = (counts[book.timePeriod] || 0) + 1;
+      const century = getBookCentury(book);
+      if (!century) return;
+
+      const matchesCategory =
+        selectedCategories.length === 0 ||
+        (book.category && selectedCategories.includes(book.category.nameArabic));
+
+      if (matchesCategory) {
+        counts[century] = (counts[century] || 0) + 1;
       }
     });
 
-    const labels: Record<string, { label: string; labelArabic: string }> = {
-      "pre-islamic": { label: "Pre-Islamic", labelArabic: "الجاهلية" },
-      "early-islamic": {
-        label: "Early Islamic (1-40 AH)",
-        labelArabic: "صدر الإسلام",
-      },
-      umayyad: { label: "Umayyad (41-132 AH)", labelArabic: "العصر الأموي" },
-      abbasid: {
-        label: "Abbasid (133-656 AH)",
-        labelArabic: "العصر العباسي",
-      },
-      "post-abbasid": {
-        label: "Post-Abbasid (657+ AH)",
-        labelArabic: "ما بعد العباسي",
-      },
-    };
-
-    return Object.entries(counts).map(([period, count]) => ({
-      value: period,
-      label: labels[period]?.label || period,
-      labelArabic: labels[period]?.labelArabic,
-      count,
-    }));
-  }, [books]);
+    return allCenturies.map((century) => {
+      const labels = getCenturyLabel(century);
+      return {
+        value: labels.value,
+        label: labels.label,
+        labelArabic: labels.labelArabic,
+        count: counts[century],
+        disabled: counts[century] === 0,
+        sortKey: century,
+      };
+    });
+  }, [books, allCenturies, selectedCategories]);
 
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
@@ -153,50 +186,51 @@ export default function BooksClient({ books }: BooksClientProps) {
         (book.category &&
           selectedCategories.includes(book.category.nameArabic));
 
-      const matchesTimePeriod =
-        selectedTimePeriods.length === 0 ||
-        (book.timePeriod && selectedTimePeriods.includes(book.timePeriod));
+      const bookCentury = getBookCentury(book);
+      const matchesCentury =
+        selectedCenturies.length === 0 ||
+        (bookCentury && selectedCenturies.includes(bookCentury.toString()));
 
-      return matchesSearch && matchesCategory && matchesTimePeriod;
+      return matchesSearch && matchesCategory && matchesCentury;
     });
-  }, [books, searchQuery, selectedCategories, selectedTimePeriods]);
+  }, [books, searchQuery, selectedCategories, selectedCenturies]);
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Books</h1>
-        <div className="flex items-center gap-3">
+    <div className="p-4 md:p-8">
+      <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">{t("books.title")}</h1>
+        <div className="flex items-center gap-2 md:gap-3" suppressHydrationWarning>
           <div className="hidden min-[896px]:flex items-center gap-3">
             <MultiSelectDropdown
-              title="Category"
+              title={t("books.category")}
               options={categoryOptions}
               selected={selectedCategories}
               onChange={setSelectedCategories}
             />
             <MultiSelectDropdown
-              title="Time Period"
-              options={timePeriodOptions}
-              selected={selectedTimePeriods}
-              onChange={setSelectedTimePeriods}
+              title={t("books.century")}
+              options={centuryOptions}
+              selected={selectedCenturies}
+              onChange={setSelectedCenturies}
             />
           </div>
           <Input
             type="text"
-            placeholder="Search books..."
-            className="w-64"
+            placeholder={t("books.searchPlaceholder")}
+            className="w-full sm:w-64"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Author</TableHead>
-              <TableHead>Year</TableHead>
+              <TableHead>{t("books.tableHeaders.name")}</TableHead>
+              <TableHead>{t("books.tableHeaders.author")}</TableHead>
+              <TableHead>{t("books.tableHeaders.year")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -206,7 +240,7 @@ export default function BooksClient({ books }: BooksClientProps) {
                   colSpan={3}
                   className="text-center text-muted-foreground"
                 >
-                  No books found
+                  {t("books.noBooks")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -214,22 +248,28 @@ export default function BooksClient({ books }: BooksClientProps) {
                 <TableRow key={book.id}>
                   <TableCell>
                     <Link
-                      href={`/reader/${book.shamelaBookId}`}
+                      href={`/reader/${book.id}`}
                       className="font-medium hover:underline"
                     >
                       <div>{book.titleArabic}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {book.titleLatin}
-                      </div>
+                      {showTransliterations && (
+                        <div className="text-sm text-muted-foreground">
+                          {book.titleLatin}
+                        </div>
+                      )}
                     </Link>
                   </TableCell>
                   <TableCell>
                     <div>{book.author.nameArabic}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {book.author.nameLatin}
-                    </div>
+                    {showTransliterations && (
+                      <div className="text-sm text-muted-foreground">
+                        {book.author.nameLatin}
+                      </div>
+                    )}
                   </TableCell>
-                  <TableCell>{getBookYear(book)}</TableCell>
+                  <TableCell>
+                    {getBookYear(book, showPublicationDates)}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -238,7 +278,7 @@ export default function BooksClient({ books }: BooksClientProps) {
       </div>
 
       <div className="mt-4 text-sm text-muted-foreground">
-        Showing {filteredBooks.length} of {books.length} books
+        {t("books.showing", { count: filteredBooks.length, total: books.length })}
       </div>
     </div>
   );

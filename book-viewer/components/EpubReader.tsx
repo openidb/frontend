@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import ePub, { Book, Rendition } from "epubjs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, ChevronLeft, Menu } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 interface BookMetadata {
   id: string;
@@ -18,10 +19,13 @@ interface BookMetadata {
 
 interface EpubReaderProps {
   bookMetadata: BookMetadata;
+  initialPage?: string;       // Page label (urlPageIndex) - may have duplicates in multi-volume books
+  initialPageNumber?: string; // Unique sequential page number - maps to EPUB file name
 }
 
-export function EpubReader({ bookMetadata }: EpubReaderProps) {
+export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: EpubReaderProps) {
   const router = useRouter();
+  const { t, dir } = useTranslation();
   const viewerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<Rendition | null>(null);
   const bookRef = useRef<Book | null>(null);
@@ -35,6 +39,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
   const [pageList, setPageList] = useState<any[]>([]);
   const [currentPageLabel, setCurrentPageLabel] = useState("");
   const [totalPages, setTotalPages] = useState(0);
+  const [hasNavigatedToInitialPage, setHasNavigatedToInitialPage] = useState(false);
 
   useEffect(() => {
     const viewerElement = viewerRef.current;
@@ -52,7 +57,6 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
       const width = viewerElement.clientWidth;
       const height = viewerElement.clientHeight;
 
-      console.log("Creating rendition with dimensions:", width, height);
 
       const renditionInstance = bookInstance.renderTo(viewerElement, {
         width: width,
@@ -67,7 +71,9 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
       // Inject normalization CSS with diacritics support
       renditionInstance.hooks.content.register((contents: any) => {
         const style = contents.document.createElement("style");
-        style.textContent = `
+
+        // Base styles for all books
+        const cssContent = `
           * {
             max-width: 100% !important;
             box-sizing: border-box !important;
@@ -102,12 +108,13 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
             overflow-wrap: break-word !important;
           }
         `;
+
+        style.textContent = cssContent;
         contents.document.head.appendChild(style);
       });
 
       // Display and wait for it to finish
       renditionInstance.display().then(() => {
-        console.log("Initial display complete");
         setIsReady(true);
 
         // Add RTL support after content is rendered
@@ -125,13 +132,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
         console.error("Display error:", err);
       });
 
-      // Listen for layout events to ensure pages are rendered
-      renditionInstance.on("rendered", () => {
-        console.log("Section rendered");
-      });
-
       renditionInstance.on("relocated", (location: any) => {
-        console.log("Relocated to:", location);
 
         // Update section counter
         if (location.start) {
@@ -144,35 +145,39 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
 
           // Only update page number if we've actually moved to a different file
           if (currentHref !== currentHrefRef.current) {
-            console.log(`Href changed from ${currentHrefRef.current} to ${currentHref}`);
             currentHrefRef.current = currentHref;
 
             // Try to find the current page label from page list
             // Match by href to get the correct printed page number
             if (pageList.length > 0) {
-              console.log(`Relocated - href: ${currentHref}, index: ${location.start.index}`);
+
+              // Extract just the filename for matching (handles path differences)
+              const currentFilename = currentHref.split('/').pop() || currentHref;
 
               // Find the page in the page list that matches this href
-              const foundPage = pageList.find((page: any) => page.href === currentHref);
+              const foundPage = pageList.find((page: any) => {
+                const pageFilename = page.href.split('/').pop() || page.href;
+                return pageFilename === currentFilename;
+              });
 
               if (foundPage && foundPage.label) {
-                console.log(`Found page number: ${foundPage.label} for ${currentHref}`);
                 setCurrentPageLabel(foundPage.label);
                 setPageInputValue(foundPage.label);
               } else {
                 // Fallback: No matching page in page-list (e.g., page 0 overview)
-                // Use a placeholder or section index
-                console.log(`No page number found for ${currentHref}, using section ${currentIndex}`);
                 setCurrentPageLabel("i");  // Roman numeral for overview/intro pages
                 setPageInputValue("i");
               }
             } else {
-              // No page list at all, use section index
-              setCurrentPageLabel(currentIndex.toString());
-              setPageInputValue(currentIndex.toString());
+              // No page list loaded yet, use "i" for first page, otherwise section index
+              if (currentIndex === 1) {
+                setCurrentPageLabel("i");
+                setPageInputValue("i");
+              } else {
+                setCurrentPageLabel(currentIndex.toString());
+                setPageInputValue(currentIndex.toString());
+              }
             }
-          } else {
-            console.log(`Still on same href: ${currentHref}, not updating page number`);
           }
         }
       });
@@ -185,70 +190,74 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
       // Get table of contents
       bookInstance.loaded.navigation.then((navigation: any) => {
         // Filter out page-list and guide entries from TOC
-        // EPub.js sometimes includes these in the toc array
         const filteredToc = navigation.toc.filter((item: any) => {
           const label = item.label?.toLowerCase() || '';
-          // Filter out "Guide", "Pages", and entries that are just numbers (page numbers)
           return label !== 'guide' &&
                  label !== 'pages' &&
                  label !== 'صفحات' &&
-                 !/^\d+$/.test(label);  // Exclude entries that are just numbers
+                 !/^\d+$/.test(label);
         });
-
-        console.log("Original TOC length:", navigation.toc.length);
-        console.log("Filtered TOC length:", filteredToc.length);
         setChapters(filteredToc);
 
         // EPub.js doesn't automatically parse page-list nav elements
-        // We need to manually fetch and parse the nav.xhtml file
-        console.log("Attempting to manually parse page-list from nav.xhtml");
         parsePageList(bookInstance);
       });
 
       // Manually parse page-list from nav.xhtml
       async function parsePageList(book: Book) {
         try {
-          // Get the nav document
-          const navItem = book.spine.get('nav');
-          if (!navItem) {
-            // Nav might not be in spine, try to load it directly
-            const navPath = 'EPUB/nav.xhtml';
-            const response = await fetch(`/books/${bookMetadata.filename}`);
-            const blob = await response.blob();
+          const navPath = 'EPUB/nav.xhtml';
+          const response = await fetch(`/books/${bookMetadata.filename}`);
+          if (!response.ok) return;
 
-            // Use JSZip to extract nav.xhtml
-            const JSZip = (await import('jszip')).default;
-            const zip = await JSZip.loadAsync(blob);
-            const navFile = zip.file(navPath);
+          const blob = await response.blob();
+          const JSZip = (await import('jszip')).default;
+          const zip = await JSZip.loadAsync(blob);
 
-            if (navFile) {
-              const navContent = await navFile.async('text');
-              const parser = new DOMParser();
-              const navDoc = parser.parseFromString(navContent, 'application/xhtml+xml');
-
-              // Find page-list nav element
-              const pageListNav = navDoc.querySelector('nav[*|type="page-list"]');
-
-              if (pageListNav) {
-                const pageLinks = pageListNav.querySelectorAll('a');
-                const pages = Array.from(pageLinks).map(link => ({
-                  label: link.textContent || '',
-                  href: link.getAttribute('href') || ''
-                }));
-
-                console.log("Manually parsed page-list:", pages.length, "pages");
-                console.log("First 5 pages:", pages.slice(0, 5));
-                setPageList(pages);
-                setTotalPages(pages.length);
-              } else {
-                console.log("No page-list nav found in nav.xhtml");
-                setPageList([]);
-                setTotalPages(0);
+          const navFile = zip.file(navPath);
+          if (!navFile) {
+            // Try alternative paths
+            const altPaths = ['nav.xhtml', 'OEBPS/nav.xhtml', 'OPS/nav.xhtml'];
+            for (const altPath of altPaths) {
+              const altFile = zip.file(altPath);
+              if (altFile) {
+                const navContent = await altFile.async('text');
+                parseNavContent(navContent);
+                return;
               }
             }
+            return;
           }
+
+          const navContent = await navFile.async('text');
+          parseNavContent(navContent);
+
         } catch (error) {
           console.error("Error parsing page-list:", error);
+          setPageList([]);
+          setTotalPages(0);
+        }
+      }
+
+      function parseNavContent(navContent: string) {
+        const parser = new DOMParser();
+        const navDoc = parser.parseFromString(navContent, 'application/xhtml+xml');
+
+        // Find page-list nav element with multiple selectors for namespace handling
+        const pageListNav = navDoc.querySelector('nav#page-list') ||
+                            navDoc.querySelector('nav[id="page-list"]') ||
+                            navDoc.querySelector('nav[epub\\:type="page-list"]') ||
+                            navDoc.querySelector('nav[*|type="page-list"]');
+
+        if (pageListNav) {
+          const pageLinks = pageListNav.querySelectorAll('a');
+          const pages = Array.from(pageLinks).map(link => ({
+            label: link.textContent || '',
+            href: link.getAttribute('href') || ''
+          }));
+          setPageList(pages);
+          setTotalPages(pages.length);
+        } else {
           setPageList([]);
           setTotalPages(0);
         }
@@ -264,34 +273,17 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         if (renditionRef.current && viewerElement) {
-          const newWidth = viewerElement.clientWidth;
-          const newHeight = viewerElement.clientHeight;
-          console.log("Resizing to:", newWidth, newHeight);
-          renditionRef.current.resize(newWidth, newHeight);
+          renditionRef.current.resize(viewerElement.clientWidth, viewerElement.clientHeight);
         }
       }, 150);
     };
 
-    // Handle keyboard navigation
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (!renditionRef.current || !isReady) return;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        renditionRef.current.next();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        renditionRef.current.prev();
-      }
-    };
-
     window.addEventListener("resize", handleResize);
-    window.addEventListener("keydown", handleKeyPress);
 
     // Cleanup
     return () => {
       clearTimeout(resizeTimeout);
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("keydown", handleKeyPress);
 
       if (renditionRef.current) {
         renditionRef.current.destroy();
@@ -305,32 +297,116 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
     };
   }, []); // Empty deps - only initialize once
 
+  // Handle keyboard navigation - language-aware
+  // In RTL languages (Arabic, Urdu): ArrowLeft = next, ArrowRight = prev
+  // In LTR languages: ArrowLeft = prev, ArrowRight = next
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!renditionRef.current || !isReady) return;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (dir === "rtl") {
+          renditionRef.current.next();
+        } else {
+          renditionRef.current.prev();
+        }
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (dir === "rtl") {
+          renditionRef.current.prev();
+        } else {
+          renditionRef.current.next();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [dir, isReady]);
+
   // Update page number when pageList becomes available
-  // This handles the case where relocated fires before pageList is loaded
   useEffect(() => {
     if (pageList.length > 0 && renditionRef.current && currentSection > 0) {
-      // Get the current location and update the page label
-      const location = renditionRef.current.currentLocation();
+      const location = renditionRef.current.currentLocation() as any;
       if (location && location.start) {
         const currentHref = location.start.href;
-        const foundPage = pageList.find((page: any) => page.href === currentHref);
+        const currentFilename = currentHref.split('/').pop() || currentHref;
+
+        const foundPage = pageList.find((page: any) => {
+          const pageFilename = page.href.split('/').pop() || page.href;
+          return pageFilename === currentFilename;
+        });
 
         if (foundPage && foundPage.label) {
-          console.log(`Updating page label after pageList loaded: ${foundPage.label} for ${currentHref}`);
           setCurrentPageLabel(foundPage.label);
           setPageInputValue(foundPage.label);
         } else {
-          // Page not in page-list (e.g., page 0 overview)
-          console.log(`Page ${currentHref} not in page-list, using 'i'`);
           setCurrentPageLabel("i");
           setPageInputValue("i");
         }
       }
     }
-  }, [pageList, currentSection]); // Run when pageList or currentSection changes
+  }, [pageList, currentSection]);
+
+  // Navigate to initial page from URL query parameter
+  // Priority: initialPageNumber (unique) > initialPage (label, may have duplicates)
+  useEffect(() => {
+    if (hasNavigatedToInitialPage || !renditionRef.current || !isReady) {
+      return;
+    }
+
+    // If initialPageNumber is provided, construct the href directly
+    // This is the preferred method as it's unambiguous (no duplicates)
+    if (initialPageNumber) {
+      const pageNum = parseInt(initialPageNumber, 10);
+      if (!isNaN(pageNum)) {
+        // EPUB files are named like page_0967.xhtml (zero-padded to 4 digits)
+        const paddedNum = pageNum.toString().padStart(4, '0');
+        const directHref = `page_${paddedNum}.xhtml`;
+        renditionRef.current.display(directHref);
+        setHasNavigatedToInitialPage(true);
+        return;
+      }
+    }
+
+    // Fall back to label-based navigation if initialPage is provided
+    // Note: This may open the wrong page in multi-volume books with duplicate labels
+    if (initialPage && pageList.length > 0) {
+      // Try multiple matching strategies:
+      // 1. Exact match
+      // 2. Strip leading zeros (e.g., "0057" -> "57")
+      // 3. Parse as number and match (e.g., "57" matches "57")
+      let foundPage = pageList.find((page: any) => page.label === initialPage);
+
+      if (!foundPage) {
+        // Try stripping leading zeros from initialPage
+        const strippedPage = initialPage.replace(/^0+/, '') || '0';
+        foundPage = pageList.find((page: any) => page.label === strippedPage);
+      }
+
+      if (!foundPage) {
+        // Try parsing as number
+        const pageNum = parseInt(initialPage, 10);
+        if (!isNaN(pageNum)) {
+          foundPage = pageList.find((page: any) => page.label === pageNum.toString());
+        }
+      }
+
+      // Handle "i" for first page
+      if (!foundPage && initialPage.toLowerCase() === 'i') {
+        foundPage = pageList.find((page: any) => page.label === 'i');
+      }
+
+      if (foundPage && foundPage.href) {
+        renditionRef.current.display(foundPage.href);
+      }
+      setHasNavigatedToInitialPage(true);
+    }
+  }, [initialPage, initialPageNumber, pageList, isReady, hasNavigatedToInitialPage]);
 
   const goBack = () => {
-    router.push("/");
+    router.back();
   };
 
   const goToPrevPage = () => {
@@ -345,18 +421,13 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
   };
 
   const goToNextPage = () => {
-    console.log("goToNextPage called:", { currentSection, totalSections, isReady });
     if (renditionRef.current && bookRef.current && isReady && currentSection < totalSections) {
       bookRef.current.loaded.spine.then((spine: any) => {
         const section = spine.get(currentSection);
-        console.log("Attempting to navigate to section:", currentSection, section);
         if (section && renditionRef.current) {
-          console.log("Displaying section href:", section.href);
           renditionRef.current.display(section.href);
         }
       });
-    } else {
-      console.log("Navigation blocked - conditions not met");
     }
   };
 
@@ -371,7 +442,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
     setShowSidebar(!showSidebar);
   };
 
-  const renderChapters = (items: any[], depth: number = 0): JSX.Element[] => {
+  const renderChapters = (items: any[], depth: number = 0): ReactNode[] => {
     return items.map((item, index) => {
       const hasSubitems = item.subitems && item.subitems.length > 0;
 
@@ -379,7 +450,7 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
         <div key={`${depth}-${index}`}>
           <button
             onClick={() => goToChapter(item.href)}
-            className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm transition-colors"
+            className="w-full text-left px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors"
             style={{ paddingRight: `${depth * 12 + 12}px` }}
           >
             {item.label}
@@ -405,28 +476,34 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
 
     // If we have a page list, try to find the page by label
     if (pageList.length > 0) {
-      const pageIndex = pageList.findIndex((page: any) => page.label === pageInputValue);
-      if (pageIndex !== -1) {
-        const page = pageList[pageIndex];
-        if (page && page.href) {
-          renditionRef.current.display(page.href);
-        }
-      } else {
-        // Try parsing as number
+      // Try multiple matching strategies:
+      // 1. Exact match
+      let foundPage = pageList.find((page: any) => page.label === pageInputValue);
+
+      // 2. Strip leading zeros
+      if (!foundPage) {
+        const strippedPage = pageInputValue.replace(/^0+/, '') || '0';
+        foundPage = pageList.find((page: any) => page.label === strippedPage);
+      }
+
+      // 3. Parse as number
+      if (!foundPage) {
         const pageNum = parseInt(pageInputValue, 10);
         if (!isNaN(pageNum)) {
-          // Find page with this label
-          const foundPage = pageList.find((page: any) => page.label === pageNum.toString());
-          if (foundPage && foundPage.href) {
-            renditionRef.current.display(foundPage.href);
-          } else {
-            // Reset to current page if invalid
-            setPageInputValue(currentPageLabel || currentSection.toString());
-          }
-        } else {
-          // Reset to current page if invalid
-          setPageInputValue(currentPageLabel || currentSection.toString());
+          foundPage = pageList.find((page: any) => page.label === pageNum.toString());
         }
+      }
+
+      // 4. Handle "i" for first page
+      if (!foundPage && pageInputValue.toLowerCase() === 'i') {
+        foundPage = pageList.find((page: any) => page.label === 'i');
+      }
+
+      if (foundPage && foundPage.href) {
+        renditionRef.current.display(foundPage.href);
+      } else {
+        // Reset to current page if invalid
+        setPageInputValue(currentPageLabel || currentSection.toString());
       }
     } else {
       // Fallback to section-based navigation
@@ -446,62 +523,62 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-white">
+    <div className="fixed inset-0 flex flex-col bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 border-b bg-white px-4 py-3 shrink-0">
-        <Button variant="ghost" size="icon" onClick={goBack}>
-          <ArrowLeft className="h-5 w-5" />
+      <div className="flex items-center gap-2 md:gap-3 border-b bg-background px-2 md:px-4 py-2 md:py-3 shrink-0">
+        <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0">
+          <ArrowLeft className="h-5 w-5 rtl:scale-x-[-1]" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-semibold">{bookMetadata.title}</h1>
-          <p className="truncate text-sm text-muted-foreground">
+          <h1 className="truncate font-semibold text-sm md:text-base">{bookMetadata.title}</h1>
+          <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
             {bookMetadata.titleLatin}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
           {totalSections > 0 && (
             <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">Page</span>
+              <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">{t("reader.page")}</span>
               <input
                 type="text"
                 inputMode="numeric"
                 value={pageInputValue}
                 onChange={handlePageInputChange}
                 onBlur={handlePageInputSubmit}
-                className="w-12 text-sm text-muted-foreground text-center bg-transparent border-b border-gray-300 focus:border-gray-500 focus:outline-none"
+                className="w-10 md:w-12 text-xs md:text-sm text-muted-foreground text-center bg-transparent border-b border-border focus:border-primary focus:outline-none"
               />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs md:text-sm text-muted-foreground hidden md:inline">
                 {pageList.length > 0
-                  ? `(of ${pageList[pageList.length - 1]?.label || totalSections})`
-                  : `of ${totalSections}`}
+                  ? `(${t("reader.of")} ${pageList[pageList.length - 1]?.label || totalSections})`
+                  : `${t("reader.of")} ${totalSections}`}
               </span>
             </form>
           )}
-          <div className="flex items-center gap-2 ml-3">
+          <div className="flex items-center gap-1 md:gap-2 ml-1 md:ml-3" dir="ltr">
             <Button
               variant="outline"
-              onClick={goToNextPage}
-              title="Next page"
-              className="transition-transform active:scale-95 h-9 w-12"
+              onClick={dir === "rtl" ? goToNextPage : goToPrevPage}
+              title={dir === "rtl" ? t("reader.nextPage") : t("reader.prevPage")}
+              className="transition-transform active:scale-95 h-8 w-10 md:h-9 md:w-12"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
             <Button
               variant="outline"
-              onClick={goToPrevPage}
-              title="Previous page"
-              className="transition-transform active:scale-95 h-9 w-12"
+              onClick={dir === "rtl" ? goToPrevPage : goToNextPage}
+              title={dir === "rtl" ? t("reader.prevPage") : t("reader.nextPage")}
+              className="transition-transform active:scale-95 h-8 w-10 md:h-9 md:w-12"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
             <Button
               variant="outline"
               size="icon"
               onClick={toggleSidebar}
-              title="Chapters"
-              className="transition-transform active:scale-95"
+              title={t("reader.chapters")}
+              className="transition-transform active:scale-95 h-8 w-8 md:h-9 md:w-9"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
         </div>
@@ -517,26 +594,28 @@ export function EpubReader({ bookMetadata }: EpubReaderProps) {
       />
 
       {!isReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
-          <p className="text-muted-foreground">Loading book...</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
+          <p className="text-muted-foreground">{t("reader.loadingBook")}</p>
         </div>
       )}
 
       {/* Sidebar */}
       <div
-        className={`absolute top-20 right-4 w-72 max-h-[calc(100vh-6rem)] bg-white rounded-lg border shadow-xl z-30 flex flex-col transition-all duration-200 ${
+        className={`absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-72 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-background rounded-lg border shadow-xl z-30 flex flex-col transition-all duration-200 ${
           showSidebar
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
         }`}
       >
         <div className="p-3 border-b">
-          <h2 className="font-semibold">Chapters</h2>
+          <h2 className="font-semibold">{t("reader.chapters")}</h2>
         </div>
 
         <div className="flex-1 overflow-auto p-3">
           {chapters.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No chapters available</p>
+            <p className="text-sm text-muted-foreground">
+              {t("reader.noChapters")}
+            </p>
           ) : (
             <div className="space-y-1">
               {renderChapters(chapters)}

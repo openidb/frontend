@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "Buscar",
+    "books": "Livros",
+    "authors": "Autores",
+    "config": "Config"
+  },
+  "search": {
+    "title": "Buscar",
+    "subtitle": "Buscar em Quran.com, Sunnah.com e Maktaba Shamela",
+    "placeholder": "Buscar textos arabes...",
+    "rerank": "Reordenar",
+    "reranking": "Reordenando...",
+    "results": "Encontrados {count} resultados",
+    "noResults": "Nenhum resultado para \"{query}\"",
+    "minChars": "Digite pelo menos 2 caracteres",
+    "error": "Por favor, tente novamente.",
+    "authorsSection": "Autores",
+    "reranked": "Reordenado"
+  },
+  "books": {
+    "title": "Livros",
+    "searchPlaceholder": "Buscar livros...",
+    "category": "Categoria",
+    "century": "Seculo",
+    "tableHeaders": {
+      "name": "Nome",
+      "author": "Autor",
+      "year": "Ano"
+    },
+    "noBooks": "Nenhum livro encontrado",
+    "showing": "Mostrando {count} de {total} livros",
+    "publication": "(pub.)"
+  },
+  "authors": {
+    "title": "Autores",
+    "searchPlaceholder": "Buscar autores...",
+    "tableHeaders": {
+      "name": "Nome",
+      "deathYear": "Ano de falecimento"
+    },
+    "loading": "Carregando...",
+    "noAuthors": "Nenhum autor encontrado",
+    "showing": "Mostrando {count} de {total} autores",
+    "pagination": "(pagina {page} de {totalPages})",
+    "previous": "Anterior",
+    "next": "Proximo",
+    "backToAuthors": "Voltar para autores",
+    "authorNotFound": "Autor nao encontrado",
+    "showingBooks": "Mostrando {count} livros",
+    "bookSingular": "livro",
+    "bookPlural": "livros"
+  },
+  "config": {
+    "title": "Configuracoes",
+    "sections": {
+      "language": "Language",
+      "similarity": "Similaridade",
+      "fuzzySearch": "Busca aproximada",
+      "reranking": "Reordenamento",
+      "booksDisplay": "Exibicao de livros"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "Limite",
+      "cutoffInfo": "Pontuacao minima de similaridade. Valores mais altos retornam menos resultados, mas mais relevantes."
+    },
+    "fuzzy": {
+      "enableFallback": "Ativar fallback",
+      "enableFallbackInfo": "Ativa correspondencia aproximada se a busca semantica retornar poucos resultados.",
+      "threshold": "Limite",
+      "thresholdInfo": "Quao proximo o texto deve corresponder. Valores mais baixos permitem mais variacao."
+    },
+    "reranker": {
+      "model": "Modelo",
+      "modelInfo": "Modelo de IA para reordenar resultados. Modelos maiores sao mais precisos, mas mais lentos.",
+      "candidates": "Candidatos",
+      "candidatesInfo": "Numero de resultados iniciais a considerar. Mais candidatos melhora a qualidade.",
+      "results": "Resultados",
+      "resultsInfo": "Numero de resultados finais apos reordenamento."
+    },
+    "display": {
+      "showTransliterations": "Mostrar transliteracoes",
+      "showTransliterationsInfo": "Exibir transliteracoes latinas de titulos arabes e nomes de autores.",
+      "showPublicationDates": "Mostrar datas de publicacao",
+      "showPublicationDatesInfo": "Exibir ano de publicacao quando a data de falecimento nao esta disponivel."
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "Maxima qualidade (Recomendado)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "Alta qualidade, mais rapido",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "Rapido, multilingue",
+      "jina": "Jina",
+      "jinaDesc": "O mais rapido",
+      "none": "Nenhum",
+      "noneDesc": "Pular reordenamento"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "Tipos de conteudo",
+    "quranVerses": "Versos do Alcorao",
+    "hadiths": "Hadiths",
+    "books": "Livros"
+  },
+  "results": {
+    "quran": "Alcorao",
+    "hadith": "Hadith",
+    "surah": "Surata",
+    "juz": "Juz",
+    "page": "Pagina",
+    "volume": "Vol.",
+    "book": "Livro",
+    "ayahs": "versos",
+    "chapters": "Capitulos",
+    "noChapters": "Nenhum capitulo disponivel"
+  },
+  "reader": {
+    "page": "Pagina",
+    "of": "de",
+    "loadingBook": "Carregando livro...",
+    "chapters": "Capitulos",
+    "noChapters": "Nenhum capitulo disponivel",
+    "nextPage": "Proxima pagina",
+    "prevPage": "Pagina anterior"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "confirm": "Confirmar"
+  },
+  "metadata": {
+    "ayah": "verso",
+    "ayahs": "versos",
+    "ayahRange": "versos {start}-{end}"
+  },
+  "language": {
+    "selector": "Idioma",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

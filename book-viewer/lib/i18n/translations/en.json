@@ -1,0 +1,156 @@
+{
+  "nav": {
+    "search": "Search",
+    "books": "Books",
+    "authors": "Authors",
+    "config": "Config"
+  },
+  "search": {
+    "title": "Search",
+    "subtitle": "Search across Quran.com, Sunnah.com, and Maktaba Shamela",
+    "placeholder": "Search Arabic texts...",
+    "rerank": "Rerank",
+    "reranking": "Reranking...",
+    "results": "Found {count} results",
+    "noResults": "No results found for \"{query}\"",
+    "minChars": "Enter at least 2 characters to search",
+    "error": "Please try again.",
+    "authorsSection": "Authors",
+    "reranked": "Reranked"
+  },
+  "books": {
+    "title": "Books",
+    "searchPlaceholder": "Search books...",
+    "category": "Category",
+    "century": "Century",
+    "tableHeaders": {
+      "name": "Name",
+      "author": "Author",
+      "year": "Year"
+    },
+    "noBooks": "No books found",
+    "showing": "Showing {count} of {total} books",
+    "publication": "(pub.)"
+  },
+  "authors": {
+    "title": "Authors",
+    "searchPlaceholder": "Search authors...",
+    "tableHeaders": {
+      "name": "Name",
+      "deathYear": "Death Year"
+    },
+    "loading": "Loading...",
+    "noAuthors": "No authors found",
+    "showing": "Showing {count} of {total} authors",
+    "pagination": "(page {page} of {totalPages})",
+    "previous": "Previous",
+    "next": "Next",
+    "backToAuthors": "Back to Authors",
+    "authorNotFound": "Author not found",
+    "showingBooks": "Showing {count} books",
+    "bookSingular": "book",
+    "bookPlural": "books"
+  },
+  "config": {
+    "title": "Configurations",
+    "sections": {
+      "language": "Language",
+      "similarity": "Similarity",
+      "fuzzySearch": "Fuzzy Search",
+      "reranking": "Reranking",
+      "booksDisplay": "Books Display"
+    },
+    "similarity": {
+      "cutoff": "Cutoff",
+      "cutoffInfo": "Minimum similarity score for results. Higher values return fewer but more relevant results."
+    },
+    "fuzzy": {
+      "enableFallback": "Enable fallback",
+      "enableFallbackInfo": "When enabled, performs text-based fuzzy matching if semantic search returns few results.",
+      "threshold": "Threshold",
+      "thresholdInfo": "How closely text must match. Lower values allow more variation in spelling and word forms."
+    },
+    "reranker": {
+      "model": "Model",
+      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
+      "candidates": "Candidates",
+      "candidatesInfo": "Number of initial results to consider for reranking. More candidates improves quality but takes longer.",
+      "results": "Results",
+      "resultsInfo": "Number of final results to return after reranking."
+    },
+    "display": {
+      "showTransliterations": "Show transliterations",
+      "showTransliterationsInfo": "Display Latin transliterations of Arabic titles and author names.",
+      "showPublicationDates": "Show publication dates",
+      "showPublicationDatesInfo": "Display publication year when author death date is unavailable."
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "Highest quality (Recommended)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "High quality, faster",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "Fast, cross-lingual",
+      "jina": "Jina",
+      "jinaDesc": "Fastest",
+      "none": "None",
+      "noneDesc": "Skip reranking"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "Content Types",
+    "quranVerses": "Quran verses",
+    "hadiths": "Hadiths",
+    "books": "Books"
+  },
+  "results": {
+    "quran": "Quran",
+    "hadith": "Hadith",
+    "surah": "Surah",
+    "juz": "Juz",
+    "page": "Page",
+    "volume": "Vol.",
+    "book": "Book",
+    "ayahs": "ayahs",
+    "chapters": "Chapters",
+    "noChapters": "No chapters available"
+  },
+  "reader": {
+    "page": "Page",
+    "of": "of",
+    "loadingBook": "Loading book...",
+    "chapters": "Chapters",
+    "noChapters": "No chapters available",
+    "nextPage": "Next page",
+    "prevPage": "Previous page"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "confirm": "Confirm"
+  },
+  "metadata": {
+    "ayah": "ayah",
+    "ayahs": "ayahs",
+    "ayahRange": "ayahs {start}-{end}"
+  },
+  "language": {
+    "selector": "Language",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Francais",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Espanol",
+    "zh": "中文",
+    "pt": "Portugues",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { BookOpen, Users } from "lucide-react";
-import Link from "next/link";
+import { I18nProvider } from "@/lib/i18n";
+import { DesktopNavigation, MobileNavigation } from "@/components/Navigation";
 
 export const metadata: Metadata = {
-  title: "Book Viewer",
-  description: "Browse and read your EPUB library",
+  title: "Sanad",
+  description: "Search across Quran, Hadith, and Islamic texts",
+  icons: {
+    icon: "/favicon.svg?v=3",
+  },
 };
 
 export default function RootLayout({
@@ -15,33 +18,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
       <body className="antialiased">
-        <div className="flex h-screen">
-          {/* Sidebar */}
-          <aside className="w-48 border-r bg-white p-4">
-            <nav className="space-y-2">
-              <Link
-                href="/"
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100"
-              >
-                <BookOpen className="h-4 w-4" />
-                Books
-              </Link>
-              <Link
-                href="/authors"
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100"
-              >
-                <Users className="h-4 w-4" />
-                Authors
-              </Link>
-            </nav>
-          </aside>
+        <I18nProvider>
+          <div className="flex h-screen">
+            {/* Desktop Sidebar - hidden on mobile */}
+            <DesktopNavigation />
 
-          {/* Main Content */}
-          <main className="flex-1 overflow-auto bg-white">
-            {children}
-          </main>
-        </div>
+            {/* Main Content */}
+            <main className="flex-1 overflow-auto bg-background pb-16 md:pb-0">
+              {children}
+            </main>
+
+            {/* Mobile Bottom Navigation - visible only on mobile */}
+            <MobileNavigation />
+          </div>
+        </I18nProvider>
       </body>
     </html>
   );

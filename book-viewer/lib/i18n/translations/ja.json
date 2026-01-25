@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "検索",
+    "books": "書籍",
+    "authors": "著者",
+    "config": "設定"
+  },
+  "search": {
+    "title": "検索",
+    "subtitle": "Quran.com、Sunnah.com、Maktaba Shamelaを検索",
+    "placeholder": "アラビア語テキストを検索...",
+    "rerank": "再ランク",
+    "reranking": "再ランク中...",
+    "results": "{count}件の結果が見つかりました",
+    "noResults": "「{query}」の結果が見つかりませんでした",
+    "minChars": "2文字以上入力してください",
+    "error": "もう一度お試しください。",
+    "authorsSection": "著者",
+    "reranked": "再ランク済み"
+  },
+  "books": {
+    "title": "書籍",
+    "searchPlaceholder": "書籍を検索...",
+    "category": "カテゴリ",
+    "century": "世紀",
+    "tableHeaders": {
+      "name": "名前",
+      "author": "著者",
+      "year": "年"
+    },
+    "noBooks": "書籍が見つかりません",
+    "showing": "{total}冊中{count}冊を表示",
+    "publication": "(出版)"
+  },
+  "authors": {
+    "title": "著者",
+    "searchPlaceholder": "著者を検索...",
+    "tableHeaders": {
+      "name": "名前",
+      "deathYear": "没年"
+    },
+    "loading": "読み込み中...",
+    "noAuthors": "著者が見つかりません",
+    "showing": "{total}人中{count}人を表示",
+    "pagination": "({totalPages}ページ中{page}ページ)",
+    "previous": "前へ",
+    "next": "次へ",
+    "backToAuthors": "著者一覧に戻る",
+    "authorNotFound": "著者が見つかりません",
+    "showingBooks": "{count}冊を表示",
+    "bookSingular": "冊",
+    "bookPlural": "冊"
+  },
+  "config": {
+    "title": "設定",
+    "sections": {
+      "language": "Language",
+      "similarity": "類似度",
+      "fuzzySearch": "あいまい検索",
+      "reranking": "再ランキング",
+      "booksDisplay": "書籍表示"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "カットオフ",
+      "cutoffInfo": "結果の最小類似度スコア。高い値はより少ないが関連性の高い結果を返します。"
+    },
+    "fuzzy": {
+      "enableFallback": "フォールバックを有効化",
+      "enableFallbackInfo": "セマンティック検索の結果が少ない場合にあいまい一致を有効にします。",
+      "threshold": "しきい値",
+      "thresholdInfo": "テキストの一致精度。低い値はより多くのバリエーションを許容します。"
+    },
+    "reranker": {
+      "model": "モデル",
+      "modelInfo": "結果を再ランク付けするAIモデル。大きなモデルはより正確ですが遅くなります。",
+      "candidates": "候補数",
+      "candidatesInfo": "再ランキングに考慮する初期結果の数。候補が多いほど品質が向上します。",
+      "results": "結果数",
+      "resultsInfo": "再ランキング後に返す最終結果の数。"
+    },
+    "display": {
+      "showTransliterations": "翻字を表示",
+      "showTransliterationsInfo": "アラビア語タイトルと著者名のラテン文字翻字を表示します。",
+      "showPublicationDates": "出版日を表示",
+      "showPublicationDatesInfo": "没年が不明な場合に出版年を表示します。"
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "最高品質（推奨）",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "高品質、高速",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "高速、多言語対応",
+      "jina": "Jina",
+      "jinaDesc": "最速",
+      "none": "なし",
+      "noneDesc": "再ランキングをスキップ"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "コンテンツタイプ",
+    "quranVerses": "クルアーンの節",
+    "hadiths": "ハディース",
+    "books": "書籍"
+  },
+  "results": {
+    "quran": "クルアーン",
+    "hadith": "ハディース",
+    "surah": "章",
+    "juz": "ジュズ",
+    "page": "ページ",
+    "volume": "巻",
+    "book": "書",
+    "ayahs": "節",
+    "chapters": "章",
+    "noChapters": "章がありません"
+  },
+  "reader": {
+    "page": "ページ",
+    "of": "/",
+    "loadingBook": "書籍を読み込み中...",
+    "chapters": "章",
+    "noChapters": "章がありません",
+    "nextPage": "次のページ",
+    "prevPage": "前のページ"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "confirm": "確認"
+  },
+  "metadata": {
+    "ayah": "節",
+    "ayahs": "節",
+    "ayahRange": "第{start}-{end}節"
+  },
+  "language": {
+    "selector": "言語",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

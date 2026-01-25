@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "搜索",
+    "books": "书籍",
+    "authors": "作者",
+    "config": "设置"
+  },
+  "search": {
+    "title": "搜索",
+    "subtitle": "搜索古兰经、圣训和沙米拉图书馆",
+    "placeholder": "搜索阿拉伯文本...",
+    "rerank": "重新排序",
+    "reranking": "正在重新排序...",
+    "results": "找到 {count} 个结果",
+    "noResults": "未找到 \"{query}\" 的结果",
+    "minChars": "请输入至少2个字符",
+    "error": "请重试。",
+    "authorsSection": "作者",
+    "reranked": "已重新排序"
+  },
+  "books": {
+    "title": "书籍",
+    "searchPlaceholder": "搜索书籍...",
+    "category": "分类",
+    "century": "世纪",
+    "tableHeaders": {
+      "name": "名称",
+      "author": "作者",
+      "year": "年份"
+    },
+    "noBooks": "未找到书籍",
+    "showing": "显示 {total} 本书籍中的 {count} 本",
+    "publication": "(出版)"
+  },
+  "authors": {
+    "title": "作者",
+    "searchPlaceholder": "搜索作者...",
+    "tableHeaders": {
+      "name": "姓名",
+      "deathYear": "卒年"
+    },
+    "loading": "加载中...",
+    "noAuthors": "未找到作者",
+    "showing": "显示 {total} 位作者中的 {count} 位",
+    "pagination": "(第 {page} 页，共 {totalPages} 页)",
+    "previous": "上一页",
+    "next": "下一页",
+    "backToAuthors": "返回作者列表",
+    "authorNotFound": "未找到作者",
+    "showingBooks": "显示 {count} 本书籍",
+    "bookSingular": "本书",
+    "bookPlural": "本书"
+  },
+  "config": {
+    "title": "配置",
+    "sections": {
+      "language": "Language",
+      "similarity": "相似度",
+      "fuzzySearch": "模糊搜索",
+      "reranking": "重新排序",
+      "booksDisplay": "书籍显示"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "阈值",
+      "cutoffInfo": "结果的最低相似度分数。较高的值返回更少但更相关的结果。"
+    },
+    "fuzzy": {
+      "enableFallback": "启用回退",
+      "enableFallbackInfo": "当语义搜索返回较少结果时，启用模糊匹配。",
+      "threshold": "阈值",
+      "thresholdInfo": "文本匹配的精确程度。较低的值允许更多变化。"
+    },
+    "reranker": {
+      "model": "模型",
+      "modelInfo": "用于重新排序结果的AI模型。较大的模型更准确但更慢。",
+      "candidates": "候选数",
+      "candidatesInfo": "要考虑重新排序的初始结果数量。更多候选项可提高质量。",
+      "results": "结果数",
+      "resultsInfo": "重新排序后返回的最终结果数量。"
+    },
+    "display": {
+      "showTransliterations": "显示音译",
+      "showTransliterationsInfo": "显示阿拉伯语标题和作者姓名的拉丁音译。",
+      "showPublicationDates": "显示出版日期",
+      "showPublicationDatesInfo": "当卒年不可用时显示出版年份。"
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "最高质量（推荐）",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "高质量，更快",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "快速，跨语言",
+      "jina": "Jina",
+      "jinaDesc": "最快",
+      "none": "无",
+      "noneDesc": "跳过重新排序"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "内容类型",
+    "quranVerses": "古兰经经文",
+    "hadiths": "圣训",
+    "books": "书籍"
+  },
+  "results": {
+    "quran": "古兰经",
+    "hadith": "圣训",
+    "surah": "章",
+    "juz": "卷",
+    "page": "页",
+    "volume": "册",
+    "book": "书",
+    "ayahs": "节",
+    "chapters": "章节",
+    "noChapters": "没有可用的章节"
+  },
+  "reader": {
+    "page": "页",
+    "of": "/",
+    "loadingBook": "正在加载书籍...",
+    "chapters": "章节",
+    "noChapters": "没有可用的章节",
+    "nextPage": "下一页",
+    "prevPage": "上一页"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "close": "关闭",
+    "cancel": "取消",
+    "save": "保存",
+    "confirm": "确认"
+  },
+  "metadata": {
+    "ayah": "节",
+    "ayahs": "节",
+    "ayahRange": "第 {start}-{end} 节"
+  },
+  "language": {
+    "selector": "语言",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

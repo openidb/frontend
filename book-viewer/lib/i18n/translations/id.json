@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "Cari",
+    "books": "Buku",
+    "authors": "Penulis",
+    "config": "Pengaturan"
+  },
+  "search": {
+    "title": "Cari",
+    "subtitle": "Cari di Quran.com, Sunnah.com, dan Maktaba Shamela",
+    "placeholder": "Cari teks Arab...",
+    "rerank": "Urutkan Ulang",
+    "reranking": "Mengurutkan ulang...",
+    "results": "Ditemukan {count} hasil",
+    "noResults": "Tidak ada hasil untuk \"{query}\"",
+    "minChars": "Masukkan minimal 2 karakter",
+    "error": "Silakan coba lagi.",
+    "authorsSection": "Penulis",
+    "reranked": "Diurutkan ulang"
+  },
+  "books": {
+    "title": "Buku",
+    "searchPlaceholder": "Cari buku...",
+    "category": "Kategori",
+    "century": "Abad",
+    "tableHeaders": {
+      "name": "Nama",
+      "author": "Penulis",
+      "year": "Tahun"
+    },
+    "noBooks": "Tidak ada buku ditemukan",
+    "showing": "Menampilkan {count} dari {total} buku",
+    "publication": "(terbit)"
+  },
+  "authors": {
+    "title": "Penulis",
+    "searchPlaceholder": "Cari penulis...",
+    "tableHeaders": {
+      "name": "Nama",
+      "deathYear": "Tahun Wafat"
+    },
+    "loading": "Memuat...",
+    "noAuthors": "Tidak ada penulis ditemukan",
+    "showing": "Menampilkan {count} dari {total} penulis",
+    "pagination": "(halaman {page} dari {totalPages})",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "backToAuthors": "Kembali ke Penulis",
+    "authorNotFound": "Penulis tidak ditemukan",
+    "showingBooks": "Menampilkan {count} buku",
+    "bookSingular": "buku",
+    "bookPlural": "buku"
+  },
+  "config": {
+    "title": "Konfigurasi",
+    "sections": {
+      "language": "Language",
+      "similarity": "Kemiripan",
+      "fuzzySearch": "Pencarian Fuzzy",
+      "reranking": "Pengurutan Ulang",
+      "booksDisplay": "Tampilan Buku"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "Batas",
+      "cutoffInfo": "Skor kemiripan minimum. Nilai lebih tinggi menghasilkan lebih sedikit tapi lebih relevan."
+    },
+    "fuzzy": {
+      "enableFallback": "Aktifkan fallback",
+      "enableFallbackInfo": "Aktifkan pencocokan fuzzy jika pencarian semantik menghasilkan sedikit hasil.",
+      "threshold": "Ambang batas",
+      "thresholdInfo": "Seberapa dekat teks harus cocok. Nilai lebih rendah memungkinkan lebih banyak variasi."
+    },
+    "reranker": {
+      "model": "Model",
+      "modelInfo": "Model AI untuk mengurutkan ulang hasil. Model lebih besar lebih akurat tapi lebih lambat.",
+      "candidates": "Kandidat",
+      "candidatesInfo": "Jumlah hasil awal untuk dipertimbangkan. Lebih banyak kandidat meningkatkan kualitas.",
+      "results": "Hasil",
+      "resultsInfo": "Jumlah hasil akhir setelah pengurutan ulang."
+    },
+    "display": {
+      "showTransliterations": "Tampilkan transliterasi",
+      "showTransliterationsInfo": "Tampilkan transliterasi Latin dari judul dan nama penulis Arab.",
+      "showPublicationDates": "Tampilkan tanggal publikasi",
+      "showPublicationDatesInfo": "Tampilkan tahun publikasi saat tahun wafat tidak tersedia."
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "Kualitas tertinggi (Direkomendasikan)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "Kualitas tinggi, lebih cepat",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "Cepat, lintas bahasa",
+      "jina": "Jina",
+      "jinaDesc": "Tercepat",
+      "none": "Tidak ada",
+      "noneDesc": "Lewati pengurutan ulang"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "Jenis Konten",
+    "quranVerses": "Ayat Al-Quran",
+    "hadiths": "Hadis",
+    "books": "Buku"
+  },
+  "results": {
+    "quran": "Al-Quran",
+    "hadith": "Hadis",
+    "surah": "Surah",
+    "juz": "Juz",
+    "page": "Halaman",
+    "volume": "Jilid",
+    "book": "Kitab",
+    "ayahs": "ayat",
+    "chapters": "Bab",
+    "noChapters": "Tidak ada bab tersedia"
+  },
+  "reader": {
+    "page": "Halaman",
+    "of": "dari",
+    "loadingBook": "Memuat buku...",
+    "chapters": "Bab",
+    "noChapters": "Tidak ada bab tersedia",
+    "nextPage": "Halaman berikutnya",
+    "prevPage": "Halaman sebelumnya"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "close": "Tutup",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "confirm": "Konfirmasi"
+  },
+  "metadata": {
+    "ayah": "ayat",
+    "ayahs": "ayat",
+    "ayahRange": "ayat {start}-{end}"
+  },
+  "language": {
+    "selector": "Bahasa",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

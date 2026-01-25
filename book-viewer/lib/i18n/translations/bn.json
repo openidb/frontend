@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "অনুসন্ধান",
+    "books": "বই",
+    "authors": "লেখক",
+    "config": "সেটিংস"
+  },
+  "search": {
+    "title": "অনুসন্ধান",
+    "subtitle": "Quran.com, Sunnah.com এবং মাকতাবা শামেলায় অনুসন্ধান করুন",
+    "placeholder": "আরবি টেক্সট অনুসন্ধান করুন...",
+    "rerank": "পুনরায় সাজান",
+    "reranking": "পুনরায় সাজানো হচ্ছে...",
+    "results": "{count}টি ফলাফল পাওয়া গেছে",
+    "noResults": "\"{query}\" এর জন্য কোনো ফলাফল পাওয়া যায়নি",
+    "minChars": "অন্তত ২টি অক্ষর লিখুন",
+    "error": "অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "authorsSection": "লেখক",
+    "reranked": "পুনরায় সাজানো হয়েছে"
+  },
+  "books": {
+    "title": "বই",
+    "searchPlaceholder": "বই অনুসন্ধান করুন...",
+    "category": "বিভাগ",
+    "century": "শতাব্দী",
+    "tableHeaders": {
+      "name": "নাম",
+      "author": "লেখক",
+      "year": "বছর"
+    },
+    "noBooks": "কোনো বই পাওয়া যায়নি",
+    "showing": "{total}টির মধ্যে {count}টি বই দেখানো হচ্ছে",
+    "publication": "(প্রকাশিত)"
+  },
+  "authors": {
+    "title": "লেখক",
+    "searchPlaceholder": "লেখক অনুসন্ধান করুন...",
+    "tableHeaders": {
+      "name": "নাম",
+      "deathYear": "মৃত্যু সাল"
+    },
+    "loading": "লোড হচ্ছে...",
+    "noAuthors": "কোনো লেখক পাওয়া যায়নি",
+    "showing": "{total}জনের মধ্যে {count}জন লেখক দেখানো হচ্ছে",
+    "pagination": "({totalPages} পৃষ্ঠার মধ্যে {page} পৃষ্ঠা)",
+    "previous": "পূর্ববর্তী",
+    "next": "পরবর্তী",
+    "backToAuthors": "লেখকদের তালিকায় ফিরে যান",
+    "authorNotFound": "লেখক পাওয়া যায়নি",
+    "showingBooks": "{count}টি বই দেখানো হচ্ছে",
+    "bookSingular": "বই",
+    "bookPlural": "বই"
+  },
+  "config": {
+    "title": "কনফিগারেশন",
+    "sections": {
+      "language": "Language",
+      "similarity": "সাদৃশ্য",
+      "fuzzySearch": "ফাজি অনুসন্ধান",
+      "reranking": "পুনরায় সাজানো",
+      "booksDisplay": "বই প্রদর্শন"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "কাটঅফ",
+      "cutoffInfo": "ফলাফলের জন্য সর্বনিম্ন সাদৃশ্য স্কোর। উচ্চ মান কম কিন্তু বেশি প্রাসঙ্গিক ফলাফল দেয়।"
+    },
+    "fuzzy": {
+      "enableFallback": "ফলব্যাক সক্রিয় করুন",
+      "enableFallbackInfo": "সেমান্টিক অনুসন্ধান কম ফলাফল দিলে ফাজি ম্যাচিং সক্রিয় করুন।",
+      "threshold": "থ্রেশহোল্ড",
+      "thresholdInfo": "টেক্সট কতটা মিলতে হবে। কম মান বেশি তারতম্যের অনুমতি দেয়।"
+    },
+    "reranker": {
+      "model": "মডেল",
+      "modelInfo": "ফলাফল পুনরায় সাজানোর জন্য AI মডেল। বড় মডেল বেশি সঠিক কিন্তু ধীর।",
+      "candidates": "প্রার্থী",
+      "candidatesInfo": "পুনরায় সাজানোর জন্য বিবেচনা করার প্রাথমিক ফলাফলের সংখ্যা।",
+      "results": "ফলাফল",
+      "resultsInfo": "পুনরায় সাজানোর পরে চূড়ান্ত ফলাফলের সংখ্যা।"
+    },
+    "display": {
+      "showTransliterations": "প্রতিবর্ণীকরণ দেখান",
+      "showTransliterationsInfo": "আরবি শিরোনাম এবং লেখকের নামের ল্যাটিন প্রতিবর্ণীকরণ দেখান।",
+      "showPublicationDates": "প্রকাশনার তারিখ দেখান",
+      "showPublicationDatesInfo": "মৃত্যুর তারিখ না থাকলে প্রকাশনার বছর দেখান।"
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "সর্বোচ্চ মান (প্রস্তাবিত)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "উচ্চ মান, দ্রুত",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "দ্রুত, বহুভাষিক",
+      "jina": "Jina",
+      "jinaDesc": "সবচেয়ে দ্রুত",
+      "none": "কোনোটি নয়",
+      "noneDesc": "পুনরায় সাজানো এড়িয়ে যান"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "বিষয়বস্তুর প্রকার",
+    "quranVerses": "কুরআনের আয়াত",
+    "hadiths": "হাদিস",
+    "books": "বই"
+  },
+  "results": {
+    "quran": "কুরআন",
+    "hadith": "হাদিস",
+    "surah": "সূরা",
+    "juz": "জুজ",
+    "page": "পৃষ্ঠা",
+    "volume": "খণ্ড",
+    "book": "কিতাব",
+    "ayahs": "আয়াত",
+    "chapters": "অধ্যায়",
+    "noChapters": "কোনো অধ্যায় নেই"
+  },
+  "reader": {
+    "page": "পৃষ্ঠা",
+    "of": "এর",
+    "loadingBook": "বই লোড হচ্ছে...",
+    "chapters": "অধ্যায়",
+    "noChapters": "কোনো অধ্যায় নেই",
+    "nextPage": "পরবর্তী পৃষ্ঠা",
+    "prevPage": "পূর্ববর্তী পৃষ্ঠা"
+  },
+  "common": {
+    "loading": "লোড হচ্ছে...",
+    "error": "ত্রুটি",
+    "close": "বন্ধ করুন",
+    "cancel": "বাতিল",
+    "save": "সংরক্ষণ করুন",
+    "confirm": "নিশ্চিত করুন"
+  },
+  "metadata": {
+    "ayah": "আয়াত",
+    "ayahs": "আয়াত",
+    "ayahRange": "{start}-{end} আয়াত"
+  },
+  "language": {
+    "selector": "ভাষা",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}

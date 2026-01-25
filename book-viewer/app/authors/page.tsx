@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,152 +12,157 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
-import catalog from "@/lib/catalog.json";
-
-interface Book {
-  id: string;
-  title: string;
-  titleLatin: string;
-  author: string;
-  authorLatin: string;
-  datePublished: string;
-  filename: string;
-  category: string;
-  subcategory?: string | null;
-  yearAH: number;
-  timePeriod: string;
-}
+import { formatYear } from "@/lib/dates";
+import { useTranslation } from "@/lib/i18n";
 
 interface Author {
-  name: string;
+  id: number;
+  nameArabic: string;
   nameLatin: string;
-  bookCount: number;
-  books: Book[];
-  timePeriods: Set<string>;
-  deathYear: string;
+  deathDateHijri: string | null;
+  deathDateGregorian: string | null;
+  _count: {
+    books: number;
+  };
+}
+
+interface AuthorsResponse {
+  authors: Author[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export default function AuthorsPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTimePeriods, setSelectedTimePeriods] = useState<string[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Group books by author
-  const authorsMap = (catalog as Book[]).reduce((acc, book) => {
-    const key = book.author;
-    if (!acc[key]) {
-      acc[key] = {
-        name: book.author,
-        nameLatin: book.authorLatin,
-        bookCount: 0,
-        books: [],
-        timePeriods: new Set<string>(),
-        deathYear: book.datePublished,
-      };
-    }
-    acc[key].bookCount++;
-    acc[key].books.push(book);
-    acc[key].timePeriods.add(book.timePeriod);
-    return acc;
-  }, {} as Record<string, Author>);
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  const authors = Object.values(authorsMap);
+  // Fetch authors from API
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: pagination.page.toString(),
+          limit: pagination.limit.toString(),
+        });
+        if (debouncedSearch) {
+          params.set("search", debouncedSearch);
+        }
 
-  const timePeriodOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-    authors.forEach((author) => {
-      author.timePeriods.forEach((period) => {
-        counts[period] = (counts[period] || 0) + 1;
-      });
-    });
+        const response = await fetch(`/api/authors?${params}`);
+        const data: AuthorsResponse = await response.json();
 
-    const labels: Record<string, { label: string; labelArabic: string }> = {
-      "pre-islamic": { label: "Pre-Islamic", labelArabic: "الجاهلية" },
-      "early-islamic": { label: "Early Islamic (1-40 AH)", labelArabic: "صدر الإسلام" },
-      "umayyad": { label: "Umayyad (41-132 AH)", labelArabic: "العصر الأموي" },
-      "abbasid": { label: "Abbasid (133-656 AH)", labelArabic: "العصر العباسي" },
-      "post-abbasid": { label: "Post-Abbasid (657+ AH)", labelArabic: "ما بعد العباسي" },
+        setAuthors(data.authors || []);
+        if (data.pagination) {
+          setPagination(data.pagination);
+        }
+      } catch (error) {
+        console.error("Error fetching authors:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return Object.entries(counts).map(([period, count]) => ({
-      value: period,
-      label: labels[period]?.label || period,
-      labelArabic: labels[period]?.labelArabic,
-      count,
-    }));
-  }, [authors]);
+    fetchAuthors();
+  }, [pagination.page, pagination.limit, debouncedSearch]);
 
-  const filteredAuthors = authors.filter((author) => {
-    // Search filter
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      !query ||
-      author.name.toLowerCase().includes(query) ||
-      author.nameLatin.toLowerCase().includes(query);
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  }, [debouncedSearch]);
 
-    // Time period filter - author matches if any of their books match selected periods
-    const matchesTimePeriod =
-      selectedTimePeriods.length === 0 ||
-      selectedTimePeriods.some((period) => author.timePeriods.has(period));
+  const handlePrevPage = () => {
+    if (pagination.page > 1) {
+      setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
+    }
+  };
 
-    return matchesSearch && matchesTimePeriod;
-  });
+  const handleNextPage = () => {
+    if (pagination.page < pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
+    }
+  };
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Authors</h1>
+    <div className="p-4 md:p-8">
+      <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">{t("authors.title")}</h1>
         <div className="flex items-center gap-3">
-          <div className="hidden min-[896px]:flex items-center gap-3">
-            <MultiSelectDropdown
-              title="Time Period"
-              options={timePeriodOptions}
-              selected={selectedTimePeriods}
-              onChange={setSelectedTimePeriods}
-            />
-          </div>
           <Input
             type="text"
-            placeholder="Search authors..."
-            className="w-64"
+            placeholder={t("authors.searchPlaceholder")}
+            className="w-full sm:w-64"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Death Year</TableHead>
-              <TableHead>Books</TableHead>
+              <TableHead>{t("authors.tableHeaders.name")}</TableHead>
+              <TableHead>{t("authors.tableHeaders.deathYear")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAuthors.length === 0 ? (
+            {loading ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
-                  No authors found
+                <TableCell colSpan={2} className="text-center text-muted-foreground">
+                  {t("authors.loading")}
+                </TableCell>
+              </TableRow>
+            ) : authors.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={2} className="text-center text-muted-foreground">
+                  {t("authors.noAuthors")}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAuthors.map((author) => (
-                <TableRow key={author.name}>
+              authors.map((author) => (
+                <TableRow key={author.id}>
                   <TableCell>
                     <Link
                       href={`/authors/${encodeURIComponent(author.nameLatin)}`}
                       className="font-medium hover:underline"
                     >
-                      <div>{author.name}</div>
+                      <div>{author.nameArabic}</div>
                       <div className="text-sm text-muted-foreground">
                         {author.nameLatin}
                       </div>
                     </Link>
                   </TableCell>
-                  <TableCell>{author.deathYear}</TableCell>
-                  <TableCell>{author.bookCount}</TableCell>
+                  <TableCell>
+                    {author.deathDateHijri || author.deathDateGregorian ? (
+                      <span>
+                        {formatYear(author.deathDateHijri, author.deathDateGregorian)}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -164,8 +170,33 @@ export default function AuthorsPage() {
         </Table>
       </div>
 
-      <div className="mt-4 text-sm text-muted-foreground">
-        Showing {filteredAuthors.length} of {authors.length} authors
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          {t("authors.showing", { count: authors.length, total: pagination.total })}
+          {pagination.totalPages > 1 && (
+            <span> {t("authors.pagination", { page: pagination.page, totalPages: pagination.totalPages })}</span>
+          )}
+        </div>
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={pagination.page === 1}
+            >
+              {t("authors.previous")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              {t("authors.next")}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

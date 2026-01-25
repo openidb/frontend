@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "search": "تلاش",
+    "books": "کتابیں",
+    "authors": "مصنفین",
+    "config": "ترتیبات"
+  },
+  "search": {
+    "title": "تلاش",
+    "subtitle": "قرآن، حدیث اور مکتبہ شاملہ میں تلاش کریں",
+    "placeholder": "عربی متون میں تلاش کریں...",
+    "rerank": "دوبارہ ترتیب",
+    "reranking": "دوبارہ ترتیب دی جا رہی ہے...",
+    "results": "{count} نتائج ملے",
+    "noResults": "\"{query}\" کے لیے کوئی نتیجہ نہیں ملا",
+    "minChars": "تلاش کے لیے کم از کم 2 حروف درج کریں",
+    "error": "براہ کرم دوبارہ کوشش کریں۔",
+    "authorsSection": "مصنفین",
+    "reranked": "دوبارہ مرتب شدہ"
+  },
+  "books": {
+    "title": "کتابیں",
+    "searchPlaceholder": "کتابوں میں تلاش کریں...",
+    "category": "زمرہ",
+    "century": "صدی",
+    "tableHeaders": {
+      "name": "نام",
+      "author": "مصنف",
+      "year": "سال"
+    },
+    "noBooks": "کوئی کتاب نہیں ملی",
+    "showing": "{total} میں سے {count} کتابیں دکھائی جا رہی ہیں",
+    "publication": "(اشاعت)"
+  },
+  "authors": {
+    "title": "مصنفین",
+    "searchPlaceholder": "مصنفین میں تلاش کریں...",
+    "tableHeaders": {
+      "name": "نام",
+      "deathYear": "سال وفات"
+    },
+    "loading": "لوڈ ہو رہا ہے...",
+    "noAuthors": "کوئی مصنف نہیں ملا",
+    "showing": "{total} میں سے {count} مصنفین دکھائے جا رہے ہیں",
+    "pagination": "(صفحہ {page} از {totalPages})",
+    "previous": "پچھلا",
+    "next": "اگلا",
+    "backToAuthors": "مصنفین کی طرف واپس",
+    "authorNotFound": "مصنف نہیں ملا",
+    "showingBooks": "{count} کتابیں دکھائی جا رہی ہیں",
+    "bookSingular": "کتاب",
+    "bookPlural": "کتابیں"
+  },
+  "config": {
+    "title": "ترتیبات",
+    "sections": {
+      "language": "Language",
+      "similarity": "مماثلت",
+      "fuzzySearch": "فزی تلاش",
+      "reranking": "دوبارہ ترتیب",
+      "booksDisplay": "کتابوں کی نمائش"
+    },
+    "language": "Language",
+      "similarity": {
+      "cutoff": "کٹ آف",
+      "cutoffInfo": "نتائج کے لیے کم از کم مماثلت کا سکور۔ زیادہ قدریں کم لیکن زیادہ متعلقہ نتائج دیتی ہیں۔"
+    },
+    "fuzzy": {
+      "enableFallback": "فال بیک فعال کریں",
+      "enableFallbackInfo": "اگر سیمینٹک تلاش کم نتائج دے تو فزی میچنگ استعمال کریں۔",
+      "threshold": "حد",
+      "thresholdInfo": "متن کتنا قریب سے ملنا چاہیے۔ کم قدریں زیادہ تغیر کی اجازت دیتی ہیں۔"
+    },
+    "reranker": {
+      "model": "ماڈل",
+      "modelInfo": "نتائج کی دوبارہ ترتیب کے لیے AI ماڈل۔ بڑے ماڈل زیادہ درست لیکن سست ہوتے ہیں۔",
+      "candidates": "امیدوار",
+      "candidatesInfo": "دوبارہ ترتیب کے لیے ابتدائی نتائج کی تعداد۔ زیادہ امیدوار معیار بہتر کرتے ہیں۔",
+      "results": "نتائج",
+      "resultsInfo": "دوبارہ ترتیب کے بعد حتمی نتائج کی تعداد۔"
+    },
+    "display": {
+      "showTransliterations": "نقل حرفی دکھائیں",
+      "showTransliterationsInfo": "عربی عنوانات اور مصنفین کے ناموں کی لاطینی نقل حرفی دکھائیں۔",
+      "showPublicationDates": "اشاعت کی تاریخیں دکھائیں",
+      "showPublicationDatesInfo": "جب وفات کی تاریخ دستیاب نہ ہو تو اشاعت کا سال دکھائیں۔"
+    },
+    "rerankerOptions": {
+      "gptOss120b": "GPT-OSS 120B",
+      "gptOss120bDesc": "اعلیٰ ترین معیار (تجویز کردہ)",
+      "gptOss": "GPT-OSS 20B",
+      "gptOssDesc": "اعلیٰ معیار، تیز",
+      "qwen4b": "Qwen 4B",
+      "qwen4bDesc": "تیز، کثیر لسانی",
+      "jina": "Jina",
+      "jinaDesc": "تیز ترین",
+      "none": "کوئی نہیں",
+      "noneDesc": "دوبارہ ترتیب چھوڑیں"
+    }
+  },
+  "searchConfig": {
+    "contentTypes": "مواد کی اقسام",
+    "quranVerses": "قرآنی آیات",
+    "hadiths": "احادیث",
+    "books": "کتابیں"
+  },
+  "results": {
+    "quran": "قرآن",
+    "hadith": "حدیث",
+    "surah": "سورۃ",
+    "juz": "پارہ",
+    "page": "صفحہ",
+    "volume": "جلد",
+    "book": "کتاب",
+    "ayahs": "آیات",
+    "chapters": "ابواب",
+    "noChapters": "کوئی باب دستیاب نہیں"
+  },
+  "reader": {
+    "page": "صفحہ",
+    "of": "از",
+    "loadingBook": "کتاب لوڈ ہو رہی ہے...",
+    "chapters": "ابواب",
+    "noChapters": "کوئی باب دستیاب نہیں",
+    "nextPage": "اگلا صفحہ",
+    "prevPage": "پچھلا صفحہ"
+  },
+  "common": {
+    "loading": "لوڈ ہو رہا ہے...",
+    "error": "خرابی",
+    "close": "بند کریں",
+    "cancel": "منسوخ",
+    "save": "محفوظ کریں",
+    "confirm": "تصدیق کریں"
+  },
+  "metadata": {
+    "ayah": "آیت",
+    "ayahs": "آیات",
+    "ayahRange": "آیات {start}-{end}"
+  },
+  "language": {
+    "selector": "زبان",
+    "en": "English",
+    "ar": "العربية",
+    "fr": "Français",
+    "id": "Bahasa Indonesia",
+    "ur": "اردو",
+    "es": "Español",
+    "zh": "中文",
+    "pt": "Português",
+    "ru": "Русский",
+    "ja": "日本語",
+    "ko": "한국어",
+    "it": "Italiano",
+    "bn": "বাংলা"
+  }
+}
