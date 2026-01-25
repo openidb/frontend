@@ -41,7 +41,7 @@ interface SearchClientProps {
 
 export default function SearchClient({ bookCount }: SearchClientProps) {
   const searchParams = useSearchParams();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const [query, setQuery] = useState("");
   const [authors, setAuthors] = useState<AuthorResultData[]>([]);
@@ -145,6 +145,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         postRerankLimit: String(config.postRerankLimit),
         fuzzy: String(config.fuzzyEnabled),
         fuzzyThreshold: String(config.fuzzyThreshold),
+        quranTranslation: config.autoTranslation
+          ? (locale === "ar" ? "en" : locale)
+          : (config.quranTranslation || "none"),
       });
 
       const response = await fetch(`/api/search?${params.toString()}`);
@@ -320,7 +323,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
             <Input
               type="text"
               placeholder={t("search.placeholder")}
-              className="text-base md:text-lg h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg"
+              className="text-sm h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg"
               dir="auto"
               value={query}
               onChange={handleInputChange}
