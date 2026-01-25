@@ -4,16 +4,6 @@ import AuthorDetailClient from "./AuthorDetailClient";
 
 export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  const authors = await prisma.author.findMany({
-    select: { nameLatin: true },
-  });
-
-  return authors.map((author) => ({
-    name: encodeURIComponent(author.nameLatin),
-  }));
-}
-
 export default async function AuthorDetailPage({
   params,
 }: {
@@ -23,25 +13,31 @@ export default async function AuthorDetailPage({
   const authorLatin = decodeURIComponent(name);
 
   // Fetch author with all books from database
-  const author = await prisma.author.findUnique({
-    where: { nameLatin: authorLatin },
-    include: {
-      books: {
-        include: {
-          category: {
-            select: {
-              id: true,
-              nameArabic: true,
-              nameEnglish: true,
+  let author;
+  try {
+    author = await prisma.author.findUnique({
+      where: { nameLatin: authorLatin },
+      include: {
+        books: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                nameArabic: true,
+                nameEnglish: true,
+              },
             },
           },
-        },
-        orderBy: {
-          createdAt: "desc",
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Failed to fetch author:", error);
+    notFound();
+  }
 
   if (!author) {
     notFound();
@@ -49,9 +45,9 @@ export default async function AuthorDetailPage({
 
   // Transform author data to match the expected format for AuthorDetailClient
   const metadata = {
+    id: author.id,  // shamela_author_id is now the primary key 'id'
     name_arabic: author.nameArabic,
     name_latin: author.nameLatin,
-    shamela_author_id: author.shamelaAuthorId || undefined,
     death_date_hijri: author.deathDateHijri || undefined,
     birth_date_hijri: author.birthDateHijri || undefined,
     death_date_gregorian: author.deathDateGregorian || undefined,
@@ -63,7 +59,7 @@ export default async function AuthorDetailPage({
 
   // Transform books data to match the expected format
   const books = author.books.map((book) => ({
-    id: book.shamelaBookId,
+    id: book.id,  // Primary key is now the shamela book ID
     title: book.titleArabic,
     titleLatin: book.titleLatin,
     author: author.nameArabic,

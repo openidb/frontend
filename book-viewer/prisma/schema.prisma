@@ -15,12 +15,10 @@ datasource db {
 // ============================================================================
 
 model Author {
-  id        Int      @id @default(autoincrement())
+  // Primary key is now the Shamela author ID (string), like Book
+  id        String   @id @map("id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Shamela Integration
-  shamelaAuthorId String? @unique @map("shamela_author_id")
 
   // Names
   nameArabic String  @map("name_arabic")
@@ -44,7 +42,6 @@ model Author {
   books       Book[]
   otherWorks  AuthorWork[]
 
-  @@index([shamelaAuthorId])
   @@map("authors")
 }
 
@@ -100,19 +97,17 @@ model Editor {
 }
 
 model Book {
-  id        Int      @id @default(autoincrement())
+  // Primary key is now the Shamela book ID (string)
+  id        String   @id @map("id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Shamela Integration
-  shamelaBookId String @unique @map("shamela_book_id")
 
   // Titles
   titleArabic String @map("title_arabic")
   titleLatin  String @map("title_latin")
 
   // Author Relationship
-  authorId Int    @map("author_id")
+  authorId String @map("author_id")
   author   Author @relation(fields: [authorId], references: [id])
 
   // Category Relationship
@@ -156,13 +151,13 @@ model Book {
   timePeriod String? @map("time_period")
 
   // Relationships
-  keywords  BookKeyword[]
-  pages     Page[]
-  toc       TableOfContentsEntry[]
+  keywords          BookKeyword[]
+  pages             Page[]
+  toc               TableOfContentsEntry[]
+  titleTranslations BookTitleTranslation[]
 
   @@index([authorId])
   @@index([categoryId])
-  @@index([shamelaBookId])
   @@map("books")
 }
 
@@ -171,7 +166,7 @@ model Book {
 // ============================================================================
 
 model BookKeyword {
-  bookId  Int    @map("book_id")
+  bookId  String @map("book_id")
   keyword String
 
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
@@ -184,7 +179,7 @@ model AuthorWork {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
 
-  authorId       Int     @map("author_id")
+  authorId       String  @map("author_id")
   shamelaBookId  String  @map("shamela_book_id")
   title          String
   isInCatalog    Boolean @default(false) @map("is_in_catalog")
@@ -204,9 +199,9 @@ model Page {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
 
-  bookId       Int @map("book_id")
-  pageNumber   Int @map("page_number") // Sequential page number
-  volumeNumber Int @default(1) @map("volume_number")
+  bookId       String @map("book_id")
+  pageNumber   Int    @map("page_number") // Sequential page number
+  volumeNumber Int    @default(1) @map("volume_number")
 
   // Page Identification
   urlPageIndex      String? @map("url_page_index") // Could be 'i' for overview, or integer
@@ -250,11 +245,29 @@ model Footnote {
   @@map("footnotes")
 }
 
+// ============================================================================
+// TRANSLATION TABLES
+// ============================================================================
+
+model BookTitleTranslation {
+  id       Int    @id @default(autoincrement())
+  bookId   String @map("book_id")
+  language String // "en", "fr", "id", etc.
+  title    String @db.Text
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, language])
+  @@index([bookId])
+  @@index([language])
+  @@map("book_title_translations")
+}
+
 model TableOfContentsEntry {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
 
-  bookId       Int    @map("book_id")
+  bookId       String @map("book_id")
   volumeNumber Int    @default(1) @map("volume_number")
   chapterTitle String @map("chapter_title")
   pageNumber   Int    @map("page_number")
@@ -271,4 +284,96 @@ model TableOfContentsEntry {
   @@index([bookId])
   @@index([parentId])
   @@map("table_of_contents")
+}
+
+// ============================================================================
+// QURAN - Separate from books system
+// ============================================================================
+
+model Surah {
+  id             Int    @id @default(autoincrement())
+  number         Int    @unique
+  nameArabic     String @map("name_arabic")
+  nameEnglish    String @map("name_english")
+  revelationType String @map("revelation_type") // "Meccan" | "Medinan"
+  ayahCount      Int    @map("ayah_count")
+
+  ayahs Ayah[]
+
+  @@map("surahs")
+}
+
+model Ayah {
+  id          Int    @id @default(autoincrement())
+  surahId     Int    @map("surah_id")
+  ayahNumber  Int    @map("ayah_number")
+  textUthmani String @db.Text @map("text_uthmani")
+  textPlain   String @db.Text @map("text_plain") // For search
+  juzNumber   Int    @map("juz_number")
+  pageNumber  Int    @map("page_number") // Standard mushaf page
+
+  surah Surah @relation(fields: [surahId], references: [id])
+
+  @@unique([surahId, ayahNumber])
+  @@index([surahId])
+  @@map("ayahs")
+}
+
+model AyahTranslation {
+  id          Int    @id @default(autoincrement())
+  surahNumber Int    @map("surah_number")
+  ayahNumber  Int    @map("ayah_number")
+  language    String // "en", "ur", "fr", "id", etc.
+  editionId   String @map("edition_id") // "eng-mustafakhattaba", etc.
+  text        String @db.Text
+
+  @@unique([surahNumber, ayahNumber, language])
+  @@index([surahNumber, ayahNumber])
+  @@index([language])
+  @@map("ayah_translations")
+}
+
+// ============================================================================
+// HADITH - Sunnah.com integration
+// ============================================================================
+
+model HadithCollection {
+  id          Int     @id @default(autoincrement())
+  slug        String  @unique  // "bukhari", "muslim", etc.
+  nameEnglish String  @map("name_english")
+  nameArabic  String  @map("name_arabic")
+
+  books HadithBook[]
+
+  @@map("hadith_collections")
+}
+
+model HadithBook {
+  id           Int              @id @default(autoincrement())
+  collectionId Int              @map("collection_id")
+  bookNumber   Int              @map("book_number")
+  nameEnglish  String           @map("name_english")
+  nameArabic   String           @map("name_arabic")
+
+  collection HadithCollection @relation(fields: [collectionId], references: [id])
+  hadiths    Hadith[]
+
+  @@unique([collectionId, bookNumber])
+  @@map("hadith_books")
+}
+
+model Hadith {
+  id              Int         @id @default(autoincrement())
+  bookId          Int         @map("book_id")
+  hadithNumber    String      @map("hadith_number")  // String for variants like "8a"
+  textArabic      String      @db.Text @map("text_arabic")
+  textPlain       String      @db.Text @map("text_plain")  // Diacritics removed for search
+  chapterArabic   String?     @map("chapter_arabic")
+  chapterEnglish  String?     @map("chapter_english")
+
+  book HadithBook @relation(fields: [bookId], references: [id])
+
+  @@unique([bookId, hadithNumber])
+  @@index([bookId])
+  @@map("hadiths")
 }

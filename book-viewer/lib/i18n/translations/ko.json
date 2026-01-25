@@ -54,13 +54,54 @@
   "config": {
     "title": "설정",
     "sections": {
-      "language": "Language",
+      "language": "언어",
+      "translations": "번역",
       "similarity": "유사도",
       "fuzzySearch": "퍼지 검색",
       "reranking": "재정렬",
       "booksDisplay": "책 표시"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "자동",
+      "automaticInfo": "선택한 인터페이스 언어에 따라 번역을 자동으로 선택합니다.",
+      "quranTranslation": "꾸란 번역",
+      "quranTranslationInfo": "꾸란 검색 결과에서 아랍어 텍스트 옆에 번역을 표시합니다.",
+      "bookTitleDisplay": "책 제목",
+      "bookTitleDisplayInfo": "아랍어 옆에 번역된 책 제목을 표시합니다.",
+      "options": {
+        "none": "없음",
+        "en": "영어 - 무스타파 핫탑 박사",
+        "fr": "프랑스어 - 무함마드 하미둘라",
+        "id": "인도네시아어 - 이슬람부",
+        "ur": "우르두어 - 파테 무함마드 잘란드리",
+        "es": "스페인어 - 이사 가르시아",
+        "zh": "중국어 - 마지엔",
+        "pt": "포르투갈어 - 사미르 엘하예크",
+        "ru": "러시아어 - 엘미르 쿨리에프",
+        "ja": "일본어 - 미타 료이치",
+        "ko": "한국어 - 하미드 최",
+        "it": "이탈리아어 - 함자 로베르토 피카르도",
+        "bn": "벵골어 - 무히웃딘 칸"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "아랍어만",
+        "transliteration": "음역",
+        "en": "영어",
+        "fr": "프랑스어",
+        "id": "인도네시아어",
+        "ur": "우르두어",
+        "es": "스페인어",
+        "zh": "중국어",
+        "pt": "포르투갈어",
+        "ru": "러시아어",
+        "ja": "일본어",
+        "ko": "한국어",
+        "it": "이탈리아어",
+        "bn": "벵골어"
+      }
+    },
       "similarity": {
       "cutoff": "임계값",
       "cutoffInfo": "결과의 최소 유사도 점수. 높은 값은 더 적지만 관련성 높은 결과를 반환합니다."

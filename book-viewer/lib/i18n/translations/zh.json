@@ -54,13 +54,54 @@
   "config": {
     "title": "配置",
     "sections": {
-      "language": "Language",
+      "language": "语言",
+      "translations": "翻译",
       "similarity": "相似度",
       "fuzzySearch": "模糊搜索",
       "reranking": "重新排序",
       "booksDisplay": "书籍显示"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "自动",
+      "automaticInfo": "根据所选界面语言自动选择翻译。",
+      "quranTranslation": "古兰经翻译",
+      "quranTranslationInfo": "在古兰经搜索结果中显示阿拉伯文旁边的翻译。",
+      "bookTitleDisplay": "书名",
+      "bookTitleDisplayInfo": "在阿拉伯语旁边显示翻译后的书名。",
+      "options": {
+        "none": "无",
+        "en": "英语 - 穆斯塔法·哈塔卜博士",
+        "fr": "法语 - 穆罕默德·哈米杜拉",
+        "id": "印尼语 - 伊斯兰事务部",
+        "ur": "乌尔都语 - 法特赫·穆罕默德",
+        "es": "西班牙语 - 伊萨·加西亚",
+        "zh": "中文 - 马坚",
+        "pt": "葡萄牙语 - 萨米尔·埃尔海耶克",
+        "ru": "俄语 - 埃尔米尔·库利耶夫",
+        "ja": "日语 - 三田了一",
+        "ko": "韩语 - 哈米德·崔",
+        "it": "意大利语 - 哈姆扎·罗伯托·皮卡多",
+        "bn": "孟加拉语 - 穆希乌丁·汗"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "仅阿拉伯语",
+        "transliteration": "音译",
+        "en": "英语",
+        "fr": "法语",
+        "id": "印尼语",
+        "ur": "乌尔都语",
+        "es": "西班牙语",
+        "zh": "中文",
+        "pt": "葡萄牙语",
+        "ru": "俄语",
+        "ja": "日语",
+        "ko": "韩语",
+        "it": "意大利语",
+        "bn": "孟加拉语"
+      }
+    },
       "similarity": {
       "cutoff": "阈值",
       "cutoffInfo": "结果的最低相似度分数。较高的值返回更少但更相关的结果。"

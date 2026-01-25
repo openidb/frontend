@@ -1,20 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { useEffect, useRef, useState, ReactNode, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import ePub, { Book, Rendition } from "epubjs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, ChevronLeft, Menu } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+
+interface TocEntry {
+  id: number;
+  chapterTitle: string;
+  pageNumber: number;
+  volumeNumber: number;
+  orderIndex: number;
+  parentId: number | null;
+}
 
 interface BookMetadata {
   id: string;
   title: string;
   titleLatin: string;
+  titleTranslated?: string | null;
   author: string;
   authorLatin: string;
   datePublished: string;
   filename: string;
+  toc: TocEntry[];
 }
 
 interface EpubReaderProps {
@@ -23,9 +35,11 @@ interface EpubReaderProps {
   initialPageNumber?: string; // Unique sequential page number - maps to EPUB file name
 }
 
+const STORAGE_KEY = "searchConfig";
+
 export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: EpubReaderProps) {
   const router = useRouter();
-  const { t, dir } = useTranslation();
+  const { t, dir, locale } = useTranslation();
   const viewerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<Rendition | null>(null);
   const bookRef = useRef<Book | null>(null);
@@ -40,6 +54,79 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
   const [currentPageLabel, setCurrentPageLabel] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [hasNavigatedToInitialPage, setHasNavigatedToInitialPage] = useState(false);
+  const [bookTitleDisplay, setBookTitleDisplay] = useState<TranslationDisplayOption>(defaultSearchConfig.bookTitleDisplay);
+  const [autoTranslation, setAutoTranslation] = useState(defaultSearchConfig.autoTranslation);
+
+  // Client-side fetched translations
+  const [fetchedTitleTranslation, setFetchedTitleTranslation] = useState<string | null>(null);
+
+  // Load display config from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.bookTitleDisplay) {
+          setBookTitleDisplay(parsed.bookTitleDisplay);
+        }
+        if (typeof parsed.autoTranslation === "boolean") {
+          setAutoTranslation(parsed.autoTranslation);
+        }
+      } catch {
+        // Invalid JSON, use defaults
+      }
+    }
+  }, []);
+
+  // Get effective display settings (auto uses UI locale)
+  const effectiveBookTitleDisplay = useMemo(() => {
+    if (autoTranslation) {
+      return locale === "ar" ? "transliteration" : (locale as TranslationDisplayOption);
+    }
+    return bookTitleDisplay;
+  }, [autoTranslation, bookTitleDisplay, locale]);
+
+  // Fetch translations client-side when language settings change
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const needsTitleTranslation = effectiveBookTitleDisplay !== "none" && effectiveBookTitleDisplay !== "transliteration";
+
+      if (!needsTitleTranslation) {
+        setFetchedTitleTranslation(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/books/${bookMetadata.id}?lang=${effectiveBookTitleDisplay}`);
+        if (response.ok) {
+          const data = await response.json();
+          const book = data.book;
+
+          if (book?.titleTranslated) {
+            setFetchedTitleTranslation(book.titleTranslated);
+          } else {
+            setFetchedTitleTranslation(null);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch translations:", error);
+      }
+    };
+
+    fetchTranslations();
+  }, [bookMetadata.id, effectiveBookTitleDisplay]);
+
+  // Helper to get secondary book title
+  const getSecondaryTitle = (): string | null => {
+    if (effectiveBookTitleDisplay === "none") {
+      return null;
+    }
+    if (effectiveBookTitleDisplay === "transliteration") {
+      return bookMetadata.titleLatin;
+    }
+    // For language translations, use fetched translation, prop, or fall back to titleLatin
+    return fetchedTitleTranslation || bookMetadata.titleTranslated || bookMetadata.titleLatin;
+  };
 
   useEffect(() => {
     const viewerElement = viewerRef.current;
@@ -447,7 +534,64 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
     setShowSidebar(!showSidebar);
   };
 
+  // Navigate to a page by page number
+  const goToPage = (pageNumber: number) => {
+    if (renditionRef.current && bookRef.current) {
+      // EPUB files are named like page_0001.xhtml (zero-padded to 4 digits)
+      const paddedNum = pageNumber.toString().padStart(4, '0');
+      const href = `page_${paddedNum}.xhtml`;
+      renditionRef.current.display(href);
+      setShowSidebar(false);
+    }
+  };
+
+  // Render database TOC entries (flat structure with parentId for hierarchy)
+  const renderDatabaseToc = (entries: TocEntry[]): ReactNode[] => {
+    // Build a hierarchy from flat entries
+    const topLevel = entries.filter(e => e.parentId === null);
+    const childMap = new Map<number, TocEntry[]>();
+
+    entries.forEach(entry => {
+      if (entry.parentId !== null) {
+        const children = childMap.get(entry.parentId) || [];
+        children.push(entry);
+        childMap.set(entry.parentId, children);
+      }
+    });
+
+    const renderEntry = (entry: TocEntry, depth: number = 0): ReactNode => {
+      const children = childMap.get(entry.id) || [];
+      // Bullet markers for different depth levels
+      const bullets = ["●", "○", "▪", "◦", "▸"];
+      const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
+
+      return (
+        <div key={entry.id}>
+          <button
+            onClick={() => goToPage(entry.pageNumber)}
+            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+          >
+            {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
+            <span>{entry.chapterTitle}</span>
+          </button>
+          {children.length > 0 && (
+            <div>
+              {children.map(child => renderEntry(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    return topLevel.map(entry => renderEntry(entry));
+  };
+
   const renderChapters = (items: any[], depth: number = 0): ReactNode[] => {
+    // Bullet markers for different depth levels
+    const bullets = ["●", "○", "▪", "◦", "▸"];
+    const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
+
     return items.map((item, index) => {
       const hasSubitems = item.subitems && item.subitems.length > 0;
 
@@ -455,10 +599,11 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         <div key={`${depth}-${index}`}>
           <button
             onClick={() => goToChapter(item.href)}
-            className="w-full text-left px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors"
-            style={{ paddingRight: `${depth * 12 + 12}px` }}
+            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
           >
-            {item.label}
+            {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
+            <span>{item.label}</span>
           </button>
           {hasSubitems && (
             <div>
@@ -536,9 +681,11 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         </Button>
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-semibold text-sm md:text-base">{bookMetadata.title}</h1>
-          <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
-            {bookMetadata.titleLatin}
-          </p>
+          {getSecondaryTitle() && (
+            <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
+              {getSecondaryTitle()}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
           {totalSections > 0 && (
@@ -606,6 +753,7 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
 
       {/* Sidebar */}
       <div
+        dir="rtl"
         className={`absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-72 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-background rounded-lg border shadow-xl z-30 flex flex-col transition-all duration-200 ${
           showSidebar
             ? 'opacity-100 pointer-events-auto'
@@ -617,7 +765,12 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         </div>
 
         <div className="flex-1 overflow-auto p-3">
-          {chapters.length === 0 ? (
+          {/* Prefer database TOC over EPUB navigation */}
+          {bookMetadata.toc && bookMetadata.toc.length > 0 ? (
+            <div className="space-y-1">
+              {renderDatabaseToc(bookMetadata.toc)}
+            </div>
+          ) : chapters.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {t("reader.noChapters")}
             </p>

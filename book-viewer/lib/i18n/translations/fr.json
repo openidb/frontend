@@ -54,13 +54,54 @@
   "config": {
     "title": "Configurations",
     "sections": {
-      "language": "Language",
+      "language": "Langue",
+      "translations": "Traductions",
       "similarity": "Similarite",
       "fuzzySearch": "Recherche approximative",
       "reranking": "Reclassement",
       "booksDisplay": "Affichage des livres"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "Automatique",
+      "automaticInfo": "Selectionner automatiquement les traductions en fonction de la langue d'interface choisie.",
+      "quranTranslation": "Traduction du Coran",
+      "quranTranslationInfo": "Afficher la traduction a cote du texte arabe dans les resultats de recherche du Coran.",
+      "bookTitleDisplay": "Titres des livres",
+      "bookTitleDisplayInfo": "Afficher les titres traduits des livres a cote de l'arabe.",
+      "options": {
+        "none": "Aucune",
+        "en": "Anglais - Dr. Mustafa Khattab",
+        "fr": "Francais - Muhammad Hamidullah",
+        "id": "Indonesien - Ministere des Affaires islamiques",
+        "ur": "Ourdou - Fateh Muhammad Jalandhry",
+        "es": "Espagnol - Isa Garcia",
+        "zh": "Chinois - Ma Jian",
+        "pt": "Portugais - Samir El-Hayek",
+        "ru": "Russe - Elmir Kuliev",
+        "ja": "Japonais - Ryoichi Mita",
+        "ko": "Coreen - Hamid Choi",
+        "it": "Italien - Hamza Roberto Piccardo",
+        "bn": "Bengali - Muhiuddin Khan"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "Arabe uniquement",
+        "transliteration": "Translitteration",
+        "en": "Anglais",
+        "fr": "Francais",
+        "id": "Indonesien",
+        "ur": "Ourdou",
+        "es": "Espagnol",
+        "zh": "Chinois",
+        "pt": "Portugais",
+        "ru": "Russe",
+        "ja": "Japonais",
+        "ko": "Coreen",
+        "it": "Italien",
+        "bn": "Bengali"
+      }
+    },
       "similarity": {
       "cutoff": "Seuil",
       "cutoffInfo": "Score de similarite minimum. Des valeurs plus elevees renvoient moins de resultats mais plus pertinents."

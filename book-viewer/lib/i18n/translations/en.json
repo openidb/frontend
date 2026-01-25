@@ -8,7 +8,7 @@
   "search": {
     "title": "Search",
     "subtitle": "Search across Quran.com, Sunnah.com, and Maktaba Shamela",
-    "placeholder": "Search Arabic texts...",
+    "placeholder": "Search Arabic texts... (use \"quotes\" for exact phrases)",
     "rerank": "Rerank",
     "reranking": "Reranking...",
     "results": "Found {count} results",
@@ -55,10 +55,52 @@
     "title": "Configurations",
     "sections": {
       "language": "Language",
+      "translations": "Translations",
       "similarity": "Similarity",
       "fuzzySearch": "Fuzzy Search",
       "reranking": "Reranking",
       "booksDisplay": "Books Display"
+    },
+    "translations": {
+      "automatic": "Automatic",
+      "automaticInfo": "Automatically select translations based on your chosen interface language.",
+      "quranTranslation": "Quran Translation",
+      "quranTranslationInfo": "Display translation alongside Arabic text in Quran search results.",
+      "bookTitleDisplay": "Book Titles",
+      "bookTitleDisplayInfo": "Display translated book titles alongside Arabic.",
+      "options": {
+        "none": "None",
+        "en": "English - Dr. Mustafa Khattab",
+        "fr": "French - Muhammad Hamidullah",
+        "id": "Indonesian - Islamic Ministry",
+        "ur": "Urdu - Fateh Muhammad Jalandhry",
+        "es": "Spanish - Isa Garcia",
+        "zh": "Chinese - Ma Jian",
+        "pt": "Portuguese - Samir El-Hayek",
+        "ru": "Russian - Elmir Kuliev",
+        "ja": "Japanese - Ryoichi Mita",
+        "ko": "Korean - Hamid Choi",
+        "it": "Italian - Hamza Roberto Piccardo",
+        "bn": "Bengali - Muhiuddin Khan"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "Arabic only",
+        "transliteration": "Transliteration",
+        "en": "English",
+        "fr": "French",
+        "id": "Indonesian",
+        "ur": "Urdu",
+        "es": "Spanish",
+        "zh": "Chinese",
+        "pt": "Portuguese",
+        "ru": "Russian",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "it": "Italian",
+        "bn": "Bengali"
+      }
     },
     "similarity": {
       "cutoff": "Cutoff",

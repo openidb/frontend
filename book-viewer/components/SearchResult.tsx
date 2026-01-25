@@ -39,6 +39,7 @@ export interface AyahResultData {
   surahNameArabic: string;
   surahNameEnglish: string;
   text: string;
+  translation?: string;       // Translation text in user's preferred language
   juzNumber: number;
   pageNumber: number;
   quranComUrl: string;
@@ -161,6 +162,7 @@ interface AyahResultProps {
     surahNameArabic: string;
     surahNameEnglish: string;
     text: string;
+    translation?: string;
     juzNumber: number;
     pageNumber: number;
     quranComUrl: string;
@@ -229,6 +231,16 @@ export function AyahResult({ ayah }: AyahResultProps) {
       >
         {ayah.text}
       </div>
+
+      {/* Translation */}
+      {ayah.translation && (
+        <div
+          className="text-sm text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/50 pt-2"
+          dir="auto"
+        >
+          {ayah.translation}
+        </div>
+      )}
     </a>
   );
 }

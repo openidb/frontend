@@ -54,13 +54,54 @@
   "config": {
     "title": "Configurazioni",
     "sections": {
-      "language": "Language",
+      "language": "Lingua",
+      "translations": "Traduzioni",
       "similarity": "Similarita",
       "fuzzySearch": "Ricerca fuzzy",
       "reranking": "Riordinamento",
       "booksDisplay": "Visualizzazione libri"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "Automatico",
+      "automaticInfo": "Seleziona automaticamente le traduzioni in base alla lingua dell'interfaccia scelta.",
+      "quranTranslation": "Traduzione del Corano",
+      "quranTranslationInfo": "Mostra la traduzione accanto al testo arabo nei risultati di ricerca del Corano.",
+      "bookTitleDisplay": "Titoli dei libri",
+      "bookTitleDisplayInfo": "Mostra i titoli tradotti dei libri accanto all'arabo.",
+      "options": {
+        "none": "Nessuna",
+        "en": "Inglese - Dr. Mustafa Khattab",
+        "fr": "Francese - Muhammad Hamidullah",
+        "id": "Indonesiano - Ministero degli Affari Islamici",
+        "ur": "Urdu - Fateh Muhammad Jalandhry",
+        "es": "Spagnolo - Isa Garcia",
+        "zh": "Cinese - Ma Jian",
+        "pt": "Portoghese - Samir El-Hayek",
+        "ru": "Russo - Elmir Kuliev",
+        "ja": "Giapponese - Ryoichi Mita",
+        "ko": "Coreano - Hamid Choi",
+        "it": "Italiano - Hamza Roberto Piccardo",
+        "bn": "Bengalese - Muhiuddin Khan"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "Solo arabo",
+        "transliteration": "Traslitterazione",
+        "en": "Inglese",
+        "fr": "Francese",
+        "id": "Indonesiano",
+        "ur": "Urdu",
+        "es": "Spagnolo",
+        "zh": "Cinese",
+        "pt": "Portoghese",
+        "ru": "Russo",
+        "ja": "Giapponese",
+        "ko": "Coreano",
+        "it": "Italiano",
+        "bn": "Bengalese"
+      }
+    },
       "similarity": {
       "cutoff": "Soglia",
       "cutoffInfo": "Punteggio minimo di similarita. Valori piu alti restituiscono meno risultati ma piu rilevanti."

@@ -54,13 +54,54 @@
   "config": {
     "title": "設定",
     "sections": {
-      "language": "Language",
+      "language": "言語",
+      "translations": "翻訳",
       "similarity": "類似度",
       "fuzzySearch": "あいまい検索",
       "reranking": "再ランキング",
       "booksDisplay": "書籍表示"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "自動",
+      "automaticInfo": "選択したインターフェース言語に基づいて翻訳を自動的に選択します。",
+      "quranTranslation": "クルアーン翻訳",
+      "quranTranslationInfo": "コーラン検索結果でアラビア語テキストの横に翻訳を表示します。",
+      "bookTitleDisplay": "書籍タイトル",
+      "bookTitleDisplayInfo": "アラビア語の横に翻訳された書籍タイトルを表示します。",
+      "options": {
+        "none": "なし",
+        "en": "英語 - ムスタファ・ハッターブ博士",
+        "fr": "フランス語 - ムハンマド・ハミードゥッラー",
+        "id": "インドネシア語 - イスラム省",
+        "ur": "ウルドゥー語 - ファテフ・ムハンマド",
+        "es": "スペイン語 - イサ・ガルシア",
+        "zh": "中国語 - 馬堅",
+        "pt": "ポルトガル語 - サミール・エルハイエク",
+        "ru": "ロシア語 - エルミール・クリエフ",
+        "ja": "日本語 - 三田了一",
+        "ko": "韓国語 - ハミド・チェ",
+        "it": "イタリア語 - ハムザ・ロベルト・ピッカルド",
+        "bn": "ベンガル語 - ムヒウッディン・カーン"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "アラビア語のみ",
+        "transliteration": "翻字",
+        "en": "英語",
+        "fr": "フランス語",
+        "id": "インドネシア語",
+        "ur": "ウルドゥー語",
+        "es": "スペイン語",
+        "zh": "中国語",
+        "pt": "ポルトガル語",
+        "ru": "ロシア語",
+        "ja": "日本語",
+        "ko": "韓国語",
+        "it": "イタリア語",
+        "bn": "ベンガル語"
+      }
+    },
       "similarity": {
       "cutoff": "カットオフ",
       "cutoffInfo": "結果の最小類似度スコア。高い値はより少ないが関連性の高い結果を返します。"

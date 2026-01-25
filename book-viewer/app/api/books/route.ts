@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
  * - category: Filter by category ID
  * - authorId: Filter by author ID
  * - timePeriod: Filter by time period
+ * - bookTitleLang: Language code for book title translation (e.g., "en", "fr")
  */
 export async function GET(request: NextRequest) {
   try {
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get("categoryId");
     const authorId = searchParams.get("authorId");
     const timePeriod = searchParams.get("timePeriod");
+    const bookTitleLang = searchParams.get("bookTitleLang");
 
     // Build where clause
     const where: any = {};
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch books with relations
-    const [books, total] = await Promise.all([
+    const [booksRaw, total] = await Promise.all([
       prisma.book.findMany({
         where,
         skip,
@@ -79,6 +81,15 @@ export async function GET(request: NextRequest) {
               nameEnglish: true,
             },
           },
+          ...(bookTitleLang && bookTitleLang !== "none" && bookTitleLang !== "transliteration"
+            ? {
+                titleTranslations: {
+                  where: { language: bookTitleLang },
+                  select: { title: true },
+                  take: 1,
+                },
+              }
+            : {}),
         },
         orderBy: {
           createdAt: "desc",
@@ -86,6 +97,17 @@ export async function GET(request: NextRequest) {
       }),
       prisma.book.count({ where }),
     ]);
+
+    // Add titleTranslated field to each book
+    const books = booksRaw.map((book) => {
+      const { titleTranslations, ...rest } = book as typeof book & {
+        titleTranslations?: { title: string }[];
+      };
+      return {
+        ...rest,
+        titleTranslated: titleTranslations?.[0]?.title || null,
+      };
+    });
 
     return NextResponse.json({
       books,

@@ -12,8 +12,11 @@ import {
 import {
   defaultSearchConfig,
   rerankerOptions,
+  QURAN_TRANSLATIONS,
+  TRANSLATION_DISPLAY_OPTIONS,
   type SearchConfig,
   type RerankerType,
+  type TranslationDisplayOption,
 } from "@/components/SearchConfigDropdown";
 import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
 
@@ -151,6 +154,17 @@ export default function ConfigPage() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // Handle backward compatibility: migrate showTransliterations to bookTitleDisplay
+        if (parsed.showTransliterations !== undefined && !parsed.bookTitleDisplay) {
+          parsed.bookTitleDisplay = parsed.showTransliterations ? "transliteration" : "none";
+          delete parsed.showTransliterations;
+        }
+        // Clean up removed tocDisplay field
+        delete parsed.tocDisplay;
+        // Clamp similarityCutoff to new valid range (0.15-0.5)
+        if (typeof parsed.similarityCutoff === "number") {
+          parsed.similarityCutoff = Math.max(0.15, Math.min(0.5, parsed.similarityCutoff));
+        }
         setConfig({ ...defaultSearchConfig, ...parsed });
       } catch {
         // Invalid JSON, use defaults
@@ -209,14 +223,81 @@ export default function ConfigPage() {
 
         <Divider />
 
+        {/* Translations */}
+        <div className="space-y-4">
+          <SectionHeader>{t("config.sections.translations")}</SectionHeader>
+          <ToggleSetting
+            label={t("config.translations.automatic")}
+            checked={config.autoTranslation}
+            onChange={(checked) => updateConfig({ autoTranslation: checked })}
+            info={t("config.translations.automaticInfo")}
+          />
+          <SelectSetting
+            label={t("config.translations.quranTranslation")}
+            info={t("config.translations.quranTranslationInfo")}
+          >
+            <Select
+              value={config.autoTranslation ? (locale === "ar" ? "en" : locale) : config.quranTranslation}
+              onValueChange={(value) => updateConfig({ quranTranslation: value, autoTranslation: false })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {(() => {
+                    const effectiveCode = config.autoTranslation
+                      ? (locale === "ar" ? "en" : locale)
+                      : config.quranTranslation;
+                    return t(`config.translations.options.${effectiveCode}`);
+                  })()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border max-h-64">
+                {QURAN_TRANSLATIONS.map((trans) => (
+                  <SelectItem key={trans.code} value={trans.code} className="py-2">
+                    {t(`config.translations.options.${trans.code}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SelectSetting>
+          <SelectSetting
+            label={t("config.translations.bookTitleDisplay")}
+            info={t("config.translations.bookTitleDisplayInfo")}
+          >
+            <Select
+              value={config.autoTranslation ? (locale === "ar" ? "transliteration" : locale) : config.bookTitleDisplay}
+              onValueChange={(value) => updateConfig({ bookTitleDisplay: value as TranslationDisplayOption, autoTranslation: false })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {(() => {
+                    const effectiveCode = config.autoTranslation
+                      ? (locale === "ar" ? "transliteration" : locale)
+                      : config.bookTitleDisplay;
+                    return t(`config.translationDisplay.options.${effectiveCode}`);
+                  })()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border max-h-64">
+                {TRANSLATION_DISPLAY_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.code} value={opt.code} className="py-2">
+                    {t(`config.translationDisplay.options.${opt.code}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SelectSetting>
+        </div>
+
+        <Divider />
+
         {/* Similarity */}
         <div className="space-y-4">
           <SectionHeader>{t("config.sections.similarity")}</SectionHeader>
           <SliderSetting
             label={t("config.similarity.cutoff")}
             value={config.similarityCutoff}
-            min={0.05}
-            max={0.4}
+            min={0.15}
+            max={0.5}
             step={0.05}
             onChange={(value) => updateConfig({ similarityCutoff: value })}
             format={(v) => v.toFixed(2)}
@@ -264,18 +345,37 @@ export default function ConfigPage() {
             >
               <SelectTrigger className="w-full">
                 <SelectValue>
-                  {rerankerOptions.find((o) => o.value === config.reranker)?.label}
+                  {(() => {
+                    const keyMap: Record<RerankerType, string> = {
+                      "gpt-oss-120b": "gptOss120b",
+                      "gpt-oss": "gptOss",
+                      "qwen4b": "qwen4b",
+                      "jina": "jina",
+                      "none": "none",
+                    };
+                    return t(`config.rerankerOptions.${keyMap[config.reranker]}`);
+                  })()}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-background border border-border">
-                {rerankerOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="py-2">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{option.label}</span>
-                      <span className="text-xs text-muted-foreground">{option.description}</span>
-                    </div>
-                  </SelectItem>
-                ))}
+                {rerankerOptions.map((option) => {
+                  const keyMap: Record<RerankerType, string> = {
+                    "gpt-oss-120b": "gptOss120b",
+                    "gpt-oss": "gptOss",
+                    "qwen4b": "qwen4b",
+                    "jina": "jina",
+                    "none": "none",
+                  };
+                  const key = keyMap[option.value];
+                  return (
+                    <SelectItem key={option.value} value={option.value} className="py-2">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{t(`config.rerankerOptions.${key}`)}</span>
+                        <span className="text-xs text-muted-foreground">{t(`config.rerankerOptions.${key}Desc`)}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </SelectSetting>
@@ -304,12 +404,6 @@ export default function ConfigPage() {
         {/* Books Display */}
         <div className="space-y-4">
           <SectionHeader>{t("config.sections.booksDisplay")}</SectionHeader>
-          <ToggleSetting
-            label={t("config.display.showTransliterations")}
-            checked={config.showTransliterations}
-            onChange={(checked) => updateConfig({ showTransliterations: checked })}
-            info={t("config.display.showTransliterationsInfo")}
-          />
           <ToggleSetting
             label={t("config.display.showPublicationDates")}
             checked={config.showPublicationDates}

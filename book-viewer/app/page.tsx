@@ -3,9 +3,8 @@ import BooksClient from "./BooksClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function BooksPage() {
-  // Fetch all books with author and category data
-  const books = await prisma.book.findMany({
+async function getBooks() {
+  return prisma.book.findMany({
     include: {
       author: {
         select: {
@@ -28,6 +27,16 @@ export default async function BooksPage() {
       createdAt: "desc",
     },
   });
+}
+
+export default async function BooksPage() {
+  let books: Awaited<ReturnType<typeof getBooks>> = [];
+
+  try {
+    books = await getBooks();
+  } catch (error) {
+    console.error("Failed to fetch books:", error);
+  }
 
   return <BooksClient books={books} />;
 }

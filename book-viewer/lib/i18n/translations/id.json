@@ -54,13 +54,54 @@
   "config": {
     "title": "Konfigurasi",
     "sections": {
-      "language": "Language",
+      "language": "Bahasa",
+      "translations": "Terjemahan",
       "similarity": "Kemiripan",
       "fuzzySearch": "Pencarian Fuzzy",
       "reranking": "Pengurutan Ulang",
       "booksDisplay": "Tampilan Buku"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "Otomatis",
+      "automaticInfo": "Pilih terjemahan secara otomatis berdasarkan bahasa antarmuka yang dipilih.",
+      "quranTranslation": "Terjemahan Al-Quran",
+      "quranTranslationInfo": "Tampilkan terjemahan di samping teks Arab dalam hasil pencarian Al-Quran.",
+      "bookTitleDisplay": "Judul Buku",
+      "bookTitleDisplayInfo": "Tampilkan judul buku yang diterjemahkan di samping Arab.",
+      "options": {
+        "none": "Tidak ada",
+        "en": "Inggris - Dr. Mustafa Khattab",
+        "fr": "Prancis - Muhammad Hamidullah",
+        "id": "Indonesia - Kementerian Agama",
+        "ur": "Urdu - Fateh Muhammad Jalandhry",
+        "es": "Spanyol - Isa Garcia",
+        "zh": "Tionghoa - Ma Jian",
+        "pt": "Portugis - Samir El-Hayek",
+        "ru": "Rusia - Elmir Kuliev",
+        "ja": "Jepang - Ryoichi Mita",
+        "ko": "Korea - Hamid Choi",
+        "it": "Italia - Hamza Roberto Piccardo",
+        "bn": "Bengali - Muhiuddin Khan"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "Arab saja",
+        "transliteration": "Transliterasi",
+        "en": "Inggris",
+        "fr": "Prancis",
+        "id": "Indonesia",
+        "ur": "Urdu",
+        "es": "Spanyol",
+        "zh": "Tionghoa",
+        "pt": "Portugis",
+        "ru": "Rusia",
+        "ja": "Jepang",
+        "ko": "Korea",
+        "it": "Italia",
+        "bn": "Bengali"
+      }
+    },
       "similarity": {
       "cutoff": "Batas",
       "cutoffInfo": "Skor kemiripan minimum. Nilai lebih tinggi menghasilkan lebih sedikit tapi lebih relevan."

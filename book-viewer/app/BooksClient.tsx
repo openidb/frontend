@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
 import { formatBookYear, getBookCentury, getCenturyLabel } from "@/lib/dates";
-import { defaultSearchConfig } from "@/components/SearchConfigDropdown";
+import { defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
 import { useTranslation } from "@/lib/i18n";
 
 interface Author {
@@ -34,6 +34,7 @@ interface Book {
   id: string;
   titleArabic: string;
   titleLatin: string;
+  titleTranslated?: string | null;
   filename: string;
   timePeriod: string | null;
   publicationYearHijri: string | null;
@@ -56,13 +57,24 @@ function getBookYear(book: Book, showPublicationDates: boolean): string {
 
 const STORAGE_KEY = "searchConfig";
 
-export default function BooksClient({ books }: BooksClientProps) {
-  const { t } = useTranslation();
+export default function BooksClient({ books: initialBooks }: BooksClientProps) {
+  const { t, locale } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
   const [showPublicationDates, setShowPublicationDates] = useState(defaultSearchConfig.showPublicationDates);
-  const [showTransliterations, setShowTransliterations] = useState(defaultSearchConfig.showTransliterations);
+  const [bookTitleDisplay, setBookTitleDisplay] = useState<TranslationDisplayOption>(defaultSearchConfig.bookTitleDisplay);
+  const [autoTranslation, setAutoTranslation] = useState(defaultSearchConfig.autoTranslation);
+  const [books, setBooks] = useState<Book[]>(initialBooks);
+
+  // Get effective book title display setting (auto uses UI locale)
+  const effectiveBookTitleDisplay = useMemo(() => {
+    if (autoTranslation) {
+      // Use UI locale, fall back to transliteration for Arabic
+      return locale === "ar" ? "transliteration" : (locale as TranslationDisplayOption);
+    }
+    return bookTitleDisplay;
+  }, [autoTranslation, bookTitleDisplay, locale]);
 
   // Load display options from localStorage
   useEffect(() => {
@@ -73,14 +85,64 @@ export default function BooksClient({ books }: BooksClientProps) {
         if (typeof parsed.showPublicationDates === "boolean") {
           setShowPublicationDates(parsed.showPublicationDates);
         }
-        if (typeof parsed.showTransliterations === "boolean") {
-          setShowTransliterations(parsed.showTransliterations);
+        // Handle new bookTitleDisplay setting
+        if (parsed.bookTitleDisplay) {
+          setBookTitleDisplay(parsed.bookTitleDisplay);
+        } else if (typeof parsed.showTransliterations === "boolean") {
+          // Backward compatibility: migrate old setting
+          setBookTitleDisplay(parsed.showTransliterations ? "transliteration" : "none");
+        }
+        if (typeof parsed.autoTranslation === "boolean") {
+          setAutoTranslation(parsed.autoTranslation);
         }
       } catch {
         // Invalid JSON, use defaults
       }
     }
   }, []);
+
+  // Fetch books with translations when display setting changes to a language
+  useEffect(() => {
+    const fetchBooksWithTranslations = async () => {
+      if (effectiveBookTitleDisplay === "none" || effectiveBookTitleDisplay === "transliteration") {
+        setBooks(initialBooks);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/books?bookTitleLang=${effectiveBookTitleDisplay}&limit=1000`);
+        if (response.ok) {
+          const data = await response.json();
+          setBooks(data.books);
+        }
+      } catch (error) {
+        console.error("Failed to fetch book translations:", error);
+      }
+    };
+
+    fetchBooksWithTranslations();
+  }, [effectiveBookTitleDisplay, initialBooks]);
+
+  // Helper to get secondary title based on display setting
+  const getSecondaryTitle = (book: Book): string | null => {
+    if (effectiveBookTitleDisplay === "none") {
+      return null;
+    }
+    if (effectiveBookTitleDisplay === "transliteration") {
+      return book.titleLatin;
+    }
+    // For language translations, use titleTranslated or fall back to titleLatin
+    return book.titleTranslated || book.titleLatin;
+  };
+
+  // Helper to get secondary author name based on display setting
+  const getSecondaryAuthorName = (author: Author): string | null => {
+    if (effectiveBookTitleDisplay === "none") {
+      return null;
+    }
+    // For now, always show Latin transliteration for author (no author translations yet)
+    return author.nameLatin;
+  };
 
   // Get all unique categories (for stable option list)
   const allCategories = useMemo(() => {
@@ -244,34 +306,38 @@ export default function BooksClient({ books }: BooksClientProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredBooks.map((book) => (
-                <TableRow key={book.id}>
-                  <TableCell>
-                    <Link
-                      href={`/reader/${book.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      <div>{book.titleArabic}</div>
-                      {showTransliterations && (
+              filteredBooks.map((book) => {
+                const secondaryTitle = getSecondaryTitle(book);
+                const secondaryAuthor = getSecondaryAuthorName(book.author);
+                return (
+                  <TableRow key={book.id}>
+                    <TableCell>
+                      <Link
+                        href={`/reader/${book.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        <div>{book.titleArabic}</div>
+                        {secondaryTitle && (
+                          <div className="text-sm text-muted-foreground">
+                            {secondaryTitle}
+                          </div>
+                        )}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <div>{book.author.nameArabic}</div>
+                      {secondaryAuthor && (
                         <div className="text-sm text-muted-foreground">
-                          {book.titleLatin}
+                          {secondaryAuthor}
                         </div>
                       )}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <div>{book.author.nameArabic}</div>
-                    {showTransliterations && (
-                      <div className="text-sm text-muted-foreground">
-                        {book.author.nameLatin}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {getBookYear(book, showPublicationDates)}
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell>
+                      {getBookYear(book, showPublicationDates)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

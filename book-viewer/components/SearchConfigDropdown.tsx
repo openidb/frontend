@@ -14,6 +14,37 @@ import { useTranslation } from "@/lib/i18n";
 
 export type RerankerType = "gpt-oss" | "gpt-oss-120b" | "qwen4b" | "jina" | "none";
 
+// Shared type for translation display options
+export type TranslationDisplayOption =
+  | "none" | "transliteration"
+  | "en" | "fr" | "id" | "ur" | "es" | "zh" | "pt" | "ru" | "ja" | "ko" | "it" | "bn";
+
+// Quran translation options (12 languages, matching app UI languages except Arabic)
+export const QURAN_TRANSLATIONS: { code: string; edition: string; name: string }[] = [
+  { code: "none", edition: "", name: "None" },
+  { code: "en", edition: "eng-mustafakhattaba", name: "English - Dr. Mustafa Khattab" },
+  { code: "fr", edition: "fra-muhammadhameedu", name: "French - Muhammad Hamidullah" },
+  { code: "id", edition: "ind-indonesianislam", name: "Indonesian - Islamic Ministry" },
+  { code: "ur", edition: "urd-fatehmuhammadja", name: "Urdu - Fateh Muhammad Jalandhry" },
+  { code: "es", edition: "spa-muhammadisagarc", name: "Spanish - Isa Garcia" },
+  { code: "zh", edition: "zho-majian", name: "Chinese - Ma Jian" },
+  { code: "pt", edition: "por-samirelhayek", name: "Portuguese - Samir El-Hayek" },
+  { code: "ru", edition: "rus-elmirkuliev", name: "Russian - Elmir Kuliev" },
+  { code: "ja", edition: "jpn-ryoichimita", name: "Japanese - Ryoichi Mita" },
+  { code: "ko", edition: "kor-hamidchoi", name: "Korean - Hamid Choi" },
+  { code: "it", edition: "ita-hamzarobertopic", name: "Italian - Hamza Roberto Piccardo" },
+  { code: "bn", edition: "ben-muhiuddinkhan", name: "Bengali - Muhiuddin Khan" },
+];
+
+// Shared options array for book title and TOC display dropdowns
+export const TRANSLATION_DISPLAY_OPTIONS: { code: TranslationDisplayOption }[] = [
+  { code: "none" },
+  { code: "transliteration" },
+  { code: "en" }, { code: "fr" }, { code: "id" }, { code: "ur" },
+  { code: "es" }, { code: "zh" }, { code: "pt" }, { code: "ru" },
+  { code: "ja" }, { code: "ko" }, { code: "it" }, { code: "bn" },
+];
+
 export interface SearchConfig {
   includeQuran: boolean;
   includeHadith: boolean;
@@ -25,8 +56,11 @@ export interface SearchConfig {
   fuzzyEnabled: boolean;
   fuzzyThreshold: number;
   // Books display options
-  showTransliterations: boolean;
+  bookTitleDisplay: TranslationDisplayOption;  // Replaces showTransliterations
   showPublicationDates: boolean;
+  // Translation settings
+  autoTranslation: boolean; // When true, use UI language for translations
+  quranTranslation: string; // Language code ("en", "ur", "fr", etc.) or "none"
 }
 
 export const defaultSearchConfig: SearchConfig = {
@@ -40,8 +74,11 @@ export const defaultSearchConfig: SearchConfig = {
   fuzzyEnabled: true,
   fuzzyThreshold: 0.3,
   // Books display options
-  showTransliterations: true,
+  bookTitleDisplay: "transliteration",  // Default maintains current behavior
   showPublicationDates: true,
+  // Translation settings - auto uses UI language, quranTranslation is override
+  autoTranslation: true,
+  quranTranslation: "en",
 };
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [

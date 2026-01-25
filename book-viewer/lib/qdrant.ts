@@ -29,13 +29,9 @@ export const QDRANT_COLLECTION =
 export const QDRANT_AUTHORS_COLLECTION =
   process.env.QDRANT_AUTHORS_COLLECTION || "arabic_texts_authors";
 
-// Collection name for Quran ayahs (individual)
+// Collection name for Quran ayahs
 export const QDRANT_QURAN_COLLECTION =
   process.env.QDRANT_QURAN_COLLECTION || "quran_ayahs";
-
-// Collection name for Quran ayah chunks (smart grouping)
-export const QDRANT_QURAN_CHUNKS_COLLECTION =
-  process.env.QDRANT_QURAN_CHUNKS_COLLECTION || "quran_ayah_chunks";
 
 // Collection name for Hadith
 export const QDRANT_HADITH_COLLECTION =

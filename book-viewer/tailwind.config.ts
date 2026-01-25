@@ -31,6 +31,7 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        icon: "#53696e",
       },
       borderRadius: {
         lg: "var(--radius)",

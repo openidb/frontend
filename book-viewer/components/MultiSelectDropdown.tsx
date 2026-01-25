@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ChevronDown } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -33,6 +34,12 @@ export function MultiSelectDropdown({
   selected,
   onChange,
 }: MultiSelectDropdownProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const handleToggle = (value: string) => {
     const newSelected = selected.includes(value)
       ? selected.filter((v) => v !== value)
@@ -43,6 +50,19 @@ export function MultiSelectDropdown({
   const displayTitle = selected.length > 0
     ? `${title} (${selected.length})`
     : title
+
+  // Render a placeholder button during SSR to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        className="border-gray-300 hover:bg-gray-50"
+      >
+        {displayTitle}
+        <ChevronDown className="ml-2 h-4 w-4" />
+      </Button>
+    )
+  }
 
   return (
     <DropdownMenu>

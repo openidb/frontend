@@ -54,13 +54,54 @@
   "config": {
     "title": "Configuracoes",
     "sections": {
-      "language": "Language",
+      "language": "Idioma",
+      "translations": "Traducoes",
       "similarity": "Similaridade",
       "fuzzySearch": "Busca aproximada",
       "reranking": "Reordenamento",
       "booksDisplay": "Exibicao de livros"
     },
-    "language": "Language",
+    "translations": {
+      "automatic": "Automatico",
+      "automaticInfo": "Selecionar automaticamente as traducoes com base no idioma da interface escolhido.",
+      "quranTranslation": "Traducao do Alcorao",
+      "quranTranslationInfo": "Exibir traducao ao lado do texto arabe nos resultados de pesquisa do Alcorao.",
+      "bookTitleDisplay": "Titulos dos livros",
+      "bookTitleDisplayInfo": "Exibir titulos de livros traduzidos ao lado do arabe.",
+      "options": {
+        "none": "Nenhuma",
+        "en": "Ingles - Dr. Mustafa Khattab",
+        "fr": "Frances - Muhammad Hamidullah",
+        "id": "Indonesio - Ministerio de Assuntos Islamicos",
+        "ur": "Urdu - Fateh Muhammad Jalandhry",
+        "es": "Espanhol - Isa Garcia",
+        "zh": "Chines - Ma Jian",
+        "pt": "Portugues - Samir El-Hayek",
+        "ru": "Russo - Elmir Kuliev",
+        "ja": "Japones - Ryoichi Mita",
+        "ko": "Coreano - Hamid Choi",
+        "it": "Italiano - Hamza Roberto Piccardo",
+        "bn": "Bengali - Muhiuddin Khan"
+      }
+    },
+    "translationDisplay": {
+      "options": {
+        "none": "Somente arabe",
+        "transliteration": "Transliteracao",
+        "en": "Ingles",
+        "fr": "Frances",
+        "id": "Indonesio",
+        "ur": "Urdu",
+        "es": "Espanhol",
+        "zh": "Chines",
+        "pt": "Portugues",
+        "ru": "Russo",
+        "ja": "Japones",
+        "ko": "Coreano",
+        "it": "Italiano",
+        "bn": "Bengali"
+      }
+    },
       "similarity": {
       "cutoff": "Limite",
       "cutoffInfo": "Pontuacao minima de similaridade. Valores mais altos retornam menos resultados, mas mais relevantes."
