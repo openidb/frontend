@@ -196,6 +196,12 @@
       "quranTranslationInfo": "コーラン検索結果でアラビア語テキストの横に翻訳を表示します。",
       "bookTitleDisplay": "書籍タイトル",
       "bookTitleDisplayInfo": "アラビア語の横に翻訳された書籍タイトルを表示します。",
+      "hadithTranslation": "ハディース翻訳",
+      "hadithTranslationInfo": "ハディース検索結果でアラビア語テキストの横に英語翻訳を表示します。",
+      "hadithOptions": {
+        "none": "なし",
+        "en": "英語 (sunnah.com)"
+      },
       "options": {
         "none": "なし",
         "en": "英語 - ムスタファ・ハッターブ博士",

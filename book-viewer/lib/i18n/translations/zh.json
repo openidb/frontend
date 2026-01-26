@@ -196,6 +196,12 @@
       "quranTranslationInfo": "在古兰经搜索结果中显示阿拉伯文旁边的翻译。",
       "bookTitleDisplay": "书名",
       "bookTitleDisplayInfo": "在阿拉伯语旁边显示翻译后的书名。",
+      "hadithTranslation": "圣训翻译",
+      "hadithTranslationInfo": "在圣训搜索结果中显示阿拉伯文旁边的英文翻译。",
+      "hadithOptions": {
+        "none": "无",
+        "en": "英语 (sunnah.com)"
+      },
       "options": {
         "none": "无",
         "en": "英语 - 穆斯塔法·哈塔卜博士",
