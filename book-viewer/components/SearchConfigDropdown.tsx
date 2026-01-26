@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
 
-export type RerankerType = "gpt-oss" | "gpt-oss-120b" | "qwen4b" | "jina" | "none";
+export type RerankerType = "gpt-oss" | "gpt-oss-120b" | "gemini-flash" | "qwen4b" | "jina" | "none";
 
 // Shared type for translation display options
 export type TranslationDisplayOption =
@@ -83,6 +83,7 @@ export const defaultSearchConfig: SearchConfig = {
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [
   { value: "gpt-oss-120b", label: "GPT-OSS 120B", description: "Highest quality (Recommended)" },
+  { value: "gemini-flash", label: "Gemini Flash", description: "Fast, high quality reasoning" },
   { value: "gpt-oss", label: "GPT-OSS 20B", description: "High quality, faster" },
   { value: "qwen4b", label: "Qwen 4B", description: "Fast, cross-lingual" },
   { value: "jina", label: "Jina", description: "Fastest" },
@@ -131,7 +132,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-64 bg-background border border-border"
+        className="w-48 bg-popover border border-border"
         align="end"
       >
         <DropdownMenuLabel>{t("searchConfig.contentTypes")}</DropdownMenuLabel>
@@ -139,6 +140,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
           checked={config.includeQuran}
           onCheckedChange={(checked) => updateConfig({ includeQuran: checked })}
           onSelect={(e) => e.preventDefault()}
+          className="hover:bg-accent"
         >
           {t("searchConfig.quranVerses")}
         </DropdownMenuCheckboxItem>
@@ -146,6 +148,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
           checked={config.includeHadith}
           onCheckedChange={(checked) => updateConfig({ includeHadith: checked })}
           onSelect={(e) => e.preventDefault()}
+          className="hover:bg-accent"
         >
           {t("searchConfig.hadiths")}
         </DropdownMenuCheckboxItem>
@@ -153,6 +156,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
           checked={config.includeBooks}
           onCheckedChange={(checked) => updateConfig({ includeBooks: checked })}
           onSelect={(e) => e.preventDefault()}
+          className="hover:bg-accent"
         >
           {t("searchConfig.books")}
         </DropdownMenuCheckboxItem>

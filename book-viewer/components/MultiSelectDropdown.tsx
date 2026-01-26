@@ -56,7 +56,7 @@ export function MultiSelectDropdown({
     return (
       <Button
         variant="outline"
-        className="border-gray-300 hover:bg-gray-50"
+        className="border-border hover:bg-accent"
       >
         {displayTitle}
         <ChevronDown className="ml-2 h-4 w-4" />
@@ -69,13 +69,13 @@ export function MultiSelectDropdown({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="border-gray-300 hover:bg-gray-50"
+          className="border-border hover:bg-accent"
         >
           {displayTitle}
           <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700" align="start">
+      <DropdownMenuContent className="w-56 bg-popover border border-border" align="start">
         <DropdownMenuLabel>{title}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {options.map((option) => (
@@ -85,18 +85,18 @@ export function MultiSelectDropdown({
             onCheckedChange={() => !option.disabled && handleToggle(option.value)}
             onSelect={(e) => e.preventDefault()}
             disabled={option.disabled}
-            className={option.disabled ? "opacity-50 cursor-not-allowed" : ""}
+            className={option.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-accent"}
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex flex-col">
                 <span>{option.label}</span>
                 {option.labelArabic && (
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {option.labelArabic}
                   </span>
                 )}
               </div>
-              <span className="text-sm text-gray-400 ml-2">
+              <span className="text-sm text-muted-foreground ml-2">
                 {option.count}
               </span>
             </div>
