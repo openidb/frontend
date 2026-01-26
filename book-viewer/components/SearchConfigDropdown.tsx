@@ -61,6 +61,7 @@ export interface SearchConfig {
   // Translation settings
   autoTranslation: boolean; // When true, use UI language for translations
   quranTranslation: string; // Language code ("en", "ur", "fr", etc.) or "none"
+  hadithTranslation: "none" | "en"; // Hadith translation (English only for now)
 }
 
 export const defaultSearchConfig: SearchConfig = {
@@ -79,6 +80,7 @@ export const defaultSearchConfig: SearchConfig = {
   // Translation settings - auto uses UI language, quranTranslation is override
   autoTranslation: true,
   quranTranslation: "en",
+  hadithTranslation: "en",  // Default to English
 };
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [

@@ -196,6 +196,12 @@
       "quranTranslationInfo": "عرض الترجمة بجانب النص العربي في نتائج بحث القرآن.",
       "bookTitleDisplay": "عناوين الكتب",
       "bookTitleDisplayInfo": "عرض عناوين الكتب المترجمة بجانب العربية.",
+      "hadithTranslation": "ترجمة الحديث",
+      "hadithTranslationInfo": "عرض الترجمة الإنجليزية بجانب النص العربي في نتائج بحث الحديث.",
+      "hadithOptions": {
+        "none": "بدون",
+        "en": "الإنجليزية (sunnah.com)"
+      },
       "options": {
         "none": "بدون",
         "en": "الإنجليزية - د. مصطفى خطاب",

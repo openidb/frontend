@@ -377,3 +377,16 @@ model Hadith {
   @@index([bookId])
   @@map("hadiths")
 }
+
+model HadithTranslation {
+  id           Int    @id @default(autoincrement())
+  bookId       Int    @map("book_id")
+  hadithNumber String @map("hadith_number")
+  language     String // "en" for now, expandable later
+  text         String @db.Text
+
+  @@unique([bookId, hadithNumber, language])
+  @@index([bookId, hadithNumber])
+  @@index([language])
+  @@map("hadith_translations")
+}

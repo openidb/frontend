@@ -267,6 +267,7 @@ interface HadithResultProps {
     chapterArabic: string | null;
     chapterEnglish: string | null;
     sunnahComUrl: string;
+    translation?: string;  // English translation (when requested)
   };
 }
 
@@ -328,6 +329,16 @@ export function HadithResult({ hadith }: HadithResultProps) {
       >
         {hadith.text}
       </div>
+
+      {/* Translation */}
+      {hadith.translation && (
+        <div
+          className="text-sm text-muted-foreground mt-2 line-clamp-3 italic border-t border-border/50 pt-2"
+          dir="auto"
+        >
+          {hadith.translation}
+        </div>
+      )}
     </a>
   );
 }
