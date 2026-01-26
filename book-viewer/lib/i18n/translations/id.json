@@ -16,7 +16,7 @@
     "showExpandedQueries": "Tampilkan kueri yang diperluas",
     "results": "Ditemukan {count} hasil",
     "noResults": "Tidak ada hasil untuk \"{query}\"",
-    "minChars": "Masukkan minimal 2 karakter",
+    "minChars": "Mulai ketik untuk mencari...",
     "error": "Silakan coba lagi.",
     "authorsSection": "Penulis",
     "debugStats": "Statistik Debug",

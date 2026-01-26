@@ -16,7 +16,7 @@
     "showExpandedQueries": "拡張クエリを表示",
     "results": "{count}件の結果が見つかりました",
     "noResults": "「{query}」の結果が見つかりませんでした",
-    "minChars": "2文字以上入力してください",
+    "minChars": "入力して検索...",
     "error": "もう一度お試しください。",
     "authorsSection": "著者",
     "debugStats": "デバッグ統計",

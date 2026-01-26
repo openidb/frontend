@@ -16,7 +16,7 @@
     "showExpandedQueries": "显示扩展查询",
     "results": "找到 {count} 个结果",
     "noResults": "未找到 \"{query}\" 的结果",
-    "minChars": "请输入至少2个字符",
+    "minChars": "开始输入以搜索...",
     "error": "请重试。",
     "authorsSection": "作者",
     "debugStats": "调试统计",

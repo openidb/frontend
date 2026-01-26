@@ -6,6 +6,7 @@ import ePub, { Book, Rendition } from "epubjs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, ChevronLeft, Menu } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 import { defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
 
 interface TocEntry {
@@ -40,6 +41,7 @@ const STORAGE_KEY = "searchConfig";
 export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: EpubReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
+  const { resolvedTheme } = useTheme();
   const viewerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<Rendition | null>(null);
   const bookRef = useRef<Book | null>(null);
@@ -205,21 +207,50 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         contents.document.body.appendChild(spacer);
       });
 
+      // Register light and dark themes
+      renditionInstance.themes.register("light", {
+        "body": {
+          "direction": "rtl !important",
+          "text-align": "right !important",
+          "background-color": "#fdfcfa !important",
+          "color": "#0a0a0a !important",
+        },
+        "p": {
+          "direction": "rtl !important",
+          "text-align": "right !important",
+          "color": "#0a0a0a !important",
+        },
+        "span": {
+          "color": "#0a0a0a !important",
+        },
+        "div": {
+          "color": "#0a0a0a !important",
+        },
+      });
+
+      renditionInstance.themes.register("dark", {
+        "body": {
+          "direction": "rtl !important",
+          "text-align": "right !important",
+          "background-color": "#191a1a !important",
+          "color": "#fafaf9 !important",
+        },
+        "p": {
+          "direction": "rtl !important",
+          "text-align": "right !important",
+          "color": "#fafaf9 !important",
+        },
+        "span": {
+          "color": "#fafaf9 !important",
+        },
+        "div": {
+          "color": "#fafaf9 !important",
+        },
+      });
+
       // Display and wait for it to finish
       renditionInstance.display().then(() => {
         setIsReady(true);
-
-        // Add RTL support after content is rendered
-        renditionInstance.themes.default({
-          "body": {
-            "direction": "rtl !important",
-            "text-align": "right !important",
-          },
-          "p": {
-            "direction": "rtl !important",
-            "text-align": "right !important",
-          },
-        });
       }).catch((err) => {
         console.error("Display error:", err);
       });
@@ -416,6 +447,13 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [dir, isReady]);
+
+  // Apply theme to EPUB reader when theme changes
+  useEffect(() => {
+    if (renditionRef.current && isReady) {
+      renditionRef.current.themes.select(resolvedTheme);
+    }
+  }, [resolvedTheme, isReady]);
 
   // Update page number when pageList becomes available
   useEffect(() => {

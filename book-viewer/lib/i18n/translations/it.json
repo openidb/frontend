@@ -16,7 +16,7 @@
     "showExpandedQueries": "Mostra query espanse",
     "results": "Trovati {count} risultati",
     "noResults": "Nessun risultato per \"{query}\"",
-    "minChars": "Inserisci almeno 2 caratteri",
+    "minChars": "Inizia a digitare per cercare...",
     "error": "Per favore riprova.",
     "authorsSection": "Autori",
     "debugStats": "Statistiche di debug",

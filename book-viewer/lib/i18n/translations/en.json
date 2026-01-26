@@ -16,7 +16,7 @@
     "showExpandedQueries": "Show expanded queries",
     "results": "Found {count} results",
     "noResults": "No results found for \"{query}\"",
-    "minChars": "Enter at least 2 characters to search",
+    "minChars": "Start typing to search...",
     "error": "Please try again.",
     "authorsSection": "Authors",
     "debugStats": "Debug Statistics",

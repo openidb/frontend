@@ -16,7 +16,7 @@
     "showExpandedQueries": "Afficher les requetes etendues",
     "results": "{count} resultats trouves",
     "noResults": "Aucun resultat pour \"{query}\"",
-    "minChars": "Entrez au moins 2 caracteres",
+    "minChars": "Commencez a taper pour rechercher...",
     "error": "Veuillez reessayer.",
     "authorsSection": "Auteurs",
     "debugStats": "Statistiques de debug",

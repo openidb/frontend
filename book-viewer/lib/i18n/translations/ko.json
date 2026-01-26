@@ -16,7 +16,7 @@
     "showExpandedQueries": "확장된 쿼리 보기",
     "results": "{count}개의 결과를 찾았습니다",
     "noResults": "\"{query}\"에 대한 결과가 없습니다",
-    "minChars": "최소 2자 이상 입력하세요",
+    "minChars": "검색하려면 입력하세요...",
     "error": "다시 시도해 주세요.",
     "authorsSection": "저자",
     "debugStats": "디버그 통계",

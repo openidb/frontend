@@ -16,7 +16,7 @@
     "showExpandedQueries": "Mostrar consultas expandidas",
     "results": "Encontrados {count} resultados",
     "noResults": "Nenhum resultado para \"{query}\"",
-    "minChars": "Digite pelo menos 2 caracteres",
+    "minChars": "Comece a digitar para pesquisar...",
     "error": "Por favor, tente novamente.",
     "authorsSection": "Autores",
     "debugStats": "Estatisticas de depuracao",

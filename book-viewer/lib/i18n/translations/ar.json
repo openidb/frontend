@@ -16,7 +16,7 @@
     "showExpandedQueries": "عرض الاستعلامات الموسعة",
     "results": "وُجدت {count} نتيجة",
     "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
-    "minChars": "أدخل حرفين على الأقل للبحث",
+    "minChars": "ابدأ الكتابة للبحث...",
     "error": "يرجى المحاولة مرة أخرى.",
     "authorsSection": "المؤلفون",
     "debugStats": "إحصائيات التصحيح",
