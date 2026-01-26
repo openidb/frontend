@@ -196,6 +196,12 @@
       "quranTranslationInfo": "قرآنی تلاش کے نتائج میں عربی متن کے ساتھ ترجمہ دکھائیں۔",
       "bookTitleDisplay": "کتابوں کے عنوانات",
       "bookTitleDisplayInfo": "عربی کے ساتھ مترجم کتابی عنوانات دکھائیں۔",
+      "hadithTranslation": "حدیث کا ترجمہ",
+      "hadithTranslationInfo": "حدیث کی تلاش کے نتائج میں عربی متن کے ساتھ انگریزی ترجمہ دکھائیں۔",
+      "hadithOptions": {
+        "none": "کوئی نہیں",
+        "en": "انگریزی (sunnah.com)"
+      },
       "options": {
         "none": "کوئی نہیں",
         "en": "انگریزی - ڈاکٹر مصطفیٰ خطاب",

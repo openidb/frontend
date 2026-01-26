@@ -196,6 +196,12 @@
       "quranTranslationInfo": "Afficher la traduction a cote du texte arabe dans les resultats de recherche du Coran.",
       "bookTitleDisplay": "Titres des livres",
       "bookTitleDisplayInfo": "Afficher les titres traduits des livres a cote de l'arabe.",
+      "hadithTranslation": "Traduction du Hadith",
+      "hadithTranslationInfo": "Afficher la traduction anglaise a cote du texte arabe dans les resultats de recherche du hadith.",
+      "hadithOptions": {
+        "none": "Aucune",
+        "en": "Anglais (sunnah.com)"
+      },
       "options": {
         "none": "Aucune",
         "en": "Anglais - Dr. Mustafa Khattab",

@@ -196,6 +196,12 @@
       "quranTranslationInfo": "꾸란 검색 결과에서 아랍어 텍스트 옆에 번역을 표시합니다.",
       "bookTitleDisplay": "책 제목",
       "bookTitleDisplayInfo": "아랍어 옆에 번역된 책 제목을 표시합니다.",
+      "hadithTranslation": "하디스 번역",
+      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다.",
+      "hadithOptions": {
+        "none": "없음",
+        "en": "영어 (sunnah.com)"
+      },
       "options": {
         "none": "없음",
         "en": "영어 - 무스타파 핫탑 박사",

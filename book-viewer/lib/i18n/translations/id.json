@@ -196,6 +196,12 @@
       "quranTranslationInfo": "Tampilkan terjemahan di samping teks Arab dalam hasil pencarian Al-Quran.",
       "bookTitleDisplay": "Judul Buku",
       "bookTitleDisplayInfo": "Tampilkan judul buku yang diterjemahkan di samping Arab.",
+      "hadithTranslation": "Terjemahan Hadits",
+      "hadithTranslationInfo": "Tampilkan terjemahan bahasa Inggris di samping teks Arab dalam hasil pencarian hadits.",
+      "hadithOptions": {
+        "none": "Tidak ada",
+        "en": "Inggris (sunnah.com)"
+      },
       "options": {
         "none": "Tidak ada",
         "en": "Inggris - Dr. Mustafa Khattab",
