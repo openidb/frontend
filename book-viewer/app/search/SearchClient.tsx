@@ -12,6 +12,7 @@ import { SearchConfigDropdown, SearchConfig, defaultSearchConfig } from "@/compo
 import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import AlgorithmDescription from "@/components/AlgorithmDescription";
+import { RefiningCarousel } from "@/components/RefiningCarousel";
 
 interface AuthorResultData {
   id: number;
@@ -346,7 +347,8 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setUnifiedResults([]);
       setAuthors([]);
       setExpandedQueries([]);
-      setHasSearched(false);
+      setSurahMatch(null);
+      window.history.replaceState({}, "", "/search");
     }
   }, [debouncedSearch, searchConfig]);
 
@@ -382,7 +384,6 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     setAuthors([]);
     setExpandedQueries([]);
     setIsRefined(false);
-    setHasSearched(false);
     setDebugStats(null);
     setShowDebugStats(false);
     setSurahMatch(null);
@@ -441,13 +442,15 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       {/* Results Section */}
       <div className="max-w-3xl mx-auto">
         {/* Loading State */}
-        {(isLoading || isRefining) && (
+        {isLoading && !isRefining && (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            {isRefining && (
-              <span className="text-sm text-muted-foreground">{t("search.refining")}</span>
-            )}
           </div>
+        )}
+
+        {/* Refining State with Ayah Carousel */}
+        {isRefining && (
+          <RefiningCarousel quranTranslation={searchConfig.quranTranslation} />
         )}
 
         {/* Error State */}
@@ -459,7 +462,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         )}
 
         {/* No Results */}
-        {hasSearched && !isLoading && !isRefining && !error && unifiedResults.length === 0 && authors.length === 0 && (
+        {hasSearched && !isLoading && !isRefining && !error && unifiedResults.length === 0 && authors.length === 0 && query.length >= 2 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               {t("search.noResults", { query })}
