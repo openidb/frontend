@@ -450,7 +450,13 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
 
         {/* Refining State with Ayah Carousel */}
         {isRefining && (
-          <RefiningCarousel quranTranslation={searchConfig.quranTranslation} />
+          <RefiningCarousel
+            quranTranslation={
+              searchConfig.autoTranslation
+                ? (locale === "ar" ? "en" : locale)
+                : (searchConfig.quranTranslation || "none")
+            }
+          />
         )}
 
         {/* Error State */}
