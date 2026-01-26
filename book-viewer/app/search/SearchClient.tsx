@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, KeyboardEvent, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, X, Loader2, User, BookOpen } from "lucide-react";
+import { Search, X, Loader2, User, BookOpen, Bug } from "lucide-react";
 import debounce from "lodash/debounce";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, Had
 import { SearchConfigDropdown, SearchConfig, defaultSearchConfig } from "@/components/SearchConfigDropdown";
 import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
+import AlgorithmDescription from "@/components/AlgorithmDescription";
 
 interface AuthorResultData {
   id: number;
@@ -21,6 +22,57 @@ interface AuthorResultData {
   booksCount: number;
 }
 
+interface ExpandedQueryData {
+  query: string;
+  reason: string;
+}
+
+interface TopResultBreakdown {
+  rank: number;
+  type: 'book' | 'quran' | 'hadith';
+  title: string;
+  tsRank: number | null;
+  bm25Score: number | null;
+  semanticScore: number | null;
+  finalScore: number;
+}
+
+interface ExpandedQueryStats {
+  query: string;
+  weight: number;
+  docsRetrieved: number;
+}
+
+interface DebugStats {
+  databaseStats: {
+    totalBooks: number;
+    totalPages: number;
+    totalHadiths: number;
+    totalAyahs: number;
+  };
+  searchParams: {
+    mode: string;
+    cutoff: number;
+    totalAboveCutoff: number;
+    totalShown: number;
+  };
+  algorithm: {
+    fusionWeights: { semantic: number; keyword: number };
+    keywordWeights: { tsRank: number; bm25: number };
+    bm25Params: { k1: number; b: number; normK: number };
+    rrfK: number;
+    embeddingModel: string;
+    embeddingDimensions: number;
+    rerankerModel: string | null;
+    queryExpansionModel: string | null;
+  };
+  topResultsBreakdown: TopResultBreakdown[];
+  refineStats?: {
+    expandedQueries: ExpandedQueryStats[];
+    originalQueryDocs: number;
+  };
+}
+
 interface SearchResponse {
   query: string;
   mode: string;
@@ -29,6 +81,9 @@ interface SearchResponse {
   authors: AuthorResultData[];
   ayahs: AyahResultData[];
   hadiths: HadithResultData[];
+  refined?: boolean;
+  expandedQueries?: ExpandedQueryData[];
+  debugStats?: DebugStats;
 }
 
 const SEARCH_CONFIG_KEY = "searchConfig";
@@ -47,10 +102,14 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const [authors, setAuthors] = useState<AuthorResultData[]>([]);
   const [unifiedResults, setUnifiedResults] = useState<UnifiedResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeepSearching, setIsDeepSearching] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [isReranked, setIsReranked] = useState(false);
+  const [isRefined, setIsRefined] = useState(false);
+  const [expandedQueries, setExpandedQueries] = useState<ExpandedQueryData[]>([]);
+  const [debugStats, setDebugStats] = useState<DebugStats | null>(null);
+  const [showDebugStats, setShowDebugStats] = useState(false);
+  const [showAlgorithm, setShowAlgorithm] = useState(false);
   const restoredQueryRef = useRef<string | null>(null);
 
   // Search config with LocalStorage persistence
@@ -96,10 +155,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
-          const { unifiedResults: cachedUnified, authors: cachedAuthors, isReranked: cachedIsReranked } = JSON.parse(cached);
+          const { unifiedResults: cachedUnified, authors: cachedAuthors, isRefined: cachedIsRefined, expandedQueries: cachedExpanded } = JSON.parse(cached);
           setUnifiedResults(cachedUnified || []);
           setAuthors(cachedAuthors || []);
-          setIsReranked(cachedIsReranked || false);
+          setIsRefined(cachedIsRefined || false);
+          setExpandedQueries(cachedExpanded || []);
           setHasSearched(true);
           restoredQueryRef.current = q;
         } catch {
@@ -110,17 +170,18 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   }, [searchParams]);
 
   // Fetch search results
-  // isDeepSearch: if true, uses the config.reranker; if false, uses "none" for fast results
-  const fetchResults = useCallback(async (searchQuery: string, config: SearchConfig, isDeepSearch: boolean = false) => {
+  // isRefineSearch: if true, uses query expansion + reranking; if false, uses "none" for fast results
+  const fetchResults = useCallback(async (searchQuery: string, config: SearchConfig, isRefineSearch: boolean = false) => {
     if (searchQuery.length < 2) {
       setUnifiedResults([]);
       setAuthors([]);
+      setExpandedQueries([]);
       setHasSearched(false);
       return;
     }
 
-    if (isDeepSearch) {
-      setIsDeepSearching(true);
+    if (isRefineSearch) {
+      setIsRefining(true);
     } else {
       setIsLoading(true);
     }
@@ -129,9 +190,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
 
     try {
       // Build query params with config
-      // For quick search (typing), use reranker=none for fast results
-      // For deep search (button click), use the selected reranker
-      const effectiveReranker = isDeepSearch ? config.reranker : "none";
+      // For quick search (typing), use reranker=none and no refine
+      // For refine search (button click), use refine=true and the selected reranker
+      const effectiveReranker = isRefineSearch ? config.reranker : "none";
       const params = new URLSearchParams({
         q: searchQuery,
         mode: "hybrid",
@@ -148,6 +209,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         quranTranslation: config.autoTranslation
           ? (locale === "ar" ? "en" : locale)
           : (config.quranTranslation || "none"),
+        ...(isRefineSearch && { refine: "true" }),
       });
 
       const response = await fetch(`/api/search?${params.toString()}`);
@@ -190,7 +252,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
 
       setUnifiedResults(limitedUnified);
       setAuthors(data.authors || []);
-      setIsReranked(isDeepSearch && config.reranker !== "none");
+      setIsRefined(data.refined || false);
+      setExpandedQueries(data.expandedQueries || []);
+      setDebugStats(data.debugStats || null);
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
@@ -198,7 +262,8 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         sessionStorage.setItem(cacheKey, JSON.stringify({
           unifiedResults: limitedUnified,
           authors: data.authors || [],
-          isReranked: isDeepSearch && config.reranker !== "none",
+          isRefined: data.refined || false,
+          expandedQueries: data.expandedQueries || [],
         }));
       } catch {
         // Ignore storage quota errors - caching is optional
@@ -208,9 +273,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setError(err instanceof Error ? err.message : "Search failed");
       setUnifiedResults([]);
       setAuthors([]);
+      setExpandedQueries([]);
+      setDebugStats(null);
     } finally {
       setIsLoading(false);
-      setIsDeepSearching(false);
+      setIsRefining(false);
     }
   }, []);
 
@@ -261,18 +328,20 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
-    setIsReranked(false); // Reset reranked state when typing
+    setIsRefined(false); // Reset refined state when typing
+    setExpandedQueries([]); // Clear expanded queries when typing
     if (newQuery.length >= 2) {
       debouncedSearch(newQuery, searchConfig);
     } else if (newQuery.length === 0) {
       setUnifiedResults([]);
       setAuthors([]);
+      setExpandedQueries([]);
       setHasSearched(false);
     }
   }, [debouncedSearch, searchConfig]);
 
-  // Deep Search handler - applies full reranking
-  const handleDeepSearch = useCallback(() => {
+  // Refine Search handler - applies query expansion + reranking
+  const handleRefineSearch = useCallback(() => {
     if (query.length < 2) return;
     debouncedSearch.cancel(); // Cancel any pending debounced search
     fetchResults(query, searchConfig, true);
@@ -280,10 +349,10 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     window.history.replaceState({}, "", `/search?q=${encodeURIComponent(query)}`);
   }, [query, searchConfig, fetchResults, debouncedSearch]);
 
-  // Handle Enter key press - trigger Deep Search
+  // Handle Enter key press - trigger Refine Search
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleDeepSearch();
+      handleRefineSearch();
     }
   };
 
@@ -301,7 +370,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     setQuery("");
     setUnifiedResults([]);
     setAuthors([]);
+    setExpandedQueries([]);
+    setIsRefined(false);
     setHasSearched(false);
+    setDebugStats(null);
+    setShowDebugStats(false);
     window.history.replaceState({}, "", "/search");
   };
 
@@ -339,11 +412,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
             )}
           </div>
           <Button
-            onClick={handleDeepSearch}
-            disabled={query.length < 2 || isLoading || isDeepSearching}
+            onClick={handleRefineSearch}
+            disabled={query.length < 2 || isLoading || isRefining}
             className="h-10 md:h-12 px-3 md:px-6 shrink-0"
           >
-            {isDeepSearching ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : t("search.rerank")}
+            {isRefining ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : t("search.refineSearch")}
           </Button>
           <SearchConfigDropdown config={searchConfig} onChange={handleConfigChange} />
         </div>
@@ -352,17 +425,17 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       {/* Results Section */}
       <div className="max-w-3xl mx-auto">
         {/* Loading State */}
-        {(isLoading || isDeepSearching) && (
+        {(isLoading || isRefining) && (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            {isDeepSearching && (
-              <span className="text-sm text-muted-foreground">{t("search.reranking")}</span>
+            {isRefining && (
+              <span className="text-sm text-muted-foreground">{t("search.refining")}</span>
             )}
           </div>
         )}
 
         {/* Error State */}
-        {error && !isLoading && !isDeepSearching && (
+        {error && !isLoading && !isRefining && (
           <div className="text-center py-12">
             <p className="text-red-500">{error}</p>
             <p className="text-muted-foreground mt-2">{t("search.error")}</p>
@@ -370,7 +443,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         )}
 
         {/* No Results */}
-        {hasSearched && !isLoading && !isDeepSearching && !error && unifiedResults.length === 0 && authors.length === 0 && (
+        {hasSearched && !isLoading && !isRefining && !error && unifiedResults.length === 0 && authors.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               {t("search.noResults", { query })}
@@ -379,7 +452,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         )}
 
         {/* Authors Section */}
-        {!isLoading && !isDeepSearching && authors.length > 0 && (
+        {!isLoading && !isRefining && authors.length > 0 && (
           <div className="mb-6">
             <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("search.authorsSection")}</h2>
             <div className="flex flex-wrap gap-2">
@@ -413,22 +486,164 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
           </div>
         )}
 
-        {/* Unified Results Count and Rerank indicator */}
-        {!isLoading && !isDeepSearching && unifiedResults.length > 0 && (
+        {/* Unified Results Count and Refined indicator */}
+        {!isLoading && !isRefining && unifiedResults.length > 0 && (
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted-foreground">
               {t("search.results", { count: unifiedResults.length })}
             </p>
-            {isReranked && (
-              <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-                {t("search.reranked")}
-              </span>
+            <div className="flex items-center gap-2">
+              {isRefined && (
+                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                  {t("search.refined")}
+                </span>
+              )}
+              {debugStats && (
+                <button
+                  onClick={() => setShowDebugStats(!showDebugStats)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 px-2 py-1 rounded-full hover:bg-muted"
+                >
+                  <Bug className="h-3 w-3" />
+                  {showDebugStats ? t("search.hideDebugStats") : t("search.showDebugStats")}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Debug Stats Panel */}
+        {!isLoading && !isRefining && showDebugStats && debugStats && (
+          <div className="mb-6 p-4 bg-muted/30 rounded-lg border text-sm space-y-4">
+            <h3 className="font-medium text-foreground flex items-center gap-2">
+              <Bug className="h-4 w-4" />
+              {t("search.debugStats")}
+            </h3>
+
+            {/* Database Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-background rounded p-2">
+                <div className="text-xs text-muted-foreground">{t("search.totalBooks")}</div>
+                <div className="font-mono text-lg">{debugStats.databaseStats.totalBooks.toLocaleString()}</div>
+              </div>
+              <div className="bg-background rounded p-2">
+                <div className="text-xs text-muted-foreground">{t("search.totalPages")}</div>
+                <div className="font-mono text-lg">{debugStats.databaseStats.totalPages.toLocaleString()}</div>
+              </div>
+              <div className="bg-background rounded p-2">
+                <div className="text-xs text-muted-foreground">{t("search.totalHadiths")}</div>
+                <div className="font-mono text-lg">{debugStats.databaseStats.totalHadiths.toLocaleString()}</div>
+              </div>
+              <div className="bg-background rounded p-2">
+                <div className="text-xs text-muted-foreground">{t("search.totalAyahs")}</div>
+                <div className="font-mono text-lg">{debugStats.databaseStats.totalAyahs.toLocaleString()}</div>
+              </div>
+            </div>
+
+            {/* Search Stats */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase">{t("search.searchStats")}</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <div><span className="text-muted-foreground">Mode:</span> <span className="font-mono">{debugStats.searchParams.mode}</span></div>
+                <div><span className="text-muted-foreground">{t("search.cutoffValue")}:</span> <span className="font-mono">{debugStats.searchParams.cutoff}</span></div>
+                <div><span className="text-muted-foreground">{t("search.aboveCutoff")}:</span> <span className="font-mono">{debugStats.searchParams.totalAboveCutoff}</span></div>
+                <div><span className="text-muted-foreground">{t("search.resultsShown")}:</span> <span className="font-mono">{debugStats.searchParams.totalShown}</span></div>
+              </div>
+            </div>
+
+            {/* Algorithm Details */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-2">
+                {t("search.algorithmDetails")}
+                <button
+                  onClick={() => setShowAlgorithm(!showAlgorithm)}
+                  className="text-muted-foreground hover:text-foreground text-[10px] font-normal normal-case px-2 py-0.5 rounded bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  {showAlgorithm ? t("search.hideFormulas") : t("search.showFormulas")}
+                </button>
+              </h4>
+
+              {/* Quick Summary (always visible) */}
+              <div className="text-xs font-mono bg-muted/30 p-2 rounded space-y-1">
+                <div>
+                  <span className="text-muted-foreground">{t("search.fusion")}:</span>{" "}
+                  semantic={debugStats.algorithm.fusionWeights.semantic.toFixed(2)}, keyword={debugStats.algorithm.fusionWeights.keyword.toFixed(2)}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("search.keyword")}:</span>{" "}
+                  ts_rank={debugStats.algorithm.keywordWeights.tsRank}, bm25={debugStats.algorithm.keywordWeights.bm25}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("search.embedding")}:</span>{" "}
+                  {debugStats.algorithm.embeddingModel} ({debugStats.algorithm.embeddingDimensions}-dim)
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("search.rerankerModel")}:</span>{" "}
+                  {debugStats.algorithm.rerankerModel || "none"}
+                </div>
+                {debugStats.algorithm.queryExpansionModel && (
+                  <div>
+                    <span className="text-muted-foreground">{t("search.expansionModel")}:</span>{" "}
+                    {debugStats.algorithm.queryExpansionModel}
+                  </div>
+                )}
+              </div>
+
+              {/* Expandable Full Description with LaTeX Formulas */}
+              {showAlgorithm && (
+                <AlgorithmDescription stats={debugStats.algorithm} />
+              )}
+            </div>
+
+            {/* Top Results Breakdown */}
+            {debugStats.topResultsBreakdown.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase">{t("search.topResultsBreakdown")}</h4>
+                <div className="space-y-1 font-mono text-xs">
+                  {debugStats.topResultsBreakdown.map((r, i) => (
+                    <div key={i} className="flex flex-wrap gap-2 items-center bg-background rounded px-2 py-1">
+                      <span className="text-muted-foreground">#{r.rank}</span>
+                      <span className={`px-1 rounded text-[10px] uppercase ${
+                        r.type === 'quran' ? 'bg-green-500/20 text-green-600' :
+                        r.type === 'hadith' ? 'bg-blue-500/20 text-blue-600' :
+                        'bg-orange-500/20 text-orange-600'
+                      }`}>{r.type}</span>
+                      <span className="truncate max-w-[150px]" dir="auto" title={r.title}>{r.title}</span>
+                      <span className="text-muted-foreground ml-auto">
+                        ts={r.tsRank?.toFixed(4) ?? 'N/A'} |
+                        bm25={r.bm25Score?.toFixed(2) ?? 'N/A'} |
+                        sem={r.semanticScore?.toFixed(3) ?? 'N/A'} |
+                        final=<span className="text-foreground">{r.finalScore.toFixed(3)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Refine Stats */}
+            {debugStats.refineStats && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase">{t("search.refineStats")}</h4>
+                <div className="text-xs">
+                  <span className="text-muted-foreground">Original query docs:</span>{" "}
+                  <span className="font-mono">{debugStats.refineStats.originalQueryDocs}</span>
+                </div>
+                <div className="space-y-1 font-mono text-xs">
+                  {debugStats.refineStats.expandedQueries.map((eq, i) => (
+                    <div key={i} className="flex gap-2 bg-background rounded px-2 py-1">
+                      <span className="text-muted-foreground">w={eq.weight.toFixed(1)}</span>
+                      <span dir="auto" className="truncate flex-1">{eq.query}</span>
+                      <span className="text-muted-foreground">{eq.docsRetrieved} {t("search.docsRetrieved")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}
 
         {/* Unified Results List */}
-        {!isLoading && !isDeepSearching && unifiedResults.length > 0 && (
+        {!isLoading && !isRefining && unifiedResults.length > 0 && (
           <div className="space-y-4">
             {unifiedResults.map((result, index) => {
               // Generate unique key based on result type
