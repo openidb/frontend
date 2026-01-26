@@ -680,39 +680,51 @@ async function rerankWithGptOss<T>(
       .map((d, i) => `[${i + 1}] ${getText(d).slice(0, 800)}`)
       .join("\n\n");
 
-    const prompt = `You are ranking Arabic/Islamic documents for relevance to a search query.
+    const prompt = `You are ranking Arabic/Islamic documents for a search query.
 
 Query: "${query}"
 
 Documents:
 ${docsText}
 
-RANKING RULES (in priority order):
+STEP 1: DETERMINE USER INTENT
+- Is this a QUESTION seeking an answer? (what, why, how, when, ruling on, ما، لماذا، كيف، متى، حكم، etc.)
+- Is this a TOPIC SEARCH looking for relevant content? (person name, concept, verse reference)
 
-1. **EXPLICIT TOPIC MATCH** (highest priority)
-   - Documents that explicitly mention the query topic by name rank FIRST
-   - For query "shaban", documents containing "شعبان" rank highest
-   - For query "Ramadan", documents containing "رمضان" rank highest
-   - This applies even if the semantic similarity score is lower
+STEP 2: RANK BY INTENT
 
-2. **DIRECT ANSWER/DISCUSSION**
-   - Documents that directly discuss or answer the query topic
-   - Example: A hadith about fasting in Shaban directly addresses "what is special about Shaban"
+**If QUESTION (user wants an answer):**
+1. Documents that directly ANSWER the question (highest)
+2. Documents that explain/discuss the answer
+3. Documents that mention the topic but don't answer
+4. Unrelated documents (lowest)
 
-3. **RELATED CONTEXT**
-   - Documents that provide useful related information
-   - Example: Discussing Islamic months, fasting practices, etc.
+Example: "What are the virtues of Shaban?" / "ما فضل شعبان"
+- BEST: Hadith stating specific virtues of Shaban
+- GOOD: Discussion of recommended acts in Shaban
+- OK: Mention of Shaban in passing
+- BAD: Unrelated content
 
-4. **UNRELATED** (rank last)
-   - Documents that don't discuss the query topic at all
-   - Documents about different topics that happen to share some Arabic words
-   - Example: A verse about "the even and the odd" is NOT about Shaban
+**If TOPIC SEARCH (user wants relevant content):**
+1. Documents primarily ABOUT the topic (highest)
+2. Documents with significant discussion of topic
+3. Documents mentioning topic in context
+4. Unrelated documents (lowest)
 
-CROSS-LINGUAL: The query may be in English while documents are in Arabic. Treat them as equivalent:
+Example: "Ibn Taymiyyah" / "ابن تيمية"
+- BEST: Biography or works of Ibn Taymiyyah
+- GOOD: Scholarly discussion citing Ibn Taymiyyah extensively
+- OK: Quote from Ibn Taymiyyah in a different context
+- BAD: Unrelated content
+
+CROSS-LINGUAL MATCHING (treat these as equivalent):
 - "shaban" = "شعبان"
 - "ramadan" = "رمضان"
 - "fasting" = "صيام" / "صوم"
 - "prophet" = "النبي" / "رسول الله"
+- "prayer" = "صلاة"
+- "hajj" = "حج"
+- "zakat" = "زكاة"
 
 Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
@@ -796,6 +808,225 @@ async function rerank<T>(
     default:
       return results.slice(0, topN);
   }
+}
+
+// ============================================================================
+// Refine Search: Query Expansion
+// ============================================================================
+
+/**
+ * Performance limits for refine search
+ */
+const REFINE_LIMITS = {
+  maxExpandedQueries: 5,
+  perQueryPreRerankLimit: 30,  // vs 60 for single query
+  totalCandidatesBeforeRerank: 100,
+  finalResultLimit: 20,
+};
+
+/**
+ * Expanded query with weight and reason
+ */
+interface ExpandedQuery {
+  query: string;
+  weight: number;
+  reason: string;
+}
+
+/**
+ * Expand a search query into multiple alternative queries using GPT-OSS
+ * Returns original query (weight=1.0) plus expanded queries (weight=0.7)
+ */
+async function expandQuery(query: string): Promise<ExpandedQuery[]> {
+  if (!process.env.OPENROUTER_API_KEY) {
+    // Fallback: return just the original query
+    return [{ query, weight: 1.0, reason: "Original query" }];
+  }
+
+  try {
+    const prompt = `You are a search query expansion expert for an Arabic/Islamic text search engine covering Quran, Hadith, and classical Islamic books.
+
+User Query: "${query}"
+
+Your task: Generate 4 alternative search queries that will help find what the user is actually looking for.
+
+EXPANSION STRATEGIES (use the most relevant):
+
+1. **ANSWER-ORIENTED** (if query is a question)
+   - Convert questions to statements/topics that would contain the answer
+   - "What are the virtues of Shaban?" → "فضائل شعبان" / "ثواب صيام شعبان"
+   - "When was the Prophet born?" → "مولد النبي" / "ولادة الرسول"
+
+2. **TOPIC VARIANTS**
+   - Arabic equivalents: "fasting" → "صيام" / "صوم"
+   - Root variations: "صائم" / "صيام" / "صوم"
+   - Related terminology: "Shaban fasting" → "صيام التطوع" / "النوافل"
+
+3. **CONTEXTUAL EXPANSION**
+   - What sources would discuss this topic?
+   - "ruling on music" → "حكم الغناء" / "المعازف" / "اللهو"
+   - "wudu steps" → "فرائض الوضوء" / "أركان الوضوء"
+
+4. **SEMANTIC BRIDGES**
+   - English query → Arabic content terms
+   - Technical terms → common usage
+   - "inheritance law" → "فرائض" / "مواريث" / "تقسيم التركة"
+
+Return ONLY a JSON array of query strings:
+["expanded query 1", "expanded query 2", "expanded query 3", "expanded query 4"]
+
+IMPORTANT:
+- Prioritize queries that would find ANSWERS, not just mentions
+- Include at least one Arabic query if the original is English (and vice versa)
+- Keep queries 2-5 words, focused and searchable
+- Think: "What text would contain the answer to this?"
+- Don't include the original query in your response`;
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn(`Query expansion failed: ${response.statusText}`);
+      return [{ query, weight: 1.0, reason: "Original query" }];
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || "[]";
+
+    // Parse the JSON array from response
+    const match = content.match(/\[[\s\S]*\]/);
+    if (!match) {
+      console.warn("Query expansion returned invalid format");
+      return [{ query, weight: 1.0, reason: "Original query" }];
+    }
+
+    const expanded: string[] = JSON.parse(match[0]);
+
+    // Build result: original (weight=1.0) + expanded (weight=0.7)
+    const results: ExpandedQuery[] = [
+      { query, weight: 1.0, reason: "Original query" },
+    ];
+
+    for (let i = 0; i < Math.min(expanded.length, 4); i++) {
+      const expQuery = typeof expanded[i] === 'string' ? expanded[i] : (expanded[i] as any)?.query;
+      if (expQuery && expQuery.trim() && expQuery !== query) {
+        results.push({
+          query: expQuery.trim(),
+          weight: 0.7,
+          reason: `Expanded query ${i + 1}`,
+        });
+      }
+    }
+
+    console.log(`[Refine] Expanded "${query}" into ${results.length} queries`);
+    return results;
+  } catch (err) {
+    console.warn("Query expansion error:", err);
+    return [{ query, weight: 1.0, reason: "Original query" }];
+  }
+}
+
+/**
+ * Merge and deduplicate results from multiple queries using weighted RRF
+ *
+ * For each unique result:
+ *   score(doc) = sum(weight[q] / (60 + rank[doc, q]))
+ */
+function mergeAndDeduplicateBooks(
+  resultsPerQuery: { results: RankedResult[]; weight: number }[]
+): RankedResult[] {
+  const merged = new Map<string, RankedResult & { weightedRrfScore: number }>();
+
+  for (const { results, weight } of resultsPerQuery) {
+    for (let rank = 0; rank < results.length; rank++) {
+      const result = results[rank];
+      const key = `${result.bookId}-${result.pageNumber}`;
+      const rrfContribution = weight / (RRF_K + rank + 1);
+
+      const existing = merged.get(key);
+      if (existing) {
+        existing.weightedRrfScore += rrfContribution;
+        // Prefer highlighted snippet from keyword search
+        if (result.highlightedSnippet && result.highlightedSnippet !== result.textSnippet) {
+          existing.highlightedSnippet = result.highlightedSnippet;
+        }
+        // Preserve semantic score if present
+        if (result.semanticScore !== undefined && (existing.semanticScore === undefined || result.semanticScore > existing.semanticScore)) {
+          existing.semanticScore = result.semanticScore;
+        }
+      } else {
+        merged.set(key, { ...result, weightedRrfScore: rrfContribution });
+      }
+    }
+  }
+
+  // Sort by weighted RRF score
+  return Array.from(merged.values())
+    .sort((a, b) => b.weightedRrfScore - a.weightedRrfScore);
+}
+
+function mergeAndDeduplicateAyahs(
+  resultsPerQuery: { results: AyahRankedResult[]; weight: number }[]
+): AyahRankedResult[] {
+  const merged = new Map<string, AyahRankedResult & { weightedRrfScore: number }>();
+
+  for (const { results, weight } of resultsPerQuery) {
+    for (let rank = 0; rank < results.length; rank++) {
+      const result = results[rank];
+      const key = `${result.surahNumber}-${result.ayahNumber}`;
+      const rrfContribution = weight / (RRF_K + rank + 1);
+
+      const existing = merged.get(key);
+      if (existing) {
+        existing.weightedRrfScore += rrfContribution;
+        if (result.semanticScore !== undefined && (existing.semanticScore === undefined || result.semanticScore > existing.semanticScore)) {
+          existing.semanticScore = result.semanticScore;
+        }
+      } else {
+        merged.set(key, { ...result, weightedRrfScore: rrfContribution });
+      }
+    }
+  }
+
+  return Array.from(merged.values())
+    .sort((a, b) => b.weightedRrfScore - a.weightedRrfScore);
+}
+
+function mergeAndDeduplicateHadiths(
+  resultsPerQuery: { results: HadithRankedResult[]; weight: number }[]
+): HadithRankedResult[] {
+  const merged = new Map<string, HadithRankedResult & { weightedRrfScore: number }>();
+
+  for (const { results, weight } of resultsPerQuery) {
+    for (let rank = 0; rank < results.length; rank++) {
+      const result = results[rank];
+      const key = `${result.collectionSlug}-${result.hadithNumber}`;
+      const rrfContribution = weight / (RRF_K + rank + 1);
+
+      const existing = merged.get(key);
+      if (existing) {
+        existing.weightedRrfScore += rrfContribution;
+        if (result.semanticScore !== undefined && (existing.semanticScore === undefined || result.semanticScore > existing.semanticScore)) {
+          existing.semanticScore = result.semanticScore;
+        }
+      } else {
+        merged.set(key, { ...result, weightedRrfScore: rrfContribution });
+      }
+    }
+  }
+
+  return Array.from(merged.values())
+    .sort((a, b) => b.weightedRrfScore - a.weightedRrfScore);
 }
 
 /**
@@ -1891,6 +2122,9 @@ export async function GET(request: NextRequest) {
   // Book title translation parameter (language code like "en", "fr", or "none"/"transliteration")
   const bookTitleLang = searchParams.get("bookTitleLang");
 
+  // Refine search parameter - enables query expansion and multi-query retrieval
+  const refine = searchParams.get("refine") === "true";
+
   // Validate query
   if (!query || query.trim().length === 0) {
     return NextResponse.json(
@@ -1920,71 +2154,179 @@ export async function GET(request: NextRequest) {
 
   try {
     let rankedResults: RankedResult[];
+    let expandedQueries: { query: string; reason: string }[] = [];
+    let ayahsRaw: AyahResult[] = [];
+    let hadiths: HadithResult[] = [];
 
-    // Search for authors, ayahs, and hadiths in parallel (only if not filtering by bookId)
-    // Use hybrid search for ayahs and hadiths to combine semantic + keyword with RRF
+    // Search for authors (independent of refine mode)
     const authorsPromise = bookId ? Promise.resolve([]) : searchAuthors(query, 5);
     const hybridOptions = { ...searchOptions, ...fuzzyOptions };
-    const ayahsPromise = (bookId || !includeQuran) ? Promise.resolve([]) : searchAyahsHybrid(query, 12, hybridOptions);
-    const hadithsPromise = (bookId || !includeHadith) ? Promise.resolve([]) : searchHadithsHybrid(query, 15, hybridOptions);
 
-    // Fetch more results for RRF fusion
-    const fetchLimit = mode === "hybrid" ? Math.min(preRerankLimit, 100) : limit;
+    // ========================================================================
+    // REFINE SEARCH: Query expansion + multi-query retrieval + merge
+    // ========================================================================
+    if (refine && mode === "hybrid" && !bookId) {
+      console.log(`[Refine] Starting refine search for: "${query}"`);
 
-    if (!includeBooks) {
-      rankedResults = [];
-    } else if (mode === "keyword") {
-      rankedResults = await keywordSearch(query, limit, bookId, fuzzyOptions);
-    } else if (mode === "semantic") {
-      rankedResults = await semanticSearch(query, limit, bookId, similarityCutoff);
-    } else {
-      // Hybrid: run both searches, with graceful fallback if semantic fails
-      const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff).catch((err) => {
-        console.warn("Semantic search failed, using keyword only:", err.message);
-        return [] as RankedResult[];
+      // Step 1: Expand the query
+      const expanded = await expandQuery(query);
+      expandedQueries = expanded.map(e => ({ query: e.query, reason: e.reason }));
+
+      // Step 2: Execute parallel searches for all expanded queries
+      const perQueryLimit = REFINE_LIMITS.perQueryPreRerankLimit;
+
+      // For each query, search books, ayahs, and hadiths in parallel
+      const querySearches = expanded.map(async (exp) => {
+        const q = exp.query;
+        const weight = exp.weight;
+
+        // Run semantic + keyword for books
+        const [bookSemantic, bookKeyword] = await Promise.all([
+          semanticSearch(q, perQueryLimit, null, similarityCutoff).catch(() => []),
+          keywordSearch(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
+        ]);
+        const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
+
+        // Run hybrid for ayahs and hadiths (if enabled)
+        const ayahResults = includeQuran
+          ? await searchAyahsHybrid(q, perQueryLimit, { ...hybridOptions, reranker: "none" }).catch(() => [])
+          : [];
+        const hadithResults = includeHadith
+          ? await searchHadithsHybrid(q, perQueryLimit, { ...hybridOptions, reranker: "none" }).catch(() => [])
+          : [];
+
+        return {
+          books: { results: mergedBooks, weight },
+          ayahs: { results: ayahResults as AyahRankedResult[], weight },
+          hadiths: { results: hadithResults as HadithRankedResult[], weight },
+        };
       });
 
-      const keywordPromise = keywordSearch(query, fetchLimit, bookId, fuzzyOptions);
+      const allResults = await Promise.all(querySearches);
 
-      const [semanticResults, keywordResults] = await Promise.all([
-        semanticPromise,
-        keywordPromise,
-      ]);
+      // Step 3: Merge and deduplicate results from all queries
+      const allBooks = allResults.map(r => r.books);
+      const allAyahs = allResults.map(r => r.ayahs);
+      const allHadiths = allResults.map(r => r.hadiths);
 
-      const merged = mergeWithRRF(semanticResults, keywordResults, query);
+      const mergedBooks = includeBooks ? mergeAndDeduplicateBooks(allBooks) : [];
+      const mergedAyahs = includeQuran ? mergeAndDeduplicateAyahs(allAyahs) : [];
+      const mergedHadiths = includeHadith ? mergeAndDeduplicateHadiths(allHadiths) : [];
 
-      // Fetch book metadata before reranking for better context
-      const preRerankCandidates = merged.slice(0, preRerankLimit);
-      const preRerankBookIds = [...new Set(preRerankCandidates.map((r) => r.bookId))];
+      console.log(`[Refine] Merged: ${mergedBooks.length} books, ${mergedAyahs.length} ayahs, ${mergedHadiths.length} hadiths`);
+
+      // Step 4: Take top candidates for final reranking
+      const bookCandidates = mergedBooks.slice(0, REFINE_LIMITS.totalCandidatesBeforeRerank);
+
+      // Fetch book metadata before reranking
+      const preRerankBookIds = [...new Set(bookCandidates.map((r) => r.bookId))];
       const preRerankBooks = await prisma.book.findMany({
         where: { id: { in: preRerankBookIds } },
         select: {
           id: true,
           titleArabic: true,
-          author: {
-            select: {
-              nameArabic: true,
-            },
-          },
+          author: { select: { nameArabic: true } },
         },
       });
       const preRerankBookMap = new Map<string, typeof preRerankBooks[0]>(preRerankBooks.map((b) => [b.id, b]));
 
-      // Rerank books with the specified reranker (using metadata-enriched formatter)
+      // Final reranking using the configured reranker
       rankedResults = await rerank(
-        query,
-        preRerankCandidates,
+        query, // Original query for reranking
+        bookCandidates,
         (r) => {
           const book = preRerankBookMap.get(r.bookId);
           return formatBookForReranking(r, book?.titleArabic, book?.author.nameArabic);
         },
-        postRerankLimit,
+        REFINE_LIMITS.finalResultLimit,
         reranker
       );
+
+      // Rerank ayahs and hadiths too
+      ayahsRaw = await rerank(
+        query,
+        mergedAyahs.slice(0, 30),
+        (a) => formatAyahForReranking(a),
+        12,
+        reranker
+      ).then(results => results.map((r, i) => ({ ...r, rank: i + 1, score: r.semanticScore ?? 0 })));
+
+      hadiths = await rerank(
+        query,
+        mergedHadiths.slice(0, 40),
+        (h) => formatHadithForReranking(h),
+        15,
+        reranker
+      ).then(results => results.map((r, i) => ({ ...r, rank: i + 1, score: r.semanticScore ?? 0 })));
+
+    } else {
+      // ========================================================================
+      // STANDARD SEARCH (non-refine mode)
+      // ========================================================================
+      const ayahsPromise = (bookId || !includeQuran) ? Promise.resolve([]) : searchAyahsHybrid(query, 12, hybridOptions);
+      const hadithsPromise = (bookId || !includeHadith) ? Promise.resolve([]) : searchHadithsHybrid(query, 15, hybridOptions);
+
+      // Fetch more results for RRF fusion
+      const fetchLimit = mode === "hybrid" ? Math.min(preRerankLimit, 100) : limit;
+
+      if (!includeBooks) {
+        rankedResults = [];
+      } else if (mode === "keyword") {
+        rankedResults = await keywordSearch(query, limit, bookId, fuzzyOptions);
+      } else if (mode === "semantic") {
+        rankedResults = await semanticSearch(query, limit, bookId, similarityCutoff);
+      } else {
+        // Hybrid: run both searches, with graceful fallback if semantic fails
+        const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff).catch((err) => {
+          console.warn("Semantic search failed, using keyword only:", err.message);
+          return [] as RankedResult[];
+        });
+
+        const keywordPromise = keywordSearch(query, fetchLimit, bookId, fuzzyOptions);
+
+        const [semanticResults, keywordResults] = await Promise.all([
+          semanticPromise,
+          keywordPromise,
+        ]);
+
+        const merged = mergeWithRRF(semanticResults, keywordResults, query);
+
+        // Fetch book metadata before reranking for better context
+        const preRerankCandidates = merged.slice(0, preRerankLimit);
+        const preRerankBookIds = [...new Set(preRerankCandidates.map((r) => r.bookId))];
+        const preRerankBooks = await prisma.book.findMany({
+          where: { id: { in: preRerankBookIds } },
+          select: {
+            id: true,
+            titleArabic: true,
+            author: {
+              select: {
+                nameArabic: true,
+              },
+            },
+          },
+        });
+        const preRerankBookMap = new Map<string, typeof preRerankBooks[0]>(preRerankBooks.map((b) => [b.id, b]));
+
+        // Rerank books with the specified reranker (using metadata-enriched formatter)
+        rankedResults = await rerank(
+          query,
+          preRerankCandidates,
+          (r) => {
+            const book = preRerankBookMap.get(r.bookId);
+            return formatBookForReranking(r, book?.titleArabic, book?.author.nameArabic);
+          },
+          postRerankLimit,
+          reranker
+        );
+      }
+
+      // Wait for ayah and hadith searches to complete
+      [ayahsRaw, hadiths] = await Promise.all([ayahsPromise, hadithsPromise]);
     }
 
-    // Wait for author, ayah, and hadith searches to complete
-    const [authorsRaw, ayahsRaw, hadiths] = await Promise.all([authorsPromise, ayahsPromise, hadithsPromise]);
+    // Wait for author search to complete
+    const authorsRaw = await authorsPromise;
 
     // Use all authors (no filtering by era)
     const authors = authorsRaw;
@@ -2135,6 +2477,10 @@ export async function GET(request: NextRequest) {
       authors,
       ayahs,
       hadiths,
+      ...(refine && {
+        refined: true,
+        expandedQueries,
+      }),
     });
   } catch (error) {
     console.error("Search error:", error);
