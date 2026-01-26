@@ -1375,13 +1375,43 @@ export function lookupSurah(query: string): SurahReference | undefined {
     }
   }
 
-  // Pass 2: Contains matches
+  // Pass 2: Word-boundary matches (NOT substring)
   if (stripped.length >= 3) {
+    const queryWords = stripped.split(/\s+/);
+
     for (const surah of SURAHS) {
       for (const name of surah.names) {
         const normName = normalize(name);
-        if (normName.length >= 3) {
-          if (stripped.includes(normName) || normName.includes(stripped)) {
+        const nameWords = normName.split(/\s+/);
+
+        // Skip very short single-word names (need exact match from Pass 1)
+        if (nameWords.length === 1 && normName.length < 4) {
+          continue;
+        }
+
+        // Single-word name: must match a query word exactly or with high prefix overlap
+        if (nameWords.length === 1) {
+          for (const qw of queryWords) {
+            if (qw === normName) {
+              return surah.ref;
+            }
+            // Prefix match for partial typing (e.g., "fati" -> "fatiha")
+            if (qw.length >= 4 && normName.length >= 4) {
+              if (qw.startsWith(normName) || normName.startsWith(qw)) {
+                const overlap = Math.min(qw.length, normName.length) / Math.max(qw.length, normName.length);
+                if (overlap >= 0.6) {
+                  return surah.ref;
+                }
+              }
+            }
+          }
+        }
+        // Multi-word name: check for consecutive word match
+        else {
+          const nameJoined = nameWords.join(' ');
+          const queryJoined = queryWords.join(' ');
+          const pattern = new RegExp(`(^|\\s)${nameJoined.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|\\s)`);
+          if (pattern.test(queryJoined)) {
             return surah.ref;
           }
         }
