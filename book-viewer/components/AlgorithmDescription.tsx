@@ -7,7 +7,9 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
 interface AlgorithmStats {
+  fusionMethod?: string;
   fusionWeights: { semantic: number; keyword: number };
+  confirmationBonusMultiplier?: number;
   keywordWeights: { tsRank: number; bm25: number };
   bm25Params: { k1: number; b: number; normK: number };
   rrfK: number;
@@ -67,28 +69,67 @@ export default function AlgorithmDescription({ stats }: AlgorithmDescriptionProp
           )}
         </button>
         {expandedSection === "overview" && (
-          <div className="mt-3 space-y-2">
-            <pre className="text-[10px] leading-tight bg-muted/50 p-2 rounded overflow-x-auto font-mono">
-{`USER QUERY
+          <div className="mt-3 space-y-4">
+            <div>
+              <p className="text-[10px] font-medium text-foreground mb-1">Standard Search:</p>
+              <pre className="text-[10px] leading-tight bg-muted/50 p-2 rounded overflow-x-auto font-mono">
+{`Query → [Semantic + Keyword] → RRF Fusion → Results
+
+USER QUERY
     |
-[Normalize Arabic Text]
-    |         |
-    v         v
- KEYWORD   SEMANTIC
- SEARCH    SEARCH
-    |         |
-    v         v
-[ts_rank  [Qdrant
- + BM25]   Cosine]
-    |         |
-    +----+----+
-         |
-    [SCORE FUSION]
-         |
-    [Reranking?]
-         |
-    FINAL RESULTS`}
-            </pre>
+    +------------------+
+    |                  |
+    v                  v
+[Famous Sources    [Normalize
+ Dictionary]        Arabic Text]
+    |                  |
+    v           +------+------+
+Direct Match    |             |
+(score=1.0)     v             v
+    |       KEYWORD       SEMANTIC
+    |       SEARCH        SEARCH
+    |          |             |
+    |          v             v
+    |      [ts_rank       [Qdrant
+    |       + BM25]        Cosine]
+    |          |             |
+    |          +------+------+
+    |                 |
+    |          [RRF FUSION]
+    |          (No Reranking)
+    |                 |
+    +--------+--------+
+             |
+       FINAL RESULTS`}
+              </pre>
+            </div>
+            <div>
+              <p className="text-[10px] font-medium text-foreground mb-1">Refine Search:</p>
+              <pre className="text-[10px] leading-tight bg-muted/50 p-2 rounded overflow-x-auto font-mono">
+{`Query → LLM Expand → [Q1..Qn] → Search All
+      → Merge → Dedupe → RRF → Unified Reranker
+
+USER QUERY
+    |
+[LLM Query Expansion]
+    |
+    v
+[Q1, Q2, Q3, Q4, Q5]
+    |
+    +---> Search Books (x5)
+    +---> Search Quran (x5)
+    +---> Search Hadith (x5)
+    |
+[Merge & Deduplicate]
+    |
+[Weighted RRF Fusion]
+    |
+[UNIFIED LLM RERANKING]
+(Books + Quran + Hadith together)
+    |
+FINAL RESULTS`}
+              </pre>
+            </div>
           </div>
         )}
       </div>
@@ -114,6 +155,61 @@ export default function AlgorithmDescription({ stats }: AlgorithmDescriptionProp
               <li>{t("algorithm.normalizeAlef")}</li>
               <li>{t("algorithm.normalizeTeh")}</li>
             </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Famous Sources Dictionary */}
+      <div className="bg-background rounded p-3 border">
+        <button
+          onClick={() => toggleSection("famousSources")}
+          className="w-full flex items-center justify-between text-left"
+        >
+          <span className="font-medium">{t("algorithm.famousSources")}</span>
+          {expandedSection === "famousSources" ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </button>
+        {expandedSection === "famousSources" && (
+          <div className="mt-3 space-y-3 text-muted-foreground">
+            <p>{t("algorithm.famousSourcesDesc")}</p>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">{t("algorithm.famousVerses")}</p>
+              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
+                <li>{t("algorithm.famousVersesExample1")}</li>
+                <li>{t("algorithm.famousVersesExample2")}</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">{t("algorithm.surahLookup")}</p>
+              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
+                <li>{t("algorithm.surahLookupDesc")}</li>
+                <li>{t("algorithm.surahLookupExample")}</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">{t("algorithm.famousHadiths")}</p>
+              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
+                <li>{t("algorithm.famousHadithsExample1")}</li>
+                <li>{t("algorithm.famousHadithsExample2")}</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">{t("algorithm.directMatchScore")}</p>
+              <div className="bg-muted/50 p-2 rounded overflow-x-auto">
+                <LaTeX
+                  math={`S_{\\text{direct}} = 1.0 \\text{ (perfect match)}`}
+                  display
+                />
+              </div>
+              <p className="text-[10px]">{t("algorithm.directMatchScoreDesc")}</p>
+            </div>
           </div>
         )}
       </div>
@@ -248,60 +344,64 @@ export default function AlgorithmDescription({ stats }: AlgorithmDescriptionProp
         </button>
         {expandedSection === "fusion" && (
           <div className="mt-3 space-y-3 text-muted-foreground">
+            <p>{t("algorithm.fusionIntro")}</p>
+
+            {/* Scenario 1: Both signals */}
             <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.keywordNormalization")}</p>
+              <p className="font-medium text-foreground">{t("algorithm.scenarioBoth")}</p>
+              <p className="text-[10px]">{t("algorithm.scenarioBothDesc")}</p>
               <div className="bg-muted/50 p-2 rounded overflow-x-auto">
                 <LaTeX
-                  math={`\\hat{S}_{\\text{keyword}} = \\frac{S_{\\text{keyword}}}{S_{\\text{keyword}} + ${stats.bm25Params.normK}}`}
+                  math={`S_{\\text{fused}} = S_{\\text{semantic}} + ${stats.confirmationBonusMultiplier ?? 0.15} \\cdot \\hat{S}_{\\text{BM25}}`}
+                  display
+                />
+              </div>
+              <p className="text-[10px]">{t("algorithm.confirmationBonusExplain")}</p>
+            </div>
+
+            {/* Scenario 2: Semantic only */}
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">{t("algorithm.scenarioSemanticOnly")}</p>
+              <p className="text-[10px]">{t("algorithm.scenarioSemanticOnlyDesc")}</p>
+              <div className="bg-muted/50 p-2 rounded overflow-x-auto">
+                <LaTeX
+                  math={`S_{\\text{fused}} = S_{\\text{semantic}}`}
                   display
                 />
               </div>
             </div>
 
+            {/* Scenario 3: Keyword only */}
             <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.finalFusion")}</p>
+              <p className="font-medium text-foreground">{t("algorithm.scenarioKeywordOnly")}</p>
+              <p className="text-[10px]">{t("algorithm.scenarioKeywordOnlyDesc")}</p>
               <div className="bg-muted/50 p-2 rounded overflow-x-auto">
                 <LaTeX
-                  math={`S_{\\text{fused}} = w_s \\cdot S_{\\text{semantic}} + w_k \\cdot \\hat{S}_{\\text{keyword}}`}
+                  math={`S_{\\text{fused}} = S_{\\text{keyword}} = ${stats.keywordWeights.tsRank} \\cdot \\hat{S}_{\\text{ts\\_rank}} + ${stats.keywordWeights.bm25} \\cdot \\hat{S}_{\\text{BM25}}`}
                   display
                 />
               </div>
             </div>
 
+            {/* BM25 Normalization */}
             <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.currentWeights")}</p>
-              <div className="bg-muted/50 p-2 rounded text-[10px]">
-                <LaTeX math={`w_s = ${stats.fusionWeights.semantic}`} /> (semantic), {" "}
-                <LaTeX math={`w_k = ${stats.fusionWeights.keyword}`} /> (keyword)
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <p className="font-medium text-foreground">{t("algorithm.dynamicWeights")}</p>
-              <table className="text-[10px] w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-right py-1 pr-2">{t("algorithm.queryType")}</th>
-                    <th className="text-right py-1 px-2">{t("algorithm.semanticWeight")}</th>
-                    <th className="text-right py-1 pl-2">{t("algorithm.keywordWeight")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td className="text-right pr-2">{t("algorithm.quotedPhrases")}</td><td className="text-right px-2">0.15</td><td className="text-right pl-2">0.85</td></tr>
-                  <tr><td className="text-right pr-2">{t("algorithm.short1to3")}</td><td className="text-right px-2">0.70</td><td className="text-right pl-2">0.30</td></tr>
-                  <tr><td className="text-right pr-2">{t("algorithm.long20plus")}</td><td className="text-right px-2">0.45</td><td className="text-right pl-2">0.55</td></tr>
-                  <tr><td className="text-right pr-2">{t("algorithm.default")}</td><td className="text-right px-2">0.40</td><td className="text-right pl-2">0.60</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.confirmationBoost")}</p>
+              <p className="font-medium text-foreground">{t("algorithm.bm25Normalization")}</p>
               <div className="bg-muted/50 p-2 rounded overflow-x-auto">
                 <LaTeX
-                  math={`\\text{If in both: } S_{\\text{fused}} = S_{\\text{fused}} \\times 1.1`}
+                  math={`\\hat{S}_{\\text{BM25}} = \\frac{S_{\\text{BM25}}}{S_{\\text{BM25}} + ${stats.bm25Params.normK}}`}
                   display
                 />
+              </div>
+              <p className="text-[10px]">{t("algorithm.bm25NormalizationDesc")}</p>
+            </div>
+
+            {/* Current settings */}
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">{t("algorithm.currentSettings")}</p>
+              <div className="bg-muted/50 p-2 rounded text-[10px] space-y-1">
+                <div><strong>{t("algorithm.fusionMethodLabel")}:</strong> {t("algorithm.confirmationBonusMethod")}</div>
+                <div><strong>{t("algorithm.confirmationBonusLabel")}:</strong> {((stats.confirmationBonusMultiplier ?? 0.15) * 100).toFixed(0)}% {t("algorithm.maxBoost")}</div>
+                <div><strong>{t("algorithm.keywordWeightsLabel")}:</strong> ts_rank={stats.keywordWeights.tsRank}, BM25={stats.keywordWeights.bm25}</div>
               </div>
             </div>
           </div>
@@ -351,11 +451,48 @@ export default function AlgorithmDescription({ stats }: AlgorithmDescriptionProp
           )}
         </button>
         {expandedSection === "reranking" && (
-          <div className="mt-3 space-y-2 text-muted-foreground">
-            <p>{t("algorithm.rerankingDesc")}</p>
-            <div className="space-y-1">
+          <div className="mt-3 space-y-3 text-muted-foreground">
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">Standard Search</p>
+              <p className="text-[10px]">
+                Uses RRF (Reciprocal Rank Fusion) for final ranking. RRF combines semantic and keyword
+                search signals into a unified ranking score, providing fast and accurate results without
+                additional processing.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">Refine Search (Unified Reranking)</p>
+              <p className="text-[10px]">
+                After query expansion and multi-query retrieval, all results (books, Quran, hadith) are
+                combined into a single list and sent to an LLM reranker. The reranker evaluates relevance
+                across all content types simultaneously, enabling it to properly prioritize primary sources
+                when the query is looking for a specific verse or hadith.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">Document Formatting for Reranker</p>
+              <p className="text-[10px]">Each document is prefixed with its type for context:</p>
+              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
+                <li><strong>[BOOK]</strong> {t("algorithm.rerankBookFormat")}</li>
+                <li><strong>[QURAN]</strong> {t("algorithm.rerankQuranFormat")}</li>
+                <li><strong>[HADITH]</strong> {t("algorithm.rerankHadithFormat")}</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-medium text-foreground">Ranking Priority</p>
+              <ol className="list-decimal list-inside text-[10px] space-y-1 mr-4">
+                <li><strong>Source lookup:</strong> When searching for a named verse or hadith, the actual source ranks highest</li>
+                <li><strong>Questions:</strong> Documents that directly answer the question rank highest</li>
+                <li><strong>Topic search:</strong> Primary sources and detailed discussions rank by relevance</li>
+              </ol>
+            </div>
+
+            <div className="space-y-1 bg-muted/50 p-2 rounded text-[10px]">
               <p><strong>{t("algorithm.queryExpansion")}:</strong> {stats.queryExpansionModel || t("algorithm.none")}</p>
-              <p><strong>{t("algorithm.currentReranker")}:</strong> {stats.rerankerModel || t("algorithm.none")}</p>
+              <p><strong>{t("algorithm.currentReranker")}:</strong> {stats.rerankerModel || t("algorithm.none")} (refine mode only)</p>
             </div>
           </div>
         )}

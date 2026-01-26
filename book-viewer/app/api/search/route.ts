@@ -4,7 +4,7 @@
  * GET /api/search?q={query}&limit={20}&mode={hybrid|semantic|keyword}&bookId={optional}
  *     &includeQuran={true}&includeHadith={true}&includeBooks={true}
  *     &reranker={qwen4b|qwen8b|jina|none}&similarityCutoff={0.15}
- *     &preRerankLimit={60}&postRerankLimit={10}
+ *     &preRerankLimit={50}&postRerankLimit={10}
  *
  * Performs hybrid search combining:
  * - PostgreSQL full-text search (keyword)
@@ -28,6 +28,7 @@ import {
   type CorpusStats,
 } from "@/lib/bm25";
 import { lookupFamousVerse, lookupFamousHadith, lookupSurah, type VerseReference, type HadithReference, type SurahReference } from "@/lib/famous-sources";
+import { getCachedExpansion, setCachedExpansion } from "@/lib/query-expansion-cache";
 
 // OpenRouter client for Qwen embeddings
 const openrouter = new OpenAI({
@@ -198,6 +199,8 @@ interface SearchDebugStats {
     expandedQueries: ExpandedQueryStats[];
     originalQueryDocs: number;
   };
+  // Reranker timeout notification
+  rerankerTimedOut?: boolean;
 }
 
 // RRF constant (standard value is 60)
@@ -479,6 +482,28 @@ function hasQuotedPhrases(query: string): boolean {
 }
 
 // ============================================================================
+// API Timeout Utility
+// ============================================================================
+
+/**
+ * Fetch with timeout using AbortController
+ * Returns the response or throws an error if timeout is exceeded
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = 15000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// ============================================================================
 // Score Fusion: Confirmation Bonus Approach
 // ============================================================================
 
@@ -652,20 +677,21 @@ function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: nu
 
 /**
  * Rerank results using Jina's multilingual reranker
- * Returns results sorted by relevance score
+ * Returns results sorted by relevance score, plus timedOut flag
  */
 async function rerankWithJina<T>(
   query: string,
   results: T[],
   getText: (item: T) => string,
   topN: number
-): Promise<T[]> {
+): Promise<{ results: T[]; timedOut: boolean }> {
   if (results.length === 0 || !process.env.JINA_API_KEY) {
-    return results.slice(0, topN);
+    return { results: results.slice(0, topN), timedOut: false };
   }
 
+  const TIMEOUT_MS = 10000; // 10 seconds
   try {
-    const response = await fetch("https://api.jina.ai/v1/rerank", {
+    const response = await fetchWithTimeout("https://api.jina.ai/v1/rerank", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -677,17 +703,22 @@ async function rerankWithJina<T>(
         top_n: Math.min(topN, results.length),
         documents: results.map((r) => getText(r)),
       }),
-    });
+    }, TIMEOUT_MS);
 
     if (!response.ok) {
       throw new Error(`Jina API error: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.results.map((r: { index: number }) => results[r.index]);
+    return { results: data.results.map((r: { index: number }) => results[r.index]), timedOut: false };
   } catch (err) {
-    console.warn("Jina reranking failed, using RRF order:", err);
-    return results.slice(0, topN);
+    const timedOut = err instanceof Error && err.name === 'AbortError';
+    if (timedOut) {
+      console.warn(`[Reranker] Jina timed out after ${TIMEOUT_MS}ms, using RRF order`);
+    } else {
+      console.warn("[Reranker] Jina failed, using RRF order:", err);
+    }
+    return { results: results.slice(0, topN), timedOut };
   }
 }
 
@@ -749,11 +780,12 @@ async function rerankWithGptOss<T>(
   getText: (item: T) => string,
   topN: number,
   model: "openai/gpt-oss-20b" | "openai/gpt-oss-120b" = "openai/gpt-oss-20b"
-): Promise<T[]> {
+): Promise<{ results: T[]; timedOut: boolean }> {
   if (results.length === 0 || !process.env.OPENROUTER_API_KEY) {
-    return results.slice(0, topN);
+    return { results: results.slice(0, topN), timedOut: false };
   }
 
+  const TIMEOUT_MS = 20000; // 20 seconds
   try {
     // Build reranking prompt with documents (800 chars for more context)
     const docsText = results
@@ -809,7 +841,7 @@ CROSS-LINGUAL MATCHING:
 
 Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -820,7 +852,7 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
         messages: [{ role: "user", content: prompt }],
         temperature: 0,
       }),
-    });
+    }, TIMEOUT_MS);
 
     if (!response.ok) {
       throw new Error(`GPT-OSS reranking failed: ${response.statusText}`);
@@ -834,7 +866,7 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
     if (!match) {
       // Fallback to original order
       console.warn("GPT-OSS returned invalid format, using original order");
-      return results.slice(0, topN);
+      return { results: results.slice(0, topN), timedOut: false };
     }
 
     const ranking: number[] = JSON.parse(match[0]);
@@ -856,10 +888,15 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
       }
     }
 
-    return reranked.slice(0, topN);
+    return { results: reranked.slice(0, topN), timedOut: false };
   } catch (err) {
-    console.warn("GPT-OSS reranking failed, using original order:", err);
-    return results.slice(0, topN);
+    const timedOut = err instanceof Error && err.name === 'AbortError';
+    if (timedOut) {
+      console.warn(`[Reranker] GPT-OSS timed out after ${TIMEOUT_MS}ms, using RRF order`);
+    } else {
+      console.warn("[Reranker] GPT-OSS failed, using original order:", err);
+    }
+    return { results: results.slice(0, topN), timedOut };
   }
 }
 
@@ -872,11 +909,12 @@ async function rerankWithGemini<T>(
   results: T[],
   getText: (item: T) => string,
   topN: number
-): Promise<T[]> {
+): Promise<{ results: T[]; timedOut: boolean }> {
   if (results.length === 0 || !process.env.OPENROUTER_API_KEY) {
-    return results.slice(0, topN);
+    return { results: results.slice(0, topN), timedOut: false };
   }
 
+  const TIMEOUT_MS = 15000; // 15 seconds
   try {
     const docsText = results
       .map((d, i) => `[${i + 1}] ${getText(d).slice(0, 800)}`)
@@ -931,7 +969,7 @@ CROSS-LINGUAL MATCHING:
 
 Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -942,7 +980,7 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
         messages: [{ role: "user", content: prompt }],
         temperature: 0,
       }),
-    });
+    }, TIMEOUT_MS);
 
     if (!response.ok) {
       throw new Error(`Gemini reranking failed: ${response.statusText}`);
@@ -955,7 +993,7 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
     const match = content.match(/\[[\d,\s]+\]/);
     if (!match) {
       console.warn("Gemini returned invalid format, using original order");
-      return results.slice(0, topN);
+      return { results: results.slice(0, topN), timedOut: false };
     }
 
     const ranking: number[] = JSON.parse(match[0]);
@@ -977,15 +1015,21 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
       }
     }
 
-    return reranked.slice(0, topN);
+    return { results: reranked.slice(0, topN), timedOut: false };
   } catch (err) {
-    console.warn("Gemini reranking failed, using original order:", err);
-    return results.slice(0, topN);
+    const timedOut = err instanceof Error && err.name === 'AbortError';
+    if (timedOut) {
+      console.warn(`[Reranker] Gemini timed out after ${TIMEOUT_MS}ms, using RRF order`);
+    } else {
+      console.warn("[Reranker] Gemini failed, using original order:", err);
+    }
+    return { results: results.slice(0, topN), timedOut };
   }
 }
 
 /**
  * Rerank results using the specified reranker
+ * Returns results and timedOut flag (true if reranker timed out)
  */
 async function rerank<T>(
   query: string,
@@ -993,9 +1037,9 @@ async function rerank<T>(
   getText: (item: T) => string,
   topN: number,
   reranker: RerankerType
-): Promise<T[]> {
+): Promise<{ results: T[]; timedOut: boolean }> {
   if (results.length === 0 || reranker === "none") {
-    return results.slice(0, topN);
+    return { results: results.slice(0, topN), timedOut: false };
   }
 
   switch (reranker) {
@@ -1008,9 +1052,10 @@ async function rerank<T>(
     case "jina":
       return rerankWithJina(query, results, getText, topN);
     case "qwen4b":
-      return rerankWithQwen(query, results, getText, topN, "qwen/qwen3-embedding-4b");
+      // Qwen uses embedding model, doesn't make API calls that could timeout
+      return { results: await rerankWithQwen(query, results, getText, topN, "qwen/qwen3-embedding-4b"), timedOut: false };
     default:
-      return results.slice(0, topN);
+      return { results: results.slice(0, topN), timedOut: false };
   }
 }
 
@@ -1352,6 +1397,261 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
   }
 }
 
+/**
+ * Unified search result for refine reranking
+ * Combines all result types into a single list for one reranker API call
+ */
+interface UnifiedRefineResult {
+  type: 'book' | 'ayah' | 'hadith';
+  index: number;  // Original index within type array
+  content: string;  // Formatted text for reranker
+  originalScore: number;
+}
+
+/**
+ * Unified reranking for refine search - single API call for all types
+ *
+ * Benefits over separate reranking:
+ * - 1 API call instead of 3 (saves ~2s latency)
+ * - Cross-type relevance comparison (LLM can rank Quran vs Books vs Hadiths)
+ * - Better accuracy for mixed-type queries
+ */
+async function rerankUnifiedRefine(
+  query: string,
+  ayahs: AyahRankedResult[],
+  hadiths: HadithRankedResult[],
+  books: RankedResult[],
+  bookMetaMap: Map<string, { titleArabic: string; author: { nameArabic: string } }>,
+  limits: { books: number; ayahs: number; hadiths: number },
+  reranker: RerankerType
+): Promise<{
+  books: RankedResult[];
+  ayahs: AyahRankedResult[];
+  hadiths: HadithRankedResult[];
+  timedOut: boolean;
+}> {
+  // Skip reranking for non-LLM rerankers
+  if (reranker === "none" || reranker === "jina" || reranker === "qwen4b") {
+    return {
+      books: books.slice(0, limits.books),
+      ayahs: ayahs.slice(0, limits.ayahs),
+      hadiths: hadiths.slice(0, limits.hadiths),
+      timedOut: false
+    };
+  }
+
+  // Build unified list of all candidates with type labels
+  const unified: UnifiedRefineResult[] = [];
+
+  // Add books (up to 30 candidates)
+  books.slice(0, 30).forEach((b, i) => {
+    const book = bookMetaMap.get(b.bookId);
+    unified.push({
+      type: 'book',
+      index: i,
+      content: formatBookForReranking(b, book?.titleArabic, book?.author.nameArabic),
+      originalScore: b.semanticScore || b.fusedScore || 0
+    });
+  });
+
+  // Add ayahs (up to 20 candidates)
+  ayahs.slice(0, 20).forEach((a, i) => {
+    unified.push({
+      type: 'ayah',
+      index: i,
+      content: formatAyahForReranking(a),
+      originalScore: a.semanticScore || a.score
+    });
+  });
+
+  // Add hadiths (up to 25 candidates)
+  hadiths.slice(0, 25).forEach((h, i) => {
+    unified.push({
+      type: 'hadith',
+      index: i,
+      content: formatHadithForReranking(h),
+      originalScore: h.semanticScore || h.score
+    });
+  });
+
+  // If very few documents, return as-is
+  if (unified.length < 3) {
+    return {
+      books: books.slice(0, limits.books),
+      ayahs: ayahs.slice(0, limits.ayahs),
+      hadiths: hadiths.slice(0, limits.hadiths),
+      timedOut: false
+    };
+  }
+
+  const TIMEOUT_MS = 25000; // 25 seconds for larger document set
+
+  try {
+    // Build reranking prompt with all document types
+    const docsText = unified
+      .map((d, i) => `[${i + 1}] ${d.content.slice(0, 600)}`)
+      .join("\n\n");
+
+    const prompt = `You are ranking a MIXED set of Arabic/Islamic documents for a search query.
+The set contains [BOOK] excerpts, [QURAN] verses, and [HADITH] narrations.
+
+Query: "${query}"
+
+Documents:
+${docsText}
+
+RANKING PRIORITY:
+
+1. **SPECIFIC SOURCE LOOKUP** (verse name, hadith name, surah reference):
+   - The ACTUAL source should rank HIGHEST
+   - Example: "آية الكرسي" → [QURAN] Al-Baqarah 255 first
+   - Books ABOUT that source rank lower than the source itself
+
+2. **QUESTION** (ما، لماذا، كيف، حكم، what, why, how):
+   - Documents that directly ANSWER the question rank highest
+   - Primary sources (Quran/Hadith) with relevant evidence rank high
+   - Scholarly explanation ranks based on directness of answer
+
+3. **TOPIC SEARCH** (person, concept, ruling):
+   - Primary sources directly about the topic rank highest
+   - Scholarly commentary with substantial discussion ranks next
+   - Brief mentions rank lower
+
+CROSS-LINGUAL: Match English queries to Arabic content and vice versa.
+
+Return ONLY a JSON array of document numbers by relevance (best first):
+[3, 1, 5, 2, 4, ...]`;
+
+    const model = reranker === "gpt-oss" ? "openai/gpt-oss-20b" :
+                  reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
+                  "google/gemini-2.0-flash-001";
+
+    const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+      }),
+    }, TIMEOUT_MS);
+
+    if (!response.ok) {
+      console.warn(`[Unified Refine Rerank] API error: ${response.statusText}`);
+      return {
+        books: books.slice(0, limits.books),
+        ayahs: ayahs.slice(0, limits.ayahs),
+        hadiths: hadiths.slice(0, limits.hadiths),
+        timedOut: false
+      };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || "[]";
+
+    // Parse ranking from response
+    const match = content.match(/\[[\d,\s]+\]/);
+    if (!match) {
+      console.warn("[Unified Refine Rerank] Invalid format, keeping original order");
+      return {
+        books: books.slice(0, limits.books),
+        ayahs: ayahs.slice(0, limits.ayahs),
+        hadiths: hadiths.slice(0, limits.hadiths),
+        timedOut: false
+      };
+    }
+
+    const ranking: number[] = JSON.parse(match[0]);
+
+    // Split reranked results by type
+    const rerankedBooks: RankedResult[] = [];
+    const rerankedAyahs: AyahRankedResult[] = [];
+    const rerankedHadiths: HadithRankedResult[] = [];
+
+    for (const docNum of ranking) {
+      const idx = docNum - 1;
+      if (idx < 0 || idx >= unified.length) continue;
+
+      const doc = unified[idx];
+      const rank = rerankedBooks.length + rerankedAyahs.length + rerankedHadiths.length + 1;
+
+      if (doc.type === 'book' && rerankedBooks.length < limits.books) {
+        const book = books[doc.index];
+        rerankedBooks.push({ ...book, semanticScore: 1 - (rank / 100) });
+      } else if (doc.type === 'ayah' && rerankedAyahs.length < limits.ayahs) {
+        const ayah = ayahs[doc.index];
+        rerankedAyahs.push({ ...ayah, rank, score: 1 - (rank / 100) });
+      } else if (doc.type === 'hadith' && rerankedHadiths.length < limits.hadiths) {
+        const hadith = hadiths[doc.index];
+        rerankedHadiths.push({ ...hadith, rank, score: 1 - (rank / 100) });
+      }
+    }
+
+    // Fill remaining slots with unreranked candidates (in case LLM ranking was incomplete)
+    const usedBookIndices = new Set(rerankedBooks.map((_, i) => {
+      const found = ranking.find(r => {
+        const doc = unified[r - 1];
+        return doc?.type === 'book' && doc.index === i;
+      });
+      return found ? unified[(found as number) - 1]?.index : -1;
+    }));
+
+    for (let i = 0; i < books.length && rerankedBooks.length < limits.books; i++) {
+      if (!usedBookIndices.has(i)) {
+        rerankedBooks.push(books[i]);
+      }
+    }
+
+    const usedAyahIndices = new Set(rerankedAyahs.map((_, i) => {
+      const found = ranking.find(r => {
+        const doc = unified[r - 1];
+        return doc?.type === 'ayah' && doc.index === i;
+      });
+      return found ? unified[(found as number) - 1]?.index : -1;
+    }));
+
+    for (let i = 0; i < ayahs.length && rerankedAyahs.length < limits.ayahs; i++) {
+      if (!usedAyahIndices.has(i)) {
+        rerankedAyahs.push({ ...ayahs[i], rank: rerankedAyahs.length + 1 });
+      }
+    }
+
+    const usedHadithIndices = new Set(rerankedHadiths.map((_, i) => {
+      const found = ranking.find(r => {
+        const doc = unified[r - 1];
+        return doc?.type === 'hadith' && doc.index === i;
+      });
+      return found ? unified[(found as number) - 1]?.index : -1;
+    }));
+
+    for (let i = 0; i < hadiths.length && rerankedHadiths.length < limits.hadiths; i++) {
+      if (!usedHadithIndices.has(i)) {
+        rerankedHadiths.push({ ...hadiths[i], rank: rerankedHadiths.length + 1 });
+      }
+    }
+
+    console.log(`[Unified Refine Rerank] Reranked ${unified.length} docs → ${rerankedBooks.length} books, ${rerankedAyahs.length} ayahs, ${rerankedHadiths.length} hadiths`);
+    return { books: rerankedBooks, ayahs: rerankedAyahs, hadiths: rerankedHadiths, timedOut: false };
+
+  } catch (err) {
+    const timedOut = err instanceof Error && err.name === 'AbortError';
+    if (timedOut) {
+      console.warn(`[Unified Refine Rerank] Timed out after ${TIMEOUT_MS}ms, using RRF order`);
+    } else {
+      console.warn("[Unified Refine Rerank] Error, keeping original order:", err);
+    }
+    return {
+      books: books.slice(0, limits.books),
+      ayahs: ayahs.slice(0, limits.ayahs),
+      hadiths: hadiths.slice(0, limits.hadiths),
+      timedOut
+    };
+  }
+}
+
 // ============================================================================
 // Refine Search: Query Expansion
 // ============================================================================
@@ -1378,8 +1678,16 @@ interface ExpandedQuery {
 /**
  * Expand a search query into multiple alternative queries using GPT-OSS
  * Returns original query (weight=1.0) plus expanded queries (weight=0.7)
+ * Results are cached to avoid redundant LLM calls
  */
 async function expandQuery(query: string): Promise<ExpandedQuery[]> {
+  // Check cache first (saves 500-1000ms per repeated query)
+  const cached = getCachedExpansion(query);
+  if (cached) {
+    console.log(`[Refine] Cache hit for query expansion: "${query}"`);
+    return cached;
+  }
+
   if (!process.env.OPENROUTER_API_KEY) {
     // Fallback: return just the original query
     return [{ query, weight: 1.0, reason: "Original query" }];
@@ -1471,6 +1779,8 @@ IMPORTANT:
     }
 
     console.log(`[Refine] Expanded "${query}" into ${results.length} queries`);
+    // Cache the result for future requests
+    setCachedExpansion(query, results);
     return results;
   } catch (err) {
     console.warn("Query expansion error:", err);
@@ -2202,12 +2512,14 @@ async function fuzzyKeywordSearchHadiths(
 
 /**
  * Perform semantic search using Qdrant
+ * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
 async function semanticSearch(
   query: string,
   limit: number,
   bookId: string | null,
-  similarityCutoff: number = 0.25
+  similarityCutoff: number = 0.25,
+  precomputedEmbedding?: number[]
 ): Promise<RankedResult[]> {
   // Skip semantic search for quoted phrase queries (user wants exact match)
   if (hasQuotedPhrases(query)) {
@@ -2226,7 +2538,8 @@ async function semanticSearch(
   // Apply dynamic threshold based on query length
   const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
-  const queryEmbedding = await generateEmbedding(normalizedQuery);
+  // Use precomputed embedding if provided, otherwise generate one
+  const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
 
   // Filter by shamelaBookId (now the primary key)
   const filter = bookId
@@ -2438,8 +2751,9 @@ async function searchAuthors(query: string, limit: number = 5): Promise<AuthorRe
 
 /**
  * Search for Quran ayahs using semantic search (returns ranked results)
+ * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
-async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28): Promise<AyahRankedResult[]> {
+async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28, precomputedEmbedding?: number[]): Promise<AyahRankedResult[]> {
   try {
     // Skip semantic search for quoted phrase queries (user wants exact match)
     if (hasQuotedPhrases(query)) {
@@ -2458,7 +2772,8 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
     // Apply dynamic threshold based on query length
     const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
-    const queryEmbedding = await generateEmbedding(normalizedQuery);
+    // Use precomputed embedding if provided, otherwise generate one
+    const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
 
     const searchResults = await qdrant.search(QDRANT_QURAN_COLLECTION, {
       vector: queryEmbedding,
@@ -2501,19 +2816,20 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
 
 /**
  * Hybrid search for Quran ayahs using RRF fusion + reranking
+ * @param options.precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
 async function searchAyahsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
 ): Promise<AyahResult[]> {
-  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
+  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
   const [semanticResults, keywordResults] = await Promise.all([
-    searchAyahsSemantic(query, fetchLimit, similarityCutoff).catch(() => []),
+    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
     keywordSearchAyahs(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
 
@@ -2529,7 +2845,7 @@ async function searchAyahsHybrid(
 
   // Rerank with the specified reranker (using metadata-enriched formatter)
   const finalLimit = Math.min(postRerankLimit, limit);
-  const finalResults = await rerank(
+  const { results: finalResults } = await rerank(
     query,
     candidates,
     (a) => formatAyahForReranking(a),
@@ -2553,8 +2869,9 @@ async function searchAyahsHybrid(
 
 /**
  * Search for Hadiths using semantic search (returns ranked results)
+ * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
-async function searchHadithsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.25): Promise<HadithRankedResult[]> {
+async function searchHadithsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.25, precomputedEmbedding?: number[]): Promise<HadithRankedResult[]> {
   try {
     // Skip semantic search for quoted phrase queries (user wants exact match)
     if (hasQuotedPhrases(query)) {
@@ -2573,7 +2890,8 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
     // Apply dynamic threshold based on query length
     const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
-    const queryEmbedding = await generateEmbedding(normalizedQuery);
+    // Use precomputed embedding if provided, otherwise generate one
+    const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
 
     const searchResults = await qdrant.search(QDRANT_HADITH_COLLECTION, {
       vector: queryEmbedding,
@@ -2660,19 +2978,20 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
 
 /**
  * Hybrid search for Hadiths using RRF fusion + reranking
+ * @param options.precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
 async function searchHadithsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
 ): Promise<HadithResult[]> {
-  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
+  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
   const [semanticResults, keywordResults] = await Promise.all([
-    searchHadithsSemantic(query, fetchLimit, similarityCutoff).catch(() => []),
+    searchHadithsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
     keywordSearchHadiths(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
 
@@ -2688,7 +3007,7 @@ async function searchHadithsHybrid(
 
   // Rerank with the specified reranker (using metadata-enriched formatter)
   const finalLimit = Math.min(postRerankLimit, limit);
-  const finalResults = await rerank(
+  const { results: finalResults } = await rerank(
     query,
     candidates,
     (h) => formatHadithForReranking(h),
@@ -2726,7 +3045,7 @@ export async function GET(request: NextRequest) {
     ? rerankerParam
     : "gpt-oss-120b"; // Default to gpt-oss-120b for highest quality
   const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.15");
-  const preRerankLimit = Math.min(Math.max(parseInt(searchParams.get("preRerankLimit") || "60", 10), 20), 200);
+  const preRerankLimit = Math.min(Math.max(parseInt(searchParams.get("preRerankLimit") || "50", 10), 20), 200);
   const postRerankLimit = Math.min(Math.max(parseInt(searchParams.get("postRerankLimit") || "10", 10), 5), 50);
 
   // Fuzzy search parameters
@@ -2781,6 +3100,48 @@ export async function GET(request: NextRequest) {
     // Track stats for debug panel
     let refineQueryStats: ExpandedQueryStats[] = [];
     let totalAboveCutoff = 0;
+    let rerankerTimedOut = false; // Track if reranker timed out for user notification
+
+    // Request-scoped cache for book metadata to avoid redundant fetches
+    const bookMetadataCache = new Map<string, { id: string; titleArabic: string; author: { nameArabic: string } }>();
+
+    /**
+     * Get book metadata from cache or fetch from DB
+     * Used for reranking - only fetches basic fields (id, titleArabic, author.nameArabic)
+     */
+    async function getBookMetadataForReranking(
+      bookIds: string[]
+    ): Promise<Map<string, { id: string; titleArabic: string; author: { nameArabic: string } }>> {
+      // Check which IDs are not in cache
+      const uncachedIds = bookIds.filter(id => !bookMetadataCache.has(id));
+
+      // Fetch uncached books from DB
+      if (uncachedIds.length > 0) {
+        const fetchedBooks = await prisma.book.findMany({
+          where: { id: { in: uncachedIds } },
+          select: {
+            id: true,
+            titleArabic: true,
+            author: { select: { nameArabic: true } },
+          },
+        });
+
+        // Add to cache
+        for (const book of fetchedBooks) {
+          bookMetadataCache.set(book.id, book);
+        }
+      }
+
+      // Return map of requested IDs
+      const result = new Map<string, { id: string; titleArabic: string; author: { nameArabic: string } }>();
+      for (const id of bookIds) {
+        const book = bookMetadataCache.get(id);
+        if (book) {
+          result.set(id, book);
+        }
+      }
+      return result;
+    }
 
     // Fetch database stats (cached)
     const databaseStats = await getDatabaseStats();
@@ -2834,24 +3195,31 @@ export async function GET(request: NextRequest) {
       const perQueryLimit = REFINE_LIMITS.perQueryPreRerankLimit;
 
       // For each query, search books, ayahs, and hadiths in parallel
+      // Generate ONE embedding per expanded query and share across all searches
       const querySearches = expanded.map(async (exp) => {
         const q = exp.query;
         const weight = exp.weight;
 
+        // Pre-generate embedding ONCE for this expanded query (saves 200-400ms per query)
+        const normalizedQ = normalizeArabicText(q);
+        const shouldSkipSemantic = normalizedQ.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(q);
+        const qEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQ);
+
         // Run semantic + keyword for books
         const [bookSemantic, bookKeyword] = await Promise.all([
-          semanticSearch(q, perQueryLimit, null, similarityCutoff).catch(() => []),
+          semanticSearch(q, perQueryLimit, null, similarityCutoff, qEmbedding).catch(() => []),
           keywordSearch(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
         ]);
 
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
 
         // Run hybrid for ayahs and hadiths (if enabled)
+        const hybridOptionsWithEmbedding = { ...hybridOptions, reranker: "none" as RerankerType, precomputedEmbedding: qEmbedding };
         const ayahResults = includeQuran
-          ? await searchAyahsHybrid(q, perQueryLimit, { ...hybridOptions, reranker: "none" }).catch(() => [])
+          ? await searchAyahsHybrid(q, perQueryLimit, hybridOptionsWithEmbedding).catch(() => [])
           : [];
         const hadithResults = includeHadith
-          ? await searchHadithsHybrid(q, perQueryLimit, { ...hybridOptions, reranker: "none" }).catch(() => [])
+          ? await searchHadithsHybrid(q, perQueryLimit, hybridOptionsWithEmbedding).catch(() => [])
           : [];
 
         return {
@@ -2883,56 +3251,44 @@ export async function GET(request: NextRequest) {
 
       console.log(`[Refine] Merged: ${mergedBooks.length} books, ${mergedAyahs.length} ayahs, ${mergedHadiths.length} hadiths`);
 
-      // Step 4: Take top candidates for final reranking
-      const bookCandidates = mergedBooks.slice(0, REFINE_LIMITS.totalCandidatesBeforeRerank);
+      // Step 4: Unified cross-type reranking (single API call for all types)
+      // This allows the LLM to compare books vs ayahs vs hadiths for optimal ranking
 
-      // Fetch book metadata before reranking
-      const preRerankBookIds = [...new Set(bookCandidates.map((r) => r.bookId))];
-      const preRerankBooks = await prisma.book.findMany({
-        where: { id: { in: preRerankBookIds } },
-        select: {
-          id: true,
-          titleArabic: true,
-          author: { select: { nameArabic: true } },
-        },
-      });
-      const preRerankBookMap = new Map<string, typeof preRerankBooks[0]>(preRerankBooks.map((b) => [b.id, b]));
+      // Fetch book metadata before reranking (uses request-scoped cache)
+      const preRerankBookIds = [...new Set(mergedBooks.slice(0, 30).map((r) => r.bookId))];
+      const preRerankBookMap = await getBookMetadataForReranking(preRerankBookIds);
 
-      // Final reranking using the configured reranker
-      rankedResults = await rerank(
-        query, // Original query for reranking
-        bookCandidates,
-        (r) => {
-          const book = preRerankBookMap.get(r.bookId);
-          return formatBookForReranking(r, book?.titleArabic, book?.author.nameArabic);
-        },
-        REFINE_LIMITS.finalResultLimit,
+      // Single unified reranking call for all types
+      const unifiedResult = await rerankUnifiedRefine(
+        query,
+        mergedAyahs,
+        mergedHadiths,
+        mergedBooks,
+        preRerankBookMap,
+        { books: REFINE_LIMITS.finalResultLimit, ayahs: 12, hadiths: 15 },
         reranker
       );
 
-      // Rerank ayahs and hadiths too
-      ayahsRaw = await rerank(
-        query,
-        mergedAyahs.slice(0, 30),
-        (a) => formatAyahForReranking(a),
-        12,
-        reranker
-      ).then(results => results.map((r, i) => ({ ...r, rank: i + 1, score: r.semanticScore ?? 0 })));
+      // Track if reranker timed out
+      rerankerTimedOut = unifiedResult.timedOut;
 
-      hadiths = await rerank(
-        query,
-        mergedHadiths.slice(0, 40),
-        (h) => formatHadithForReranking(h),
-        15,
-        reranker
-      ).then(results => results.map((r, i) => ({ ...r, rank: i + 1, score: r.semanticScore ?? 0 })));
+      rankedResults = unifiedResult.books;
+      ayahsRaw = unifiedResult.ayahs;
+      hadiths = unifiedResult.hadiths;
 
     } else {
       // ========================================================================
       // STANDARD SEARCH (non-refine mode)
       // ========================================================================
-      const ayahsPromise = (bookId || !includeQuran) ? Promise.resolve([]) : searchAyahsHybrid(query, 12, hybridOptions);
-      const hadithsPromise = (bookId || !includeHadith) ? Promise.resolve([]) : searchHadithsHybrid(query, 15, hybridOptions);
+
+      // Pre-generate embedding ONCE for all semantic searches (saves 200-400ms)
+      const normalizedQuery = normalizeArabicText(query);
+      const shouldSkipSemantic = normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(query);
+      const queryEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQuery);
+
+      const hybridOptionsWithEmbedding = { ...hybridOptions, precomputedEmbedding: queryEmbedding };
+      const ayahsPromise = (bookId || !includeQuran) ? Promise.resolve([]) : searchAyahsHybrid(query, 12, hybridOptionsWithEmbedding);
+      const hadithsPromise = (bookId || !includeHadith) ? Promise.resolve([]) : searchHadithsHybrid(query, 15, hybridOptionsWithEmbedding);
 
       // Fetch more results for RRF fusion
       const fetchLimit = mode === "hybrid" ? Math.min(preRerankLimit, 100) : limit;
@@ -2942,10 +3298,10 @@ export async function GET(request: NextRequest) {
       } else if (mode === "keyword") {
         rankedResults = await keywordSearch(query, limit, bookId, fuzzyOptions);
       } else if (mode === "semantic") {
-        rankedResults = await semanticSearch(query, limit, bookId, similarityCutoff);
+        rankedResults = await semanticSearch(query, limit, bookId, similarityCutoff, queryEmbedding);
       } else {
         // Hybrid: run both searches, with graceful fallback if semantic fails
-        const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff).catch((err) => {
+        const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding).catch((err) => {
           console.warn("Semantic search failed, using keyword only:", err.message);
           return [] as RankedResult[];
         });
@@ -2962,34 +3318,9 @@ export async function GET(request: NextRequest) {
         // Track total results above cutoff for debug stats
         totalAboveCutoff = merged.length;
 
-        // Fetch book metadata before reranking for better context
-        const preRerankCandidates = merged.slice(0, preRerankLimit);
-        const preRerankBookIds = [...new Set(preRerankCandidates.map((r) => r.bookId))];
-        const preRerankBooks = await prisma.book.findMany({
-          where: { id: { in: preRerankBookIds } },
-          select: {
-            id: true,
-            titleArabic: true,
-            author: {
-              select: {
-                nameArabic: true,
-              },
-            },
-          },
-        });
-        const preRerankBookMap = new Map<string, typeof preRerankBooks[0]>(preRerankBooks.map((b) => [b.id, b]));
-
-        // Rerank books with the specified reranker (using metadata-enriched formatter)
-        rankedResults = await rerank(
-          query,
-          preRerankCandidates,
-          (r) => {
-            const book = preRerankBookMap.get(r.bookId);
-            return formatBookForReranking(r, book?.titleArabic, book?.author.nameArabic);
-          },
-          postRerankLimit,
-          reranker
-        );
+        // Standard search: Use RRF-fused results directly (no reranking)
+        // RRF fusion provides good quality ranking without the latency cost of reranker API calls
+        rankedResults = merged.slice(0, postRerankLimit);
       }
 
       // Wait for ayah and hadith searches to complete
@@ -3032,37 +3363,8 @@ export async function GET(request: NextRequest) {
       console.log(`[Direct] Merged ${directHadiths.length} direct hadith(s) into results`);
     }
 
-    // ========================================================================
-    // UNIFIED CROSS-TYPE RERANKING
-    // ========================================================================
-    // Only for LLM rerankers - allows comparing Quran vs Books vs Hadiths
-    if (["gpt-oss", "gpt-oss-120b", "gemini-flash"].includes(reranker) && !bookId) {
-      // Build book metadata map for unified reranking
-      const unifiedBookIds = [...new Set(rankedResults.slice(0, 10).map(r => r.bookId))];
-      const unifiedBooks = await prisma.book.findMany({
-        where: { id: { in: unifiedBookIds } },
-        select: {
-          id: true,
-          titleArabic: true,
-          author: { select: { nameArabic: true } },
-        },
-      });
-      const unifiedBookMap = new Map(unifiedBooks.map(b => [b.id, b]));
-
-      const unified = await rerankUnified(
-        query,
-        ayahsRaw as AyahRankedResult[],
-        hadiths as HadithRankedResult[],
-        rankedResults,
-        unifiedBookMap,
-        15,
-        reranker
-      );
-
-      ayahsRaw = unified.ayahs;
-      hadiths = unified.hadiths;
-      // Note: rankedResults keep their order since we primarily want to boost primary sources
-    }
+    // Note: Cross-type reranking is now only done in refine mode via unified reranking
+    // Standard search uses RRF fusion only (no reranking API calls)
 
     // Wait for author search to complete
     const authorsRaw = await authorsPromise;
@@ -3070,59 +3372,61 @@ export async function GET(request: NextRequest) {
     // Use all authors (no filtering by era)
     const authors = authorsRaw;
 
-    // Fetch translations for ayahs if translation language is specified
+    // Fetch translations for ayahs and hadiths in parallel (saves 50-100ms)
+    const [ayahTranslations, hadithTranslationsRaw] = await Promise.all([
+      // Fetch Quran translations if requested
+      (quranTranslation && quranTranslation !== "none" && ayahsRaw.length > 0)
+        ? prisma.ayahTranslation.findMany({
+            where: {
+              language: quranTranslation,
+              OR: ayahsRaw.map((a) => ({
+                surahNumber: a.surahNumber,
+                ayahNumber: a.ayahNumber,
+              })),
+            },
+            select: {
+              surahNumber: true,
+              ayahNumber: true,
+              text: true,
+            },
+          })
+        : Promise.resolve([]),
+      // Fetch Hadith translations if requested
+      (hadithTranslation && hadithTranslation !== "none" && hadiths.length > 0)
+        ? prisma.hadithTranslation.findMany({
+            where: {
+              language: hadithTranslation,
+              OR: hadiths.map((h) => ({
+                bookId: h.bookId,
+                hadithNumber: h.hadithNumber,
+              })),
+            },
+            select: {
+              bookId: true,
+              hadithNumber: true,
+              text: true,
+            },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Merge ayah translations into results
     let ayahs = ayahsRaw;
-    if (quranTranslation && quranTranslation !== "none" && ayahsRaw.length > 0) {
-      const translations = await prisma.ayahTranslation.findMany({
-        where: {
-          language: quranTranslation,
-          OR: ayahsRaw.map((a) => ({
-            surahNumber: a.surahNumber,
-            ayahNumber: a.ayahNumber,
-          })),
-        },
-        select: {
-          surahNumber: true,
-          ayahNumber: true,
-          text: true,
-        },
-      });
-
-      // Create lookup map for translations
+    if (ayahTranslations.length > 0) {
       const translationMap = new Map(
-        translations.map((t) => [`${t.surahNumber}-${t.ayahNumber}`, t.text])
+        ayahTranslations.map((t) => [`${t.surahNumber}-${t.ayahNumber}`, t.text])
       );
-
-      // Merge translations into ayah results
       ayahs = ayahsRaw.map((ayah) => ({
         ...ayah,
         translation: translationMap.get(`${ayah.surahNumber}-${ayah.ayahNumber}`),
       }));
     }
 
-    // Fetch translations for hadiths if translation language is specified
-    if (hadithTranslation && hadithTranslation !== "none" && hadiths.length > 0) {
-      const hadithTranslations = await prisma.hadithTranslation.findMany({
-        where: {
-          language: hadithTranslation,
-          OR: hadiths.map((h) => ({
-            bookId: h.bookId,
-            hadithNumber: h.hadithNumber,
-          })),
-        },
-        select: {
-          bookId: true,
-          hadithNumber: true,
-          text: true,
-        },
-      });
-
-      // Create lookup map for translations
+    // Merge hadith translations into results
+    if (hadithTranslationsRaw.length > 0) {
       const hadithTranslationMap = new Map(
-        hadithTranslations.map((t) => [`${t.bookId}-${t.hadithNumber}`, t.text])
+        hadithTranslationsRaw.map((t) => [`${t.bookId}-${t.hadithNumber}`, t.text])
       );
-
-      // Merge translations into hadith results
       hadiths = hadiths.map((hadith) => ({
         ...hadith,
         translation: hadithTranslationMap.get(`${hadith.bookId}-${hadith.hadithNumber}`),
@@ -3346,6 +3650,8 @@ export async function GET(request: NextRequest) {
           originalQueryDocs: refineQueryStats.find(q => q.weight === 1.0)?.docsRetrieved || 0,
         },
       }),
+      // Include timeout flag so frontend can show warning to user
+      ...(rerankerTimedOut && { rerankerTimedOut: true }),
     };
 
     return NextResponse.json({
