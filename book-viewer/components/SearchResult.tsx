@@ -70,13 +70,13 @@ export type UnifiedResult =
   | { type: "hadith"; data: HadithResultData; score: number }
   | { type: "book"; data: BookResultData; score: number };
 
-// Score tag component for displaying semantic score and reranked position
-function ScoreTag({ semanticScore, rank }: { semanticScore?: number; rank?: number }) {
-  if (semanticScore === undefined && rank === undefined) return null;
+// Score tag component for displaying final score and reranked position
+function ScoreTag({ score, rank }: { score?: number; rank?: number }) {
+  if (score === undefined && rank === undefined) return null;
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
-      {semanticScore !== undefined && `SS: ${semanticScore.toFixed(2)}`}
-      {semanticScore !== undefined && rank !== undefined && ", "}
+      {score !== undefined && `rank: ${score.toFixed(2)}`}
+      {score !== undefined && rank !== undefined && ", "}
       {rank !== undefined && `#${rank}`}
     </span>
   );
@@ -127,7 +127,7 @@ export default function SearchResult({ result }: SearchResultProps) {
           {t("results.page")} {urlPageIndex || pageNumber}
           {volumeNumber > 1 && `, ${t("results.volume")} ${volumeNumber}`}
         </span>
-        <ScoreTag semanticScore={result.semanticScore} rank={result.rank} />
+        <ScoreTag score={result.score} rank={result.rank} />
       </div>
 
       {/* Text Snippet with Highlights */}
@@ -221,7 +221,7 @@ export function AyahResult({ ayah }: AyahResultProps) {
           <FileText className="h-3 w-3" />
           {t("results.juz")} {ayah.juzNumber}
         </span>
-        <ScoreTag semanticScore={ayah.semanticScore} rank={ayah.rank} />
+        <ScoreTag score={ayah.score} rank={ayah.rank} />
       </div>
 
       {/* Ayah Text */}
@@ -313,7 +313,7 @@ export function HadithResult({ hadith }: HadithResultProps) {
           <FileText className="h-3 w-3" />
           {t("results.book")} {hadith.bookNumber}
         </span>
-        <ScoreTag semanticScore={hadith.semanticScore} rank={hadith.rank} />
+        <ScoreTag score={hadith.score} rank={hadith.rank} />
       </div>
 
       {/* Hadith Text */}

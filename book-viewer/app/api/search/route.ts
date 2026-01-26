@@ -119,17 +119,74 @@ interface RankedResult {
   keywordRank?: number;
   semanticScore?: number;
   keywordScore?: number;
+  tsRank?: number;        // Raw ts_rank score before fusion
+  bm25Score?: number;     // Raw BM25 score before fusion
+  fusedScore?: number;    // Weighted fusion score (semantic + bm25)
   urlPageIndex?: string;
 }
 
 interface HadithRankedResult extends HadithResult {
   semanticRank?: number;
   keywordRank?: number;
+  tsRank?: number;
+  bm25Score?: number;
 }
 
 interface AyahRankedResult extends AyahResult {
   semanticRank?: number;
   keywordRank?: number;
+  tsRank?: number;
+  bm25Score?: number;
+}
+
+// ============================================================================
+// Debug Stats Interface (for search analytics panel)
+// ============================================================================
+
+interface TopResultBreakdown {
+  rank: number;
+  type: 'book' | 'quran' | 'hadith';
+  title: string;
+  tsRank: number | null;
+  bm25Score: number | null;
+  semanticScore: number | null;
+  finalScore: number;
+}
+
+interface ExpandedQueryStats {
+  query: string;
+  weight: number;
+  docsRetrieved: number;
+}
+
+interface SearchDebugStats {
+  // Database totals (cached)
+  databaseStats: DatabaseStats;
+  // Search params
+  searchParams: {
+    mode: string;
+    cutoff: number;
+    totalAboveCutoff: number;
+    totalShown: number;
+  };
+  // Algorithm details (expanded for full formula display)
+  algorithm: {
+    fusionWeights: { semantic: number; keyword: number };
+    keywordWeights: { tsRank: number; bm25: number };
+    bm25Params: { k1: number; b: number; normK: number };
+    rrfK: number;
+    embeddingModel: string;
+    embeddingDimensions: number;
+    rerankerModel: string | null;
+    queryExpansionModel: string | null;
+  };
+  // Top results breakdown
+  topResultsBreakdown: TopResultBreakdown[];
+  // Refine-specific stats
+  refineStats?: {
+    expandedQueries: ExpandedQueryStats[];
+    originalQueryDocs: number;
+  };
 }
 
 // RRF constant (standard value is 60)
@@ -142,6 +199,48 @@ const RRF_K = 60;
 // In-memory cache for corpus stats (refreshed hourly)
 const corpusStatsCache = new Map<string, { stats: CorpusStats; expires: number }>();
 const STATS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// ============================================================================
+// Database Statistics Caching (for debug panel)
+// ============================================================================
+
+interface DatabaseStats {
+  totalBooks: number;
+  totalPages: number;
+  totalHadiths: number;
+  totalAyahs: number;
+}
+
+let databaseStatsCache: { stats: DatabaseStats; expires: number } | null = null;
+const DB_STATS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get database statistics for debug panel (cached)
+ * Returns total counts for books, pages, hadiths, and ayahs
+ */
+async function getDatabaseStats(): Promise<DatabaseStats> {
+  if (databaseStatsCache && databaseStatsCache.expires > Date.now()) {
+    return databaseStatsCache.stats;
+  }
+
+  const [booksResult, pagesResult, hadithsResult, ayahsResult] = await Promise.all([
+    prisma.book.count(),
+    prisma.page.count(),
+    prisma.hadith.count(),
+    prisma.ayah.count(),
+  ]);
+
+  const stats: DatabaseStats = {
+    totalBooks: booksResult,
+    totalPages: pagesResult,
+    totalHadiths: hadithsResult,
+    totalAyahs: ayahsResult,
+  };
+
+  databaseStatsCache = { stats, expires: Date.now() + DB_STATS_CACHE_TTL };
+  console.log(`[Debug] Cached database stats: ${stats.totalBooks} books, ${stats.totalPages} pages, ${stats.totalHadiths} hadiths, ${stats.totalAyahs} ayahs`);
+  return stats;
+}
 
 type CorpusTable = 'pages' | 'ayahs' | 'hadiths';
 
@@ -512,7 +611,7 @@ function buildTsQuery(parsed: ParsedQuery): string {
  * - Results appearing in both searches get a 10% boost
  * - RRF score is used as tiebreaker
  */
-function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: number; semanticScore?: number; score?: number }>(
+function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: number; semanticScore?: number; score?: number; tsRank?: number; bm25Score?: number }>(
   semanticResults: T[],
   keywordResults: T[],
   getKey: (item: T) => string,
@@ -534,6 +633,9 @@ function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: nu
       existing.keywordRank = item.keywordRank;
       // Keyword results have BM25 score in the `score` field
       existing.keywordScore = item.score;
+      // Preserve ts_rank and bm25Score from keyword results
+      existing.tsRank = item.tsRank;
+      existing.bm25Score = item.bm25Score;
     } else {
       resultMap.set(key, { ...item, rrfScore: 0, fusedScore: 0, keywordScore: item.score });
     }
@@ -960,9 +1062,21 @@ function mergeAndDeduplicateBooks(
         if (result.highlightedSnippet && result.highlightedSnippet !== result.textSnippet) {
           existing.highlightedSnippet = result.highlightedSnippet;
         }
-        // Preserve semantic score if present
+        // Preserve semantic score if present (use highest)
         if (result.semanticScore !== undefined && (existing.semanticScore === undefined || result.semanticScore > existing.semanticScore)) {
           existing.semanticScore = result.semanticScore;
+        }
+        // Preserve keyword scores if present (use highest)
+        if (result.keywordScore !== undefined && (existing.keywordScore === undefined || result.keywordScore > existing.keywordScore)) {
+          existing.keywordScore = result.keywordScore;
+        }
+        // Preserve tsRank independently (use highest)
+        if (result.tsRank !== undefined && (existing.tsRank === undefined || result.tsRank > existing.tsRank)) {
+          existing.tsRank = result.tsRank;
+        }
+        // Preserve bm25Score independently (use highest)
+        if (result.bm25Score !== undefined && (existing.bm25Score === undefined || result.bm25Score > existing.bm25Score)) {
+          existing.bm25Score = result.bm25Score;
         }
       } else {
         merged.set(key, { ...result, weightedRrfScore: rrfContribution });
@@ -1156,6 +1270,8 @@ async function keywordSearch(
       highlightedSnippet: r.headline,
       keywordRank: index + 1,
       keywordScore: r.combinedScore,
+      tsRank: r.rank,        // Raw ts_rank from PostgreSQL
+      bm25Score: r.bm25Raw,  // Raw BM25 score before normalization
     }));
 }
 
@@ -1295,6 +1411,8 @@ async function keywordSearchHadiths(
       chapterEnglish: r.chapter_english,
       sunnahComUrl: `https://sunnah.com/${r.collection_slug}:${r.hadith_number.replace(/[A-Z]+$/, '')}`,
       keywordRank: index + 1,
+      tsRank: r.rank,
+      bm25Score: r.bm25Raw,
     }));
 }
 
@@ -1425,6 +1543,8 @@ async function keywordSearchAyahs(
       pageNumber: r.page_number,
       quranComUrl: `https://quran.com/${r.surah_number}?startingVerse=${r.ayah_number}`,
       keywordRank: index + 1,
+      tsRank: r.rank,
+      bm25Score: r.bm25Raw,
     }));
 }
 
@@ -1736,6 +1856,8 @@ function mergeWithRRF(
       existing.keywordRank = result.keywordRank;
       existing.keywordScore = result.keywordScore;
       existing.highlightedSnippet = result.highlightedSnippet;
+      existing.tsRank = result.tsRank;
+      existing.bm25Score = result.bm25Score;
     } else {
       resultMap.set(key, { ...result, fusedScore: 0 });
     }
@@ -2158,6 +2280,14 @@ export async function GET(request: NextRequest) {
     let ayahsRaw: AyahResult[] = [];
     let hadiths: HadithResult[] = [];
 
+    // Track stats for debug panel
+    let refineQueryStats: ExpandedQueryStats[] = [];
+    let totalAboveCutoff = 0;
+    const fusionWeights = getFusionWeights(query);
+
+    // Fetch database stats (cached)
+    const databaseStats = await getDatabaseStats();
+
     // Search for authors (independent of refine mode)
     const authorsPromise = bookId ? Promise.resolve([]) : searchAuthors(query, 5);
     const hybridOptions = { ...searchOptions, ...fuzzyOptions };
@@ -2185,6 +2315,7 @@ export async function GET(request: NextRequest) {
           semanticSearch(q, perQueryLimit, null, similarityCutoff).catch(() => []),
           keywordSearch(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
         ]);
+
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
 
         // Run hybrid for ayahs and hadiths (if enabled)
@@ -2203,6 +2334,15 @@ export async function GET(request: NextRequest) {
       });
 
       const allResults = await Promise.all(querySearches);
+
+      // Track per-query document counts for debug stats
+      refineQueryStats = expanded.map((exp, idx) => ({
+        query: exp.query,
+        weight: exp.weight,
+        docsRetrieved: allResults[idx].books.results.length +
+                       allResults[idx].ayahs.results.length +
+                       allResults[idx].hadiths.results.length,
+      }));
 
       // Step 3: Merge and deduplicate results from all queries
       const allBooks = allResults.map(r => r.books);
@@ -2290,6 +2430,9 @@ export async function GET(request: NextRequest) {
         ]);
 
         const merged = mergeWithRRF(semanticResults, keywordResults, query);
+
+        // Track total results above cutoff for debug stats
+        totalAboveCutoff = merged.length;
 
         // Fetch book metadata before reranking for better context
         const preRerankCandidates = merged.slice(0, preRerankLimit);
@@ -2469,6 +2612,90 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Build top results breakdown for debug stats (top 5)
+    const topResultsBreakdown: TopResultBreakdown[] = [];
+
+    // Add top book results - access fusedScore from ranked results
+    for (let i = 0; i < Math.min(results.length, 5); i++) {
+      const r = results[i];
+      const ranked = rankedResults[i] as RankedResult & { fusedScore?: number; rrfScore?: number };
+      // Calculate what the fused score should be if not present
+      const semanticScore = ranked?.semanticScore ?? 0;
+      const bm25Score = ranked?.bm25Score ?? 0;
+      const normalizedBM25 = normalizeBM25Score(bm25Score);
+      const calculatedFused = fusionWeights.semantic * semanticScore + fusionWeights.bm25 * normalizedBM25;
+
+      topResultsBreakdown.push({
+        rank: i + 1,
+        type: 'book',
+        title: r.book?.titleArabic?.slice(0, 50) || `Book ${r.bookId}`,
+        tsRank: ranked?.tsRank ?? null,
+        bm25Score: ranked?.bm25Score ?? null,
+        semanticScore: ranked?.semanticScore ?? null,
+        finalScore: ranked?.fusedScore ?? calculatedFused,
+      });
+    }
+
+    // Add top ayah results
+    for (let i = 0; i < Math.min(ayahs.length, 2); i++) {
+      const a = ayahs[i] as AyahRankedResult;
+      topResultsBreakdown.push({
+        rank: results.length + i + 1,
+        type: 'quran',
+        title: `${a.surahNameArabic} ${a.ayahNumber}`,
+        tsRank: a.tsRank ?? null,
+        bm25Score: a.bm25Score ?? null,
+        semanticScore: a.semanticScore ?? null,
+        finalScore: a.score,
+      });
+    }
+
+    // Add top hadith results
+    for (let i = 0; i < Math.min(hadiths.length, 2); i++) {
+      const h = hadiths[i] as HadithRankedResult;
+      topResultsBreakdown.push({
+        rank: results.length + ayahs.length + i + 1,
+        type: 'hadith',
+        title: `${h.collectionNameArabic} ${h.hadithNumber}`,
+        tsRank: h.tsRank ?? null,
+        bm25Score: h.bm25Score ?? null,
+        semanticScore: h.semanticScore ?? null,
+        finalScore: h.score,
+      });
+    }
+
+    // Sort by final score descending and take top 5
+    topResultsBreakdown.sort((a, b) => b.finalScore - a.finalScore);
+    const top5Breakdown = topResultsBreakdown.slice(0, 5).map((r, i) => ({ ...r, rank: i + 1 }));
+
+    // Build debug stats with full algorithm parameters
+    const debugStats: SearchDebugStats = {
+      databaseStats,
+      searchParams: {
+        mode,
+        cutoff: similarityCutoff,
+        totalAboveCutoff: totalAboveCutoff || results.length + ayahs.length + hadiths.length,
+        totalShown: results.length + ayahs.length + hadiths.length,
+      },
+      algorithm: {
+        fusionWeights: { semantic: fusionWeights.semantic, keyword: fusionWeights.bm25 },
+        keywordWeights: { tsRank: 0.5, bm25: 0.5 },
+        bm25Params: { k1: 1.5, b: 0.75, normK: 5 },
+        rrfK: RRF_K,
+        embeddingModel: "Google Gemini embedding-001",
+        embeddingDimensions: 3072,
+        rerankerModel: reranker === 'none' ? null : reranker,
+        queryExpansionModel: refine ? 'google/gemini-3-flash-preview' : null,
+      },
+      topResultsBreakdown: top5Breakdown,
+      ...(refine && refineQueryStats.length > 0 && {
+        refineStats: {
+          expandedQueries: refineQueryStats,
+          originalQueryDocs: refineQueryStats.find(q => q.weight === 1.0)?.docsRetrieved || 0,
+        },
+      }),
+    };
+
     return NextResponse.json({
       query,
       mode,
@@ -2477,6 +2704,7 @@ export async function GET(request: NextRequest) {
       authors,
       ayahs,
       hadiths,
+      debugStats,
       ...(refine && {
         refined: true,
         expandedQueries,
