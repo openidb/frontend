@@ -13,6 +13,12 @@
 
 import OpenAI from "openai";
 import { EMBEDDING_DIMENSIONS } from "./constants";
+import {
+  getCachedEmbedding,
+  setCachedEmbedding,
+  getCachedEmbeddings,
+  setCachedEmbeddings,
+} from "./embedding-cache";
 
 // Re-export for backwards compatibility
 export { EMBEDDING_DIMENSIONS };
@@ -28,28 +34,81 @@ const EMBEDDING_MODEL = "google/gemini-embedding-001";
 
 /**
  * Generate embedding for a single text string
+ * Uses in-memory cache to avoid redundant API calls
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
+  // Check cache first
+  const cached = getCachedEmbedding(text);
+  if (cached) {
+    return cached;
+  }
+
+  // Generate embedding via API
   const response = await openai.embeddings.create({
     model: EMBEDDING_MODEL,
     input: text,
   });
-  return response.data[0].embedding;
+  const embedding = response.data[0].embedding;
+
+  // Cache for future use
+  setCachedEmbedding(text, embedding);
+
+  return embedding;
 }
 
 /**
  * Generate embeddings for multiple text strings in a single API call
  * More efficient than calling generateEmbedding multiple times
+ * Uses batch caching to avoid redundant API calls for cached texts
  */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
 
+  // Check which texts are already cached
+  const cachedMap = getCachedEmbeddings(texts);
+  const uncachedTexts: string[] = [];
+  const uncachedIndices: number[] = [];
+
+  for (let i = 0; i < texts.length; i++) {
+    if (!cachedMap.has(texts[i])) {
+      uncachedTexts.push(texts[i]);
+      uncachedIndices.push(i);
+    }
+  }
+
+  // If all texts are cached, return immediately
+  if (uncachedTexts.length === 0) {
+    return texts.map((text) => cachedMap.get(text)!);
+  }
+
+  // Generate embeddings for uncached texts
   const response = await openai.embeddings.create({
     model: EMBEDDING_MODEL,
-    input: texts,
+    input: uncachedTexts,
   });
 
-  return response.data.map((d) => d.embedding);
+  const newEmbeddings = response.data.map((d) => d.embedding);
+
+  // Cache the new embeddings
+  const entriesToCache = uncachedTexts.map((text, i) => ({
+    text,
+    embedding: newEmbeddings[i],
+  }));
+  setCachedEmbeddings(entriesToCache);
+
+  // Build result array preserving original order
+  const result: number[][] = new Array(texts.length);
+  for (let i = 0; i < texts.length; i++) {
+    const cached = cachedMap.get(texts[i]);
+    if (cached) {
+      result[i] = cached;
+    }
+  }
+  for (let i = 0; i < uncachedIndices.length; i++) {
+    result[uncachedIndices[i]] = newEmbeddings[i];
+  }
+
+  return result;
 }
 
 /**
