@@ -94,6 +94,7 @@ interface HadithResult {
   score: number;
   semanticScore?: number;
   rank?: number;              // Position after reranking (1-indexed)
+  bookId: number;             // For translation lookup
   collectionSlug: string;
   collectionNameArabic: string;
   collectionNameEnglish: string;
@@ -105,6 +106,7 @@ interface HadithResult {
   chapterArabic: string | null;
   chapterEnglish: string | null;
   sunnahComUrl: string;
+  translation?: string;       // English translation (when requested)
 }
 
 interface AuthorResult {
@@ -1133,6 +1135,7 @@ async function fetchHadithsDirect(
           chapterEnglish: true,
           book: {
             select: {
+              id: true,
               bookNumber: true,
               nameArabic: true,
               nameEnglish: true,
@@ -1152,6 +1155,7 @@ async function fetchHadithsDirect(
         results.push({
           score: 1.0,
           semanticScore: 1.0,
+          bookId: hadith.book.id,
           collectionSlug: hadith.book.collection.slug,
           collectionNameArabic: hadith.book.collection.nameArabic,
           collectionNameEnglish: hadith.book.collection.nameEnglish,
@@ -1738,6 +1742,7 @@ async function keywordSearchHadiths(
   const results = await prisma.$queryRaw<
     {
       id: number;
+      book_id: number;
       hadith_number: string;
       text_arabic: string;
       text_plain: string;
@@ -1754,6 +1759,7 @@ async function keywordSearchHadiths(
   >`
     SELECT
       h.id,
+      h.book_id,
       h.hadith_number,
       h.text_arabic,
       h.text_plain,
@@ -1835,6 +1841,7 @@ async function keywordSearchHadiths(
     .slice(0, limit)
     .map((r, index) => ({
       score: r.combinedScore,
+      bookId: r.book_id,
       collectionSlug: r.collection_slug,
       collectionNameArabic: r.collection_name_arabic,
       collectionNameEnglish: r.collection_name_english,
@@ -2127,6 +2134,7 @@ async function fuzzyKeywordSearchHadiths(
   const results = await prisma.$queryRaw<
     {
       id: number;
+      book_id: number;
       hadith_number: string;
       text_arabic: string;
       chapter_arabic: string | null;
@@ -2145,6 +2153,7 @@ async function fuzzyKeywordSearchHadiths(
     SELECT * FROM (
       SELECT
         h.id,
+        h.book_id,
         h.hadith_number,
         h.text_arabic,
         h.chapter_arabic,
@@ -2175,6 +2184,7 @@ async function fuzzyKeywordSearchHadiths(
 
   return results.map((r, index) => ({
     score: r.combined_score,
+    bookId: r.book_id,
     collectionSlug: r.collection_slug,
     collectionNameArabic: r.collection_name_arabic,
     collectionNameEnglish: r.collection_name_english,
@@ -2572,6 +2582,40 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
       score_threshold: effectiveCutoff,
     });
 
+    if (searchResults.length === 0) {
+      return [];
+    }
+
+    // Get unique collection/book combinations to look up bookIds
+    const bookLookups = new Set<string>();
+    for (const result of searchResults) {
+      const payload = result.payload as { collectionSlug: string; bookNumber: number };
+      bookLookups.add(`${payload.collectionSlug}|${payload.bookNumber}`);
+    }
+
+    // Fetch bookIds from database
+    const bookIdMap = new Map<string, number>();
+    const bookRecords = await prisma.hadithBook.findMany({
+      where: {
+        OR: Array.from(bookLookups).map((key) => {
+          const [slug, bookNum] = key.split("|");
+          return {
+            collection: { slug },
+            bookNumber: parseInt(bookNum, 10),
+          };
+        }),
+      },
+      select: {
+        id: true,
+        bookNumber: true,
+        collection: { select: { slug: true } },
+      },
+    });
+
+    for (const book of bookRecords) {
+      bookIdMap.set(`${book.collection.slug}|${book.bookNumber}`, book.id);
+    }
+
     return searchResults.map((result, index) => {
       const payload = result.payload as {
         collectionSlug: string;
@@ -2588,9 +2632,12 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
         sunnahComUrl: string;
       };
 
+      const bookId = bookIdMap.get(`${payload.collectionSlug}|${payload.bookNumber}`) || 0;
+
       return {
         score: result.score,
         semanticScore: result.score,
+        bookId,
         collectionSlug: payload.collectionSlug,
         collectionNameArabic: payload.collectionNameArabic,
         collectionNameEnglish: payload.collectionNameEnglish,
@@ -2688,6 +2735,9 @@ export async function GET(request: NextRequest) {
 
   // Quran translation parameter (language code like "en", "ur", "fr", or "none")
   const quranTranslation = searchParams.get("quranTranslation") || "none";
+
+  // Hadith translation parameter ("en" or "none")
+  const hadithTranslation = searchParams.get("hadithTranslation") || "none";
 
   // Book title translation parameter (language code like "en", "fr", or "none"/"transliteration")
   const bookTitleLang = searchParams.get("bookTitleLang");
@@ -3047,6 +3097,35 @@ export async function GET(request: NextRequest) {
       ayahs = ayahsRaw.map((ayah) => ({
         ...ayah,
         translation: translationMap.get(`${ayah.surahNumber}-${ayah.ayahNumber}`),
+      }));
+    }
+
+    // Fetch translations for hadiths if translation language is specified
+    if (hadithTranslation && hadithTranslation !== "none" && hadiths.length > 0) {
+      const hadithTranslations = await prisma.hadithTranslation.findMany({
+        where: {
+          language: hadithTranslation,
+          OR: hadiths.map((h) => ({
+            bookId: h.bookId,
+            hadithNumber: h.hadithNumber,
+          })),
+        },
+        select: {
+          bookId: true,
+          hadithNumber: true,
+          text: true,
+        },
+      });
+
+      // Create lookup map for translations
+      const hadithTranslationMap = new Map(
+        hadithTranslations.map((t) => [`${t.bookId}-${t.hadithNumber}`, t.text])
+      );
+
+      // Merge translations into hadith results
+      hadiths = hadiths.map((hadith) => ({
+        ...hadith,
+        translation: hadithTranslationMap.get(`${hadith.bookId}-${hadith.hadithNumber}`),
       }));
     }
 

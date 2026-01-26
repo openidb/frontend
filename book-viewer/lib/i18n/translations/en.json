@@ -196,6 +196,12 @@
       "quranTranslationInfo": "Display translation alongside Arabic text in Quran search results.",
       "bookTitleDisplay": "Book Titles",
       "bookTitleDisplayInfo": "Display translated book titles alongside Arabic.",
+      "hadithTranslation": "Hadith Translation",
+      "hadithTranslationInfo": "Display English translation alongside Arabic text in hadith search results.",
+      "hadithOptions": {
+        "none": "None",
+        "en": "English (sunnah.com)"
+      },
       "options": {
         "none": "None",
         "en": "English - Dr. Mustafa Khattab",

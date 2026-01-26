@@ -309,6 +309,29 @@ export default function ConfigPage() {
               </SelectContent>
             </Select>
           </SelectSetting>
+          <SelectSetting
+            label={t("config.translations.hadithTranslation")}
+            info={t("config.translations.hadithTranslationInfo")}
+          >
+            <Select
+              value={config.autoTranslation ? "en" : config.hadithTranslation}
+              onValueChange={(value) => updateConfig({ hadithTranslation: value as "none" | "en", autoTranslation: false })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {t(`config.translations.hadithOptions.${config.autoTranslation ? "en" : config.hadithTranslation}`)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border">
+                <SelectItem value="none" className="py-2">
+                  {t("config.translations.hadithOptions.none")}
+                </SelectItem>
+                <SelectItem value="en" className="py-2">
+                  {t("config.translations.hadithOptions.en")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </SelectSetting>
         </div>
 
         <Divider />

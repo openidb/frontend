@@ -218,6 +218,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         quranTranslation: config.autoTranslation
           ? (locale === "ar" ? "en" : locale)
           : (config.quranTranslation || "none"),
+        hadithTranslation: config.autoTranslation
+          ? "en"  // Only English available for hadiths
+          : (config.hadithTranslation || "none"),
         ...(isRefineSearch && { refine: "true" }),
       });
 
