@@ -27,6 +27,7 @@ import {
   combineTsRankAndBM25,
   type CorpusStats,
 } from "@/lib/bm25";
+import { lookupFamousVerse, lookupFamousHadith, lookupSurah, type VerseReference, type HadithReference, type SurahReference } from "@/lib/famous-sources";
 
 // OpenRouter client for Qwen embeddings
 const openrouter = new OpenAI({
@@ -34,7 +35,13 @@ const openrouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-type RerankerType = "gpt-oss" | "gpt-oss-120b" | "qwen4b" | "jina" | "none";
+type RerankerType = "gpt-oss" | "gpt-oss-120b" | "gemini-flash" | "qwen4b" | "jina" | "none";
+
+// Books to exclude from search results
+// These books contain sources that negatively impact search quality
+const EXCLUDED_BOOK_IDS = new Set([
+  "2", // كتاب النوازل في الرضاع - excluded due to sources that negatively impacted search relevance
+]);
 
 export const dynamic = "force-dynamic";
 
@@ -171,7 +178,9 @@ interface SearchDebugStats {
   };
   // Algorithm details (expanded for full formula display)
   algorithm: {
+    fusionMethod: string;
     fusionWeights: { semantic: number; keyword: number };
+    confirmationBonusMultiplier: number;
     keywordWeights: { tsRank: number; bm25: number };
     bm25Params: { k1: number; b: number; normK: number };
     rrfK: number;
@@ -468,51 +477,14 @@ function hasQuotedPhrases(query: string): boolean {
 }
 
 // ============================================================================
-// Score Fusion Weights
+// Score Fusion: Confirmation Bonus Approach
 // ============================================================================
 
-// Default weights: 40% semantic, 60% BM25 (prefer keyword precision for Arabic text)
-const DEFAULT_SEMANTIC_WEIGHT = 0.4;
-const DEFAULT_BM25_WEIGHT = 0.6;
-
-interface FusionWeights {
-  semantic: number;
-  bm25: number;
-}
-
-/**
- * Get fusion weights based on query characteristics
- *
- * This adapts the balance between semantic and keyword scores based on:
- * - Quoted phrases: heavily prefer keyword matching (user wants exact match)
- * - Very short queries: prefer semantic (too little keyword signal)
- * - Long queries: balanced (both signals valuable)
- * - Default: prefer BM25 (keyword precision)
- */
-function getFusionWeights(query: string): FusionWeights {
-  // Quoted phrases: heavily prefer keyword matching (85%)
-  if (hasQuotedPhrases(query)) {
-    return { semantic: 0.15, bm25: 0.85 };
-  }
-
-  const normalized = normalizeArabicText(query).trim();
-  const charCount = normalized.replace(/\s/g, '').length;
-
-  // Very short queries (1-3 chars): prefer semantic (70%)
-  // Short queries lack meaningful keyword signal
-  if (charCount <= 3) {
-    return { semantic: 0.7, bm25: 0.3 };
-  }
-
-  // Long queries (20+ chars): balanced (45% semantic, 55% BM25)
-  // Both signals are valuable for longer, more specific queries
-  if (charCount >= 20) {
-    return { semantic: 0.45, bm25: 0.55 };
-  }
-
-  // Default: prefer BM25 (60%)
-  return { semantic: DEFAULT_SEMANTIC_WEIGHT, bm25: DEFAULT_BM25_WEIGHT };
-}
+// When a result has BOTH semantic and keyword matches, the keyword match
+// serves as confirmation that the semantic match is relevant. We give a
+// bonus proportional to the keyword score strength.
+// 15% max bonus means a perfect keyword match adds up to 0.15 to the semantic score.
+const CONFIRMATION_BONUS_MULTIPLIER = 0.15;
 
 /**
  * Parsed search query with phrases and individual terms
@@ -641,22 +613,26 @@ function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: nu
     }
   }
 
-  // Get fusion weights based on query characteristics
-  const weights = getFusionWeights(query);
-
-  // Calculate fused scores and RRF scores
+  // Calculate fused scores and RRF scores using confirmation bonus approach
   const merged = Array.from(resultMap.values()).map((item) => {
+    const hasSemantic = item.semanticRank !== undefined;
+    const hasKeyword = item.keywordRank !== undefined;
     const semanticScore = item.semanticScore ?? 0;
-    const bm25Score = item.keywordScore ?? 0;
-    const normalizedBM25 = normalizeBM25Score(bm25Score);
 
-    // Weighted fusion: combine normalized semantic and BM25 scores
-    let fusedScore = weights.semantic * semanticScore + weights.bm25 * normalizedBM25;
+    let fusedScore: number;
 
-    // 10% boost for appearing in both searches (confirmation signal)
-    const inBoth = item.semanticRank !== undefined && item.keywordRank !== undefined;
-    if (inBoth) {
-      fusedScore *= 1.1;
+    if (hasSemantic && hasKeyword) {
+      // Both signals: semantic base + confirmation bonus from keyword
+      // Use RAW bm25Score (typically 8-13 range), not the already-normalized keywordScore
+      const rawBM25 = item.bm25Score ?? 0;
+      const normalizedBM25 = normalizeBM25Score(rawBM25);
+      fusedScore = semanticScore + CONFIRMATION_BONUS_MULTIPLIER * normalizedBM25;
+    } else if (hasSemantic) {
+      // Semantic only: use semantic score as-is (no penalty)
+      fusedScore = semanticScore;
+    } else {
+      // Keyword only: use combined ts_rank+BM25 keywordScore as fallback
+      fusedScore = item.keywordScore ?? 0;
     }
 
     const rrfScore = calculateRRFScore([item.semanticRank, item.keywordRank]);
@@ -790,43 +766,44 @@ Documents:
 ${docsText}
 
 STEP 1: DETERMINE USER INTENT
-- Is this a QUESTION seeking an answer? (what, why, how, when, ruling on, ما، لماذا، كيف، متى، حكم، etc.)
-- Is this a TOPIC SEARCH looking for relevant content? (person name, concept, verse reference)
+Identify which type of search this is:
+
+A) SPECIFIC SOURCE LOOKUP - User wants a particular Quran verse or hadith
+   Indicators: Named verses (آية الكرسي، آية النور، الفاتحة), famous hadiths by title
+   (إنما الأعمال بالنيات، حديث جبريل، حديث الولي), surah/ayah references (البقرة 255)
+
+B) QUESTION - User seeks an answer (ما، لماذا، كيف، متى، حكم، what, why, how)
+
+C) TOPIC SEARCH - User wants content about a subject (person, concept, ruling)
 
 STEP 2: RANK BY INTENT
 
-**If QUESTION (user wants an answer):**
+**If SPECIFIC SOURCE LOOKUP (A):**
+Priority order:
+1. [QURAN] or [HADITH] containing the EXACT verse/hadith being searched (HIGHEST)
+2. [QURAN] or [HADITH] closely related to the searched source
+3. [BOOK] with detailed tafsir/sharh of that specific source
+4. [BOOK] that quotes or references the source
+5. Unrelated content (LOWEST)
+
+Example: "آية الكرسي" → BEST: [QURAN] Al-Baqarah 255
+
+**If QUESTION (B):**
 1. Documents that directly ANSWER the question (highest)
 2. Documents that explain/discuss the answer
 3. Documents that mention the topic but don't answer
 4. Unrelated documents (lowest)
 
-Example: "What are the virtues of Shaban?" / "ما فضل شعبان"
-- BEST: Hadith stating specific virtues of Shaban
-- GOOD: Discussion of recommended acts in Shaban
-- OK: Mention of Shaban in passing
-- BAD: Unrelated content
-
-**If TOPIC SEARCH (user wants relevant content):**
+**If TOPIC SEARCH (C):**
 1. Documents primarily ABOUT the topic (highest)
 2. Documents with significant discussion of topic
 3. Documents mentioning topic in context
 4. Unrelated documents (lowest)
 
-Example: "Ibn Taymiyyah" / "ابن تيمية"
-- BEST: Biography or works of Ibn Taymiyyah
-- GOOD: Scholarly discussion citing Ibn Taymiyyah extensively
-- OK: Quote from Ibn Taymiyyah in a different context
-- BAD: Unrelated content
-
-CROSS-LINGUAL MATCHING (treat these as equivalent):
-- "shaban" = "شعبان"
-- "ramadan" = "رمضان"
-- "fasting" = "صيام" / "صوم"
-- "prophet" = "النبي" / "رسول الله"
-- "prayer" = "صلاة"
-- "hajj" = "حج"
-- "zakat" = "زكاة"
+CROSS-LINGUAL MATCHING:
+- "ayat al-kursi" = "آية الكرسي"
+- "surah fatiha" = "سورة الفاتحة"
+- "hadith of intentions" = "حديث النيات" / "الأعمال بالنيات"
 
 Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
@@ -885,6 +862,127 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 }
 
 /**
+ * LLM reranker using Gemini Flash
+ * Fast, high-quality reasoning with the same prompt as GPT-OSS
+ */
+async function rerankWithGemini<T>(
+  query: string,
+  results: T[],
+  getText: (item: T) => string,
+  topN: number
+): Promise<T[]> {
+  if (results.length === 0 || !process.env.OPENROUTER_API_KEY) {
+    return results.slice(0, topN);
+  }
+
+  try {
+    const docsText = results
+      .map((d, i) => `[${i + 1}] ${getText(d).slice(0, 800)}`)
+      .join("\n\n");
+
+    const prompt = `You are ranking Arabic/Islamic documents for a search query.
+
+Query: "${query}"
+
+Documents:
+${docsText}
+
+STEP 1: DETERMINE USER INTENT
+Identify which type of search this is:
+
+A) SPECIFIC SOURCE LOOKUP - User wants a particular Quran verse or hadith
+   Indicators: Named verses (آية الكرسي، آية النور، الفاتحة), famous hadiths by title
+   (إنما الأعمال بالنيات، حديث جبريل، حديث الولي), surah/ayah references (البقرة 255)
+
+B) QUESTION - User seeks an answer (ما، لماذا، كيف، متى، حكم، what, why, how)
+
+C) TOPIC SEARCH - User wants content about a subject (person, concept, ruling)
+
+STEP 2: RANK BY INTENT
+
+**If SPECIFIC SOURCE LOOKUP (A):**
+Priority order:
+1. [QURAN] or [HADITH] containing the EXACT verse/hadith being searched (HIGHEST)
+2. [QURAN] or [HADITH] closely related to the searched source
+3. [BOOK] with detailed tafsir/sharh of that specific source
+4. [BOOK] that quotes or references the source
+5. Unrelated content (LOWEST)
+
+Example: "آية الكرسي" → BEST: [QURAN] Al-Baqarah 255
+
+**If QUESTION (B):**
+1. Documents that directly ANSWER the question (highest)
+2. Documents that explain/discuss the answer
+3. Documents that mention the topic but don't answer
+4. Unrelated documents (lowest)
+
+**If TOPIC SEARCH (C):**
+1. Documents primarily ABOUT the topic (highest)
+2. Documents with significant discussion of topic
+3. Documents mentioning topic in context
+4. Unrelated documents (lowest)
+
+CROSS-LINGUAL MATCHING:
+- "ayat al-kursi" = "آية الكرسي"
+- "surah fatiha" = "سورة الفاتحة"
+- "hadith of intentions" = "حديث النيات" / "الأعمال بالنيات"
+
+Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-001",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini reranking failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || "[]";
+
+    // Parse ranking from response
+    const match = content.match(/\[[\d,\s]+\]/);
+    if (!match) {
+      console.warn("Gemini returned invalid format, using original order");
+      return results.slice(0, topN);
+    }
+
+    const ranking: number[] = JSON.parse(match[0]);
+
+    // Map ranking back to results (1-indexed to 0-indexed)
+    const reranked: T[] = [];
+    for (const docNum of ranking.slice(0, topN)) {
+      const idx = docNum - 1;
+      if (idx >= 0 && idx < results.length && !reranked.includes(results[idx])) {
+        reranked.push(results[idx]);
+      }
+    }
+
+    // Fill remaining slots if ranking was incomplete
+    for (const result of results) {
+      if (reranked.length >= topN) break;
+      if (!reranked.includes(result)) {
+        reranked.push(result);
+      }
+    }
+
+    return reranked.slice(0, topN);
+  } catch (err) {
+    console.warn("Gemini reranking failed, using original order:", err);
+    return results.slice(0, topN);
+  }
+}
+
+/**
  * Rerank results using the specified reranker
  */
 async function rerank<T>(
@@ -903,12 +1001,350 @@ async function rerank<T>(
       return rerankWithGptOss(query, results, getText, topN, "openai/gpt-oss-20b");
     case "gpt-oss-120b":
       return rerankWithGptOss(query, results, getText, topN, "openai/gpt-oss-120b");
+    case "gemini-flash":
+      return rerankWithGemini(query, results, getText, topN);
     case "jina":
       return rerankWithJina(query, results, getText, topN);
     case "qwen4b":
       return rerankWithQwen(query, results, getText, topN, "qwen/qwen3-embedding-4b");
     default:
       return results.slice(0, topN);
+  }
+}
+
+// ============================================================================
+// Famous Source Direct Lookup
+// ============================================================================
+
+/**
+ * Fetch a specific ayah directly by surah/ayah reference
+ * Used when famous source lookup matches a known verse
+ * Returns with score: 1.0 (perfect match)
+ */
+async function fetchAyahDirect(
+  surahNumber: number,
+  ayahNumber: number,
+  ayahEnd?: number
+): Promise<AyahRankedResult[]> {
+  try {
+    // Fetch surah metadata
+    const surah = await prisma.surah.findUnique({
+      where: { number: surahNumber },
+      select: { nameArabic: true, nameEnglish: true },
+    });
+
+    if (!surah) {
+      console.warn(`[Direct] Surah ${surahNumber} not found`);
+      return [];
+    }
+
+    // Fetch ayah(s)
+    const ayahNumbers = ayahEnd
+      ? Array.from({ length: ayahEnd - ayahNumber + 1 }, (_, i) => ayahNumber + i)
+      : [ayahNumber];
+
+    const ayahs = await prisma.ayah.findMany({
+      where: {
+        surah: { number: surahNumber },
+        ayahNumber: { in: ayahNumbers },
+      },
+      select: {
+        ayahNumber: true,
+        textUthmani: true,
+        juzNumber: true,
+        pageNumber: true,
+      },
+      orderBy: { ayahNumber: 'asc' },
+    });
+
+    if (ayahs.length === 0) {
+      console.warn(`[Direct] Ayah ${surahNumber}:${ayahNumber} not found`);
+      return [];
+    }
+
+    // If multiple ayahs, combine into one result
+    if (ayahs.length > 1) {
+      const combinedText = ayahs.map(a => a.textUthmani).join(' ');
+      return [{
+        score: 1.0,
+        semanticScore: 1.0,
+        surahNumber,
+        ayahNumber: ayahs[0].ayahNumber,
+        ayahEnd: ayahs[ayahs.length - 1].ayahNumber,
+        ayahNumbers: ayahs.map(a => a.ayahNumber),
+        surahNameArabic: surah.nameArabic,
+        surahNameEnglish: surah.nameEnglish,
+        text: combinedText,
+        juzNumber: ayahs[0].juzNumber,
+        pageNumber: ayahs[0].pageNumber,
+        quranComUrl: `https://quran.com/${surahNumber}/${ayahNumber}`,
+        isChunk: true,
+        wordCount: combinedText.split(/\s+/).length,
+        semanticRank: 1,
+      }];
+    }
+
+    // Single ayah
+    const ayah = ayahs[0];
+    return [{
+      score: 1.0,
+      semanticScore: 1.0,
+      surahNumber,
+      ayahNumber: ayah.ayahNumber,
+      surahNameArabic: surah.nameArabic,
+      surahNameEnglish: surah.nameEnglish,
+      text: ayah.textUthmani,
+      juzNumber: ayah.juzNumber,
+      pageNumber: ayah.pageNumber,
+      quranComUrl: `https://quran.com/${surahNumber}/${ayah.ayahNumber}`,
+      semanticRank: 1,
+    }];
+  } catch (err) {
+    console.error(`[Direct] Error fetching ayah ${surahNumber}:${ayahNumber}:`, err);
+    return [];
+  }
+}
+
+/**
+ * Fetch specific hadiths directly by collection/number reference
+ * Used when famous source lookup matches known hadiths
+ * Returns with score: 1.0 (perfect match)
+ */
+async function fetchHadithsDirect(
+  references: HadithReference[]
+): Promise<HadithRankedResult[]> {
+  if (references.length === 0) return [];
+
+  try {
+    const results: HadithRankedResult[] = [];
+
+    for (const ref of references) {
+      const hadith = await prisma.hadith.findFirst({
+        where: {
+          hadithNumber: ref.hadithNumber,
+          book: {
+            collection: { slug: ref.collectionSlug },
+          },
+        },
+        select: {
+          hadithNumber: true,
+          textArabic: true,
+          chapterArabic: true,
+          chapterEnglish: true,
+          book: {
+            select: {
+              bookNumber: true,
+              nameArabic: true,
+              nameEnglish: true,
+              collection: {
+                select: {
+                  slug: true,
+                  nameArabic: true,
+                  nameEnglish: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (hadith) {
+        results.push({
+          score: 1.0,
+          semanticScore: 1.0,
+          collectionSlug: hadith.book.collection.slug,
+          collectionNameArabic: hadith.book.collection.nameArabic,
+          collectionNameEnglish: hadith.book.collection.nameEnglish,
+          bookNumber: hadith.book.bookNumber,
+          bookNameArabic: hadith.book.nameArabic,
+          bookNameEnglish: hadith.book.nameEnglish,
+          hadithNumber: hadith.hadithNumber,
+          text: hadith.textArabic,
+          chapterArabic: hadith.chapterArabic,
+          chapterEnglish: hadith.chapterEnglish,
+          sunnahComUrl: `https://sunnah.com/${hadith.book.collection.slug}:${hadith.hadithNumber}`,
+          semanticRank: 1,
+        });
+      }
+    }
+
+    return results;
+  } catch (err) {
+    console.error('[Direct] Error fetching hadiths:', err);
+    return [];
+  }
+}
+
+// ============================================================================
+// Unified Cross-Type Reranking
+// ============================================================================
+
+/**
+ * Unified cross-type reranking
+ * Takes top candidates from all types and reranks them together
+ * This allows the LLM to compare Quran vs Books vs Hadiths for proper ranking
+ */
+async function rerankUnified(
+  query: string,
+  ayahs: AyahRankedResult[],
+  hadiths: HadithRankedResult[],
+  books: RankedResult[],
+  bookMetaMap: Map<string, { titleArabic: string; author: { nameArabic: string } }>,
+  topN: number,
+  reranker: RerankerType
+): Promise<{
+  ayahs: AyahRankedResult[];
+  hadiths: HadithRankedResult[];
+  books: RankedResult[];
+}> {
+  // Only LLM rerankers support cross-type comparison
+  if (reranker === "none" || reranker === "jina" || reranker === "qwen4b") {
+    return { ayahs, hadiths, books };
+  }
+
+  // Combine top candidates from each type
+  type UnifiedDoc = { type: 'quran' | 'hadith' | 'book'; index: number; text: string; originalScore: number };
+  const unified: UnifiedDoc[] = [];
+
+  // Take top 5 from each type for unified reranking
+  const TOP_PER_TYPE = 5;
+
+  ayahs.slice(0, TOP_PER_TYPE).forEach((a, i) => {
+    unified.push({ type: 'quran', index: i, text: formatAyahForReranking(a), originalScore: a.score });
+  });
+
+  hadiths.slice(0, TOP_PER_TYPE).forEach((h, i) => {
+    unified.push({ type: 'hadith', index: i, text: formatHadithForReranking(h), originalScore: h.score });
+  });
+
+  books.slice(0, TOP_PER_TYPE).forEach((b, i) => {
+    const book = bookMetaMap.get(b.bookId);
+    unified.push({
+      type: 'book',
+      index: i,
+      text: formatBookForReranking(b, book?.titleArabic, book?.author.nameArabic),
+      originalScore: b.semanticScore || 0,
+    });
+  });
+
+  // If we have very few documents, just return as-is
+  if (unified.length < 3) {
+    return { ayahs, hadiths, books };
+  }
+
+  try {
+    // Build reranking prompt with all document types
+    const docsText = unified
+      .map((d, i) => `[${i + 1}] ${d.text.slice(0, 600)}`)
+      .join("\n\n");
+
+    const prompt = `You are ranking a MIXED set of Arabic/Islamic documents for a search query.
+The set contains [QURAN] verses, [HADITH] narrations, and [BOOK] excerpts.
+
+Query: "${query}"
+
+Documents:
+${docsText}
+
+RANKING PRIORITY:
+1. If the query is looking for a SPECIFIC SOURCE (verse name, hadith name, surah reference):
+   - The ACTUAL source should rank HIGHEST (e.g., "آية الكرسي" → the [QURAN] Baqarah 255)
+   - Books ABOUT that source rank lower than the source itself
+
+2. If the query is a QUESTION:
+   - Documents that directly ANSWER the question rank highest
+   - Primary sources (Quran/Hadith) with relevant evidence rank high
+
+3. If the query is a TOPIC search:
+   - Primary sources directly about the topic rank highest
+   - Scholarly commentary ranks based on relevance
+
+Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
+
+    const model = reranker === "gpt-oss" ? "openai/gpt-oss-20b" :
+                  reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
+                  "google/gemini-2.0-flash-001";
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn(`[Unified Rerank] API error: ${response.statusText}`);
+      return { ayahs, hadiths, books };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || "[]";
+
+    // Parse ranking from response
+    const match = content.match(/\[[\d,\s]+\]/);
+    if (!match) {
+      console.warn("[Unified Rerank] Invalid format, keeping original order");
+      return { ayahs, hadiths, books };
+    }
+
+    const ranking: number[] = JSON.parse(match[0]);
+
+    // Build score map based on unified ranking
+    const ayahScores = new Map<number, number>();
+    const hadithScores = new Map<number, number>();
+    const bookScores = new Map<number, number>();
+
+    ranking.forEach((docNum, rank) => {
+      const idx = docNum - 1;
+      if (idx >= 0 && idx < unified.length) {
+        const doc = unified[idx];
+        // Score from 1.0 (rank 1) down to 0.5 (last rank)
+        const score = 1.0 - (rank / (ranking.length * 2));
+
+        if (doc.type === 'quran') ayahScores.set(doc.index, score);
+        else if (doc.type === 'hadith') hadithScores.set(doc.index, score);
+        else bookScores.set(doc.index, score);
+      }
+    });
+
+    // Update scores and re-sort
+    const updatedAyahs = ayahs.map((a, i) => {
+      const newScore = ayahScores.get(i);
+      return {
+        ...a,
+        score: newScore !== undefined ? newScore : a.score * 0.5,
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    const updatedHadiths = hadiths.map((h, i) => {
+      const newScore = hadithScores.get(i);
+      return {
+        ...h,
+        score: newScore !== undefined ? newScore : h.score * 0.5,
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    const updatedBooks = books.map((b, i) => {
+      const newScore = bookScores.get(i);
+      // Preserve RankedResult properties while updating score
+      return {
+        ...b,
+        semanticScore: newScore !== undefined ? newScore : (b.semanticScore || 0) * 0.5,
+      };
+    }).sort((a, b) => (b.semanticScore || 0) - (a.semanticScore || 0));
+
+    console.log(`[Unified Rerank] Reranked ${unified.length} documents across types`);
+    return { ayahs: updatedAyahs, hadiths: updatedHadiths, books: updatedBooks };
+
+  } catch (err) {
+    console.warn("[Unified Rerank] Error, keeping original order:", err);
+    return { ayahs, hadiths, books };
   }
 }
 
@@ -1863,22 +2299,26 @@ function mergeWithRRF(
     }
   }
 
-  // Get fusion weights based on query characteristics
-  const weights = getFusionWeights(query);
-
-  // Calculate fused scores and RRF scores
+  // Calculate fused scores and RRF scores using confirmation bonus approach
   const merged = Array.from(resultMap.values()).map((result) => {
+    const hasSemantic = result.semanticRank !== undefined;
+    const hasKeyword = result.keywordRank !== undefined;
     const semanticScore = result.semanticScore ?? 0;
-    const bm25Score = result.keywordScore ?? 0;
-    const normalizedBM25 = normalizeBM25Score(bm25Score);
 
-    // Weighted fusion: combine normalized semantic and BM25 scores
-    let fusedScore = weights.semantic * semanticScore + weights.bm25 * normalizedBM25;
+    let fusedScore: number;
 
-    // 10% boost for appearing in both searches (confirmation signal)
-    const inBoth = result.semanticRank !== undefined && result.keywordRank !== undefined;
-    if (inBoth) {
-      fusedScore *= 1.1;
+    if (hasSemantic && hasKeyword) {
+      // Both signals: semantic base + confirmation bonus from keyword
+      // Use RAW bm25Score (typically 8-13 range), not the already-normalized keywordScore
+      const rawBM25 = result.bm25Score ?? 0;
+      const normalizedBM25 = normalizeBM25Score(rawBM25);
+      fusedScore = semanticScore + CONFIRMATION_BONUS_MULTIPLIER * normalizedBM25;
+    } else if (hasSemantic) {
+      // Semantic only: use semantic score as-is (no penalty)
+      fusedScore = semanticScore;
+    } else {
+      // Keyword only: use combined ts_rank+BM25 keywordScore as fallback
+      fusedScore = result.keywordScore ?? 0;
     }
 
     const rrfScore = calculateRRFScore([result.semanticRank, result.keywordRank]);
@@ -2088,13 +2528,17 @@ async function searchAyahsHybrid(
   );
 
   // Return results with position (rank after reranking)
-  // Use semantic score as primary score for frontend sorting (falls back to RRF if no semantic)
-  return finalResults.map((result, index) => ({
-    ...result,
-    score: (result as { semanticScore?: number }).semanticScore ?? result.rrfScore,
-    semanticScore: (result as { semanticScore?: number }).semanticScore,
-    rank: index + 1, // Position after reranking (1-indexed)
-  })) as AyahResult[];
+  // Use fusedScore as primary score for ranking (semantic + confirmation bonus)
+  return finalResults.map((result, index) => {
+    const r = result as typeof result & { fusedScore?: number; semanticScore?: number };
+    return {
+      ...result,
+      score: r.fusedScore ?? r.semanticScore ?? result.rrfScore,
+      fusedScore: r.fusedScore,
+      semanticScore: r.semanticScore,
+      rank: index + 1, // Position after reranking (1-indexed)
+    };
+  }) as AyahResult[];
 }
 
 /**
@@ -2206,13 +2650,17 @@ async function searchHadithsHybrid(
   );
 
   // Return results with position (rank after reranking)
-  // Use semantic score as primary score for frontend sorting (falls back to RRF if no semantic)
-  return finalResults.map((result, index) => ({
-    ...result,
-    score: (result as { semanticScore?: number }).semanticScore ?? result.rrfScore,
-    semanticScore: (result as { semanticScore?: number }).semanticScore,
-    rank: index + 1, // Position after reranking (1-indexed)
-  }));
+  // Use fusedScore as primary score for ranking (semantic + confirmation bonus)
+  return finalResults.map((result, index) => {
+    const r = result as typeof result & { fusedScore?: number; semanticScore?: number };
+    return {
+      ...result,
+      score: r.fusedScore ?? r.semanticScore ?? result.rrfScore,
+      fusedScore: r.fusedScore,
+      semanticScore: r.semanticScore,
+      rank: index + 1, // Position after reranking (1-indexed)
+    };
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -2227,7 +2675,7 @@ export async function GET(request: NextRequest) {
   const includeHadith = searchParams.get("includeHadith") !== "false";
   const includeBooks = searchParams.get("includeBooks") !== "false";
   const rerankerParam = searchParams.get("reranker") as RerankerType | null;
-  const reranker: RerankerType = rerankerParam && ["gpt-oss", "gpt-oss-120b", "qwen4b", "jina", "none"].includes(rerankerParam)
+  const reranker: RerankerType = rerankerParam && ["gpt-oss", "gpt-oss-120b", "gemini-flash", "qwen4b", "jina", "none"].includes(rerankerParam)
     ? rerankerParam
     : "gpt-oss-120b"; // Default to gpt-oss-120b for highest quality
   const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.15");
@@ -2283,10 +2731,40 @@ export async function GET(request: NextRequest) {
     // Track stats for debug panel
     let refineQueryStats: ExpandedQueryStats[] = [];
     let totalAboveCutoff = 0;
-    const fusionWeights = getFusionWeights(query);
 
     // Fetch database stats (cached)
     const databaseStats = await getDatabaseStats();
+
+    // ========================================================================
+    // FAMOUS SOURCE DIRECT LOOKUP
+    // ========================================================================
+    // Look up famous verses/hadiths/surahs directly (runs in parallel with search)
+    const famousVerse = includeQuran ? lookupFamousVerse(query) : undefined;
+    const famousHadiths = includeHadith ? lookupFamousHadith(query) : [];
+    // Always look up surah - user might want the full surah page link
+    const famousSurah = includeQuran ? lookupSurah(query) : undefined;
+
+    // Direct lookup promises (will be awaited later)
+    const directAyahsPromise = famousVerse
+      ? fetchAyahDirect(famousVerse.surahNumber, famousVerse.ayahNumber, famousVerse.ayahEnd)
+      : Promise.resolve([]);
+    const directHadithsPromise = famousHadiths.length > 0
+      ? fetchHadithsDirect(famousHadiths)
+      : Promise.resolve([]);
+    // Fetch full surah ayahs if surah matched but no specific verse (avoids duplicate fetch)
+    const directSurahAyahsPromise = (famousSurah && !famousVerse)
+      ? fetchAyahDirect(famousSurah.surahNumber, 1, famousSurah.totalAyahs)
+      : Promise.resolve([]);
+
+    if (famousVerse) {
+      console.log(`[Direct] Famous verse match: ${famousVerse.surahNumber}:${famousVerse.ayahNumber}${famousVerse.ayahEnd ? `-${famousVerse.ayahEnd}` : ''}`);
+    }
+    if (famousSurah) {
+      console.log(`[Direct] Surah match: ${famousSurah.surahNumber} -> ${famousSurah.quranComUrl}`);
+    }
+    if (famousHadiths.length > 0) {
+      console.log(`[Direct] Famous hadith match: ${famousHadiths.map(h => `${h.collectionSlug}:${h.hadithNumber}`).join(', ')}`);
+    }
 
     // Search for authors (independent of refine mode)
     const authorsPromise = bookId ? Promise.resolve([]) : searchAuthors(query, 5);
@@ -2468,6 +2946,74 @@ export async function GET(request: NextRequest) {
       [ayahsRaw, hadiths] = await Promise.all([ayahsPromise, hadithsPromise]);
     }
 
+    // ========================================================================
+    // MERGE DIRECT LOOKUP RESULTS
+    // ========================================================================
+    // Wait for direct lookup promises and merge with search results
+    const [directAyahs, directHadiths, directSurahAyahs] = await Promise.all([
+      directAyahsPromise,
+      directHadithsPromise,
+      directSurahAyahsPromise,
+    ]);
+
+    // Merge direct ayah results (they have score: 1.0, should rank first)
+    if (directAyahs.length > 0) {
+      const directKeys = new Set(directAyahs.map(a => `${a.surahNumber}-${a.ayahNumber}`));
+      // Remove duplicates from hybrid search, then prepend direct results
+      const filteredAyahs = ayahsRaw.filter(a => !directKeys.has(`${a.surahNumber}-${a.ayahNumber}`));
+      ayahsRaw = [...directAyahs, ...filteredAyahs];
+      console.log(`[Direct] Merged ${directAyahs.length} direct ayah(s) into results`);
+    }
+
+    // Merge direct surah ayahs (full surah results from surah name lookup)
+    if (directSurahAyahs.length > 0) {
+      const surahKeys = new Set(directSurahAyahs.map(a => `${a.surahNumber}-${a.ayahNumber}`));
+      // Remove duplicates from existing results, then prepend surah ayahs
+      const filteredAyahs = ayahsRaw.filter(a => !surahKeys.has(`${a.surahNumber}-${a.ayahNumber}`));
+      ayahsRaw = [...directSurahAyahs, ...filteredAyahs];
+      console.log(`[Direct] Merged ${directSurahAyahs.length} surah ayah(s) into results`);
+    }
+
+    // Merge direct hadith results
+    if (directHadiths.length > 0) {
+      const directKeys = new Set(directHadiths.map(h => `${h.collectionSlug}-${h.hadithNumber}`));
+      const filteredHadiths = (hadiths as HadithRankedResult[]).filter(h => !directKeys.has(`${h.collectionSlug}-${h.hadithNumber}`));
+      hadiths = [...directHadiths, ...filteredHadiths];
+      console.log(`[Direct] Merged ${directHadiths.length} direct hadith(s) into results`);
+    }
+
+    // ========================================================================
+    // UNIFIED CROSS-TYPE RERANKING
+    // ========================================================================
+    // Only for LLM rerankers - allows comparing Quran vs Books vs Hadiths
+    if (["gpt-oss", "gpt-oss-120b", "gemini-flash"].includes(reranker) && !bookId) {
+      // Build book metadata map for unified reranking
+      const unifiedBookIds = [...new Set(rankedResults.slice(0, 10).map(r => r.bookId))];
+      const unifiedBooks = await prisma.book.findMany({
+        where: { id: { in: unifiedBookIds } },
+        select: {
+          id: true,
+          titleArabic: true,
+          author: { select: { nameArabic: true } },
+        },
+      });
+      const unifiedBookMap = new Map(unifiedBooks.map(b => [b.id, b]));
+
+      const unified = await rerankUnified(
+        query,
+        ayahsRaw as AyahRankedResult[],
+        hadiths as HadithRankedResult[],
+        rankedResults,
+        unifiedBookMap,
+        15,
+        reranker
+      );
+
+      ayahsRaw = unified.ayahs;
+      hadiths = unified.hadiths;
+      // Note: rankedResults keep their order since we primarily want to boost primary sources
+    }
+
     // Wait for author search to complete
     const authorsRaw = await authorsPromise;
 
@@ -2581,16 +3127,20 @@ export async function GET(request: NextRequest) {
     // Create lookup map for all books (no filtering by era)
     const bookMap = new Map(books.map((b) => [b.id, b]));
 
+    // Filter out excluded books
+    const filteredRankedResults = rankedResults.filter(r => !EXCLUDED_BOOK_IDS.has(r.bookId));
+
     // Format results with rank (position after reranking)
-    const results: SearchResult[] = rankedResults.map((result, index) => {
+    const results: SearchResult[] = filteredRankedResults.map((result, index) => {
       const matchType = getMatchType(result);
       const book = bookMap.get(result.bookId) || null;
+      const r = result as typeof result & { fusedScore?: number };
 
-      // Use semantic score as primary score for frontend sorting (falls back to RRF/keyword)
+      // Use fusedScore as primary score for frontend sorting (semantic + confirmation bonus)
       let score: number;
       if (mode === "hybrid") {
-        // Prefer semantic score for sorting, fall back to RRF if no semantic match
-        score = result.semanticScore ?? calculateRRFScore([result.semanticRank, result.keywordRank]);
+        // Prefer fusedScore for sorting, fall back to RRF if not present
+        score = r.fusedScore ?? result.semanticScore ?? calculateRRFScore([result.semanticRank, result.keywordRank]);
       } else if (mode === "semantic") {
         score = result.semanticScore || 0;
       } else {
@@ -2612,61 +3162,82 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Build top results breakdown for debug stats (top 5)
-    const topResultsBreakdown: TopResultBreakdown[] = [];
+    // Create unified ranking of all results for consistent display with frontend
+    // Frontend merges all results and sorts by score, so we do the same here
+    const unifiedResults: Array<{
+      type: 'book' | 'quran' | 'hadith';
+      score: number;
+      data: SearchResult | AyahResult | HadithResult;
+      rankedData?: RankedResult | AyahRankedResult | HadithRankedResult;
+    }> = [];
 
-    // Add top book results - access fusedScore from ranked results
-    for (let i = 0; i < Math.min(results.length, 5); i++) {
-      const r = results[i];
-      const ranked = rankedResults[i] as RankedResult & { fusedScore?: number; rrfScore?: number };
-      // Calculate what the fused score should be if not present
-      const semanticScore = ranked?.semanticScore ?? 0;
-      const bm25Score = ranked?.bm25Score ?? 0;
-      const normalizedBM25 = normalizeBM25Score(bm25Score);
-      const calculatedFused = fusionWeights.semantic * semanticScore + fusionWeights.bm25 * normalizedBM25;
-
-      topResultsBreakdown.push({
-        rank: i + 1,
+    // Add all book results with their ranked data
+    for (let i = 0; i < results.length; i++) {
+      unifiedResults.push({
         type: 'book',
-        title: r.book?.titleArabic?.slice(0, 50) || `Book ${r.bookId}`,
-        tsRank: ranked?.tsRank ?? null,
-        bm25Score: ranked?.bm25Score ?? null,
-        semanticScore: ranked?.semanticScore ?? null,
-        finalScore: ranked?.fusedScore ?? calculatedFused,
+        score: results[i].score,
+        data: results[i],
+        rankedData: filteredRankedResults[i],
       });
     }
 
-    // Add top ayah results
-    for (let i = 0; i < Math.min(ayahs.length, 2); i++) {
-      const a = ayahs[i] as AyahRankedResult;
-      topResultsBreakdown.push({
-        rank: results.length + i + 1,
-        type: 'quran',
-        title: `${a.surahNameArabic} ${a.ayahNumber}`,
-        tsRank: a.tsRank ?? null,
-        bm25Score: a.bm25Score ?? null,
-        semanticScore: a.semanticScore ?? null,
-        finalScore: a.score,
-      });
+    // Add all ayah results
+    for (const a of ayahs) {
+      unifiedResults.push({ type: 'quran', score: a.score, data: a, rankedData: a as AyahRankedResult });
     }
 
-    // Add top hadith results
-    for (let i = 0; i < Math.min(hadiths.length, 2); i++) {
-      const h = hadiths[i] as HadithRankedResult;
-      topResultsBreakdown.push({
-        rank: results.length + ayahs.length + i + 1,
-        type: 'hadith',
-        title: `${h.collectionNameArabic} ${h.hadithNumber}`,
-        tsRank: h.tsRank ?? null,
-        bm25Score: h.bm25Score ?? null,
-        semanticScore: h.semanticScore ?? null,
-        finalScore: h.score,
-      });
+    // Add all hadith results
+    for (const h of hadiths) {
+      unifiedResults.push({ type: 'hadith', score: h.score, data: h, rankedData: h as HadithRankedResult });
     }
 
-    // Sort by final score descending and take top 5
-    topResultsBreakdown.sort((a, b) => b.finalScore - a.finalScore);
-    const top5Breakdown = topResultsBreakdown.slice(0, 5).map((r, i) => ({ ...r, rank: i + 1 }));
+    // Sort by score descending (same as frontend does in SearchClient.tsx)
+    unifiedResults.sort((a, b) => b.score - a.score);
+
+    // Build top results breakdown from unified sorted results (top 5)
+    const top5Breakdown: TopResultBreakdown[] = unifiedResults
+      .slice(0, 5)
+      .map((item, index) => {
+        const rank = index + 1;
+
+        if (item.type === 'book') {
+          const r = item.data as SearchResult;
+          const ranked = item.rankedData as RankedResult & { fusedScore?: number };
+          return {
+            rank,
+            type: 'book' as const,
+            title: r.book?.titleArabic?.slice(0, 50) || `Book ${r.bookId}`,
+            tsRank: ranked?.tsRank ?? null,
+            bm25Score: ranked?.bm25Score ?? null,
+            semanticScore: ranked?.semanticScore ?? null,
+            finalScore: r.score,
+          };
+        } else if (item.type === 'quran') {
+          const a = item.data as AyahResult;
+          const ranked = item.rankedData as AyahRankedResult;
+          return {
+            rank,
+            type: 'quran' as const,
+            title: `${a.surahNameArabic} ${a.ayahNumber}`,
+            tsRank: ranked?.tsRank ?? null,
+            bm25Score: ranked?.bm25Score ?? null,
+            semanticScore: a.semanticScore ?? null,
+            finalScore: a.score,
+          };
+        } else {
+          const h = item.data as HadithResult;
+          const ranked = item.rankedData as HadithRankedResult;
+          return {
+            rank,
+            type: 'hadith' as const,
+            title: `${h.collectionNameArabic} ${h.hadithNumber}`,
+            tsRank: ranked?.tsRank ?? null,
+            bm25Score: ranked?.bm25Score ?? null,
+            semanticScore: h.semanticScore ?? null,
+            finalScore: h.score,
+          };
+        }
+      });
 
     // Build debug stats with full algorithm parameters
     const debugStats: SearchDebugStats = {
@@ -2678,7 +3249,9 @@ export async function GET(request: NextRequest) {
         totalShown: results.length + ayahs.length + hadiths.length,
       },
       algorithm: {
-        fusionWeights: { semantic: fusionWeights.semantic, keyword: fusionWeights.bm25 },
+        fusionMethod: 'confirmation_bonus',
+        fusionWeights: { semantic: 1.0, keyword: CONFIRMATION_BONUS_MULTIPLIER },
+        confirmationBonusMultiplier: CONFIRMATION_BONUS_MULTIPLIER,
         keywordWeights: { tsRank: 0.5, bm25: 0.5 },
         bm25Params: { k1: 1.5, b: 0.75, normK: 5 },
         rrfK: RRF_K,
@@ -2704,6 +3277,14 @@ export async function GET(request: NextRequest) {
       authors,
       ayahs,
       hadiths,
+      // Include surah direct link if matched
+      ...(famousSurah && {
+        surah: {
+          surahNumber: famousSurah.surahNumber,
+          url: famousSurah.quranComUrl,
+          totalAyahs: famousSurah.totalAyahs,
+        },
+      }),
       debugStats,
       ...(refine && {
         refined: true,

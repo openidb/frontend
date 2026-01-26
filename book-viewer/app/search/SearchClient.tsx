@@ -73,6 +73,12 @@ interface DebugStats {
   };
 }
 
+interface SurahMatch {
+  surahNumber: number;
+  url: string;
+  totalAyahs: number;
+}
+
 interface SearchResponse {
   query: string;
   mode: string;
@@ -81,6 +87,7 @@ interface SearchResponse {
   authors: AuthorResultData[];
   ayahs: AyahResultData[];
   hadiths: HadithResultData[];
+  surah?: SurahMatch;
   refined?: boolean;
   expandedQueries?: ExpandedQueryData[];
   debugStats?: DebugStats;
@@ -110,6 +117,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const [debugStats, setDebugStats] = useState<DebugStats | null>(null);
   const [showDebugStats, setShowDebugStats] = useState(false);
   const [showAlgorithm, setShowAlgorithm] = useState(false);
+  const [surahMatch, setSurahMatch] = useState<SurahMatch | null>(null);
   const restoredQueryRef = useRef<string | null>(null);
 
   // Search config with LocalStorage persistence
@@ -255,6 +263,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setIsRefined(data.refined || false);
       setExpandedQueries(data.expandedQueries || []);
       setDebugStats(data.debugStats || null);
+      setSurahMatch(data.surah || null);
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
@@ -275,6 +284,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setAuthors([]);
       setExpandedQueries([]);
       setDebugStats(null);
+      setSurahMatch(null);
     } finally {
       setIsLoading(false);
       setIsRefining(false);
@@ -375,6 +385,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     setHasSearched(false);
     setDebugStats(null);
     setShowDebugStats(false);
+    setSurahMatch(null);
     window.history.replaceState({}, "", "/search");
   };
 

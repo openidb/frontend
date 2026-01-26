@@ -179,6 +179,9 @@ export function AyahResult({ ayah }: AyahResultProps) {
     ? `آيات ${ayah.ayahNumber}-${ayah.ayahEnd}`
     : `آية ${ayah.ayahNumber}`;
 
+  // Hide text for full surah results (chunks starting from ayah 1)
+  const isFullSurah = ayah.isChunk && ayah.ayahNumber === 1;
+
   return (
     <a
       href={ayah.quranComUrl}
@@ -224,16 +227,18 @@ export function AyahResult({ ayah }: AyahResultProps) {
         <ScoreTag score={ayah.score} rank={ayah.rank} />
       </div>
 
-      {/* Ayah Text */}
-      <div
-        className="text-sm line-clamp-3 text-foreground"
-        dir="rtl"
-      >
-        {ayah.text}
-      </div>
+      {/* Ayah Text - hide for full surah results */}
+      {!isFullSurah && (
+        <div
+          className="text-sm line-clamp-3 text-foreground"
+          dir="rtl"
+        >
+          {ayah.text}
+        </div>
+      )}
 
-      {/* Translation */}
-      {ayah.translation && (
+      {/* Translation - hide for full surah results */}
+      {!isFullSurah && ayah.translation && (
         <div
           className="text-sm text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/50 pt-2"
           dir="auto"
