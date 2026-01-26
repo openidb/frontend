@@ -23,6 +23,26 @@
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
   }
+
+  .dark {
+    --background: 180 2% 10%;
+    --foreground: 60 20% 98%;
+    --card: 180 2% 10%;
+    --card-foreground: 60 20% 98%;
+    --popover: 180 2% 12%;
+    --popover-foreground: 60 20% 98%;
+    --primary: 60 20% 98%;
+    --primary-foreground: 180 2% 10%;
+    --secondary: 180 2% 16%;
+    --secondary-foreground: 60 20% 98%;
+    --muted: 180 2% 16%;
+    --muted-foreground: 180 2% 65%;
+    --accent: 180 2% 16%;
+    --accent-foreground: 60 20% 98%;
+    --border: 180 2% 20%;
+    --input: 180 2% 20%;
+    --ring: 180 2% 80%;
+  }
 }
 
 @layer base {

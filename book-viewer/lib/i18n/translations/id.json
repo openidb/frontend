@@ -174,11 +174,20 @@
     "title": "Konfigurasi",
     "sections": {
       "language": "Bahasa",
+      "appearance": "Tampilan",
       "translations": "Terjemahan",
       "similarity": "Kemiripan",
       "fuzzySearch": "Pencarian Fuzzy",
       "reranking": "Pengurutan Ulang",
       "booksDisplay": "Tampilan Buku"
+    },
+    "appearance": {
+      "theme": "Tema",
+      "themes": {
+        "system": "Sistem",
+        "light": "Terang",
+        "dark": "Gelap"
+      }
     },
     "translations": {
       "automatic": "Otomatis",

@@ -174,11 +174,20 @@
     "title": "Настройки",
     "sections": {
       "language": "Язык",
+      "appearance": "Внешний вид",
       "translations": "Переводы",
       "similarity": "Сходство",
       "fuzzySearch": "Нечеткий поиск",
       "reranking": "Переранжирование",
       "booksDisplay": "Отображение книг"
+    },
+    "appearance": {
+      "theme": "Тема",
+      "themes": {
+        "system": "Система",
+        "light": "Светлая",
+        "dark": "Темная"
+      }
     },
     "translations": {
       "automatic": "Автоматически",

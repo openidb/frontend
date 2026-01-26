@@ -174,11 +174,20 @@
     "title": "কনফিগারেশন",
     "sections": {
       "language": "ভাষা",
+      "appearance": "চেহারা",
       "translations": "অনুবাদসমূহ",
       "similarity": "সাদৃশ্য",
       "fuzzySearch": "ফাজি অনুসন্ধান",
       "reranking": "পুনরায় সাজানো",
       "booksDisplay": "বই প্রদর্শন"
+    },
+    "appearance": {
+      "theme": "থিম",
+      "themes": {
+        "system": "সিস্টেম",
+        "light": "হালকা",
+        "dark": "অন্ধকার"
+      }
     },
     "translations": {
       "automatic": "স্বয়ংক্রিয়",

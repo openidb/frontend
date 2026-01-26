@@ -174,11 +174,20 @@
     "title": "設定",
     "sections": {
       "language": "言語",
+      "appearance": "外観",
       "translations": "翻訳",
       "similarity": "類似度",
       "fuzzySearch": "あいまい検索",
       "reranking": "再ランキング",
       "booksDisplay": "書籍表示"
+    },
+    "appearance": {
+      "theme": "テーマ",
+      "themes": {
+        "system": "システム",
+        "light": "ライト",
+        "dark": "ダーク"
+      }
     },
     "translations": {
       "automatic": "自動",

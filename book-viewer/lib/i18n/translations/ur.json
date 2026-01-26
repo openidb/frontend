@@ -174,11 +174,20 @@
     "title": "ترتیبات",
     "sections": {
       "language": "زبان",
+      "appearance": "ظاہری شکل",
       "translations": "ترجمے",
       "similarity": "مماثلت",
       "fuzzySearch": "فزی تلاش",
       "reranking": "دوبارہ ترتیب",
       "booksDisplay": "کتابوں کی نمائش"
+    },
+    "appearance": {
+      "theme": "تھیم",
+      "themes": {
+        "system": "سسٹم",
+        "light": "روشن",
+        "dark": "تاریک"
+      }
     },
     "translations": {
       "automatic": "خودکار",

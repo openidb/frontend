@@ -174,11 +174,20 @@
     "title": "Configurations",
     "sections": {
       "language": "Language",
+      "appearance": "Appearance",
       "translations": "Translations",
       "similarity": "Similarity",
       "fuzzySearch": "Fuzzy Search",
       "reranking": "Reranking",
       "booksDisplay": "Books Display"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "themes": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
     },
     "translations": {
       "automatic": "Automatic",

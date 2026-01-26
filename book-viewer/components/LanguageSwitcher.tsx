@@ -29,6 +29,7 @@ export function LanguageSwitcher() {
         variant="ghost"
         size="sm"
         className="w-full justify-start gap-2 px-3 py-2 text-sm font-medium"
+        style={{ color: "#31b9c9" }}
       >
         <Globe className="h-4 w-4" />
         <span>English</span>
@@ -43,6 +44,7 @@ export function LanguageSwitcher() {
           variant="ghost"
           size="sm"
           className="w-full justify-start gap-2 px-3 py-2 text-sm font-medium hover:bg-muted"
+          style={{ color: "#31b9c9" }}
         >
           <Globe className="h-4 w-4" />
           <span>{currentLocale.nativeName}</span>

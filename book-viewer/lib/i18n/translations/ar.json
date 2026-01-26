@@ -174,11 +174,20 @@
     "title": "الإعدادات",
     "sections": {
       "language": "اللغة",
+      "appearance": "المظهر",
       "translations": "الترجمات",
       "similarity": "التشابه",
       "fuzzySearch": "البحث التقريبي",
       "reranking": "إعادة الترتيب",
       "booksDisplay": "عرض الكتب"
+    },
+    "appearance": {
+      "theme": "السمة",
+      "themes": {
+        "system": "النظام",
+        "light": "فاتح",
+        "dark": "داكن"
+      }
     },
     "translations": {
       "automatic": "تلقائي",

@@ -19,6 +19,7 @@ import {
   type TranslationDisplayOption,
 } from "@/components/SearchConfigDropdown";
 import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
+import { useTheme, type Theme } from "@/lib/theme";
 
 const STORAGE_KEY = "searchConfig";
 
@@ -145,6 +146,7 @@ function SelectSetting({
 
 export default function ConfigPage() {
   const { t, locale, setLocale } = useTranslation();
+  const { theme, setTheme } = useTheme();
   const [config, setConfig] = useState<SearchConfig>(defaultSearchConfig);
   const [mounted, setMounted] = useState(false);
 
@@ -216,6 +218,27 @@ export default function ConfigPage() {
                     </div>
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </SelectSetting>
+        </div>
+
+        <Divider />
+
+        {/* Appearance */}
+        <div className="space-y-4">
+          <SectionHeader>{t("config.sections.appearance")}</SectionHeader>
+          <SelectSetting label={t("config.appearance.theme")}>
+            <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {t(`config.appearance.themes.${theme}`)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border">
+                <SelectItem value="system">{t("config.appearance.themes.system")}</SelectItem>
+                <SelectItem value="light">{t("config.appearance.themes.light")}</SelectItem>
+                <SelectItem value="dark">{t("config.appearance.themes.dark")}</SelectItem>
               </SelectContent>
             </Select>
           </SelectSetting>
@@ -348,6 +371,7 @@ export default function ConfigPage() {
                   {(() => {
                     const keyMap: Record<RerankerType, string> = {
                       "gpt-oss-120b": "gptOss120b",
+                      "gemini-flash": "geminiFlash",
                       "gpt-oss": "gptOss",
                       "qwen4b": "qwen4b",
                       "jina": "jina",
@@ -361,6 +385,7 @@ export default function ConfigPage() {
                 {rerankerOptions.map((option) => {
                   const keyMap: Record<RerankerType, string> = {
                     "gpt-oss-120b": "gptOss120b",
+                    "gemini-flash": "geminiFlash",
                     "gpt-oss": "gptOss",
                     "qwen4b": "qwen4b",
                     "jina": "jina",

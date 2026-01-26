@@ -174,11 +174,20 @@
     "title": "配置",
     "sections": {
       "language": "语言",
+      "appearance": "外观",
       "translations": "翻译",
       "similarity": "相似度",
       "fuzzySearch": "模糊搜索",
       "reranking": "重新排序",
       "booksDisplay": "书籍显示"
+    },
+    "appearance": {
+      "theme": "主题",
+      "themes": {
+        "system": "系统",
+        "light": "浅色",
+        "dark": "深色"
+      }
     },
     "translations": {
       "automatic": "自动",

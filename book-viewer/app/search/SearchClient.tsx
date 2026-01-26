@@ -425,7 +425,12 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
           <Button
             onClick={handleRefineSearch}
             disabled={query.length < 2 || isLoading || isRefining}
-            className="h-10 md:h-12 px-3 md:px-6 shrink-0"
+            className="h-10 md:h-12 px-3 md:px-6 shrink-0 border box-border hover:opacity-90 focus:outline-none focus-visible:ring-0 active:transform-none"
+            style={{
+              borderColor: "#31b9c9",
+              backgroundColor: "#31b9c9",
+              color: "#ffffff"
+            }}
           >
             {isRefining ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : t("search.refineSearch")}
           </Button>

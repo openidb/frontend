@@ -174,11 +174,20 @@
     "title": "설정",
     "sections": {
       "language": "언어",
+      "appearance": "외관",
       "translations": "번역",
       "similarity": "유사도",
       "fuzzySearch": "퍼지 검색",
       "reranking": "재정렬",
       "booksDisplay": "책 표시"
+    },
+    "appearance": {
+      "theme": "테마",
+      "themes": {
+        "system": "시스템",
+        "light": "라이트",
+        "dark": "다크"
+      }
     },
     "translations": {
       "automatic": "자동",

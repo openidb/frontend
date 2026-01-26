@@ -174,11 +174,20 @@
     "title": "Configuraciones",
     "sections": {
       "language": "Idioma",
+      "appearance": "Apariencia",
       "translations": "Traducciones",
       "similarity": "Similitud",
       "fuzzySearch": "Busqueda difusa",
       "reranking": "Reordenamiento",
       "booksDisplay": "Visualizacion de libros"
+    },
+    "appearance": {
+      "theme": "Tema",
+      "themes": {
+        "system": "Sistema",
+        "light": "Claro",
+        "dark": "Oscuro"
+      }
     },
     "translations": {
       "automatic": "Automatico",
