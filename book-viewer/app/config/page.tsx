@@ -393,9 +393,9 @@ export default function ConfigPage() {
                 <SelectValue>
                   {(() => {
                     const keyMap: Record<RerankerType, string> = {
+                      "gpt-oss-20b": "gptOss20b",
                       "gpt-oss-120b": "gptOss120b",
                       "gemini-flash": "geminiFlash",
-                      "gpt-oss": "gptOss",
                       "qwen4b": "qwen4b",
                       "jina": "jina",
                       "none": "none",
@@ -407,9 +407,9 @@ export default function ConfigPage() {
               <SelectContent className="bg-background border border-border">
                 {rerankerOptions.map((option) => {
                   const keyMap: Record<RerankerType, string> = {
+                    "gpt-oss-20b": "gptOss20b",
                     "gpt-oss-120b": "gptOss120b",
                     "gemini-flash": "geminiFlash",
-                    "gpt-oss": "gptOss",
                     "qwen4b": "qwen4b",
                     "jina": "jina",
                     "none": "none",

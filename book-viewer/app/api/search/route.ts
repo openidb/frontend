@@ -18,16 +18,12 @@ import { generateEmbedding, normalizeArabicText } from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import OpenAI from "openai";
+import { normalizeBM25Score } from "@/lib/bm25";
 import {
-  calculateBM25Score,
-  countTermsInText,
-  countWords,
-  normalizeBM25Score,
-  combineTsRankAndBM25,
-  computeTermDFsFromResults,
-  calculateResultSetIDF,
-  type CorpusStats,
-} from "@/lib/bm25";
+  keywordSearchES,
+  keywordSearchHadithsES,
+  keywordSearchAyahsES,
+} from "@/lib/elasticsearch-search";
 import { lookupFamousVerse, lookupFamousHadith, lookupSurah, type VerseReference, type HadithReference, type SurahReference } from "@/lib/famous-sources";
 import { getCachedExpansion, setCachedExpansion } from "@/lib/query-expansion-cache";
 
@@ -37,7 +33,7 @@ const openrouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "none";
+type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "jina" | "qwen4b" | "none";
 
 // Books to exclude from search results
 // These books contain sources that negatively impact search quality
@@ -219,14 +215,6 @@ interface SearchDebugStats {
 const RRF_K = 60;
 
 // ============================================================================
-// BM25 Corpus Statistics Caching
-// ============================================================================
-
-// In-memory cache for corpus stats (refreshed hourly)
-const corpusStatsCache = new Map<string, { stats: CorpusStats; expires: number }>();
-const STATS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
-
-// ============================================================================
 // Database Statistics Caching (for debug panel)
 // ============================================================================
 
@@ -268,101 +256,9 @@ async function getDatabaseStats(): Promise<DatabaseStats> {
   return stats;
 }
 
-type CorpusTable = 'pages' | 'ayahs' | 'hadiths';
-
-/**
- * Get corpus statistics for BM25 scoring (cached)
- * Returns total document count and average document length
- */
-async function getCorpusStats(tableName: CorpusTable): Promise<CorpusStats> {
-  const cached = corpusStatsCache.get(tableName);
-  if (cached && cached.expires > Date.now()) {
-    return cached.stats;
-  }
-
-  const column = tableName === 'pages' ? 'content_plain' : 'text_plain';
-
-  const result = await prisma.$queryRaw<[{ count: bigint; avg_len: number }]>`
-    SELECT COUNT(*) as count,
-           AVG(array_length(regexp_split_to_array(${Prisma.raw(column)}, '\\s+'), 1)) as avg_len
-    FROM ${Prisma.raw(tableName)}
-  `;
-
-  const stats: CorpusStats = {
-    totalDocuments: Number(result[0].count),
-    avgDocumentLength: result[0].avg_len || 50,
-  };
-
-  corpusStatsCache.set(tableName, { stats, expires: Date.now() + STATS_CACHE_TTL });
-  console.log(`[BM25] Cached corpus stats for ${tableName}: ${stats.totalDocuments} docs, avg ${stats.avgDocumentLength.toFixed(1)} words`);
-  return stats;
-}
-
 // Minimum character count for semantic search (queries below this skip semantic)
 // Short queries (≤3 chars) lack meaningful semantic content and produce noisy results
 const MIN_CHARS_FOR_SEMANTIC = 4;
-
-// ============================================================================
-// SQL Arabic Text Normalization
-// ============================================================================
-
-/**
- * SQL expression to normalize Arabic text for consistent FTS matching.
- * This mirrors the normalizeArabicText() function used on search queries.
- *
- * Normalization steps:
- * 1. Remove diacritics (tashkeel): U+064B-U+065F, U+0670 (superscript alef)
- * 2. Normalize alef variants: آأإٱ (U+0622, U+0623, U+0625, U+0671) → ا (U+0627)
- * 3. Normalize teh marbuta: ة (U+0629) → ه (U+0647)
- *
- * Why this is needed:
- * The database text_plain column was created with removeDiacritics() which preserves
- * some special characters (like alef wasla ٱ), but search queries use normalizeArabicText()
- * which normalizes these to plain alef. This causes mismatches in PostgreSQL FTS.
- *
- * Example: DB stores "ٱلقيوم" (with alef wasla), query normalizes to "القيوم" (plain alef)
- */
-const SQL_NORMALIZE_ARABIC = Prisma.sql`
-  translate(
-    regexp_replace(text_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
-    E'\u0622\u0623\u0625\u0671\u0629',
-    E'\u0627\u0627\u0627\u0627\u0647'
-  )
-`;
-
-/**
- * SQL expression to normalize Arabic text with table alias prefix (for ayahs table)
- */
-const SQL_NORMALIZE_ARABIC_AYAHS = Prisma.sql`
-  translate(
-    regexp_replace(a.text_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
-    E'\u0622\u0623\u0625\u0671\u0629',
-    E'\u0627\u0627\u0627\u0627\u0647'
-  )
-`;
-
-/**
- * SQL expression to normalize Arabic text with table alias prefix (for hadiths table)
- */
-const SQL_NORMALIZE_ARABIC_HADITHS = Prisma.sql`
-  translate(
-    regexp_replace(h.text_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
-    E'\u0622\u0623\u0625\u0671\u0629',
-    E'\u0627\u0627\u0627\u0627\u0647'
-  )
-`;
-
-/**
- * SQL expression to normalize Arabic text for pages table (p.content_plain)
- * Same normalization as hadiths but for pages table alias
- */
-const SQL_NORMALIZE_ARABIC_PAGES = Prisma.sql`
-  translate(
-    regexp_replace(p.content_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
-    E'\u0622\u0623\u0625\u0671\u0629',
-    E'\u0627\u0627\u0627\u0627\u0647'
-  )
-`;
 
 /**
  * Calculate dynamic similarity threshold based on query characteristics
@@ -1876,670 +1772,6 @@ function mergeAndDeduplicateHadiths(
 }
 
 /**
- * Perform keyword search using PostgreSQL full-text search with BM25 re-ranking
- *
- * BM25 improves on ts_rank by adding:
- * - IDF weighting: Rare terms score higher than common ones
- * - Document length normalization: Long docs don't unfairly dominate
- * - Term frequency saturation: Repeated terms have diminishing returns
- */
-async function keywordSearch(
-  query: string,
-  limit: number,
-  bookId: string | null,
-  options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
-): Promise<RankedResult[]> {
-  const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
-
-  // Skip keyword search for non-Arabic queries since book content is Arabic-only
-  if (!isArabicQuery(query)) {
-    console.log(`[PageKeyword] skipped: non-Arabic query`);
-    return [];
-  }
-
-  // Parse query to extract phrases and terms
-  const parsed = parseSearchQuery(query);
-
-  if (parsed.phrases.length === 0 && parsed.terms.length === 0) {
-    return [];
-  }
-
-  // Build tsquery with phrase support (<-> for exact sequences)
-  const tsQuery = buildTsQuery(parsed);
-
-  // Build the WHERE clause for optional book filter
-  const bookFilter = bookId ? Prisma.sql`AND p.book_id = ${bookId}` : Prisma.empty;
-
-  // Over-fetch candidates for BM25 re-ranking (3x the requested limit)
-  const fetchLimit = limit * 3;
-
-  // Execute raw SQL for full-text search with ts_headline for snippets
-  // Use SQL normalization to match the normalized search query (teh marbuta → heh, etc.)
-  const results = await prisma.$queryRaw<
-    {
-      book_id: string;
-      page_number: number;
-      volume_number: number;
-      content_plain: string;
-      headline: string;
-      rank: number;
-    }[]
-  >`
-    SELECT
-      p.book_id,
-      p.page_number,
-      p.volume_number,
-      p.content_plain,
-      ts_headline(
-        'simple',
-        ${SQL_NORMALIZE_ARABIC_PAGES},
-        to_tsquery('simple', ${tsQuery}),
-        'StartSel=<mark>, StopSel=</mark>, MaxWords=50, MinWords=20, MaxFragments=1'
-      ) as headline,
-      ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_PAGES}), to_tsquery('simple', ${tsQuery})) as rank
-    FROM pages p
-    WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_PAGES}) @@ to_tsquery('simple', ${tsQuery})
-    ${bookFilter}
-    ORDER BY rank DESC
-    LIMIT ${fetchLimit}
-  `;
-
-  if (results.length === 0) {
-    // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
-    if (fuzzyFallback && parsed.terms.length > 0) {
-      console.log(`No exact page matches for "${query}", trying fuzzy search on terms...`);
-      const termsOnlyQuery = parsed.terms.join(' ');
-      return fuzzyKeywordSearch(termsOnlyQuery, limit, bookId, fuzzyThreshold);
-    }
-    return [];
-  }
-
-  // Get all query terms for BM25 scoring (combine phrases and individual terms)
-  const allTerms = [
-    ...parsed.phrases.flatMap((p) => p.split(/\s+/)),
-    ...parsed.terms,
-  ].filter((t) => t.length > 0);
-
-  // Get corpus statistics (cached) - still needed for avgDocumentLength
-  const corpusStats = await getCorpusStats('pages');
-
-  // Compute document frequencies from result set (NO database queries!)
-  // This eliminates N separate COUNT queries that were causing 3-4 second delays
-  const termDFs = computeTermDFsFromResults(
-    results,
-    allTerms,
-    (r) => r.content_plain
-  );
-
-  // Calculate IDF for each term using result-set statistics
-  const resultSetSize = results.length;
-  const termIDFs = new Map<string, number>();
-  for (const [term, df] of termDFs) {
-    termIDFs.set(term, calculateResultSetIDF(df, resultSetSize));
-  }
-
-  // First pass: compute BM25 scores for all results
-  const withBM25 = results.map((r) => {
-    const termFreqs = countTermsInText(r.content_plain, allTerms);
-    const docLength = countWords(r.content_plain);
-    const bm25Raw = calculateBM25Score(
-      termFreqs,
-      docLength,
-      termIDFs,
-      corpusStats.avgDocumentLength
-    );
-    return { ...r, bm25Raw };
-  });
-
-  // Find max values for normalization
-  // ts_rank is already in r.rank from SQL
-  const maxTsRank = Math.max(...withBM25.map((r) => r.rank), 0.0001);
-  const maxBM25 = Math.max(...withBM25.map((r) => r.bm25Raw), 0.0001);
-
-  // Second pass: compute combined ts_rank + BM25 score
-  // This preserves ts_rank's phrase matching while adding BM25's IDF weighting
-  const scored = withBM25.map((r) => ({
-    ...r,
-    combinedScore: combineTsRankAndBM25(r.rank, r.bm25Raw, maxTsRank, maxBM25),
-  }));
-
-  // Sort by combined score and return top results
-  return scored
-    .sort((a, b) => b.combinedScore - a.combinedScore)
-    .slice(0, limit)
-    .map((r, index) => ({
-      bookId: r.book_id,
-      pageNumber: r.page_number,
-      volumeNumber: r.volume_number,
-      textSnippet: r.content_plain.slice(0, 300),
-      highlightedSnippet: r.headline,
-      keywordRank: index + 1,
-      keywordScore: r.combinedScore,
-      tsRank: r.rank,        // Raw ts_rank from PostgreSQL
-      bm25Score: r.bm25Raw,  // Raw BM25 score before normalization
-    }));
-}
-
-/**
- * Keyword search for hadiths using PostgreSQL full-text search with BM25 re-ranking
- */
-async function keywordSearchHadiths(
-  query: string,
-  limit: number,
-  options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
-): Promise<HadithRankedResult[]> {
-  const _t0 = Date.now();
-  const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
-
-  // Skip keyword search for non-Arabic queries since hadith text is Arabic-only
-  // This avoids wasteful FTS (~500ms) and fuzzy fallback (~1500ms) on non-matching text
-  if (!isArabicQuery(query)) {
-    console.log(`[HadithKeyword] skipped: non-Arabic query`);
-    return [];
-  }
-
-  // Parse query to extract phrases and terms
-  const parsed = parseSearchQuery(query);
-
-  if (parsed.phrases.length === 0 && parsed.terms.length === 0) {
-    return [];
-  }
-
-  // Build tsquery with phrase support (<-> for exact sequences)
-  const tsQuery = buildTsQuery(parsed);
-  console.log(`[HadithKeyword] parsed:`, JSON.stringify(parsed), `tsQuery: "${tsQuery}"`);
-
-  // Over-fetch candidates for BM25 re-ranking
-  const fetchLimit = limit * 3;
-
-  // Use SQL normalization for consistent matching with search queries
-  const _tFts = Date.now();
-  const results = await prisma.$queryRaw<
-    {
-      id: number;
-      book_id: number;
-      hadith_number: string;
-      text_arabic: string;
-      text_plain: string;
-      chapter_arabic: string | null;
-      chapter_english: string | null;
-      book_number: number;
-      book_name_arabic: string;
-      book_name_english: string;
-      collection_slug: string;
-      collection_name_arabic: string;
-      collection_name_english: string;
-      rank: number;
-    }[]
-  >`
-    SELECT
-      h.id,
-      h.book_id,
-      h.hadith_number,
-      h.text_arabic,
-      h.text_plain,
-      h.chapter_arabic,
-      h.chapter_english,
-      b.book_number,
-      b.name_arabic as book_name_arabic,
-      b.name_english as book_name_english,
-      c.slug as collection_slug,
-      c.name_arabic as collection_name_arabic,
-      c.name_english as collection_name_english,
-      ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}), to_tsquery('simple', ${tsQuery})) as rank
-    FROM hadiths h
-    JOIN hadith_books b ON h.book_id = b.id
-    JOIN hadith_collections c ON b.collection_id = c.id
-    WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}) @@ to_tsquery('simple', ${tsQuery})
-    ORDER BY rank DESC
-    LIMIT ${fetchLimit}
-  `;
-  console.log(`[HadithKeyword] FTS query: ${Date.now() - _tFts}ms (${results.length} results)`);
-
-  if (results.length === 0) {
-    // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
-    if (fuzzyFallback && parsed.terms.length > 0) {
-      console.log(`No exact hadith matches for "${query}", trying fuzzy search on terms...`);
-      const _tFuzzy = Date.now();
-      const termsOnlyQuery = parsed.terms.join(' ');
-      const fuzzyResults = await fuzzyKeywordSearchHadiths(termsOnlyQuery, limit, fuzzyThreshold);
-      console.log(`[HadithKeyword] Fuzzy fallback: ${Date.now() - _tFuzzy}ms (${fuzzyResults.length} results)`);
-      return fuzzyResults;
-    }
-    return [];
-  }
-
-  // Get all query terms for BM25 scoring
-  const allTerms = [
-    ...parsed.phrases.flatMap((p) => p.split(/\s+/)),
-    ...parsed.terms,
-  ].filter((t) => t.length > 0);
-
-  // Get corpus statistics (cached) - still needed for avgDocumentLength
-  const corpusStats = await getCorpusStats('hadiths');
-
-  // Compute document frequencies from result set (NO database queries!)
-  // This eliminates N separate COUNT queries that were causing 3-4 second delays
-  const termDFs = computeTermDFsFromResults(
-    results,
-    allTerms,
-    (r) => normalizeArabicText(r.text_plain)
-  );
-
-  // Calculate IDF for each term using result-set statistics
-  const resultSetSize = results.length;
-  const termIDFs = new Map<string, number>();
-  for (const [term, df] of termDFs) {
-    termIDFs.set(term, calculateResultSetIDF(df, resultSetSize));
-  }
-
-  // First pass: compute BM25 scores for all results
-  // Use normalized text to match the SQL WHERE clause normalization
-  const withBM25 = results.map((r) => {
-    const normalizedText = normalizeArabicText(r.text_plain);
-    const termFreqs = countTermsInText(normalizedText, allTerms);
-    const docLength = countWords(normalizedText);
-    const bm25Raw = calculateBM25Score(
-      termFreqs,
-      docLength,
-      termIDFs,
-      corpusStats.avgDocumentLength
-    );
-    return { ...r, bm25Raw };
-  });
-
-  // Find max values for normalization
-  // ts_rank is already in r.rank from SQL
-  const maxTsRank = Math.max(...withBM25.map((r) => r.rank), 0.0001);
-  const maxBM25 = Math.max(...withBM25.map((r) => r.bm25Raw), 0.0001);
-
-  // Second pass: compute combined ts_rank + BM25 score
-  // This preserves ts_rank's phrase matching while adding BM25's IDF weighting
-  const scored = withBM25.map((r) => ({
-    ...r,
-    combinedScore: combineTsRankAndBM25(r.rank, r.bm25Raw, maxTsRank, maxBM25),
-  }));
-
-  // Sort by combined score and return top results
-  const finalResults = scored
-    .sort((a, b) => b.combinedScore - a.combinedScore)
-    .slice(0, limit)
-    .map((r, index) => ({
-      score: r.combinedScore,
-      bookId: r.book_id,
-      collectionSlug: r.collection_slug,
-      collectionNameArabic: r.collection_name_arabic,
-      collectionNameEnglish: r.collection_name_english,
-      bookNumber: r.book_number,
-      bookNameArabic: r.book_name_arabic,
-      bookNameEnglish: r.book_name_english,
-      hadithNumber: r.hadith_number,
-      text: r.text_arabic,
-      chapterArabic: r.chapter_arabic,
-      chapterEnglish: r.chapter_english,
-      sunnahComUrl: `https://sunnah.com/${r.collection_slug}:${r.hadith_number.replace(/[A-Z]+$/, '')}`,
-      keywordRank: index + 1,
-      tsRank: r.rank,
-      bm25Score: r.bm25Raw,
-    }));
-  console.log(`[HadithKeyword] total: ${Date.now() - _t0}ms`);
-  return finalResults;
-}
-
-/**
- * Keyword search for Quran ayahs using PostgreSQL full-text search with BM25 re-ranking
- */
-async function keywordSearchAyahs(
-  query: string,
-  limit: number,
-  options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
-): Promise<AyahRankedResult[]> {
-  const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
-
-  // Skip keyword search for non-Arabic queries since Quran text is Arabic-only
-  if (!isArabicQuery(query)) {
-    console.log(`[AyahKeyword] skipped: non-Arabic query`);
-    return [];
-  }
-
-  // Parse query to extract phrases and terms
-  const parsed = parseSearchQuery(query);
-
-  if (parsed.phrases.length === 0 && parsed.terms.length === 0) {
-    return [];
-  }
-
-  // Build tsquery with phrase support (<-> for exact sequences)
-  const tsQuery = buildTsQuery(parsed);
-
-  // Over-fetch candidates for BM25 re-ranking
-  const fetchLimit = limit * 3;
-
-  // Use SQL normalization to match search query normalization (normalizeArabicText)
-  // This ensures characters like alef wasla (ٱ) match plain alef (ا) in queries
-  const results = await prisma.$queryRaw<
-    {
-      id: number;
-      ayah_number: number;
-      text_uthmani: string;
-      text_plain: string;
-      juz_number: number;
-      page_number: number;
-      surah_number: number;
-      surah_name_arabic: string;
-      surah_name_english: string;
-      rank: number;
-    }[]
-  >`
-    SELECT
-      a.id,
-      a.ayah_number,
-      a.text_uthmani,
-      a.text_plain,
-      a.juz_number,
-      a.page_number,
-      s.number as surah_number,
-      s.name_arabic as surah_name_arabic,
-      s.name_english as surah_name_english,
-      ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}), to_tsquery('simple', ${tsQuery})) as rank
-    FROM ayahs a
-    JOIN surahs s ON a.surah_id = s.id
-    WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}) @@ to_tsquery('simple', ${tsQuery})
-    ORDER BY rank DESC
-    LIMIT ${fetchLimit}
-  `;
-
-  if (results.length === 0) {
-    // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
-    if (fuzzyFallback && parsed.terms.length > 0) {
-      console.log(`No exact ayah matches for "${query}", trying fuzzy search on terms...`);
-      const termsOnlyQuery = parsed.terms.join(' ');
-      return fuzzyKeywordSearchAyahs(termsOnlyQuery, limit, fuzzyThreshold);
-    }
-    return [];
-  }
-
-  // Get all query terms for BM25 scoring
-  const allTerms = [
-    ...parsed.phrases.flatMap((p) => p.split(/\s+/)),
-    ...parsed.terms,
-  ].filter((t) => t.length > 0);
-
-  // Get corpus statistics (cached) - still needed for avgDocumentLength
-  const corpusStats = await getCorpusStats('ayahs');
-
-  // Compute document frequencies from result set (NO database queries!)
-  // This eliminates N separate COUNT queries that were causing 3-4 second delays
-  const termDFs = computeTermDFsFromResults(
-    results,
-    allTerms,
-    (r) => normalizeArabicText(r.text_plain)
-  );
-
-  // Calculate IDF for each term using result-set statistics
-  const resultSetSize = results.length;
-  const termIDFs = new Map<string, number>();
-  for (const [term, df] of termDFs) {
-    termIDFs.set(term, calculateResultSetIDF(df, resultSetSize));
-  }
-
-  // First pass: compute BM25 scores for all results
-  // Use normalized text to match the SQL WHERE clause normalization
-  const withBM25 = results.map((r) => {
-    const normalizedText = normalizeArabicText(r.text_plain);
-    const termFreqs = countTermsInText(normalizedText, allTerms);
-    const docLength = countWords(normalizedText);
-    const bm25Raw = calculateBM25Score(
-      termFreqs,
-      docLength,
-      termIDFs,
-      corpusStats.avgDocumentLength
-    );
-    return { ...r, bm25Raw };
-  });
-
-  // Find max values for normalization
-  // ts_rank is already in r.rank from SQL
-  const maxTsRank = Math.max(...withBM25.map((r) => r.rank), 0.0001);
-  const maxBM25 = Math.max(...withBM25.map((r) => r.bm25Raw), 0.0001);
-
-  // Second pass: compute combined ts_rank + BM25 score
-  // This preserves ts_rank's phrase matching while adding BM25's IDF weighting
-  const scored = withBM25.map((r) => ({
-    ...r,
-    combinedScore: combineTsRankAndBM25(r.rank, r.bm25Raw, maxTsRank, maxBM25),
-  }));
-
-  // Sort by combined score and return top results
-  return scored
-    .sort((a, b) => b.combinedScore - a.combinedScore)
-    .slice(0, limit)
-    .map((r, index) => ({
-      score: r.combinedScore,
-      surahNumber: r.surah_number,
-      ayahNumber: r.ayah_number,
-      surahNameArabic: r.surah_name_arabic,
-      surahNameEnglish: r.surah_name_english,
-      text: r.text_uthmani,
-      juzNumber: r.juz_number,
-      pageNumber: r.page_number,
-      quranComUrl: `https://quran.com/${r.surah_number}?startingVerse=${r.ayah_number}`,
-      keywordRank: index + 1,
-      tsRank: r.rank,
-      bm25Score: r.bm25Raw,
-    }));
-}
-
-/**
- * Fuzzy keyword search for book pages using pg_trgm trigram matching
- * Falls back to similarity matching when exact FTS fails
- */
-async function fuzzyKeywordSearch(
-  query: string,
-  limit: number,
-  bookId: string | null,
-  similarityThreshold: number = 0.3
-): Promise<RankedResult[]> {
-  const normalized = normalizeArabicText(query);
-  if (normalized.trim().length < 2) return [];
-
-  const bookFilter = bookId ? Prisma.sql`AND book_id = ${bookId}` : Prisma.empty;
-
-  const results = await prisma.$queryRaw<
-    {
-      book_id: string;
-      page_number: number;
-      volume_number: number;
-      content_plain: string;
-      similarity_score: number;
-      ts_rank_score: number;
-      combined_score: number;
-    }[]
-  >`
-    SELECT * FROM (
-      SELECT
-        p.book_id,
-        p.page_number,
-        p.volume_number,
-        p.content_plain,
-        similarity(p.content_plain, ${normalized}) as similarity_score,
-        ts_rank(to_tsvector('simple', p.content_plain),
-                plainto_tsquery('simple', ${normalized})) as ts_rank_score,
-        (ts_rank(to_tsvector('simple', p.content_plain),
-                plainto_tsquery('simple', ${normalized})) * 2 +
-         similarity(p.content_plain, ${normalized})) as combined_score
-      FROM pages p
-      WHERE (
-        p.content_plain % ${normalized}
-        OR to_tsvector('simple', p.content_plain) @@ plainto_tsquery('simple', ${normalized})
-      )
-    ) sub
-    WHERE 1=1 ${bookFilter}
-    ORDER BY combined_score DESC
-    LIMIT ${limit}
-  `;
-
-  return results.map((r, index) => ({
-    bookId: r.book_id,
-    pageNumber: r.page_number,
-    volumeNumber: r.volume_number,
-    textSnippet: r.content_plain.slice(0, 300),
-    highlightedSnippet: r.content_plain.slice(0, 300), // No highlighting for fuzzy
-    keywordRank: index + 1,
-    keywordScore: r.combined_score,
-  }));
-}
-
-/**
- * Fuzzy keyword search for Quran ayahs using pg_trgm trigram matching
- */
-async function fuzzyKeywordSearchAyahs(
-  query: string,
-  limit: number,
-  similarityThreshold: number = 0.3
-): Promise<AyahRankedResult[]> {
-  const normalized = normalizeArabicText(query);
-  if (normalized.trim().length < 2) return [];
-
-  // Use SQL normalization for consistent matching with search queries
-  const results = await prisma.$queryRaw<
-    {
-      id: number;
-      ayah_number: number;
-      text_uthmani: string;
-      juz_number: number;
-      page_number: number;
-      surah_number: number;
-      surah_name_arabic: string;
-      surah_name_english: string;
-      similarity_score: number;
-      ts_rank_score: number;
-      combined_score: number;
-    }[]
-  >`
-    SELECT * FROM (
-      SELECT
-        a.id,
-        a.ayah_number,
-        a.text_uthmani,
-        a.juz_number,
-        a.page_number,
-        s.number as surah_number,
-        s.name_arabic as surah_name_arabic,
-        s.name_english as surah_name_english,
-        similarity(${SQL_NORMALIZE_ARABIC_AYAHS}, ${normalized}) as similarity_score,
-        ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}),
-                plainto_tsquery('simple', ${normalized})) as ts_rank_score,
-        (ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}),
-                plainto_tsquery('simple', ${normalized})) * 2 +
-         similarity(${SQL_NORMALIZE_ARABIC_AYAHS}, ${normalized})) as combined_score
-      FROM ayahs a
-      JOIN surahs s ON a.surah_id = s.id
-      WHERE (
-        ${SQL_NORMALIZE_ARABIC_AYAHS} % ${normalized}
-        OR to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_AYAHS}) @@ plainto_tsquery('simple', ${normalized})
-      )
-    ) sub
-    ORDER BY combined_score DESC
-    LIMIT ${limit}
-  `;
-
-  return results.map((r, index) => ({
-    score: r.combined_score,
-    surahNumber: r.surah_number,
-    ayahNumber: r.ayah_number,
-    surahNameArabic: r.surah_name_arabic,
-    surahNameEnglish: r.surah_name_english,
-    text: r.text_uthmani,
-    juzNumber: r.juz_number,
-    pageNumber: r.page_number,
-    quranComUrl: `https://quran.com/${r.surah_number}?startingVerse=${r.ayah_number}`,
-    keywordRank: index + 1,
-  }));
-}
-
-/**
- * Fuzzy keyword search for hadiths using pg_trgm trigram matching
- */
-async function fuzzyKeywordSearchHadiths(
-  query: string,
-  limit: number,
-  similarityThreshold: number = 0.3
-): Promise<HadithRankedResult[]> {
-  const normalized = normalizeArabicText(query);
-  if (normalized.trim().length < 2) return [];
-
-  // Use SQL normalization for consistent matching with search queries
-  const results = await prisma.$queryRaw<
-    {
-      id: number;
-      book_id: number;
-      hadith_number: string;
-      text_arabic: string;
-      chapter_arabic: string | null;
-      chapter_english: string | null;
-      book_number: number;
-      book_name_arabic: string;
-      book_name_english: string;
-      collection_slug: string;
-      collection_name_arabic: string;
-      collection_name_english: string;
-      similarity_score: number;
-      ts_rank_score: number;
-      combined_score: number;
-    }[]
-  >`
-    SELECT * FROM (
-      SELECT
-        h.id,
-        h.book_id,
-        h.hadith_number,
-        h.text_arabic,
-        h.chapter_arabic,
-        h.chapter_english,
-        b.book_number,
-        b.name_arabic as book_name_arabic,
-        b.name_english as book_name_english,
-        c.slug as collection_slug,
-        c.name_arabic as collection_name_arabic,
-        c.name_english as collection_name_english,
-        similarity(${SQL_NORMALIZE_ARABIC_HADITHS}, ${normalized}) as similarity_score,
-        ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}),
-                plainto_tsquery('simple', ${normalized})) as ts_rank_score,
-        (ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}),
-                plainto_tsquery('simple', ${normalized})) * 2 +
-         similarity(${SQL_NORMALIZE_ARABIC_HADITHS}, ${normalized})) as combined_score
-      FROM hadiths h
-      JOIN hadith_books b ON h.book_id = b.id
-      JOIN hadith_collections c ON b.collection_id = c.id
-      WHERE (
-        ${SQL_NORMALIZE_ARABIC_HADITHS} % ${normalized}
-        OR to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_HADITHS}) @@ plainto_tsquery('simple', ${normalized})
-      )
-    ) sub
-    ORDER BY combined_score DESC
-    LIMIT ${limit}
-  `;
-
-  return results.map((r, index) => ({
-    score: r.combined_score,
-    bookId: r.book_id,
-    collectionSlug: r.collection_slug,
-    collectionNameArabic: r.collection_name_arabic,
-    collectionNameEnglish: r.collection_name_english,
-    bookNumber: r.book_number,
-    bookNameArabic: r.book_name_arabic,
-    bookNameEnglish: r.book_name_english,
-    hadithNumber: r.hadith_number,
-    text: r.text_arabic,
-    chapterArabic: r.chapter_arabic,
-    chapterEnglish: r.chapter_english,
-    sunnahComUrl: `https://sunnah.com/${r.collection_slug}:${r.hadith_number.replace(/[A-Z]+$/, '')}`,
-    keywordRank: index + 1,
-  }));
-}
-
-/**
  * Perform semantic search using Qdrant
  * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
@@ -2859,7 +2091,7 @@ async function searchAyahsHybrid(
 
   const [semanticResults, keywordResults] = await Promise.all([
     searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
-    keywordSearchAyahs(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
+    keywordSearchAyahsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
 
   const merged = mergeWithRRFGeneric(
@@ -3003,7 +2235,7 @@ async function searchHadithsHybrid(
   const _t0 = Date.now();
   const [semanticResults, keywordResults] = await Promise.all([
     searchHadithsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
-    keywordSearchHadiths(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
+    keywordSearchHadithsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
   const _t1 = Date.now();
   console.log(`[HadithHybrid] semantic+keyword parallel: ${_t1 - _t0}ms (sem=${semanticResults.length}, kw=${keywordResults.length})`);
@@ -3233,7 +2465,7 @@ export async function GET(request: NextRequest) {
         // Run semantic + keyword for books
         const [bookSemantic, bookKeyword] = await Promise.all([
           semanticSearch(q, perQueryLimit, null, similarityCutoff, qEmbedding).catch(() => []),
-          keywordSearch(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
+          keywordSearchES(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
         ]);
 
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
@@ -3322,24 +2554,25 @@ export async function GET(request: NextRequest) {
         : generateEmbedding(normalizedQuery);
 
       // Start all keyword searches immediately (parallel with embedding)
+      // Using Elasticsearch for fast keyword search
       const _kwBooksStart = Date.now();
       const keywordBooksPromise = (mode === "semantic" || !includeBooks)
         ? Promise.resolve([] as RankedResult[])
-        : keywordSearch(query, fetchLimit, bookId, fuzzyOptions)
+        : keywordSearchES(query, fetchLimit, bookId, fuzzyOptions)
             .then(res => { _timing.keyword.books = Date.now() - _kwBooksStart; return res; })
             .catch(() => [] as RankedResult[]);
 
       const _kwAyahsStart = Date.now();
       const keywordAyahsPromise = (mode === "semantic" || bookId || !includeQuran)
         ? Promise.resolve([] as AyahRankedResult[])
-        : keywordSearchAyahs(query, fetchLimit, fuzzyOptions)
+        : keywordSearchAyahsES(query, fetchLimit, fuzzyOptions)
             .then(res => { _timing.keyword.ayahs = Date.now() - _kwAyahsStart; return res; })
             .catch(() => [] as AyahRankedResult[]);
 
       const _kwHadithsStart = Date.now();
       const keywordHadithsPromise = (mode === "semantic" || bookId || !includeHadith)
         ? Promise.resolve([] as HadithRankedResult[])
-        : keywordSearchHadiths(query, fetchLimit, fuzzyOptions)
+        : keywordSearchHadithsES(query, fetchLimit, fuzzyOptions)
             .then(res => { _timing.keyword.hadiths = Date.now() - _kwHadithsStart; return res; })
             .catch(() => [] as HadithRankedResult[]);
 

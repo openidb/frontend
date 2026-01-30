@@ -15,9 +15,12 @@
     "db:push": "bunx prisma db push",
     "extract:pages": "bun scripts/extract-epub-pages.ts",
     "embed:generate": "bun scripts/generate-embeddings.ts",
-    "embed:authors": "bun scripts/generate-author-embeddings.ts"
+    "embed:authors": "bun scripts/generate-author-embeddings.ts",
+    "es:create-indices": "tsx --require dotenv/config scripts/create-elasticsearch-indices.ts",
+    "es:sync": "tsx --require dotenv/config scripts/sync-elasticsearch.ts"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "8.15.0",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "@qdrant/js-client-rest": "^1.16.2",
@@ -53,7 +56,10 @@
     "eslint-config-next": "^16.0.10",
     "postcss": "^8.0.0",
     "prisma": "^7.1.0",
+    "puppeteer": "^24.36.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   }
 }
