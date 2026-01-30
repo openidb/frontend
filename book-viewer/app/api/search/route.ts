@@ -19,12 +19,13 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import OpenAI from "openai";
 import {
-  calculateIDF,
   calculateBM25Score,
   countTermsInText,
   countWords,
   normalizeBM25Score,
   combineTsRankAndBM25,
+  computeTermDFsFromResults,
+  calculateResultSetIDF,
   type CorpusStats,
 } from "@/lib/bm25";
 import { lookupFamousVerse, lookupFamousHadith, lookupSurah, type VerseReference, type HadithReference, type SurahReference } from "@/lib/famous-sources";
@@ -36,7 +37,7 @@ const openrouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-type RerankerType = "gpt-oss" | "gpt-oss-120b" | "gemini-flash" | "qwen4b" | "jina" | "none";
+type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "none";
 
 // Books to exclude from search results
 // These books contain sources that negatively impact search quality
@@ -201,6 +202,17 @@ interface SearchDebugStats {
   };
   // Reranker timeout notification
   rerankerTimedOut?: boolean;
+  // Performance timing (ms)
+  timing?: {
+    total: number;
+    embedding: number;
+    semantic: { books: number; ayahs: number; hadiths: number };
+    keyword: { books: number; ayahs: number; hadiths: number };
+    merge: number;
+    rerank?: number;
+    translations: number;
+    bookMetadata: number;
+  };
 }
 
 // RRF constant (standard value is 60)
@@ -284,58 +296,6 @@ async function getCorpusStats(tableName: CorpusTable): Promise<CorpusStats> {
   corpusStatsCache.set(tableName, { stats, expires: Date.now() + STATS_CACHE_TTL });
   console.log(`[BM25] Cached corpus stats for ${tableName}: ${stats.totalDocuments} docs, avg ${stats.avgDocumentLength.toFixed(1)} words`);
   return stats;
-}
-
-/**
- * Get document frequency for each term in the corpus
- * Used to calculate IDF scores for BM25
- */
-async function getTermDocumentFrequencies(
-  tableName: CorpusTable,
-  terms: string[]
-): Promise<Map<string, number>> {
-  if (terms.length === 0) return new Map();
-
-  const frequencies = new Map<string, number>();
-
-  // Query document frequency for each term in parallel
-  const queries = terms.map(async (term) => {
-    if (!term || term.length === 0) {
-      frequencies.set(term, 0);
-      return;
-    }
-
-    try {
-      let result: [{ count: bigint }];
-
-      // Use normalized text for ayahs table to match search query normalization
-      if (tableName === 'ayahs') {
-        result = await prisma.$queryRaw<[{ count: bigint }]>`
-          SELECT COUNT(*) as count FROM ayahs
-          WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC}) @@ to_tsquery('simple', ${term})
-        `;
-      } else if (tableName === 'hadiths') {
-        result = await prisma.$queryRaw<[{ count: bigint }]>`
-          SELECT COUNT(*) as count FROM hadiths
-          WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC}) @@ to_tsquery('simple', ${term})
-        `;
-      } else {
-        // pages table uses content_plain without normalization (less Quran-specific text)
-        result = await prisma.$queryRaw<[{ count: bigint }]>`
-          SELECT COUNT(*) as count FROM pages
-          WHERE to_tsvector('simple', content_plain) @@ to_tsquery('simple', ${term})
-        `;
-      }
-
-      frequencies.set(term, Number(result[0].count));
-    } catch {
-      // Term might have invalid characters for tsquery
-      frequencies.set(term, 0);
-    }
-  });
-
-  await Promise.all(queries);
-  return frequencies;
 }
 
 // Minimum character count for semantic search (queries below this skip semantic)
@@ -1043,7 +1003,7 @@ async function rerank<T>(
   }
 
   switch (reranker) {
-    case "gpt-oss":
+    case "gpt-oss-20b":
       return rerankWithGptOss(query, results, getText, topN, "openai/gpt-oss-20b");
     case "gpt-oss-120b":
       return rerankWithGptOss(query, results, getText, topN, "openai/gpt-oss-120b");
@@ -1310,7 +1270,7 @@ RANKING PRIORITY:
 
 Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
-    const model = reranker === "gpt-oss" ? "openai/gpt-oss-20b" :
+    const model = reranker === "gpt-oss-20b" ? "openai/gpt-oss-20b" :
                   reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
                   "google/gemini-2.0-flash-001";
 
@@ -1522,7 +1482,7 @@ CROSS-LINGUAL: Match English queries to Arabic content and vice versa.
 Return ONLY a JSON array of document numbers by relevance (best first):
 [3, 1, 5, 2, 4, ...]`;
 
-    const model = reranker === "gpt-oss" ? "openai/gpt-oss-20b" :
+    const model = reranker === "gpt-oss-20b" ? "openai/gpt-oss-20b" :
                   reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
                   "google/gemini-2.0-flash-001";
 
@@ -1971,16 +1931,22 @@ async function keywordSearch(
     ...parsed.terms,
   ].filter((t) => t.length > 0);
 
-  // Get corpus statistics and term document frequencies for BM25
-  const [corpusStats, termDFs] = await Promise.all([
-    getCorpusStats('pages'),
-    getTermDocumentFrequencies('pages', allTerms),
-  ]);
+  // Get corpus statistics (cached) - still needed for avgDocumentLength
+  const corpusStats = await getCorpusStats('pages');
 
-  // Calculate IDF for each term
+  // Compute document frequencies from result set (NO database queries!)
+  // This eliminates N separate COUNT queries that were causing 3-4 second delays
+  const termDFs = computeTermDFsFromResults(
+    results,
+    allTerms,
+    (r) => r.content_plain
+  );
+
+  // Calculate IDF for each term using result-set statistics
+  const resultSetSize = results.length;
   const termIDFs = new Map<string, number>();
   for (const [term, df] of termDFs) {
-    termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
+    termIDFs.set(term, calculateResultSetIDF(df, resultSetSize));
   }
 
   // First pass: compute BM25 scores for all results
@@ -2106,16 +2072,22 @@ async function keywordSearchHadiths(
     ...parsed.terms,
   ].filter((t) => t.length > 0);
 
-  // Get corpus statistics and term document frequencies for BM25
-  const [corpusStats, termDFs] = await Promise.all([
-    getCorpusStats('hadiths'),
-    getTermDocumentFrequencies('hadiths', allTerms),
-  ]);
+  // Get corpus statistics (cached) - still needed for avgDocumentLength
+  const corpusStats = await getCorpusStats('hadiths');
 
-  // Calculate IDF for each term
+  // Compute document frequencies from result set (NO database queries!)
+  // This eliminates N separate COUNT queries that were causing 3-4 second delays
+  const termDFs = computeTermDFsFromResults(
+    results,
+    allTerms,
+    (r) => normalizeArabicText(r.text_plain)
+  );
+
+  // Calculate IDF for each term using result-set statistics
+  const resultSetSize = results.length;
   const termIDFs = new Map<string, number>();
   for (const [term, df] of termDFs) {
-    termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
+    termIDFs.set(term, calculateResultSetIDF(df, resultSetSize));
   }
 
   // First pass: compute BM25 scores for all results
@@ -2242,16 +2214,22 @@ async function keywordSearchAyahs(
     ...parsed.terms,
   ].filter((t) => t.length > 0);
 
-  // Get corpus statistics and term document frequencies for BM25
-  const [corpusStats, termDFs] = await Promise.all([
-    getCorpusStats('ayahs'),
-    getTermDocumentFrequencies('ayahs', allTerms),
-  ]);
+  // Get corpus statistics (cached) - still needed for avgDocumentLength
+  const corpusStats = await getCorpusStats('ayahs');
 
-  // Calculate IDF for each term
+  // Compute document frequencies from result set (NO database queries!)
+  // This eliminates N separate COUNT queries that were causing 3-4 second delays
+  const termDFs = computeTermDFsFromResults(
+    results,
+    allTerms,
+    (r) => normalizeArabicText(r.text_plain)
+  );
+
+  // Calculate IDF for each term using result-set statistics
+  const resultSetSize = results.length;
   const termIDFs = new Map<string, number>();
   for (const [term, df] of termDFs) {
-    termIDFs.set(term, calculateIDF(df, corpusStats.totalDocuments));
+    termIDFs.set(term, calculateResultSetIDF(df, resultSetSize));
   }
 
   // First pass: compute BM25 scores for all results
@@ -2823,7 +2801,7 @@ async function searchAyahsHybrid(
   limit: number = 10,
   options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
 ): Promise<AyahResult[]> {
-  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -2985,7 +2963,7 @@ async function searchHadithsHybrid(
   limit: number = 10,
   options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
 ): Promise<HadithResult[]> {
-  const { reranker = "qwen4b", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -3041,9 +3019,9 @@ export async function GET(request: NextRequest) {
   const includeHadith = searchParams.get("includeHadith") !== "false";
   const includeBooks = searchParams.get("includeBooks") !== "false";
   const rerankerParam = searchParams.get("reranker") as RerankerType | null;
-  const reranker: RerankerType = rerankerParam && ["gpt-oss", "gpt-oss-120b", "gemini-flash", "qwen4b", "jina", "none"].includes(rerankerParam)
+  const reranker: RerankerType = rerankerParam && ["gpt-oss-20b", "gpt-oss-120b", "gemini-flash", "none"].includes(rerankerParam)
     ? rerankerParam
-    : "gpt-oss-120b"; // Default to gpt-oss-120b for highest quality
+    : "none"; // No reranking by default - RRF fusion is sufficient
   const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.15");
   const preRerankLimit = Math.min(Math.max(parseInt(searchParams.get("preRerankLimit") || "50", 10), 20), 200);
   const postRerankLimit = Math.min(Math.max(parseInt(searchParams.get("postRerankLimit") || "10", 10), 5), 50);
@@ -3101,6 +3079,18 @@ export async function GET(request: NextRequest) {
     let refineQueryStats: ExpandedQueryStats[] = [];
     let totalAboveCutoff = 0;
     let rerankerTimedOut = false; // Track if reranker timed out for user notification
+
+    // Track timing for performance debugging
+    const _timing = {
+      start: Date.now(),
+      embedding: 0,
+      semantic: { books: 0, ayahs: 0, hadiths: 0 },
+      keyword: { books: 0, ayahs: 0, hadiths: 0 },
+      merge: 0,
+      rerank: 0,
+      translations: 0,
+      bookMetadata: 0,
+    };
 
     // Request-scoped cache for book metadata to avoid redundant fetches
     const bookMetadataCache = new Map<string, { id: string; titleArabic: string; author: { nameArabic: string } }>();
@@ -3284,11 +3274,27 @@ export async function GET(request: NextRequest) {
       // Pre-generate embedding ONCE for all semantic searches (saves 200-400ms)
       const normalizedQuery = normalizeArabicText(query);
       const shouldSkipSemantic = normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(query);
+      const _embStart = Date.now();
       const queryEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQuery);
+      _timing.embedding = Date.now() - _embStart;
 
       const hybridOptionsWithEmbedding = { ...hybridOptions, precomputedEmbedding: queryEmbedding };
-      const ayahsPromise = (bookId || !includeQuran) ? Promise.resolve([]) : searchAyahsHybrid(query, 12, hybridOptionsWithEmbedding);
-      const hadithsPromise = (bookId || !includeHadith) ? Promise.resolve([]) : searchHadithsHybrid(query, 15, hybridOptionsWithEmbedding);
+
+      // Track ayah/hadith search timing via wrapped promises
+      const _ayahStart = Date.now();
+      const ayahsPromise = (bookId || !includeQuran)
+        ? Promise.resolve([])
+        : searchAyahsHybrid(query, 12, hybridOptionsWithEmbedding).then(res => {
+            _timing.semantic.ayahs = Date.now() - _ayahStart;
+            return res;
+          });
+      const _hadithStart = Date.now();
+      const hadithsPromise = (bookId || !includeHadith)
+        ? Promise.resolve([])
+        : searchHadithsHybrid(query, 15, hybridOptionsWithEmbedding).then(res => {
+            _timing.semantic.hadiths = Date.now() - _hadithStart;
+            return res;
+          });
 
       // Fetch more results for RRF fusion
       const fetchLimit = mode === "hybrid" ? Math.min(preRerankLimit, 100) : limit;
@@ -3296,24 +3302,41 @@ export async function GET(request: NextRequest) {
       if (!includeBooks) {
         rankedResults = [];
       } else if (mode === "keyword") {
+        const _kwStart = Date.now();
         rankedResults = await keywordSearch(query, limit, bookId, fuzzyOptions);
+        _timing.keyword.books = Date.now() - _kwStart;
       } else if (mode === "semantic") {
+        const _semStart = Date.now();
         rankedResults = await semanticSearch(query, limit, bookId, similarityCutoff, queryEmbedding);
+        _timing.semantic.books = Date.now() - _semStart;
       } else {
         // Hybrid: run both searches, with graceful fallback if semantic fails
-        const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding).catch((err) => {
-          console.warn("Semantic search failed, using keyword only:", err.message);
-          return [] as RankedResult[];
-        });
+        const _semStart = Date.now();
+        const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding)
+          .then(res => {
+            _timing.semantic.books = Date.now() - _semStart;
+            return res;
+          })
+          .catch((err) => {
+            console.warn("Semantic search failed, using keyword only:", err.message);
+            _timing.semantic.books = Date.now() - _semStart;
+            return [] as RankedResult[];
+          });
 
-        const keywordPromise = keywordSearch(query, fetchLimit, bookId, fuzzyOptions);
+        const _kwStart = Date.now();
+        const keywordPromise = keywordSearch(query, fetchLimit, bookId, fuzzyOptions).then(res => {
+          _timing.keyword.books = Date.now() - _kwStart;
+          return res;
+        });
 
         const [semanticResults, keywordResults] = await Promise.all([
           semanticPromise,
           keywordPromise,
         ]);
 
+        const _mergeStart = Date.now();
         const merged = mergeWithRRF(semanticResults, keywordResults, query);
+        _timing.merge = Date.now() - _mergeStart;
 
         // Track total results above cutoff for debug stats
         totalAboveCutoff = merged.length;
@@ -3373,6 +3396,7 @@ export async function GET(request: NextRequest) {
     const authors = authorsRaw;
 
     // Fetch translations for ayahs and hadiths in parallel (saves 50-100ms)
+    const _translationsStart = Date.now();
     const [ayahTranslations, hadithTranslationsRaw] = await Promise.all([
       // Fetch Quran translations if requested
       (quranTranslation && quranTranslation !== "none" && ayahsRaw.length > 0)
@@ -3409,6 +3433,7 @@ export async function GET(request: NextRequest) {
           })
         : Promise.resolve([]),
     ]);
+    _timing.translations = Date.now() - _translationsStart;
 
     // Merge ayah translations into results
     let ayahs = ayahsRaw;
@@ -3469,6 +3494,7 @@ export async function GET(request: NextRequest) {
     const bookIds = [...new Set(rankedResults.map((r) => r.bookId))];
 
     // Fetch book details from PostgreSQL
+    const _bookMetaStart = Date.now();
     const booksRaw = await prisma.book.findMany({
       where: { id: { in: bookIds } },
       select: {
@@ -3495,6 +3521,7 @@ export async function GET(request: NextRequest) {
           : {}),
       },
     });
+    _timing.bookMetadata = Date.now() - _bookMetaStart;
 
     // Add titleTranslated field to each book
     const books = booksRaw.map((book) => {
@@ -3652,6 +3679,17 @@ export async function GET(request: NextRequest) {
       }),
       // Include timeout flag so frontend can show warning to user
       ...(rerankerTimedOut && { rerankerTimedOut: true }),
+      // Performance timing breakdown
+      timing: {
+        total: Date.now() - _timing.start,
+        embedding: _timing.embedding,
+        semantic: _timing.semantic,
+        keyword: _timing.keyword,
+        merge: _timing.merge,
+        ...(_timing.rerank > 0 && { rerank: _timing.rerank }),
+        translations: _timing.translations,
+        bookMetadata: _timing.bookMetadata,
+      },
     };
 
     return NextResponse.json({
