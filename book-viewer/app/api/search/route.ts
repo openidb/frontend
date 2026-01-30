@@ -3305,84 +3305,140 @@ export async function GET(request: NextRequest) {
       // ========================================================================
       // STANDARD SEARCH (non-refine mode)
       // ========================================================================
+      // Optimized flow: Start keyword searches in PARALLEL with embedding generation
+      // This saves ~150ms by not waiting for embedding before starting keyword searches
 
-      // Pre-generate embedding ONCE for all semantic searches (saves 200-400ms)
       const normalizedQuery = normalizeArabicText(query);
       const shouldSkipSemantic = normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(query);
-      const _embStart = Date.now();
-      const queryEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQuery);
-      _timing.embedding = Date.now() - _embStart;
-
-      const hybridOptionsWithEmbedding = { ...hybridOptions, precomputedEmbedding: queryEmbedding };
-
-      // Track ayah/hadith search timing via wrapped promises
-      const _ayahStart = Date.now();
-      const ayahsPromise = (bookId || !includeQuran)
-        ? Promise.resolve([])
-        : searchAyahsHybrid(query, 12, hybridOptionsWithEmbedding).then(res => {
-            _timing.semantic.ayahs = Date.now() - _ayahStart;
-            return res;
-          });
-      const _hadithStart = Date.now();
-      const hadithsPromise = (bookId || !includeHadith)
-        ? Promise.resolve([])
-        : searchHadithsHybrid(query, 15, hybridOptionsWithEmbedding).then(res => {
-            _timing.semantic.hadiths = Date.now() - _hadithStart;
-            return res;
-          });
-
-      // Fetch more results for RRF fusion
       const fetchLimit = mode === "hybrid" ? Math.min(preRerankLimit, 100) : limit;
 
+      // ========================================================================
+      // PHASE 1: Start keyword searches AND embedding generation in parallel
+      // Keyword searches don't need embeddings, so they can start immediately
+      // ========================================================================
+      const _embStart = Date.now();
+      const embeddingPromise = shouldSkipSemantic
+        ? Promise.resolve(undefined)
+        : generateEmbedding(normalizedQuery);
+
+      // Start all keyword searches immediately (parallel with embedding)
+      const _kwBooksStart = Date.now();
+      const keywordBooksPromise = (mode === "semantic" || !includeBooks)
+        ? Promise.resolve([] as RankedResult[])
+        : keywordSearch(query, fetchLimit, bookId, fuzzyOptions)
+            .then(res => { _timing.keyword.books = Date.now() - _kwBooksStart; return res; })
+            .catch(() => [] as RankedResult[]);
+
+      const _kwAyahsStart = Date.now();
+      const keywordAyahsPromise = (mode === "semantic" || bookId || !includeQuran)
+        ? Promise.resolve([] as AyahRankedResult[])
+        : keywordSearchAyahs(query, fetchLimit, fuzzyOptions)
+            .then(res => { _timing.keyword.ayahs = Date.now() - _kwAyahsStart; return res; })
+            .catch(() => [] as AyahRankedResult[]);
+
+      const _kwHadithsStart = Date.now();
+      const keywordHadithsPromise = (mode === "semantic" || bookId || !includeHadith)
+        ? Promise.resolve([] as HadithRankedResult[])
+        : keywordSearchHadiths(query, fetchLimit, fuzzyOptions)
+            .then(res => { _timing.keyword.hadiths = Date.now() - _kwHadithsStart; return res; })
+            .catch(() => [] as HadithRankedResult[]);
+
+      // Wait for embedding (keyword searches continue in background)
+      const queryEmbedding = await embeddingPromise;
+      _timing.embedding = Date.now() - _embStart;
+
+      // ========================================================================
+      // PHASE 2: Start semantic searches (now that embedding is ready)
+      // ========================================================================
+      const _semBooksStart = Date.now();
+      const semanticBooksPromise = (mode === "keyword" || !includeBooks)
+        ? Promise.resolve([] as RankedResult[])
+        : semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding)
+            .then(res => { _timing.semantic.books = Date.now() - _semBooksStart; return res; })
+            .catch(() => [] as RankedResult[]);
+
+      const _semAyahsStart = Date.now();
+      const semanticAyahsPromise = (mode === "keyword" || bookId || !includeQuran)
+        ? Promise.resolve([] as AyahRankedResult[])
+        : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding)
+            .then(res => { _timing.semantic.ayahs = Date.now() - _semAyahsStart; return res; })
+            .catch(() => [] as AyahRankedResult[]);
+
+      const _semHadithsStart = Date.now();
+      const semanticHadithsPromise = (mode === "keyword" || bookId || !includeHadith)
+        ? Promise.resolve([] as HadithRankedResult[])
+        : searchHadithsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding)
+            .then(res => { _timing.semantic.hadiths = Date.now() - _semHadithsStart; return res; })
+            .catch(() => [] as HadithRankedResult[]);
+
+      // ========================================================================
+      // PHASE 3: Wait for all searches and merge results
+      // ========================================================================
+      const [
+        keywordBooksResults,
+        keywordAyahsResults,
+        keywordHadithsResults,
+        semanticBooksResults,
+        semanticAyahsResults,
+        semanticHadithsResults,
+      ] = await Promise.all([
+        keywordBooksPromise,
+        keywordAyahsPromise,
+        keywordHadithsPromise,
+        semanticBooksPromise,
+        semanticAyahsPromise,
+        semanticHadithsPromise,
+      ]);
+
+      // Merge results for each content type
+      const _mergeStart = Date.now();
+
+      // Books: merge semantic + keyword
       if (!includeBooks) {
         rankedResults = [];
       } else if (mode === "keyword") {
-        const _kwStart = Date.now();
-        rankedResults = await keywordSearch(query, limit, bookId, fuzzyOptions);
-        _timing.keyword.books = Date.now() - _kwStart;
+        rankedResults = keywordBooksResults.slice(0, limit);
       } else if (mode === "semantic") {
-        const _semStart = Date.now();
-        rankedResults = await semanticSearch(query, limit, bookId, similarityCutoff, queryEmbedding);
-        _timing.semantic.books = Date.now() - _semStart;
+        rankedResults = semanticBooksResults.slice(0, limit);
       } else {
-        // Hybrid: run both searches, with graceful fallback if semantic fails
-        const _semStart = Date.now();
-        const semanticPromise = semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding)
-          .then(res => {
-            _timing.semantic.books = Date.now() - _semStart;
-            return res;
-          })
-          .catch((err) => {
-            console.warn("Semantic search failed, using keyword only:", err.message);
-            _timing.semantic.books = Date.now() - _semStart;
-            return [] as RankedResult[];
-          });
-
-        const _kwStart = Date.now();
-        const keywordPromise = keywordSearch(query, fetchLimit, bookId, fuzzyOptions).then(res => {
-          _timing.keyword.books = Date.now() - _kwStart;
-          return res;
-        });
-
-        const [semanticResults, keywordResults] = await Promise.all([
-          semanticPromise,
-          keywordPromise,
-        ]);
-
-        const _mergeStart = Date.now();
-        const merged = mergeWithRRF(semanticResults, keywordResults, query);
-        _timing.merge = Date.now() - _mergeStart;
-
-        // Track total results above cutoff for debug stats
+        const merged = mergeWithRRF(semanticBooksResults, keywordBooksResults, query);
         totalAboveCutoff = merged.length;
-
-        // Standard search: Use RRF-fused results directly (no reranking)
-        // RRF fusion provides good quality ranking without the latency cost of reranker API calls
         rankedResults = merged.slice(0, postRerankLimit);
       }
 
-      // Wait for ayah and hadith searches to complete
-      [ayahsRaw, hadiths] = await Promise.all([ayahsPromise, hadithsPromise]);
+      // Ayahs: merge semantic + keyword
+      if (bookId || !includeQuran) {
+        ayahsRaw = [];
+      } else if (mode === "keyword") {
+        ayahsRaw = keywordAyahsResults.slice(0, 12);
+      } else if (mode === "semantic") {
+        ayahsRaw = semanticAyahsResults.slice(0, 12);
+      } else {
+        ayahsRaw = mergeWithRRFGeneric(
+          semanticAyahsResults,
+          keywordAyahsResults,
+          (a) => `${a.surahNumber}-${a.ayahNumber}`,
+          query
+        ).slice(0, 12);
+      }
+
+      // Hadiths: merge semantic + keyword
+      if (bookId || !includeHadith) {
+        hadiths = [];
+      } else if (mode === "keyword") {
+        hadiths = keywordHadithsResults.slice(0, 15);
+      } else if (mode === "semantic") {
+        hadiths = semanticHadithsResults.slice(0, 15);
+      } else {
+        hadiths = mergeWithRRFGeneric(
+          semanticHadithsResults,
+          keywordHadithsResults,
+          (h) => `${h.collectionSlug}-${h.hadithNumber}`,
+          query
+        ).slice(0, 15);
+      }
+
+      _timing.merge = Date.now() - _mergeStart;
     }
 
     // ========================================================================
