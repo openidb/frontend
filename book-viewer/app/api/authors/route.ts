@@ -72,7 +72,8 @@ export async function GET(request: NextRequest) {
       const total = Number(countResult[0].count);
 
       // Transform to expected format
-      const transformedAuthors = authors.map(a => ({
+      type AuthorRow = typeof authors[number];
+      const transformedAuthors = authors.map((a: AuthorRow) => ({
         id: a.id,
         nameArabic: a.name_arabic,
         nameLatin: a.name_latin,

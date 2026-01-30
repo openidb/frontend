@@ -3,15 +3,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: arabic_texts_library
+      POSTGRES_USER: sanad
+      POSTGRES_PASSWORD: sanad123
+      POSTGRES_DB: arabic_library
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /opt/sanad/postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U sanad"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,12 +23,12 @@ services:
       - "6333:6333"
       - "6334:6334"
     volumes:
-      - qdrant_data:/qdrant/storage
+      - /opt/sanad/qdrant-data:/qdrant/storage
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/6333' || exit 1"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -56,7 +56,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/arabic_texts_library
+      DATABASE_URL: postgresql://sanad:sanad123@db:5432/arabic_library
       QDRANT_URL: http://qdrant:6333
       QDRANT_COLLECTION: arabic_texts_pages
       ELASTICSEARCH_URL: http://elasticsearch:9200
@@ -72,6 +72,4 @@ services:
         condition: service_healthy
 
 volumes:
-  postgres_data:
-  qdrant_data:
   elasticsearch_data:

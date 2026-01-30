@@ -99,7 +99,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Add titleTranslated field to each book
-    const books = booksRaw.map((book) => {
+    type BookWithTranslations = (typeof booksRaw)[number] & {
+      titleTranslations?: { title: string }[];
+    };
+    const books = booksRaw.map((book: BookWithTranslations) => {
       const { titleTranslations, ...rest } = book as typeof book & {
         titleTranslations?: { title: string }[];
       };
