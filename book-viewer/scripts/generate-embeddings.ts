@@ -22,6 +22,17 @@ import {
 } from "../lib/embeddings";
 import crypto from "crypto";
 
+// Collections that use /collection/book/hadith format instead of /collection:hadith
+const BOOK_PATH_COLLECTIONS = new Set(["malik", "bulugh"]);
+
+function generateSunnahComUrl(collectionSlug: string, hadithNumber: string, bookNumber: number): string {
+  const cleanHadithNumber = hadithNumber.replace(/[A-Za-z]+$/, "");
+  if (BOOK_PATH_COLLECTIONS.has(collectionSlug)) {
+    return `https://sunnah.com/${collectionSlug}/${bookNumber}/${cleanHadithNumber}`;
+  }
+  return `https://sunnah.com/${collectionSlug}:${cleanHadithNumber}`;
+}
+
 // Parse command line arguments
 const forceFlag = process.argv.includes("--force");
 const pagesOnlyFlag = process.argv.includes("--pages-only");
@@ -567,7 +578,7 @@ async function processHadithBatch(
       textPlain: hadith.textPlain,
       chapterArabic: hadith.chapterArabic,
       chapterEnglish: hadith.chapterEnglish,
-      sunnahComUrl: `https://sunnah.com/${hadith.book.collection.slug}:${hadith.hadithNumber.replace(/[A-Z]+$/, '')}`,
+      sunnahComUrl: generateSunnahComUrl(hadith.book.collection.slug, hadith.hadithNumber, hadith.book.bookNumber),
     },
   }));
 

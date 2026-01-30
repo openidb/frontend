@@ -18,6 +18,37 @@ type QueryDslQueryContainer = estypes.QueryDslQueryContainer;
 type SearchHit<T> = estypes.SearchHit<T>;
 
 // ============================================================================
+// Sunnah.com URL Generation
+// ============================================================================
+
+/**
+ * Collections that use /collection/book/hadith format instead of /collection:hadith
+ * These collections don't support the colon-based URL scheme on sunnah.com
+ */
+const BOOK_PATH_COLLECTIONS = new Set(["malik", "bulugh"]);
+
+/**
+ * Generate the correct sunnah.com URL for a hadith
+ * Most collections use /collection:hadith format, but some use /collection/book/hadith
+ */
+export function generateSunnahComUrl(
+  collectionSlug: string,
+  hadithNumber: string,
+  bookNumber: number
+): string {
+  // Strip letter suffixes (A, R, U, E, etc.) from hadith number
+  const cleanHadithNumber = hadithNumber.replace(/[A-Za-z]+$/, "");
+
+  if (BOOK_PATH_COLLECTIONS.has(collectionSlug)) {
+    // Format: /collection/book/hadith
+    return `https://sunnah.com/${collectionSlug}/${bookNumber}/${cleanHadithNumber}`;
+  }
+
+  // Default format: /collection:hadith
+  return `https://sunnah.com/${collectionSlug}:${cleanHadithNumber}`;
+}
+
+// ============================================================================
 // Type Definitions (matching route.ts interfaces)
 // ============================================================================
 
@@ -571,7 +602,7 @@ function mapHadithHitToResult(
     text: source.text_arabic,
     chapterArabic: source.chapter_arabic,
     chapterEnglish: source.chapter_english,
-    sunnahComUrl: `https://sunnah.com/${source.collection_slug}:${source.hadith_number.replace(/[A-Z]+$/, "")}`,
+    sunnahComUrl: generateSunnahComUrl(source.collection_slug, source.hadith_number, source.book_number),
     keywordRank: index + 1,
     tsRank: hit._score || 0,
     bm25Score: hit._score || 0,

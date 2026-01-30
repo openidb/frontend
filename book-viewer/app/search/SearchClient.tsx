@@ -32,8 +32,7 @@ interface TopResultBreakdown {
   rank: number;
   type: 'book' | 'quran' | 'hadith';
   title: string;
-  tsRank: number | null;
-  bm25Score: number | null;
+  keywordScore: number | null; // BM25 score from Elasticsearch
   semanticScore: number | null;
   finalScore: number;
 }
@@ -59,7 +58,7 @@ interface DebugStats {
   };
   algorithm: {
     fusionWeights: { semantic: number; keyword: number };
-    keywordWeights: { tsRank: number; bm25: number };
+    keywordEngine: string;
     bm25Params: { k1: number; b: number; normK: number };
     rrfK: number;
     embeddingModel: string;
@@ -71,6 +70,16 @@ interface DebugStats {
   refineStats?: {
     expandedQueries: ExpandedQueryStats[];
     originalQueryDocs: number;
+  };
+  timing?: {
+    total: number;
+    embedding: number;
+    semantic: { books: number; ayahs: number; hadiths: number };
+    keyword: { books: number; ayahs: number; hadiths: number };
+    merge: number;
+    rerank?: number;
+    translations: number;
+    bookMetadata: number;
   };
 }
 
@@ -578,6 +587,52 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
               </div>
             </div>
 
+            {/* Performance Timing */}
+            {debugStats.timing && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase">Performance</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Total:</span>{" "}
+                    <span className={`font-mono ${debugStats.timing.total > 2000 ? 'text-red-500' : debugStats.timing.total > 1000 ? 'text-yellow-500' : 'text-green-500'}`}>
+                      {debugStats.timing.total}ms
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Embedding:</span>{" "}
+                    <span className={`font-mono ${debugStats.timing.embedding > 400 ? 'text-red-500' : debugStats.timing.embedding > 200 ? 'text-yellow-500' : ''}`}>
+                      {debugStats.timing.embedding}ms
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Semantic:</span>{" "}
+                    <span className="font-mono">
+                      {Math.max(debugStats.timing.semantic.books, debugStats.timing.semantic.ayahs, debugStats.timing.semantic.hadiths)}ms
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Keyword:</span>{" "}
+                    <span className="font-mono">
+                      {Math.max(debugStats.timing.keyword.books, debugStats.timing.keyword.ayahs, debugStats.timing.keyword.hadiths)}ms
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                  <div><span className="text-muted-foreground">Merge:</span> <span className="font-mono">{debugStats.timing.merge}ms</span></div>
+                  {debugStats.timing.rerank !== undefined && (
+                    <div><span className="text-muted-foreground">Rerank:</span> <span className="font-mono">{debugStats.timing.rerank}ms</span></div>
+                  )}
+                  <div><span className="text-muted-foreground">Translations:</span> <span className="font-mono">{debugStats.timing.translations}ms</span></div>
+                  <div><span className="text-muted-foreground">Book Meta:</span> <span className="font-mono">{debugStats.timing.bookMetadata}ms</span></div>
+                </div>
+                {/* Detailed breakdown */}
+                <div className="text-[10px] font-mono text-muted-foreground bg-muted/30 p-2 rounded">
+                  <div>semantic: books={debugStats.timing.semantic.books}ms ayahs={debugStats.timing.semantic.ayahs}ms hadiths={debugStats.timing.semantic.hadiths}ms</div>
+                  <div>keyword: books={debugStats.timing.keyword.books}ms ayahs={debugStats.timing.keyword.ayahs}ms hadiths={debugStats.timing.keyword.hadiths}ms</div>
+                </div>
+              </div>
+            )}
+
             {/* Algorithm Details */}
             <div className="space-y-3">
               <h4 className="text-xs font-medium text-muted-foreground uppercase flex items-center gap-2">
@@ -598,7 +653,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                 </div>
                 <div>
                   <span className="text-muted-foreground">{t("search.keyword")}:</span>{" "}
-                  ts_rank={debugStats.algorithm.keywordWeights.tsRank}, bm25={debugStats.algorithm.keywordWeights.bm25}
+                  {debugStats.algorithm.keywordEngine} (BM25 k1={debugStats.algorithm.bm25Params.k1}, b={debugStats.algorithm.bm25Params.b})
                 </div>
                 <div>
                   <span className="text-muted-foreground">{t("search.embedding")}:</span>{" "}
@@ -637,8 +692,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                       }`}>{r.type}</span>
                       <span className="truncate max-w-[150px]" dir="auto" title={r.title}>{r.title}</span>
                       <span className="text-muted-foreground ml-auto">
-                        ts={r.tsRank?.toFixed(4) ?? 'N/A'} |
-                        bm25={r.bm25Score?.toFixed(2) ?? 'N/A'} |
+                        kw={r.keywordScore?.toFixed(2) ?? 'N/A'} |
                         sem={r.semanticScore?.toFixed(3) ?? 'N/A'} |
                         final=<span className="text-foreground">{r.finalScore.toFixed(3)}</span>
                       </span>

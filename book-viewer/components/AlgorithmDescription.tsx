@@ -10,7 +10,7 @@ interface AlgorithmStats {
   fusionMethod?: string;
   fusionWeights: { semantic: number; keyword: number };
   confirmationBonusMultiplier?: number;
-  keywordWeights: { tsRank: number; bm25: number };
+  keywordEngine: string; // e.g., "elasticsearch"
   bm25Params: { k1: number; b: number; normK: number };
   rrfK: number;
   embeddingModel: string;
@@ -90,8 +90,8 @@ Direct Match    |             |
     |       SEARCH        SEARCH
     |          |             |
     |          v             v
-    |      [ts_rank       [Qdrant
-    |       + BM25]        Cosine]
+    |    [Elasticsearch   [Qdrant
+    |       BM25]          Cosine]
     |          |             |
     |          +------+------+
     |                 |
@@ -232,6 +232,14 @@ FINAL RESULTS`}
             <p>{t("algorithm.keywordDesc")}</p>
 
             <div className="space-y-2">
+              <p className="font-medium text-foreground">Search Engine</p>
+              <div className="bg-muted/50 p-2 rounded text-[10px]">
+                <p><strong>Engine:</strong> Elasticsearch 8.x with custom Arabic analyzer</p>
+                <p><strong>Scoring:</strong> BM25 (Best Matching 25)</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <p className="font-medium text-foreground">{t("algorithm.idfFormula")}</p>
               <div className="bg-muted/50 p-2 rounded overflow-x-auto">
                 <LaTeX
@@ -259,26 +267,16 @@ FINAL RESULTS`}
             </div>
 
             <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.combinedKeyword")}</p>
-              <div className="bg-muted/50 p-2 rounded overflow-x-auto">
-                <LaTeX
-                  math={`S_{\\text{keyword}} = ${stats.keywordWeights.tsRank} \\cdot \\frac{\\text{ts\\_rank}}{\\max(\\text{ts\\_rank})} + ${stats.keywordWeights.bm25} \\cdot \\frac{\\text{BM25}}{\\max(\\text{BM25})}`}
-                  display
-                />
+              <p className="font-medium text-foreground">Arabic Text Analysis</p>
+              <div className="bg-muted/50 p-2 rounded text-[10px] space-y-1">
+                <p>Custom Elasticsearch analyzer with:</p>
+                <ul className="list-disc list-inside mr-4">
+                  <li>Diacritics removal (tashkeel)</li>
+                  <li>Alef normalization (آأإٱ → ا)</li>
+                  <li>Teh marbuta normalization (ة → ه)</li>
+                  <li>Arabic stopwords filtering</li>
+                </ul>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.tsRankFormula")}</p>
-              <div className="bg-muted/50 p-2 rounded text-[10px] font-mono overflow-x-auto">
-                <p>ts_rank(to_tsvector('simple', text), to_tsquery('simple', query))</p>
-              </div>
-              <p className="text-[10px]">{t("algorithm.tsRankDesc")}</p>
-              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
-                <li>{t("algorithm.tsRankOperatorPhrase")}</li>
-                <li>{t("algorithm.tsRankOperatorOr")}</li>
-                <li>{t("algorithm.tsRankOperatorAnd")}</li>
-              </ul>
             </div>
           </div>
         )}
@@ -377,7 +375,7 @@ FINAL RESULTS`}
               <p className="text-[10px]">{t("algorithm.scenarioKeywordOnlyDesc")}</p>
               <div className="bg-muted/50 p-2 rounded overflow-x-auto">
                 <LaTeX
-                  math={`S_{\\text{fused}} = S_{\\text{keyword}} = ${stats.keywordWeights.tsRank} \\cdot \\hat{S}_{\\text{ts\\_rank}} + ${stats.keywordWeights.bm25} \\cdot \\hat{S}_{\\text{BM25}}`}
+                  math={`S_{\\text{fused}} = \\hat{S}_{\\text{BM25}}`}
                   display
                 />
               </div>
@@ -401,7 +399,7 @@ FINAL RESULTS`}
               <div className="bg-muted/50 p-2 rounded text-[10px] space-y-1">
                 <div><strong>{t("algorithm.fusionMethodLabel")}:</strong> {t("algorithm.confirmationBonusMethod")}</div>
                 <div><strong>{t("algorithm.confirmationBonusLabel")}:</strong> {((stats.confirmationBonusMultiplier ?? 0.15) * 100).toFixed(0)}% {t("algorithm.maxBoost")}</div>
-                <div><strong>{t("algorithm.keywordWeightsLabel")}:</strong> ts_rank={stats.keywordWeights.tsRank}, BM25={stats.keywordWeights.bm25}</div>
+                <div><strong>Keyword Engine:</strong> {stats.keywordEngine} (BM25 k1={stats.bm25Params.k1}, b={stats.bm25Params.b})</div>
               </div>
             </div>
           </div>

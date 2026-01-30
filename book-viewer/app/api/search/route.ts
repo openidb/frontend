@@ -7,7 +7,7 @@
  *     &preRerankLimit={50}&postRerankLimit={10}
  *
  * Performs hybrid search combining:
- * - PostgreSQL full-text search (keyword)
+ * - Elasticsearch BM25 search (keyword)
  * - Qdrant vector search (semantic)
  * - Reciprocal Rank Fusion (RRF) for combining results
  */
@@ -23,6 +23,7 @@ import {
   keywordSearchES,
   keywordSearchHadithsES,
   keywordSearchAyahsES,
+  generateSunnahComUrl,
 } from "@/lib/elasticsearch-search";
 import { lookupFamousVerse, lookupFamousHadith, lookupSurah, type VerseReference, type HadithReference, type SurahReference } from "@/lib/famous-sources";
 import { getCachedExpansion, setCachedExpansion } from "@/lib/query-expansion-cache";
@@ -154,8 +155,7 @@ interface TopResultBreakdown {
   rank: number;
   type: 'book' | 'quran' | 'hadith';
   title: string;
-  tsRank: number | null;
-  bm25Score: number | null;
+  keywordScore: number | null; // BM25 score from Elasticsearch
   semanticScore: number | null;
   finalScore: number;
 }
@@ -181,7 +181,7 @@ interface SearchDebugStats {
     fusionMethod: string;
     fusionWeights: { semantic: number; keyword: number };
     confirmationBonusMultiplier: number;
-    keywordWeights: { tsRank: number; bm25: number };
+    keywordEngine: string; // e.g., "elasticsearch"
     bm25Params: { k1: number; b: number; normK: number };
     rrfK: number;
     embeddingModel: string;
@@ -1089,7 +1089,7 @@ async function fetchHadithsDirect(
           text: hadith.textArabic,
           chapterArabic: hadith.chapterArabic,
           chapterEnglish: hadith.chapterEnglish,
-          sunnahComUrl: `https://sunnah.com/${hadith.book.collection.slug}:${hadith.hadithNumber}`,
+          sunnahComUrl: generateSunnahComUrl(hadith.book.collection.slug, hadith.hadithNumber, hadith.book.bookNumber),
           semanticRank: 1,
         });
       }
@@ -2941,8 +2941,7 @@ export async function GET(request: NextRequest) {
             rank,
             type: 'book' as const,
             title: r.book?.titleArabic?.slice(0, 50) || `Book ${r.bookId}`,
-            tsRank: ranked?.tsRank ?? null,
-            bm25Score: ranked?.bm25Score ?? null,
+            keywordScore: ranked?.bm25Score ?? null, // ES BM25 score
             semanticScore: ranked?.semanticScore ?? null,
             finalScore: r.score,
           };
@@ -2953,8 +2952,7 @@ export async function GET(request: NextRequest) {
             rank,
             type: 'quran' as const,
             title: `${a.surahNameArabic} ${a.ayahNumber}`,
-            tsRank: ranked?.tsRank ?? null,
-            bm25Score: ranked?.bm25Score ?? null,
+            keywordScore: ranked?.bm25Score ?? null, // ES BM25 score
             semanticScore: a.semanticScore ?? null,
             finalScore: a.score,
           };
@@ -2965,8 +2963,7 @@ export async function GET(request: NextRequest) {
             rank,
             type: 'hadith' as const,
             title: `${h.collectionNameArabic} ${h.hadithNumber}`,
-            tsRank: ranked?.tsRank ?? null,
-            bm25Score: ranked?.bm25Score ?? null,
+            keywordScore: ranked?.bm25Score ?? null, // ES BM25 score
             semanticScore: h.semanticScore ?? null,
             finalScore: h.score,
           };
@@ -2986,8 +2983,8 @@ export async function GET(request: NextRequest) {
         fusionMethod: 'confirmation_bonus',
         fusionWeights: { semantic: 1.0, keyword: CONFIRMATION_BONUS_MULTIPLIER },
         confirmationBonusMultiplier: CONFIRMATION_BONUS_MULTIPLIER,
-        keywordWeights: { tsRank: 0.5, bm25: 0.5 },
-        bm25Params: { k1: 1.5, b: 0.75, normK: 5 },
+        keywordEngine: 'elasticsearch',
+        bm25Params: { k1: 1.2, b: 0.75, normK: 5 }, // ES defaults
         rrfK: RRF_K,
         embeddingModel: "Google Gemini embedding-001",
         embeddingDimensions: 3072,
