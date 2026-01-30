@@ -353,6 +353,18 @@ const SQL_NORMALIZE_ARABIC_HADITHS = Prisma.sql`
 `;
 
 /**
+ * SQL expression to normalize Arabic text for pages table (p.content_plain)
+ * Same normalization as hadiths but for pages table alias
+ */
+const SQL_NORMALIZE_ARABIC_PAGES = Prisma.sql`
+  translate(
+    regexp_replace(p.content_plain, E'[\u064B-\u065F\u0670]', '', 'g'),
+    E'\u0622\u0623\u0625\u0671\u0629',
+    E'\u0627\u0627\u0627\u0627\u0647'
+  )
+`;
+
+/**
  * Calculate dynamic similarity threshold based on query characteristics
  * Shorter queries need higher thresholds to filter noise from sparse embeddings
  */
@@ -415,6 +427,16 @@ function formatBookForReranking(result: RankedResult, bookTitle?: string, author
   const meta = bookTitle ? `[BOOK] ${bookTitle}${authorName ? ` - ${authorName}` : ''}, p.${result.pageNumber}` : `[BOOK] Page ${result.pageNumber}`;
   return `${meta}
 ${result.textSnippet.slice(0, 800)}`;
+}
+
+/**
+ * Check if query contains Arabic characters
+ * Used to skip keyword search for non-Arabic queries on Arabic-only text columns
+ */
+function isArabicQuery(query: string): boolean {
+  // Arabic Unicode range: \u0600-\u06FF (Arabic), \u0750-\u077F (Arabic Supplement)
+  const arabicPattern = /[\u0600-\u06FF\u0750-\u077F]/;
+  return arabicPattern.test(query);
 }
 
 /**
@@ -1869,6 +1891,12 @@ async function keywordSearch(
 ): Promise<RankedResult[]> {
   const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
 
+  // Skip keyword search for non-Arabic queries since book content is Arabic-only
+  if (!isArabicQuery(query)) {
+    console.log(`[PageKeyword] skipped: non-Arabic query`);
+    return [];
+  }
+
   // Parse query to extract phrases and terms
   const parsed = parseSearchQuery(query);
 
@@ -1886,6 +1914,7 @@ async function keywordSearch(
   const fetchLimit = limit * 3;
 
   // Execute raw SQL for full-text search with ts_headline for snippets
+  // Use SQL normalization to match the normalized search query (teh marbuta → heh, etc.)
   const results = await prisma.$queryRaw<
     {
       book_id: string;
@@ -1903,13 +1932,13 @@ async function keywordSearch(
       p.content_plain,
       ts_headline(
         'simple',
-        p.content_plain,
+        ${SQL_NORMALIZE_ARABIC_PAGES},
         to_tsquery('simple', ${tsQuery}),
         'StartSel=<mark>, StopSel=</mark>, MaxWords=50, MinWords=20, MaxFragments=1'
       ) as headline,
-      ts_rank(to_tsvector('simple', p.content_plain), to_tsquery('simple', ${tsQuery})) as rank
+      ts_rank(to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_PAGES}), to_tsquery('simple', ${tsQuery})) as rank
     FROM pages p
-    WHERE to_tsvector('simple', p.content_plain) @@ to_tsquery('simple', ${tsQuery})
+    WHERE to_tsvector('simple', ${SQL_NORMALIZE_ARABIC_PAGES}) @@ to_tsquery('simple', ${tsQuery})
     ${bookFilter}
     ORDER BY rank DESC
     LIMIT ${fetchLimit}
@@ -1999,7 +2028,15 @@ async function keywordSearchHadiths(
   limit: number,
   options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
 ): Promise<HadithRankedResult[]> {
+  const _t0 = Date.now();
   const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
+
+  // Skip keyword search for non-Arabic queries since hadith text is Arabic-only
+  // This avoids wasteful FTS (~500ms) and fuzzy fallback (~1500ms) on non-matching text
+  if (!isArabicQuery(query)) {
+    console.log(`[HadithKeyword] skipped: non-Arabic query`);
+    return [];
+  }
 
   // Parse query to extract phrases and terms
   const parsed = parseSearchQuery(query);
@@ -2010,11 +2047,13 @@ async function keywordSearchHadiths(
 
   // Build tsquery with phrase support (<-> for exact sequences)
   const tsQuery = buildTsQuery(parsed);
+  console.log(`[HadithKeyword] parsed:`, JSON.stringify(parsed), `tsQuery: "${tsQuery}"`);
 
   // Over-fetch candidates for BM25 re-ranking
   const fetchLimit = limit * 3;
 
   // Use SQL normalization for consistent matching with search queries
+  const _tFts = Date.now();
   const results = await prisma.$queryRaw<
     {
       id: number;
@@ -2055,13 +2094,17 @@ async function keywordSearchHadiths(
     ORDER BY rank DESC
     LIMIT ${fetchLimit}
   `;
+  console.log(`[HadithKeyword] FTS query: ${Date.now() - _tFts}ms (${results.length} results)`);
 
   if (results.length === 0) {
     // If no results and fuzzy fallback is enabled, try fuzzy search on terms only
     if (fuzzyFallback && parsed.terms.length > 0) {
       console.log(`No exact hadith matches for "${query}", trying fuzzy search on terms...`);
+      const _tFuzzy = Date.now();
       const termsOnlyQuery = parsed.terms.join(' ');
-      return fuzzyKeywordSearchHadiths(termsOnlyQuery, limit, fuzzyThreshold);
+      const fuzzyResults = await fuzzyKeywordSearchHadiths(termsOnlyQuery, limit, fuzzyThreshold);
+      console.log(`[HadithKeyword] Fuzzy fallback: ${Date.now() - _tFuzzy}ms (${fuzzyResults.length} results)`);
+      return fuzzyResults;
     }
     return [];
   }
@@ -2118,7 +2161,7 @@ async function keywordSearchHadiths(
   }));
 
   // Sort by combined score and return top results
-  return scored
+  const finalResults = scored
     .sort((a, b) => b.combinedScore - a.combinedScore)
     .slice(0, limit)
     .map((r, index) => ({
@@ -2139,6 +2182,8 @@ async function keywordSearchHadiths(
       tsRank: r.rank,
       bm25Score: r.bm25Raw,
     }));
+  console.log(`[HadithKeyword] total: ${Date.now() - _t0}ms`);
+  return finalResults;
 }
 
 /**
@@ -2150,6 +2195,12 @@ async function keywordSearchAyahs(
   options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
 ): Promise<AyahRankedResult[]> {
   const { fuzzyFallback = true, fuzzyThreshold = 0.3 } = options;
+
+  // Skip keyword search for non-Arabic queries since Quran text is Arabic-only
+  if (!isArabicQuery(query)) {
+    console.log(`[AyahKeyword] skipped: non-Arabic query`);
+    return [];
+  }
 
   // Parse query to extract phrases and terms
   const parsed = parseSearchQuery(query);
@@ -2850,6 +2901,7 @@ async function searchAyahsHybrid(
  * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
  */
 async function searchHadithsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.25, precomputedEmbedding?: number[]): Promise<HadithRankedResult[]> {
+  const _t0 = Date.now();
   try {
     // Skip semantic search for quoted phrase queries (user wants exact match)
     if (hasQuotedPhrases(query)) {
@@ -2869,50 +2921,26 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
     const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
     // Use precomputed embedding if provided, otherwise generate one
+    const _tEmb = Date.now();
     const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
+    const _tEmbEnd = Date.now();
+    if (!precomputedEmbedding) console.log(`[HadithSemantic] embedding generated: ${_tEmbEnd - _tEmb}ms`);
 
+    const _tQdrant = Date.now();
     const searchResults = await qdrant.search(QDRANT_HADITH_COLLECTION, {
       vector: queryEmbedding,
       limit: limit,
       with_payload: true,
       score_threshold: effectiveCutoff,
     });
+    console.log(`[HadithSemantic] qdrant search: ${Date.now() - _tQdrant}ms (${searchResults.length} results)`);
 
     if (searchResults.length === 0) {
       return [];
     }
 
-    // Get unique collection/book combinations to look up bookIds
-    const bookLookups = new Set<string>();
-    for (const result of searchResults) {
-      const payload = result.payload as { collectionSlug: string; bookNumber: number };
-      bookLookups.add(`${payload.collectionSlug}|${payload.bookNumber}`);
-    }
-
-    // Fetch bookIds from database
-    const bookIdMap = new Map<string, number>();
-    const bookRecords = await prisma.hadithBook.findMany({
-      where: {
-        OR: Array.from(bookLookups).map((key) => {
-          const [slug, bookNum] = key.split("|");
-          return {
-            collection: { slug },
-            bookNumber: parseInt(bookNum, 10),
-          };
-        }),
-      },
-      select: {
-        id: true,
-        bookNumber: true,
-        collection: { select: { slug: true } },
-      },
-    });
-
-    for (const book of bookRecords) {
-      bookIdMap.set(`${book.collection.slug}|${book.bookNumber}`, book.id);
-    }
-
-    return searchResults.map((result, index) => {
+    // bookId is now stored directly in Qdrant payload (no database lookup needed)
+    const mapped = searchResults.map((result, index) => {
       const payload = result.payload as {
         collectionSlug: string;
         collectionNameArabic: string;
@@ -2926,9 +2954,10 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
         chapterArabic: string | null;
         chapterEnglish: string | null;
         sunnahComUrl: string;
+        bookId?: number; // Added via migration
       };
 
-      const bookId = bookIdMap.get(`${payload.collectionSlug}|${payload.bookNumber}`) || 0;
+      const bookId = payload.bookId || 0;
 
       return {
         score: result.score,
@@ -2948,6 +2977,8 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
         semanticRank: index + 1,
       };
     });
+    console.log(`[HadithSemantic] total: ${Date.now() - _t0}ms`);
+    return mapped;
   } catch (err) {
     console.warn("Hadith semantic search failed:", err);
     return [];
@@ -2968,10 +2999,14 @@ async function searchHadithsHybrid(
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
+  // Time each component
+  const _t0 = Date.now();
   const [semanticResults, keywordResults] = await Promise.all([
     searchHadithsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
     keywordSearchHadiths(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
+  const _t1 = Date.now();
+  console.log(`[HadithHybrid] semantic+keyword parallel: ${_t1 - _t0}ms (sem=${semanticResults.length}, kw=${keywordResults.length})`);
 
   const merged = mergeWithRRFGeneric(
     semanticResults,
