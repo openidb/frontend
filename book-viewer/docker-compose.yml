@@ -30,6 +30,23 @@ services:
       timeout: 5s
       retries: 5
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   app:
     build:
       context: .
@@ -42,6 +59,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/arabic_texts_library
       QDRANT_URL: http://qdrant:6333
       QDRANT_COLLECTION: arabic_texts_pages
+      ELASTICSEARCH_URL: http://elasticsearch:9200
       NODE_ENV: production
     volumes:
       - ./public/books:/app/public/books:ro
@@ -50,7 +68,10 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
 
 volumes:
   postgres_data:
   qdrant_data:
+  elasticsearch_data:

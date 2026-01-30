@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
 
-export type RerankerType = "gpt-oss" | "gpt-oss-120b" | "gemini-flash" | "qwen4b" | "jina" | "none";
+export type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "jina" | "qwen4b" | "none";
 
 // Shared type for translation display options
 export type TranslationDisplayOption =
@@ -68,7 +68,7 @@ export const defaultSearchConfig: SearchConfig = {
   includeQuran: true,
   includeHadith: true,
   includeBooks: true,
-  reranker: "gpt-oss-120b",
+  reranker: "none",
   similarityCutoff: 0.15,
   preRerankLimit: 70,
   postRerankLimit: 10,
@@ -84,12 +84,12 @@ export const defaultSearchConfig: SearchConfig = {
 };
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [
-  { value: "gpt-oss-120b", label: "GPT-OSS 120B", description: "Highest quality (Recommended)" },
-  { value: "gemini-flash", label: "Gemini Flash", description: "Fast, high quality reasoning" },
-  { value: "gpt-oss", label: "GPT-OSS 20B", description: "High quality, faster" },
-  { value: "qwen4b", label: "Qwen 4B", description: "Fast, cross-lingual" },
-  { value: "jina", label: "Jina", description: "Fastest" },
-  { value: "none", label: "None", description: "Skip reranking" },
+  { value: "none", label: "None", description: "Fast (default)" },
+  { value: "gpt-oss-120b", label: "OpenAI/GPT-OSS 120B", description: "Highest quality, slower" },
+  { value: "gemini-flash", label: "Gemini Flash", description: "High quality reasoning" },
+  { value: "gpt-oss-20b", label: "OpenAI/GPT-OSS 20B", description: "Good quality" },
+  { value: "jina", label: "Jina Reranker", description: "Fast neural reranker" },
+  { value: "qwen4b", label: "Qwen 4B Embeddings", description: "Embedding-based reranking" },
 ];
 
 interface SearchConfigDropdownProps {
