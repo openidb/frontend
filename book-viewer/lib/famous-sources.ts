@@ -56,7 +56,7 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
   {
     names: [
       // Arabic
-      'الفاتحة', 'سورة الفاتحة', 'ام الكتاب', 'فاتحة الكتاب', 'الحمد',
+      'الفاتحة', 'سورة الفاتحة', 'ام الكتاب', 'فاتحة الكتاب', 'سورة الحمد',
       'السبع المثاني', 'فاتحه',
       // Transliterated
       'al-fatiha', 'al fatiha', 'fatiha', 'surah fatiha', 'alfatiha',
@@ -306,7 +306,7 @@ export const SURAHS: FamousSource<SurahReference>[] = [
   {
     names: [
       'الفاتحة', 'سورة الفاتحة', 'فاتحه',
-      'فاتحة الكتاب', 'ام الكتاب', 'السبع المثاني', 'الحمد',
+      'فاتحة الكتاب', 'ام الكتاب', 'السبع المثاني', 'سورة الحمد',
       'al-fatiha', 'al fatiha', 'fatiha', 'alfatiha', 'fatihah', 'fateha', 'al-fatihah',
       'the opening',
     ],

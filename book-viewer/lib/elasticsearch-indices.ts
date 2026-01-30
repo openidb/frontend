@@ -31,12 +31,14 @@ const arabicAnalyzerSettings = {
       },
       alef_normalize: {
         type: "mapping" as const,
-        // Normalize alef variants to plain alef
+        // Normalize alef variants to plain alef, remove standalone hamza, normalize alef maksura
         mappings: [
           "\u0622=>\u0627", // آ → ا
           "\u0623=>\u0627", // أ → ا
           "\u0625=>\u0627", // إ → ا
           "\u0671=>\u0627", // ٱ → ا (alef wasla)
+          "\u0621=>",       // ء → (remove standalone hamza)
+          "\u0649=>\u064A", // ى → ي (alef maksura to yeh)
         ],
       },
       teh_marbuta_normalize: {
