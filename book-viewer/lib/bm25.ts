@@ -210,3 +210,60 @@ export function rerankWithBM25<T>(
   // Sort by BM25 score descending
   return scored.sort((a, b) => b.bm25Score - a.bm25Score);
 }
+
+/**
+ * Compute document frequencies from a result set instead of corpus-wide COUNT queries.
+ * This eliminates the N separate database queries that cause the bottleneck.
+ *
+ * @param documents - Array of documents with text content
+ * @param terms - Array of search terms
+ * @param getTextField - Function to extract text from document
+ * @returns Map of term -> document frequency (how many documents contain each term)
+ */
+export function computeTermDFsFromResults<T>(
+  documents: T[],
+  terms: string[],
+  getTextField: (doc: T) => string
+): Map<string, number> {
+  const dfs = new Map<string, number>();
+
+  // Initialize all terms with 0
+  for (const term of terms) {
+    dfs.set(term, 0);
+  }
+
+  // Count documents containing each term
+  for (const doc of documents) {
+    const text = getTextField(doc).toLowerCase();
+    for (const term of terms) {
+      const normalizedTerm = term.toLowerCase();
+      if (text.includes(normalizedTerm)) {
+        dfs.set(term, (dfs.get(term) || 0) + 1);
+      }
+    }
+  }
+
+  return dfs;
+}
+
+/**
+ * Calculate IDF using result-set size instead of corpus size.
+ * More appropriate for re-ranking pre-filtered results.
+ *
+ * This is the "Empirical IDF" approach used when corpus-wide statistics are expensive.
+ * Since the FTS query already filtered for relevant documents, computing IDF from
+ * the result set is statistically valid for ranking purposes.
+ *
+ * @param documentFrequency - Number of results containing the term
+ * @param resultSetSize - Total number of results
+ * @returns IDF score (higher for rarer terms within the result set)
+ */
+export function calculateResultSetIDF(
+  documentFrequency: number,
+  resultSetSize: number
+): number {
+  // Prevent division by zero and handle edge cases
+  if (resultSetSize === 0) return 0;
+  // Simple log-based IDF suitable for result-set ranking
+  return Math.log((resultSetSize + 1) / (documentFrequency + 1));
+}
