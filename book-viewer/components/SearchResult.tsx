@@ -62,6 +62,7 @@ export interface HadithResultData {
   chapterArabic: string | null;
   chapterEnglish: string | null;
   sunnahComUrl: string;
+  translation?: string;  // English translation (when requested)
 }
 
 // Unified result type that wraps all content types

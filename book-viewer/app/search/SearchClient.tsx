@@ -41,6 +41,10 @@ interface ExpandedQueryStats {
   query: string;
   weight: number;
   docsRetrieved: number;
+  books: number;
+  ayahs: number;
+  hadiths: number;
+  searchTimeMs: number;
 }
 
 interface DebugStats {
@@ -70,6 +74,19 @@ interface DebugStats {
   refineStats?: {
     expandedQueries: ExpandedQueryStats[];
     originalQueryDocs: number;
+    timing: {
+      queryExpansion: number;
+      parallelSearches: number;
+      merge: number;
+      rerank: number;
+      total: number;
+    };
+    candidates: {
+      totalBeforeMerge: number;
+      afterMerge: { books: number; ayahs: number; hadiths: number };
+      sentToReranker: number;
+    };
+    queryExpansionCached: boolean;
   };
   timing?: {
     total: number;
@@ -105,7 +122,7 @@ interface SearchResponse {
 
 const SEARCH_CONFIG_KEY = "searchConfig";
 const SEARCH_CONFIG_VERSION_KEY = "searchConfigVersion";
-const CURRENT_CONFIG_VERSION = 5; // Bump when changing defaults
+const CURRENT_CONFIG_VERSION = 6; // Bump when changing defaults - v6: ensure translation defaults
 
 interface SearchClientProps {
   bookCount: number;
@@ -142,9 +159,12 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       if (stored) {
         const parsed = JSON.parse(stored);
 
-        // Migration: if version is old, reset reranker to new default
+        // Migration: if version is old, reset to new defaults
         if (storedVersion < CURRENT_CONFIG_VERSION) {
           parsed.reranker = defaultSearchConfig.reranker;
+          parsed.autoTranslation = defaultSearchConfig.autoTranslation;
+          parsed.hadithTranslation = defaultSearchConfig.hadithTranslation;
+          parsed.quranTranslation = defaultSearchConfig.quranTranslation;
           localStorage.setItem(SEARCH_CONFIG_VERSION_KEY, String(CURRENT_CONFIG_VERSION));
           localStorage.setItem(SEARCH_CONFIG_KEY, JSON.stringify({ ...defaultSearchConfig, ...parsed }));
         }
@@ -704,20 +724,65 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
 
             {/* Refine Stats */}
             {debugStats.refineStats && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h4 className="text-xs font-medium text-muted-foreground uppercase">{t("search.refineStats")}</h4>
-                <div className="text-xs">
-                  <span className="text-muted-foreground">Original query docs:</span>{" "}
-                  <span className="font-mono">{debugStats.refineStats.originalQueryDocs}</span>
+
+                {/* Refine Timing Breakdown */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono bg-background rounded p-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Query Expansion:</span>
+                    <span>{debugStats.refineStats.timing.queryExpansion}ms {debugStats.refineStats.queryExpansionCached && <span className="text-green-500">(cached)</span>}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Parallel Searches:</span>
+                    <span>{debugStats.refineStats.timing.parallelSearches}ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Merge & Dedup:</span>
+                    <span>{debugStats.refineStats.timing.merge}ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Reranking:</span>
+                    <span>{debugStats.refineStats.timing.rerank}ms</span>
+                  </div>
+                  <div className="flex justify-between col-span-2 border-t border-border pt-1 mt-1">
+                    <span className="text-muted-foreground font-medium">Refine Total:</span>
+                    <span className="font-medium">{debugStats.refineStats.timing.total}ms</span>
+                  </div>
                 </div>
-                <div className="space-y-1 font-mono text-xs">
-                  {debugStats.refineStats.expandedQueries.map((eq, i) => (
-                    <div key={i} className="flex gap-2 bg-background rounded px-2 py-1">
-                      <span className="text-muted-foreground">w={eq.weight.toFixed(1)}</span>
-                      <span dir="auto" className="truncate flex-1">{eq.query}</span>
-                      <span className="text-muted-foreground">{eq.docsRetrieved} {t("search.docsRetrieved")}</span>
-                    </div>
-                  ))}
+
+                {/* Candidate Pipeline */}
+                <div className="text-xs space-y-1">
+                  <div className="text-muted-foreground mb-1">Candidate Pipeline:</div>
+                  <div className="font-mono flex items-center gap-2 text-[11px]">
+                    <span className="bg-background rounded px-2 py-0.5">{debugStats.refineStats.candidates.totalBeforeMerge} raw</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="bg-background rounded px-2 py-0.5">
+                      {debugStats.refineStats.candidates.afterMerge.books + debugStats.refineStats.candidates.afterMerge.ayahs + debugStats.refineStats.candidates.afterMerge.hadiths} unique
+                      <span className="text-muted-foreground ml-1">
+                        ({debugStats.refineStats.candidates.afterMerge.books}b/{debugStats.refineStats.candidates.afterMerge.ayahs}a/{debugStats.refineStats.candidates.afterMerge.hadiths}h)
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="bg-background rounded px-2 py-0.5">{debugStats.refineStats.candidates.sentToReranker} reranked</span>
+                  </div>
+                </div>
+
+                {/* Expanded Queries */}
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">Expanded Queries ({debugStats.refineStats.expandedQueries.length}):</div>
+                  <div className="space-y-1 font-mono text-xs">
+                    {debugStats.refineStats.expandedQueries.map((eq, i) => (
+                      <div key={i} className="flex gap-2 bg-background rounded px-2 py-1 items-center">
+                        <span className="text-muted-foreground shrink-0">w={eq.weight.toFixed(1)}</span>
+                        <span dir="auto" className="truncate flex-1">{eq.query}</span>
+                        <span className="text-muted-foreground shrink-0 text-[10px]">
+                          {eq.books}b/{eq.ayahs}a/{eq.hadiths}h
+                        </span>
+                        <span className="text-muted-foreground shrink-0">{eq.searchTimeMs}ms</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

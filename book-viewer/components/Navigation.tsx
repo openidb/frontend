@@ -11,13 +11,13 @@ export function DesktopNavigation() {
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
       {/* Logo */}
-      <Link href="/search" className="flex items-center gap-2 mt-2 mb-6 px-2">
-        <svg className="h-8 w-8" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="144" height="144" rx="26" fill="#336F5A"/>
-          <path d="M44 54 Q58 44 72 50 Q86 44 100 54 V98 Q86 90 72 96 Q58 90 44 98 Z" fill="none" stroke="#FFFFFF" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round"/>
-          <path d="M72 50 V96" fill="none" stroke="#FFFFFF" strokeWidth="10" strokeLinecap="round"/>
-        </svg>
-        <span className="text-xl font-bold">Sanad</span>
+      <Link href="/search" className="block mb-4 ps-6">
+        <span
+          className="text-3xl font-bold text-foreground"
+          style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}
+        >
+          سَنَدٌ
+        </span>
       </Link>
 
       <nav className="space-y-2 flex-1">

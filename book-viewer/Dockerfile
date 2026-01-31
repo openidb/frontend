@@ -1,12 +1,12 @@
 # Stage 1: Dependencies
-FROM oven/bun:1 AS deps
+FROM oven/bun:1-debian AS deps
 WORKDIR /app
 COPY package.json bun.lock ./
 COPY prisma ./prisma/
 RUN bun install --frozen-lockfile
 
 # Stage 2: Build
-FROM oven/bun:1 AS builder
+FROM oven/bun:1-debian AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
