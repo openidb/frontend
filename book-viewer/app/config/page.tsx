@@ -307,9 +307,9 @@ export default function ConfigPage() {
           <SliderSetting
             label={t("config.similarity.cutoff")}
             value={config.similarityCutoff}
-            min={0.15}
-            max={0.8}
-            step={0.05}
+            min={0.5}
+            max={0.75}
+            step={0.01}
             onChange={(value) => updateConfig({ similarityCutoff: value })}
             format={(v) => v.toFixed(2)}
             info={t("config.similarity.cutoffInfo")}

@@ -30,9 +30,9 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           }
           // Clean up removed tocDisplay field
           delete parsed.tocDisplay;
-          // Clamp similarityCutoff to valid range (0.15-0.8)
+          // Clamp similarityCutoff to valid range (0.5-0.75)
           if (typeof parsed.similarityCutoff === "number") {
-            parsed.similarityCutoff = Math.max(0.15, Math.min(0.8, parsed.similarityCutoff));
+            parsed.similarityCutoff = Math.max(0.5, Math.min(0.75, parsed.similarityCutoff));
           }
           setConfigState({ ...defaultSearchConfig, ...parsed });
         }
