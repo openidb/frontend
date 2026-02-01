@@ -191,7 +191,7 @@ export default function ConfigPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 pb-20 md:pb-24">
       <div className="max-w-md mx-auto space-y-8">
         <h1 className="text-2xl md:text-3xl font-bold">{t("config.title")}</h1>
 
