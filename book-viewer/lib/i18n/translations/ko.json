@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "임계값",
-      "cutoffInfo": "결과의 최소 유사도 점수. 높은 값은 더 적지만 관련성 높은 결과를 반환합니다."
+      "cutoffInfo": "결과의 최소 유사도 점수. 높은 값은 더 적지만 관련성 높은 결과를 반환합니다.",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "폴백 활성화",

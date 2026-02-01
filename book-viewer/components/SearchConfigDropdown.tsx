@@ -51,6 +51,7 @@ export interface SearchConfig {
   includeBooks: boolean;
   reranker: RerankerType;
   similarityCutoff: number;
+  refineSimilarityCutoff: number; // Similarity threshold for refine/semantic searches
   preRerankLimit: number;
   postRerankLimit: number;
   fuzzyEnabled: boolean;
@@ -70,6 +71,7 @@ export const defaultSearchConfig: SearchConfig = {
   includeBooks: true,
   reranker: "none",
   similarityCutoff: 0.6,
+  refineSimilarityCutoff: 0.25, // Lower threshold for refine searches (LLM filters further)
   preRerankLimit: 70,
   postRerankLimit: 10,
   fuzzyEnabled: true,

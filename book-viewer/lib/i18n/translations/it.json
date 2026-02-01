@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "Soglia",
-      "cutoffInfo": "Punteggio minimo di similarita. Valori piu alti restituiscono meno risultati ma piu rilevanti."
+      "cutoffInfo": "Punteggio minimo di similarita. Valori piu alti restituiscono meno risultati ma piu rilevanti.",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "Abilita fallback",

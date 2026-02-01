@@ -225,6 +225,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         includeBooks: String(config.includeBooks),
         reranker: effectiveReranker,
         similarityCutoff: String(config.similarityCutoff),
+        refineSimilarityCutoff: String(config.refineSimilarityCutoff),
         preRerankLimit: String(config.preRerankLimit),
         postRerankLimit: String(config.postRerankLimit),
         fuzzy: String(config.fuzzyEnabled),

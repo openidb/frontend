@@ -2415,6 +2415,7 @@ export async function GET(request: NextRequest) {
     ? rerankerParam
     : "none"; // No reranking by default - RRF fusion is sufficient
   const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.6");
+  const refineSimilarityCutoff = parseFloat(searchParams.get("refineSimilarityCutoff") || "0.25");
   const preRerankLimit = Math.min(Math.max(parseInt(searchParams.get("preRerankLimit") || "50", 10), 20), 200);
   const postRerankLimit = Math.min(Math.max(parseInt(searchParams.get("postRerankLimit") || "10", 10), 5), 50);
 
@@ -2583,6 +2584,9 @@ export async function GET(request: NextRequest) {
     // Search for authors (independent of refine mode)
     const authorsPromise = bookId ? Promise.resolve([]) : searchAuthors(query, 5);
     const hybridOptions = { ...searchOptions, ...fuzzyOptions };
+    // Refine searches use a separate (typically lower) similarity threshold
+    const refineSearchOptions = { ...searchOptions, similarityCutoff: refineSimilarityCutoff };
+    const refineHybridOptions = { ...refineSearchOptions, ...fuzzyOptions };
 
     // ========================================================================
     // REFINE SEARCH: Query expansion + multi-query retrieval + merge
@@ -2619,19 +2623,19 @@ export async function GET(request: NextRequest) {
 
         // Run semantic + keyword for books
         const [bookSemantic, bookKeyword] = await Promise.all([
-          semanticSearch(q, perQueryLimit, null, similarityCutoff, qEmbedding).catch(() => []),
+          semanticSearch(q, perQueryLimit, null, refineSimilarityCutoff, qEmbedding).catch(() => []),
           keywordSearchES(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
         ]);
 
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
 
         // Run hybrid for ayahs and hadiths (if enabled)
-        const hybridOptionsWithEmbedding = { ...hybridOptions, reranker: "none" as RerankerType, precomputedEmbedding: qEmbedding };
+        const refineHybridOptionsWithEmbedding = { ...refineHybridOptions, reranker: "none" as RerankerType, precomputedEmbedding: qEmbedding };
         const ayahResults = includeQuran
-          ? await searchAyahsHybrid(q, perQueryLimit, hybridOptionsWithEmbedding).catch(() => [])
+          ? await searchAyahsHybrid(q, perQueryLimit, refineHybridOptionsWithEmbedding).catch(() => [])
           : [];
         const hadithResults = includeHadith
-          ? await searchHadithsHybrid(q, perQueryLimit, hybridOptionsWithEmbedding).catch(() => [])
+          ? await searchHadithsHybrid(q, perQueryLimit, refineHybridOptionsWithEmbedding).catch(() => [])
           : [];
 
         perQueryTimings[queryIndex] = Date.now() - _queryStart;

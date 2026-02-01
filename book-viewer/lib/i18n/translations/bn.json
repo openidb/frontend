@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "কাটঅফ",
-      "cutoffInfo": "ফলাফলের জন্য সর্বনিম্ন সাদৃশ্য স্কোর। উচ্চ মান কম কিন্তু বেশি প্রাসঙ্গিক ফলাফল দেয়।"
+      "cutoffInfo": "ফলাফলের জন্য সর্বনিম্ন সাদৃশ্য স্কোর। উচ্চ মান কম কিন্তু বেশি প্রাসঙ্গিক ফলাফল দেয়।",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "ফলব্যাক সক্রিয় করুন",

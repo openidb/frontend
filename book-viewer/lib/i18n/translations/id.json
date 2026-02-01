@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "Batas",
-      "cutoffInfo": "Skor kemiripan minimum. Nilai lebih tinggi menghasilkan lebih sedikit tapi lebih relevan."
+      "cutoffInfo": "Skor kemiripan minimum. Nilai lebih tinggi menghasilkan lebih sedikit tapi lebih relevan.",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "Aktifkan fallback",

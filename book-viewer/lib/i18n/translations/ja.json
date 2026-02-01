@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "カットオフ",
-      "cutoffInfo": "結果の最小類似度スコア。高い値はより少ないが関連性の高い結果を返します。"
+      "cutoffInfo": "結果の最小類似度スコア。高い値はより少ないが関連性の高い結果を返します。",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "フォールバックを有効化",

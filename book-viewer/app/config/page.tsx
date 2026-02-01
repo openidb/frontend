@@ -314,6 +314,16 @@ export default function ConfigPage() {
             format={(v) => v.toFixed(2)}
             info={t("config.similarity.cutoffInfo")}
           />
+          <SliderSetting
+            label={t("config.similarity.refineCutoff")}
+            value={config.refineSimilarityCutoff}
+            min={0.15}
+            max={0.5}
+            step={0.01}
+            onChange={(value) => updateConfig({ refineSimilarityCutoff: value })}
+            format={(v) => v.toFixed(2)}
+            info={t("config.similarity.refineCutoffInfo")}
+          />
         </div>
 
         <Divider />

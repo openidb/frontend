@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "阈值",
-      "cutoffInfo": "结果的最低相似度分数。较高的值返回更少但更相关的结果。"
+      "cutoffInfo": "结果的最低相似度分数。较高的值返回更少但更相关的结果。",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "启用回退",

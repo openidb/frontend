@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "Порог",
-      "cutoffInfo": "Минимальный балл сходства. Более высокие значения возвращают меньше, но более релевантных результатов."
+      "cutoffInfo": "Минимальный балл сходства. Более высокие значения возвращают меньше, но более релевантных результатов.",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "Включить запасной вариант",

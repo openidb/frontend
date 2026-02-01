@@ -238,7 +238,9 @@
     },
       "similarity": {
       "cutoff": "کٹ آف",
-      "cutoffInfo": "نتائج کے لیے کم از کم مماثلت کا سکور۔ زیادہ قدریں کم لیکن زیادہ متعلقہ نتائج دیتی ہیں۔"
+      "cutoffInfo": "نتائج کے لیے کم از کم مماثلت کا سکور۔ زیادہ قدریں کم لیکن زیادہ متعلقہ نتائج دیتی ہیں۔",
+      "refineCutoff": "Refine Cutoff",
+      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
     },
     "fuzzy": {
       "enableFallback": "فال بیک فعال کریں",
