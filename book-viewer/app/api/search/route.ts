@@ -1442,8 +1442,17 @@ RANKING PRIORITY:
 
 CROSS-LINGUAL: Match English queries to Arabic content and vice versa.
 
-Return ONLY a JSON array of document numbers by relevance (best first):
-[3, 1, 5, 2, 4, ...]`;
+FILTERING: Only include documents that actually address the query topic.
+EXCLUDE documents that:
+- Have no meaningful connection to the query topic
+- Appear in results due to keyword coincidence but address a completely different subject
+- Would not help answer or inform the user's query
+
+IMPORTANT: If the query is about a topic completely unrelated to Islamic texts (e.g., sports, celebrities, modern technology, entertainment), return an EMPTY array [] since none of the documents would be relevant.
+
+Return ONLY a JSON array of document numbers by relevance (best first).
+If no documents are relevant, return an empty array []:
+[3, 1, 5, 2, ...]`;
 
     const model = reranker === "gpt-oss-20b" ? "openai/gpt-oss-20b" :
                   reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
@@ -1475,8 +1484,8 @@ Return ONLY a JSON array of document numbers by relevance (best first):
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "[]";
 
-    // Parse ranking from response
-    const match = content.match(/\[[\d,\s]+\]/);
+    // Parse ranking from response (also matches empty array [])
+    const match = content.match(/\[[\d,\s]*\]/);
     if (!match) {
       console.warn("[Unified Refine Rerank] Invalid format, keeping original order");
       return {
@@ -1513,48 +1522,8 @@ Return ONLY a JSON array of document numbers by relevance (best first):
       }
     }
 
-    // Fill remaining slots with unreranked candidates (in case LLM ranking was incomplete)
-    const usedBookIndices = new Set(rerankedBooks.map((_, i) => {
-      const found = ranking.find(r => {
-        const doc = unified[r - 1];
-        return doc?.type === 'book' && doc.index === i;
-      });
-      return found ? unified[(found as number) - 1]?.index : -1;
-    }));
-
-    for (let i = 0; i < books.length && rerankedBooks.length < limits.books; i++) {
-      if (!usedBookIndices.has(i)) {
-        rerankedBooks.push(books[i]);
-      }
-    }
-
-    const usedAyahIndices = new Set(rerankedAyahs.map((_, i) => {
-      const found = ranking.find(r => {
-        const doc = unified[r - 1];
-        return doc?.type === 'ayah' && doc.index === i;
-      });
-      return found ? unified[(found as number) - 1]?.index : -1;
-    }));
-
-    for (let i = 0; i < ayahs.length && rerankedAyahs.length < limits.ayahs; i++) {
-      if (!usedAyahIndices.has(i)) {
-        rerankedAyahs.push({ ...ayahs[i], rank: rerankedAyahs.length + 1 });
-      }
-    }
-
-    const usedHadithIndices = new Set(rerankedHadiths.map((_, i) => {
-      const found = ranking.find(r => {
-        const doc = unified[r - 1];
-        return doc?.type === 'hadith' && doc.index === i;
-      });
-      return found ? unified[(found as number) - 1]?.index : -1;
-    }));
-
-    for (let i = 0; i < hadiths.length && rerankedHadiths.length < limits.hadiths; i++) {
-      if (!usedHadithIndices.has(i)) {
-        rerankedHadiths.push({ ...hadiths[i], rank: rerankedHadiths.length + 1 });
-      }
-    }
+    // LLM-based relevance filtering: only return results the LLM deemed relevant
+    // (no longer filling remaining slots with unreranked candidates)
 
     console.log(`[Unified Refine Rerank] Reranked ${unified.length} docs → ${rerankedBooks.length} books, ${rerankedAyahs.length} ayahs, ${rerankedHadiths.length} hadiths`);
     return { books: rerankedBooks, ayahs: rerankedAyahs, hadiths: rerankedHadiths, timedOut: false };
