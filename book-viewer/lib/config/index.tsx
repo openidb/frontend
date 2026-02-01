@@ -34,9 +34,9 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           if (typeof parsed.similarityCutoff === "number") {
             parsed.similarityCutoff = Math.max(0.5, Math.min(0.75, parsed.similarityCutoff));
           }
-          // Clamp refineSimilarityCutoff to valid range (0.15-0.5)
+          // Clamp refineSimilarityCutoff to valid range (0.15-0.65)
           if (typeof parsed.refineSimilarityCutoff === "number") {
-            parsed.refineSimilarityCutoff = Math.max(0.15, Math.min(0.5, parsed.refineSimilarityCutoff));
+            parsed.refineSimilarityCutoff = Math.max(0.15, Math.min(0.65, parsed.refineSimilarityCutoff));
           }
           setConfigState({ ...defaultSearchConfig, ...parsed });
         }
