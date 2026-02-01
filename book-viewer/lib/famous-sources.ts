@@ -1229,13 +1229,29 @@ export function lookupFamousHadith(query: string): HadithReference[] {
  * 1. Exact matches (highest priority)
  * 2. Contains matches
  * 3. Fuzzy matches (for typos)
+ *
+ * For multi-word queries, requires "surah/سورة" prefix to avoid false positives.
+ * Single-word queries match directly (e.g., "kahf" → Al-Kahf).
  */
 export function lookupSurah(query: string): SurahReference | undefined {
   const normalized = normalize(query);
 
-  // Strip "surah" / "سورة" prefix
+  // Check if query has "surah" prefix (Arabic or transliterated)
+  const surahPrefixPattern = /^(سوره?|surah|sura|sourate?)\s+/i;
+  const hasSurahPrefix = surahPrefixPattern.test(normalized);
+
+  // Strip "surah" / "سورة" prefix for matching
   const stripped = normalized
     .replace(/^(سوره?|surah|sura|sourate?)\s*/i, '');
+
+  // Count words in stripped query
+  const wordCount = stripped.split(/\s+/).filter(w => w.length > 0).length;
+
+  // For multi-word queries without "surah" prefix, don't match surahs
+  // This prevents "fatiha tafsir" from matching Surah Al-Fatiha
+  if (wordCount > 1 && !hasSurahPrefix) {
+    return undefined;
+  }
 
   // Pass 1: Exact matches only
   for (const surah of SURAHS) {
