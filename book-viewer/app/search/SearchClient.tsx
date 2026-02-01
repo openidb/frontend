@@ -211,9 +211,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       // For quick search (typing), use reranker=none and no refine
       // For refine search (button click), use refine=true and the selected reranker
       const effectiveReranker = isRefineSearch ? config.reranker : "none";
-      // Compute effective book title language for API
+      // Compute effective book title language for API (auto defaults to transliteration)
       const effectiveBookTitleLang = config.autoTranslation
-        ? (locale === "ar" ? "transliteration" : locale)
+        ? "transliteration"
         : config.bookTitleDisplay;
 
       const params = new URLSearchParams({
@@ -826,9 +826,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
               } else {
                 key = `book-${result.data.bookId}-${result.data.pageNumber}-${index}`;
               }
-              // Compute effective book title display based on autoTranslation setting
+              // Compute effective book title display (auto defaults to transliteration)
               const effectiveBookTitleDisplay: TranslationDisplayOption = searchConfig.autoTranslation
-                ? (locale === "ar" ? "transliteration" : locale as TranslationDisplayOption)
+                ? "transliteration"
                 : searchConfig.bookTitleDisplay;
               return <UnifiedSearchResult key={key} result={result} bookTitleDisplay={effectiveBookTitleDisplay} />;
             })}

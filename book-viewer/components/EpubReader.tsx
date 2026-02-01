@@ -80,13 +80,13 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
     }
   }, []);
 
-  // Get effective display settings (auto uses UI locale)
+  // Get effective display settings (auto defaults to transliteration)
   const effectiveBookTitleDisplay = useMemo(() => {
     if (autoTranslation) {
-      return locale === "ar" ? "transliteration" : (locale as TranslationDisplayOption);
+      return "transliteration";
     }
     return bookTitleDisplay;
-  }, [autoTranslation, bookTitleDisplay, locale]);
+  }, [autoTranslation, bookTitleDisplay]);
 
   // Fetch translations client-side when language settings change
   useEffect(() => {

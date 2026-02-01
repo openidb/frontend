@@ -286,14 +286,14 @@ export default function ConfigPage() {
             info={t("config.translations.bookTitleDisplayInfo")}
           >
             <Select
-              value={config.autoTranslation ? (locale === "ar" ? "transliteration" : locale) : config.bookTitleDisplay}
+              value={config.autoTranslation ? "transliteration" : config.bookTitleDisplay}
               onValueChange={(value) => updateConfig({ bookTitleDisplay: value as TranslationDisplayOption, autoTranslation: false })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue>
                   {(() => {
                     const effectiveCode = config.autoTranslation
-                      ? (locale === "ar" ? "transliteration" : locale)
+                      ? "transliteration"
                       : config.bookTitleDisplay;
                     return t(`config.translationDisplay.options.${effectiveCode}`);
                   })()}

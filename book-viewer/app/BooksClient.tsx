@@ -69,14 +69,13 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
   // Extract config values
   const { showPublicationDates, bookTitleDisplay, autoTranslation } = config;
 
-  // Get effective book title display setting (auto uses UI locale)
+  // Get effective book title display setting (auto defaults to transliteration)
   const effectiveBookTitleDisplay = useMemo(() => {
     if (autoTranslation) {
-      // Use UI locale, fall back to transliteration for Arabic
-      return locale === "ar" ? "transliteration" : (locale as TranslationDisplayOption);
+      return "transliteration";
     }
     return bookTitleDisplay;
-  }, [autoTranslation, bookTitleDisplay, locale]);
+  }, [autoTranslation, bookTitleDisplay]);
 
   // Fetch books with translations when display setting changes to a language
   useEffect(() => {
