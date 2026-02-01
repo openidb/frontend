@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { qdrant, QDRANT_COLLECTION, QDRANT_AUTHORS_COLLECTION, QDRANT_QURAN_COLLECTION, QDRANT_HADITH_COLLECTION } from "@/lib/qdrant";
+import { qdrant, QDRANT_COLLECTION, QDRANT_AUTHORS_COLLECTION, QDRANT_QURAN_COLLECTION, QDRANT_QURAN_ENRICHED_COLLECTION, QDRANT_HADITH_COLLECTION } from "@/lib/qdrant";
 import { generateEmbedding, normalizeArabicText } from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -147,6 +147,23 @@ interface AyahRankedResult extends AyahResult {
   bm25Score?: number;
 }
 
+/**
+ * Metadata about which Quran collection was used for semantic search
+ */
+interface AyahSearchMeta {
+  collection: string;
+  usedFallback: boolean;
+  tafsirSource?: string;
+}
+
+/**
+ * Result of searchAyahsSemantic including metadata
+ */
+interface AyahSemanticSearchResult {
+  results: AyahRankedResult[];
+  meta: AyahSearchMeta;
+}
+
 // ============================================================================
 // Debug Stats Interface (for search analytics panel)
 // ============================================================================
@@ -194,6 +211,10 @@ interface SearchDebugStats {
     embeddingDimensions: number;
     rerankerModel: string | null;
     queryExpansionModel: string | null;
+    // Quran embedding collection info
+    quranCollection: string;
+    quranCollectionFallback: boolean;
+    tafsirSource?: string;
   };
   // Top results breakdown
   topResultsBreakdown: TopResultBreakdown[];
@@ -2049,15 +2070,26 @@ async function searchAuthors(query: string, limit: number = 5): Promise<AuthorRe
 }
 
 /**
- * Search for Quran ayahs using semantic search (returns ranked results)
+ * Search for Quran ayahs using semantic search (returns ranked results with metadata)
+ * Uses tafsir-enriched embeddings by default for better retrieval of short ayahs.
+ * Falls back to original collection if enriched collection is unavailable.
  * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
+ * @param useEnriched - Whether to use tafsir-enriched embeddings (default: true)
+ * @returns Results array and metadata about which collection was used
  */
-async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28, precomputedEmbedding?: number[]): Promise<AyahRankedResult[]> {
+async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28, precomputedEmbedding?: number[], useEnriched: boolean = true): Promise<AyahSemanticSearchResult> {
+  // Default metadata for early returns
+  const defaultMeta: AyahSearchMeta = {
+    collection: useEnriched ? QDRANT_QURAN_ENRICHED_COLLECTION : QDRANT_QURAN_COLLECTION,
+    usedFallback: false,
+    tafsirSource: useEnriched ? "jalalayn" : undefined,
+  };
+
   try {
     // Skip semantic search for quoted phrase queries (user wants exact match)
     if (hasQuotedPhrases(query)) {
       console.log(`Query "${query}" contains quotes, skipping ayah semantic search`);
-      return [];
+      return { results: [], meta: defaultMeta };
     }
 
     const normalizedQuery = normalizeArabicText(query);
@@ -2065,28 +2097,69 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
     // Skip semantic search for very short queries (high noise risk)
     if (normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC) {
       console.log(`Query "${query}" too short for ayah semantic search, skipping`);
-      return [];
+      return { results: [], meta: defaultMeta };
     }
 
     // Apply dynamic threshold based on query length
     const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
-    console.log(`[searchAyahsSemantic] Starting search for: "${query.substring(0, 50)}..."`);
-    console.log(`[searchAyahsSemantic] effectiveCutoff=${effectiveCutoff}, limit=${limit}`);
-
     // Use precomputed embedding if provided, otherwise generate one
     const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
 
-    const searchResults = await qdrant.search(QDRANT_QURAN_COLLECTION, {
-      vector: queryEmbedding,
-      limit: limit,
-      with_payload: true,
-      score_threshold: effectiveCutoff,
-    });
+    // Try enriched collection first, fall back to original if it fails or returns no results
+    let collection = useEnriched ? QDRANT_QURAN_ENRICHED_COLLECTION : QDRANT_QURAN_COLLECTION;
+    let usedFallback = false;
+    let searchResults;
 
-    console.log(`[searchAyahsSemantic] Qdrant returned ${searchResults.length} results`);
+    try {
+      console.log(`[searchAyahsSemantic] Searching ${collection} for: "${query.substring(0, 50)}..."`);
+      console.log(`[searchAyahsSemantic] effectiveCutoff=${effectiveCutoff}, limit=${limit}`);
 
-    return searchResults.map((result, index) => {
+      searchResults = await qdrant.search(collection, {
+        vector: queryEmbedding,
+        limit: limit,
+        with_payload: true,
+        score_threshold: effectiveCutoff,
+      });
+
+      // Fall back to original collection if enriched returns no results
+      if (useEnriched && searchResults.length === 0) {
+        console.log(`[searchAyahsSemantic] Enriched collection empty, falling back to original`);
+        collection = QDRANT_QURAN_COLLECTION;
+        usedFallback = true;
+        searchResults = await qdrant.search(collection, {
+          vector: queryEmbedding,
+          limit: limit,
+          with_payload: true,
+          score_threshold: effectiveCutoff,
+        });
+      }
+    } catch (enrichedErr) {
+      // If enriched collection doesn't exist, fall back to original
+      if (useEnriched) {
+        console.log(`[searchAyahsSemantic] Enriched collection unavailable, using original`);
+        collection = QDRANT_QURAN_COLLECTION;
+        usedFallback = true;
+        searchResults = await qdrant.search(collection, {
+          vector: queryEmbedding,
+          limit: limit,
+          with_payload: true,
+          score_threshold: effectiveCutoff,
+        });
+      } else {
+        throw enrichedErr;
+      }
+    }
+
+    console.log(`[searchAyahsSemantic] ${collection} returned ${searchResults.length} results`);
+
+    const meta: AyahSearchMeta = {
+      collection,
+      usedFallback,
+      tafsirSource: collection === QDRANT_QURAN_ENRICHED_COLLECTION ? "jalalayn" : undefined,
+    };
+
+    const results = searchResults.map((result, index) => {
       const payload = result.payload as {
         surahNumber: number;
         ayahNumber: number;
@@ -2096,6 +2169,7 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
         textPlain: string;
         juzNumber: number;
         pageNumber: number;
+        tafsirSource?: string; // Present in enriched collection
       };
 
       return {
@@ -2112,9 +2186,11 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
         semanticRank: index + 1,
       };
     });
+
+    return { results, meta };
   } catch (err) {
     console.error("[searchAyahsSemantic] ERROR:", err);
-    return [];
+    return { results: [], meta: { collection: QDRANT_QURAN_COLLECTION, usedFallback: true } };
   }
 }
 
@@ -2132,13 +2208,14 @@ async function searchAyahsHybrid(
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
-  const [semanticResults, keywordResults] = await Promise.all([
-    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
+  const defaultMeta: AyahSearchMeta = { collection: QDRANT_QURAN_ENRICHED_COLLECTION, usedFallback: false, tafsirSource: "jalalayn" };
+  const [semanticSearchResult, keywordResults] = await Promise.all([
+    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
     keywordSearchAyahsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
 
   const merged = mergeWithRRFGeneric(
-    semanticResults,
+    semanticSearchResult.results,
     keywordResults,
     (a) => `${a.surahNumber}-${a.ayahNumber}`,
     query
@@ -2207,6 +2284,9 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
       limit: limit,
       with_payload: true,
       score_threshold: effectiveCutoff,
+      filter: {
+        must_not: [{ key: "isChainVariation", match: { value: true } }],
+      },
     });
     console.log(`[HadithSemantic] qdrant search: ${Date.now() - _tQdrant}ms (${searchResults.length} results)`);
 
@@ -2417,6 +2497,13 @@ export async function GET(request: NextRequest) {
     let expandedQueries: { query: string; reason: string }[] = [];
     let ayahsRaw: AyahResult[] = [];
     let hadiths: HadithResult[] = [];
+
+    // Track Quran collection metadata for debug stats
+    let ayahSearchMeta: AyahSearchMeta = {
+      collection: QDRANT_QURAN_ENRICHED_COLLECTION,
+      usedFallback: false,
+      tafsirSource: "jalalayn",
+    };
 
     // Track stats for debug panel
     let refineQueryStats: ExpandedQueryStats[] = [];
@@ -2719,18 +2806,19 @@ export async function GET(request: NextRequest) {
             .catch(() => [] as RankedResult[]);
 
       const _semAyahsStart = Date.now();
+      const defaultAyahMeta: AyahSearchMeta = { collection: QDRANT_QURAN_ENRICHED_COLLECTION, usedFallback: false, tafsirSource: "jalalayn" };
       const semanticAyahsPromise = (mode === "keyword" || bookId || !includeQuran)
-        ? Promise.resolve([] as AyahRankedResult[])
+        ? Promise.resolve({ results: [] as AyahRankedResult[], meta: defaultAyahMeta })
         : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding)
             .then(res => {
               _timing.semantic.ayahs = Date.now() - _semAyahsStart;
-              console.log(`[SemanticAyahs] returned ${res.length} results`);
+              console.log(`[SemanticAyahs] returned ${res.results.length} results from ${res.meta.collection}`);
               return res;
             })
             .catch((err) => {
               console.error("[SemanticAyahs] ERROR:", err);
               _timing.semantic.ayahs = Date.now() - _semAyahsStart;
-              return [] as AyahRankedResult[];
+              return { results: [] as AyahRankedResult[], meta: defaultAyahMeta };
             });
 
       const _semHadithsStart = Date.now();
@@ -2748,7 +2836,7 @@ export async function GET(request: NextRequest) {
         keywordAyahsResults,
         keywordHadithsResults,
         semanticBooksResults,
-        semanticAyahsResults,
+        semanticAyahsSearchResult,
         semanticHadithsResults,
       ] = await Promise.all([
         keywordBooksPromise,
@@ -2758,6 +2846,10 @@ export async function GET(request: NextRequest) {
         semanticAyahsPromise,
         semanticHadithsPromise,
       ]);
+
+      // Extract results and metadata from semantic ayah search
+      const semanticAyahsResults = semanticAyahsSearchResult.results;
+      ayahSearchMeta = semanticAyahsSearchResult.meta;
 
       // Merge results for each content type
       const _mergeStart = Date.now();
@@ -3138,6 +3230,10 @@ export async function GET(request: NextRequest) {
         embeddingDimensions: 3072,
         rerankerModel: reranker === 'none' ? null : reranker,
         queryExpansionModel: refine ? 'google/gemini-3-flash-preview' : null,
+        // Quran embedding collection info
+        quranCollection: ayahSearchMeta.collection,
+        quranCollectionFallback: ayahSearchMeta.usedFallback,
+        tafsirSource: ayahSearchMeta.tafsirSource,
       },
       topResultsBreakdown: top5Breakdown,
       ...(refine && refineQueryStats.length > 0 && {

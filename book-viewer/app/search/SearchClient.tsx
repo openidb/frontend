@@ -69,6 +69,10 @@ interface DebugStats {
     embeddingDimensions: number;
     rerankerModel: string | null;
     queryExpansionModel: string | null;
+    // Quran embedding collection info
+    quranCollection: string;
+    quranCollectionFallback: boolean;
+    tafsirSource?: string;
   };
   topResultsBreakdown: TopResultBreakdown[];
   refineStats?: {
@@ -687,6 +691,24 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                   <div>
                     <span className="text-muted-foreground">{t("search.expansionModel")}:</span>{" "}
                     {debugStats.algorithm.queryExpansionModel}
+                  </div>
+                )}
+                {debugStats.algorithm.quranCollection && (
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span className="text-muted-foreground">Quran Embeddings:</span>{" "}
+                    {debugStats.algorithm.quranCollection.includes("enriched") ? (
+                      <>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-600">tafsir-enriched</span>
+                        {debugStats.algorithm.tafsirSource && (
+                          <span className="text-muted-foreground">(via {debugStats.algorithm.tafsirSource === "jalalayn" ? "Al-Jalalayn tafsir" : debugStats.algorithm.tafsirSource})</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-600">original ayah text</span>
+                    )}
+                    {debugStats.algorithm.quranCollectionFallback && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-600">fallback</span>
+                    )}
                   </div>
                 )}
               </div>

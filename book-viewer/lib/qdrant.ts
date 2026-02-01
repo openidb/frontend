@@ -29,9 +29,21 @@ export const QDRANT_COLLECTION =
 export const QDRANT_AUTHORS_COLLECTION =
   process.env.QDRANT_AUTHORS_COLLECTION || "arabic_texts_authors";
 
-// Collection name for Quran ayahs
+/**
+ * Original Quran ayahs collection - DEPRECATED
+ * Kept for fallback only when enriched collection is unavailable.
+ * @deprecated Use QDRANT_QURAN_ENRICHED_COLLECTION instead for new searches.
+ */
 export const QDRANT_QURAN_COLLECTION =
   process.env.QDRANT_QURAN_COLLECTION || "quran_ayahs";
+
+/**
+ * Tafsir-enriched Quran ayahs collection (default for searches)
+ * Embeddings generated from Al-Jalalayn tafsir for better semantic retrieval
+ * of short ayahs. Payload still contains original ayah text for display.
+ */
+export const QDRANT_QURAN_ENRICHED_COLLECTION =
+  process.env.QDRANT_QURAN_ENRICHED_COLLECTION || "quran_ayahs_enriched";
 
 // Collection name for Hadith
 export const QDRANT_HADITH_COLLECTION =

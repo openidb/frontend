@@ -333,6 +333,19 @@ model AyahTranslation {
   @@map("ayah_translations")
 }
 
+model AyahTafsir {
+  id          Int    @id @default(autoincrement())
+  surahNumber Int    @map("surah_number")
+  ayahNumber  Int    @map("ayah_number")
+  source      String // "jalalayn", "saadi", "ibn_kathir", etc.
+  text        String @db.Text
+
+  @@unique([surahNumber, ayahNumber, source])
+  @@index([surahNumber, ayahNumber])
+  @@index([source])
+  @@map("ayah_tafsirs")
+}
+
 // ============================================================================
 // HADITH - Sunnah.com integration
 // ============================================================================
@@ -363,13 +376,14 @@ model HadithBook {
 }
 
 model Hadith {
-  id              Int         @id @default(autoincrement())
-  bookId          Int         @map("book_id")
-  hadithNumber    String      @map("hadith_number")  // String for variants like "8a"
-  textArabic      String      @db.Text @map("text_arabic")
-  textPlain       String      @db.Text @map("text_plain")  // Diacritics removed for search
-  chapterArabic   String?     @map("chapter_arabic")
-  chapterEnglish  String?     @map("chapter_english")
+  id               Int         @id @default(autoincrement())
+  bookId           Int         @map("book_id")
+  hadithNumber     String      @map("hadith_number")  // String for variants like "8a"
+  textArabic       String      @db.Text @map("text_arabic")
+  textPlain        String      @db.Text @map("text_plain")  // Diacritics removed for search
+  chapterArabic    String?     @map("chapter_arabic")
+  chapterEnglish   String?     @map("chapter_english")
+  isChainVariation Boolean     @default(false) @map("is_chain_variation")  // True for hadiths that are only chain variations (no matn)
 
   book HadithBook @relation(fields: [bookId], references: [id])
 

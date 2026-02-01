@@ -113,6 +113,7 @@ async function syncHadiths() {
         textPlain: true,
         chapterArabic: true,
         chapterEnglish: true,
+        isChainVariation: true,
         book: {
           select: {
             bookNumber: true,
@@ -149,6 +150,7 @@ async function syncHadiths() {
         text_plain: hadith.textPlain,
         chapter_arabic: hadith.chapterArabic,
         chapter_english: hadith.chapterEnglish,
+        is_chain_variation: hadith.isChainVariation,
         book_number: hadith.book.bookNumber,
         book_name_arabic: hadith.book.nameArabic,
         book_name_english: hadith.book.nameEnglish,

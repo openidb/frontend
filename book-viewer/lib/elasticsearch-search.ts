@@ -303,6 +303,7 @@ interface HadithDoc {
   text_plain: string;
   chapter_arabic: string | null;
   chapter_english: string | null;
+  is_chain_variation: boolean;
   book_number: number;
   book_name_arabic: string;
   book_name_english: string;
@@ -484,7 +485,15 @@ export async function keywordSearchHadithsES(
     JSON.stringify(parsed)
   );
 
-  const esQuery = buildESQuery(parsed, "text_plain", null);
+  const baseQuery = buildESQuery(parsed, "text_plain", null);
+
+  // Wrap with filter to exclude chain variations
+  const esQuery: QueryDslQueryContainer = {
+    bool: {
+      must: [baseQuery],
+      must_not: [{ term: { is_chain_variation: true } }],
+    },
+  };
 
   try {
     const _tSearch = Date.now();
@@ -550,7 +559,15 @@ export async function fuzzyKeywordSearchHadithsES(
   const normalized = normalizeArabicText(query);
   if (normalized.trim().length < 2) return [];
 
-  const esQuery = buildFuzzyESQuery(query, "text_plain", fuzziness, null);
+  const baseQuery = buildFuzzyESQuery(query, "text_plain", fuzziness, null);
+
+  // Wrap with filter to exclude chain variations
+  const esQuery: QueryDslQueryContainer = {
+    bool: {
+      must: [baseQuery],
+      must_not: [{ term: { is_chain_variation: true } }],
+    },
+  };
 
   try {
     const response = await elasticsearch.search<HadithDoc>({
