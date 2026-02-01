@@ -2,7 +2,27 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme";
+import { AppConfigProvider } from "@/lib/config";
 import { DesktopNavigation, MobileNavigation } from "@/components/Navigation";
+
+// Inline script to apply theme/locale before React hydration to prevent flash
+const themeLocaleScript = `
+(function() {
+  try {
+    var theme = localStorage.getItem('theme');
+    var isDark = theme === 'dark' ||
+      ((!theme || theme === 'system') &&
+       window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) document.documentElement.classList.add('dark');
+
+    var locale = localStorage.getItem('locale');
+    if (locale) {
+      document.documentElement.lang = locale;
+      document.documentElement.dir = (locale === 'ar' || locale === 'ur') ? 'rtl' : 'ltr';
+    }
+  } catch (e) {}
+})();
+`;
 
 export const metadata: Metadata = {
   title: "Sanad",
@@ -24,6 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeLocaleScript }} />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -34,18 +55,20 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider>
           <I18nProvider>
-            <div className="flex h-screen">
-              {/* Desktop Sidebar - hidden on mobile */}
-              <DesktopNavigation />
+            <AppConfigProvider>
+              <div className="flex h-screen">
+                {/* Desktop Sidebar - hidden on mobile */}
+                <DesktopNavigation />
 
-              {/* Main Content */}
-              <main className="flex-1 overflow-auto bg-background pb-16 md:pb-0">
-                {children}
-              </main>
+                {/* Main Content */}
+                <main className="flex-1 overflow-auto bg-background pb-16 md:pb-0">
+                  {children}
+                </main>
 
-              {/* Mobile Bottom Navigation - visible only on mobile */}
-              <MobileNavigation />
-            </div>
+                {/* Mobile Bottom Navigation - visible only on mobile */}
+                <MobileNavigation />
+              </div>
+            </AppConfigProvider>
           </I18nProvider>
         </ThemeProvider>
       </body>

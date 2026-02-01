@@ -2,7 +2,7 @@
  * Famous Sources Dictionary
  *
  * Provides fuzzy and cross-language lookup for well-known Quran verses and hadiths.
- * Used to boost ranking for specific source lookups like "ayat al-kursi" or "throne verse".
+ * Used to boost ranking for specific source lookups like "ayat al-kursi" or "آية الكرسي".
  */
 
 // ============================================================================
@@ -44,8 +44,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       // Transliterated variants
       'ayat al-kursi', 'ayatul kursi', 'ayat kursi', 'ayat al kursi', 'ayatul-kursi',
       'ayat alkursi', 'ayah al kursi', 'ayah kursi', 'aya al kursi',
-      // English
-      'throne verse', 'verse of the throne', 'the throne verse',
       // French
       'verset du trone', 'verset du trône',
       // Other references
@@ -61,8 +59,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       // Transliterated
       'al-fatiha', 'al fatiha', 'fatiha', 'surah fatiha', 'alfatiha',
       'fateha', 'fatihah', 'al-fatihah',
-      // English
-      'the opening', 'opening chapter', 'the opening chapter',
     ],
     ref: { surahNumber: 1, ayahNumber: 1, ayahEnd: 7 },
   },
@@ -71,9 +67,7 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       // Arabic
       'آية النور', 'اية النور', 'ايه النور',
       // Transliterated
-      'ayat al-nur', 'ayat al nur', 'ayat alnur', 'light verse',
-      // English
-      'verse of light', 'the light verse',
+      'ayat al-nur', 'ayat al nur', 'ayat alnur',
       // Reference
       'النور 35', 'nur 35', 'al-nur 35',
     ],
@@ -87,8 +81,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       // Transliterated
       'last verses of baqarah', 'end of baqarah', 'last ayat baqarah',
       'khawatim al baqarah',
-      // English
-      'last two verses of baqarah', 'ending of baqarah',
     ],
     ref: { surahNumber: 2, ayahNumber: 285, ayahEnd: 286 },
   },
@@ -97,9 +89,7 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       // Arabic
       'آية الدين', 'اية الدين', 'أطول آية',
       // Transliterated
-      'ayat al-dayn', 'ayat aldayn', 'verse of debt',
-      // English
-      'debt verse', 'longest verse',
+      'ayat al-dayn', 'ayat aldayn',
       // Reference
       'البقرة 282', 'baqarah 282',
     ],
@@ -112,8 +102,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       'الاخلاص', 'سورة الاخلاص',
       // Transliterated
       'al-ikhlas', 'surah ikhlas', 'ikhlas', 'al ikhlas',
-      // English
-      'the sincerity', 'chapter of sincerity', 'purity',
     ],
     ref: { surahNumber: 112, ayahNumber: 1, ayahEnd: 4 },
   },
@@ -123,8 +111,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       'سورة الفلق', 'الفلق', 'قل أعوذ برب الفلق',
       // Transliterated
       'al-falaq', 'surah falaq', 'falaq', 'al falaq',
-      // English
-      'the daybreak', 'dawn', 'chapter of daybreak',
     ],
     ref: { surahNumber: 113, ayahNumber: 1, ayahEnd: 5 },
   },
@@ -134,8 +120,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       'سورة الناس', 'الناس', 'قل أعوذ برب الناس',
       // Transliterated
       'al-nas', 'surah nas', 'nas', 'al nas', 'surah an-nas',
-      // English
-      'mankind', 'the people', 'chapter of mankind',
     ],
     ref: { surahNumber: 114, ayahNumber: 1, ayahEnd: 6 },
   },
@@ -145,8 +129,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       'المعوذتين', 'المعوذات', 'المعوذتان',
       // Transliterated
       'al-muawwidhat', 'muawwidhatain', 'mu\'awwidhatayn',
-      // English
-      'the two protections', 'protection surahs',
     ],
     ref: { surahNumber: 113, ayahNumber: 1, ayahEnd: 5 }, // Returns Falaq, but search will also show Nas
   },
@@ -156,8 +138,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       'سورة يس', 'يس', 'يٰسٓ', 'قلب القرآن',
       // Transliterated
       'yasin', 'ya-sin', 'ya sin', 'surah yasin', 'yaseen',
-      // English
-      'heart of quran',
     ],
     ref: { surahNumber: 36, ayahNumber: 1, ayahEnd: 83 },
   },
@@ -167,8 +147,6 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       'سورة الملك', 'الملك', 'تبارك', 'المانعة', 'المنجية',
       // Transliterated
       'al-mulk', 'surah mulk', 'mulk', 'tabarak',
-      // English
-      'the sovereignty', 'dominion',
     ],
     ref: { surahNumber: 67, ayahNumber: 1, ayahEnd: 30 },
   },
@@ -177,9 +155,7 @@ export const FAMOUS_VERSES: FamousSource<VerseReference>[] = [
       // Arabic
       'سورة الكهف', 'الكهف', 'اصحاب الكهف',
       // Transliterated
-      'al-kahf', 'surah kahf', 'kahf', 'the cave',
-      // English
-      'the cave', 'cave chapter',
+      'al-kahf', 'surah kahf', 'kahf',
     ],
     ref: { surahNumber: 18, ayahNumber: 1, ayahEnd: 110 },
   },
@@ -207,8 +183,6 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Transliterated
       'innamal amal binniyat', 'hadith of intentions', 'actions by intentions',
       'hadith niyyah', 'niyyah hadith',
-      // English
-      'actions are by intentions', 'deeds by intentions',
     ],
     ref: [{ collectionSlug: 'bukhari', hadithNumber: '1' }],
   },
@@ -219,8 +193,6 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Transliterated
       'hadith jibreel', 'hadith jibril', 'hadith of gabriel', 'jibreel hadith',
       'gabriel hadith',
-      // English
-      'hadith of islam iman ihsan',
     ],
     ref: [{ collectionSlug: 'muslim', hadithNumber: '8' }],
   },
@@ -229,7 +201,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'من حسن إسلام المرء', 'حسن الإسلام', 'ترك ما لا يعني',
       // Transliterated
-      'min husn islam', 'leaving what does not concern',
+      'min husn islam', 'husn al-islam',
     ],
     ref: [{ collectionSlug: 'tirmidhi', hadithNumber: '2317' }],
   },
@@ -238,7 +210,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'لا يؤمن أحدكم', 'حب لأخيك', 'حب لاخيك ما تحب لنفسك',
       // Transliterated
-      'none of you believes', 'love for your brother',
+      'la yuminu ahadukum', 'hubb li akhik',
     ],
     ref: [{ collectionSlug: 'bukhari', hadithNumber: '13' }],
   },
@@ -247,7 +219,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'حديث الولي', 'من عادى لي وليا', 'اولياء الله',
       // Transliterated
-      'hadith of the wali', 'hadith qudsi wali', 'whoever harms my wali',
+      'hadith of the wali', 'hadith qudsi wali', 'hadith al-wali',
     ],
     ref: [{ collectionSlug: 'bukhari', hadithNumber: '6502' }],
   },
@@ -256,7 +228,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'الحلال بين والحرام بين', 'حديث الشبهات', 'المشتبهات',
       // Transliterated
-      'halal is clear haram is clear', 'hadith of doubtful matters',
+      'hadith al-shubuhat', 'hadith of doubtful matters',
     ],
     ref: [{ collectionSlug: 'bukhari', hadithNumber: '52' }],
   },
@@ -265,7 +237,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'الدين النصيحة', 'حديث النصيحة',
       // Transliterated
-      'religion is sincerity', 'deen is nasiha', 'hadith nasiha',
+      'ad-din an-nasiha', 'deen nasiha', 'hadith nasiha',
     ],
     ref: [{ collectionSlug: 'muslim', hadithNumber: '55' }],
   },
@@ -274,7 +246,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'بني الإسلام على خمس', 'بني الاسلام علي خمس', 'أركان الإسلام',
       // Transliterated
-      'islam is built on five', 'five pillars', 'pillars of islam hadith',
+      'buniya al-islam', 'arkan al-islam',
     ],
     ref: [{ collectionSlug: 'bukhari', hadithNumber: '8' }],
   },
@@ -283,7 +255,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'اتق الله حيثما كنت', 'اتبع السيئة الحسنة', 'خالق الناس بخلق حسن',
       // Transliterated
-      'fear allah wherever you are', 'follow bad deed with good',
+      'ittaq allah', 'taqwa hadith',
     ],
     ref: [{ collectionSlug: 'tirmidhi', hadithNumber: '1987' }],
   },
@@ -292,7 +264,7 @@ export const FAMOUS_HADITHS: FamousSource<HadithReference[]>[] = [
       // Arabic
       'لا ضرر ولا ضرار', 'حديث الضرر',
       // Transliterated
-      'no harm no reciprocal harm', 'la darar', 'hadith darar',
+      'la darar wa la dirar', 'la darar', 'hadith darar',
     ],
     ref: [{ collectionSlug: 'ibnmajah', hadithNumber: '2341' }],
   },
@@ -308,7 +280,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
       'الفاتحة', 'سورة الفاتحة', 'فاتحه',
       'فاتحة الكتاب', 'ام الكتاب', 'السبع المثاني', 'سورة الحمد',
       'al-fatiha', 'al fatiha', 'fatiha', 'alfatiha', 'fatihah', 'fateha', 'al-fatihah',
-      'the opening',
     ],
     ref: { surahNumber: 1, quranComUrl: 'https://quran.com/1', totalAyahs: 7 },
   },
@@ -316,7 +287,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'البقرة', 'سورة البقرة', 'بقره',
       'al-baqarah', 'al baqarah', 'baqarah', 'baqara', 'albaqarah', 'baqra',
-      'the cow',
     ],
     ref: { surahNumber: 2, quranComUrl: 'https://quran.com/2', totalAyahs: 286 },
   },
@@ -324,7 +294,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'آل عمران', 'سورة آل عمران', 'ال عمران',
       'ali imran', 'al imran', 'aal imran', 'ali-imran', 'imran',
-      'family of imran',
     ],
     ref: { surahNumber: 3, quranComUrl: 'https://quran.com/3', totalAyahs: 200 },
   },
@@ -332,7 +301,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النساء', 'سورة النساء', 'نساء',
       'an-nisa', 'al-nisa', 'an nisa', 'al nisa', 'nisa', 'nisaa',
-      'the women',
     ],
     ref: { surahNumber: 4, quranComUrl: 'https://quran.com/4', totalAyahs: 176 },
   },
@@ -340,7 +308,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المائدة', 'سورة المائدة', 'مائده',
       'al-maidah', 'al maidah', 'maidah', 'maida', 'maaida',
-      'the table spread',
     ],
     ref: { surahNumber: 5, quranComUrl: 'https://quran.com/5', totalAyahs: 120 },
   },
@@ -348,7 +315,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الأنعام', 'سورة الأنعام', 'انعام', 'الانعام',
       'al-anam', 'al anam', 'anam', 'anaam',
-      'the cattle',
     ],
     ref: { surahNumber: 6, quranComUrl: 'https://quran.com/6', totalAyahs: 165 },
   },
@@ -356,7 +322,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الأعراف', 'سورة الأعراف', 'اعراف', 'الاعراف',
       'al-araf', 'al araf', 'araf', 'araaf',
-      'the heights',
     ],
     ref: { surahNumber: 7, quranComUrl: 'https://quran.com/7', totalAyahs: 206 },
   },
@@ -364,7 +329,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الأنفال', 'سورة الأنفال', 'انفال', 'الانفال',
       'al-anfal', 'al anfal', 'anfal',
-      'the spoils of war',
     ],
     ref: { surahNumber: 8, quranComUrl: 'https://quran.com/8', totalAyahs: 75 },
   },
@@ -372,7 +336,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'التوبة', 'سورة التوبة', 'توبه', 'براءة',
       'at-tawbah', 'al-tawbah', 'tawbah', 'tawba', 'taubah',
-      'the repentance',
     ],
     ref: { surahNumber: 9, quranComUrl: 'https://quran.com/9', totalAyahs: 129 },
   },
@@ -401,7 +364,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الرعد', 'سورة الرعد', 'رعد',
       'ar-rad', 'al-rad', 'ar rad', 'rad', 'raad',
-      'the thunder',
     ],
     ref: { surahNumber: 13, quranComUrl: 'https://quran.com/13', totalAyahs: 43 },
   },
@@ -416,7 +378,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الحجر', 'سورة الحجر', 'حجر',
       'al-hijr', 'al hijr', 'hijr',
-      'the rocky tract',
     ],
     ref: { surahNumber: 15, quranComUrl: 'https://quran.com/15', totalAyahs: 99 },
   },
@@ -424,7 +385,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النحل', 'سورة النحل', 'نحل',
       'an-nahl', 'al-nahl', 'an nahl', 'nahl',
-      'the bee',
     ],
     ref: { surahNumber: 16, quranComUrl: 'https://quran.com/16', totalAyahs: 128 },
   },
@@ -432,7 +392,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الإسراء', 'سورة الإسراء', 'اسراء', 'الاسراء', 'بني إسرائيل',
       'al-isra', 'al isra', 'isra', 'israa', 'bani israel',
-      'the night journey',
     ],
     ref: { surahNumber: 17, quranComUrl: 'https://quran.com/17', totalAyahs: 111 },
   },
@@ -440,7 +399,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الكهف', 'سورة الكهف', 'كهف',
       'al-kahf', 'al kahf', 'kahf',
-      'the cave',
     ],
     ref: { surahNumber: 18, quranComUrl: 'https://quran.com/18', totalAyahs: 110 },
   },
@@ -462,7 +420,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الأنبياء', 'سورة الأنبياء', 'انبياء', 'الانبياء',
       'al-anbiya', 'al anbiya', 'anbiya', 'anbiyaa',
-      'the prophets',
     ],
     ref: { surahNumber: 21, quranComUrl: 'https://quran.com/21', totalAyahs: 112 },
   },
@@ -470,7 +427,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الحج', 'سورة الحج', 'حج',
       'al-hajj', 'al hajj', 'hajj',
-      'the pilgrimage',
     ],
     ref: { surahNumber: 22, quranComUrl: 'https://quran.com/22', totalAyahs: 78 },
   },
@@ -478,7 +434,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المؤمنون', 'سورة المؤمنون', 'مؤمنون', 'المومنون',
       'al-muminun', 'al muminun', 'muminun', 'muminoon',
-      'the believers',
     ],
     ref: { surahNumber: 23, quranComUrl: 'https://quran.com/23', totalAyahs: 118 },
   },
@@ -486,7 +441,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النور', 'سورة النور', 'نور',
       'an-nur', 'al-nur', 'an nur', 'nur', 'noor',
-      'the light',
     ],
     ref: { surahNumber: 24, quranComUrl: 'https://quran.com/24', totalAyahs: 64 },
   },
@@ -494,7 +448,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الفرقان', 'سورة الفرقان', 'فرقان',
       'al-furqan', 'al furqan', 'furqan',
-      'the criterion',
     ],
     ref: { surahNumber: 25, quranComUrl: 'https://quran.com/25', totalAyahs: 77 },
   },
@@ -502,7 +455,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الشعراء', 'سورة الشعراء', 'شعراء',
       'ash-shuara', 'al-shuara', 'ash shuara', 'shuara', 'shuaraa',
-      'the poets',
     ],
     ref: { surahNumber: 26, quranComUrl: 'https://quran.com/26', totalAyahs: 227 },
   },
@@ -510,7 +462,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النمل', 'سورة النمل', 'نمل',
       'an-naml', 'al-naml', 'an naml', 'naml',
-      'the ant',
     ],
     ref: { surahNumber: 27, quranComUrl: 'https://quran.com/27', totalAyahs: 93 },
   },
@@ -518,7 +469,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'القصص', 'سورة القصص', 'قصص',
       'al-qasas', 'al qasas', 'qasas',
-      'the stories',
     ],
     ref: { surahNumber: 28, quranComUrl: 'https://quran.com/28', totalAyahs: 88 },
   },
@@ -526,7 +476,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'العنكبوت', 'سورة العنكبوت', 'عنكبوت',
       'al-ankabut', 'al ankabut', 'ankabut', 'ankaboot',
-      'the spider',
     ],
     ref: { surahNumber: 29, quranComUrl: 'https://quran.com/29', totalAyahs: 69 },
   },
@@ -534,7 +483,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الروم', 'سورة الروم', 'روم',
       'ar-rum', 'al-rum', 'ar rum', 'rum', 'room',
-      'the romans',
     ],
     ref: { surahNumber: 30, quranComUrl: 'https://quran.com/30', totalAyahs: 60 },
   },
@@ -549,7 +497,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'السجدة', 'سورة السجدة', 'سجده',
       'as-sajdah', 'al-sajdah', 'as sajdah', 'sajdah', 'sajda',
-      'the prostration',
     ],
     ref: { surahNumber: 32, quranComUrl: 'https://quran.com/32', totalAyahs: 30 },
   },
@@ -564,7 +511,7 @@ export const SURAHS: FamousSource<SurahReference>[] = [
   {
     names: [
       'سبأ', 'سورة سبأ', 'سبا',
-      'saba', 'sabaa', 'sheba',
+      'saba', 'sabaa',
     ],
     ref: { surahNumber: 34, quranComUrl: 'https://quran.com/34', totalAyahs: 54 },
   },
@@ -572,7 +519,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'فاطر', 'سورة فاطر',
       'fatir', 'faatir',
-      'the originator',
     ],
     ref: { surahNumber: 35, quranComUrl: 'https://quran.com/35', totalAyahs: 45 },
   },
@@ -580,7 +526,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'يس', 'سورة يس', 'يٰسٓ', 'قلب القرآن',
       'yasin', 'ya-sin', 'ya sin', 'yaseen',
-      'heart of quran',
     ],
     ref: { surahNumber: 36, quranComUrl: 'https://quran.com/36', totalAyahs: 83 },
   },
@@ -588,7 +533,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الصافات', 'سورة الصافات', 'صافات',
       'as-saffat', 'al-saffat', 'as saffat', 'saffat',
-      'those who set the ranks',
     ],
     ref: { surahNumber: 37, quranComUrl: 'https://quran.com/37', totalAyahs: 182 },
   },
@@ -603,7 +547,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الزمر', 'سورة الزمر', 'زمر',
       'az-zumar', 'al-zumar', 'az zumar', 'zumar',
-      'the troops',
     ],
     ref: { surahNumber: 39, quranComUrl: 'https://quran.com/39', totalAyahs: 75 },
   },
@@ -611,7 +554,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'غافر', 'سورة غافر', 'المؤمن',
       'ghafir', 'al-mumin', 'mumin',
-      'the forgiver',
     ],
     ref: { surahNumber: 40, quranComUrl: 'https://quran.com/40', totalAyahs: 85 },
   },
@@ -619,7 +561,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'فصلت', 'سورة فصلت',
       'fussilat', 'fussilaat', 'ha mim sajdah',
-      'explained in detail',
     ],
     ref: { surahNumber: 41, quranComUrl: 'https://quran.com/41', totalAyahs: 54 },
   },
@@ -627,7 +568,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الشورى', 'سورة الشورى', 'شورى',
       'ash-shura', 'al-shura', 'ash shura', 'shura', 'shuraa',
-      'the consultation',
     ],
     ref: { surahNumber: 42, quranComUrl: 'https://quran.com/42', totalAyahs: 53 },
   },
@@ -635,7 +575,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الزخرف', 'سورة الزخرف', 'زخرف',
       'az-zukhruf', 'al-zukhruf', 'az zukhruf', 'zukhruf',
-      'the ornaments of gold',
     ],
     ref: { surahNumber: 43, quranComUrl: 'https://quran.com/43', totalAyahs: 89 },
   },
@@ -643,7 +582,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الدخان', 'سورة الدخان', 'دخان',
       'ad-dukhan', 'al-dukhan', 'ad dukhan', 'dukhan',
-      'the smoke',
     ],
     ref: { surahNumber: 44, quranComUrl: 'https://quran.com/44', totalAyahs: 59 },
   },
@@ -651,7 +589,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الجاثية', 'سورة الجاثية', 'جاثيه',
       'al-jathiyah', 'al jathiyah', 'jathiyah', 'jathiya',
-      'the crouching',
     ],
     ref: { surahNumber: 45, quranComUrl: 'https://quran.com/45', totalAyahs: 37 },
   },
@@ -659,7 +596,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الأحقاف', 'سورة الأحقاف', 'احقاف', 'الاحقاف',
       'al-ahqaf', 'al ahqaf', 'ahqaf',
-      'the wind curved sandhills',
     ],
     ref: { surahNumber: 46, quranComUrl: 'https://quran.com/46', totalAyahs: 35 },
   },
@@ -674,7 +610,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الفتح', 'سورة الفتح', 'فتح',
       'al-fath', 'al fath', 'fath',
-      'the victory',
     ],
     ref: { surahNumber: 48, quranComUrl: 'https://quran.com/48', totalAyahs: 29 },
   },
@@ -682,7 +617,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الحجرات', 'سورة الحجرات', 'حجرات',
       'al-hujurat', 'al hujurat', 'hujurat', 'hujuraat',
-      'the rooms',
     ],
     ref: { surahNumber: 49, quranComUrl: 'https://quran.com/49', totalAyahs: 18 },
   },
@@ -697,7 +631,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الذاريات', 'سورة الذاريات', 'ذاريات',
       'adh-dhariyat', 'al-dhariyat', 'adh dhariyat', 'dhariyat',
-      'the winnowing winds',
     ],
     ref: { surahNumber: 51, quranComUrl: 'https://quran.com/51', totalAyahs: 60 },
   },
@@ -705,7 +638,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الطور', 'سورة الطور', 'طور',
       'at-tur', 'al-tur', 'at tur', 'tur', 'toor',
-      'the mount',
     ],
     ref: { surahNumber: 52, quranComUrl: 'https://quran.com/52', totalAyahs: 49 },
   },
@@ -713,7 +645,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النجم', 'سورة النجم', 'نجم',
       'an-najm', 'al-najm', 'an najm', 'najm',
-      'the star',
     ],
     ref: { surahNumber: 53, quranComUrl: 'https://quran.com/53', totalAyahs: 62 },
   },
@@ -721,7 +652,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'القمر', 'سورة القمر', 'قمر',
       'al-qamar', 'al qamar', 'qamar',
-      'the moon',
     ],
     ref: { surahNumber: 54, quranComUrl: 'https://quran.com/54', totalAyahs: 55 },
   },
@@ -729,7 +659,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الرحمن', 'سورة الرحمن', 'رحمن',
       'ar-rahman', 'al-rahman', 'ar rahman', 'rahman',
-      'the beneficent',
     ],
     ref: { surahNumber: 55, quranComUrl: 'https://quran.com/55', totalAyahs: 78 },
   },
@@ -737,7 +666,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الواقعة', 'سورة الواقعة', 'واقعه',
       'al-waqiah', 'al waqiah', 'waqiah', 'waqia', 'waaqi\'a',
-      'the inevitable',
     ],
     ref: { surahNumber: 56, quranComUrl: 'https://quran.com/56', totalAyahs: 96 },
   },
@@ -745,7 +673,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الحديد', 'سورة الحديد', 'حديد',
       'al-hadid', 'al hadid', 'hadid', 'hadeed',
-      'the iron',
     ],
     ref: { surahNumber: 57, quranComUrl: 'https://quran.com/57', totalAyahs: 29 },
   },
@@ -753,7 +680,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المجادلة', 'سورة المجادلة', 'مجادله',
       'al-mujadila', 'al mujadila', 'mujadila', 'mujadilah',
-      'the pleading woman',
     ],
     ref: { surahNumber: 58, quranComUrl: 'https://quran.com/58', totalAyahs: 22 },
   },
@@ -761,7 +687,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الحشر', 'سورة الحشر', 'حشر',
       'al-hashr', 'al hashr', 'hashr',
-      'the exile',
     ],
     ref: { surahNumber: 59, quranComUrl: 'https://quran.com/59', totalAyahs: 24 },
   },
@@ -769,7 +694,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الممتحنة', 'سورة الممتحنة', 'ممتحنه',
       'al-mumtahanah', 'al mumtahanah', 'mumtahanah', 'mumtahina',
-      'the woman to be examined',
     ],
     ref: { surahNumber: 60, quranComUrl: 'https://quran.com/60', totalAyahs: 13 },
   },
@@ -777,7 +701,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الصف', 'سورة الصف', 'صف',
       'as-saf', 'al-saf', 'as saf', 'saf', 'saff',
-      'the ranks',
     ],
     ref: { surahNumber: 61, quranComUrl: 'https://quran.com/61', totalAyahs: 14 },
   },
@@ -785,7 +708,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الجمعة', 'سورة الجمعة', 'جمعه',
       'al-jumuah', 'al jumuah', 'jumuah', 'juma', 'jumua',
-      'the congregation',
     ],
     ref: { surahNumber: 62, quranComUrl: 'https://quran.com/62', totalAyahs: 11 },
   },
@@ -793,7 +715,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المنافقون', 'سورة المنافقون', 'منافقون',
       'al-munafiqun', 'al munafiqun', 'munafiqun', 'munafiqoon',
-      'the hypocrites',
     ],
     ref: { surahNumber: 63, quranComUrl: 'https://quran.com/63', totalAyahs: 11 },
   },
@@ -801,7 +722,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'التغابن', 'سورة التغابن', 'تغابن',
       'at-taghabun', 'al-taghabun', 'at taghabun', 'taghabun',
-      'the mutual disillusion',
     ],
     ref: { surahNumber: 64, quranComUrl: 'https://quran.com/64', totalAyahs: 18 },
   },
@@ -809,7 +729,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الطلاق', 'سورة الطلاق', 'طلاق',
       'at-talaq', 'al-talaq', 'at talaq', 'talaq', 'talaaq',
-      'the divorce',
     ],
     ref: { surahNumber: 65, quranComUrl: 'https://quran.com/65', totalAyahs: 12 },
   },
@@ -817,7 +736,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'التحريم', 'سورة التحريم', 'تحريم',
       'at-tahrim', 'al-tahrim', 'at tahrim', 'tahrim', 'tahreem',
-      'the prohibition',
     ],
     ref: { surahNumber: 66, quranComUrl: 'https://quran.com/66', totalAyahs: 12 },
   },
@@ -825,7 +743,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الملك', 'سورة الملك', 'ملك', 'تبارك', 'المانعة', 'المنجية',
       'al-mulk', 'al mulk', 'mulk', 'tabarak',
-      'the sovereignty',
     ],
     ref: { surahNumber: 67, quranComUrl: 'https://quran.com/67', totalAyahs: 30 },
   },
@@ -833,7 +750,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'القلم', 'سورة القلم', 'قلم', 'نون',
       'al-qalam', 'al qalam', 'qalam', 'nun',
-      'the pen',
     ],
     ref: { surahNumber: 68, quranComUrl: 'https://quran.com/68', totalAyahs: 52 },
   },
@@ -841,7 +757,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الحاقة', 'سورة الحاقة', 'حاقه',
       'al-haqqah', 'al haqqah', 'haqqah', 'haaqqah',
-      'the reality',
     ],
     ref: { surahNumber: 69, quranComUrl: 'https://quran.com/69', totalAyahs: 52 },
   },
@@ -849,7 +764,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المعارج', 'سورة المعارج', 'معارج',
       'al-maarij', 'al maarij', 'maarij', 'maarej',
-      'the ascending stairways',
     ],
     ref: { surahNumber: 70, quranComUrl: 'https://quran.com/70', totalAyahs: 44 },
   },
@@ -864,7 +778,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الجن', 'سورة الجن', 'جن',
       'al-jinn', 'al jinn', 'jinn', 'djinn',
-      'the jinn',
     ],
     ref: { surahNumber: 72, quranComUrl: 'https://quran.com/72', totalAyahs: 28 },
   },
@@ -872,7 +785,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المزمل', 'سورة المزمل', 'مزمل',
       'al-muzzammil', 'al muzzammil', 'muzzammil', 'muzammil',
-      'the enshrouded one',
     ],
     ref: { surahNumber: 73, quranComUrl: 'https://quran.com/73', totalAyahs: 20 },
   },
@@ -880,7 +792,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المدثر', 'سورة المدثر', 'مدثر',
       'al-muddaththir', 'al muddaththir', 'muddaththir', 'mudaththir',
-      'the cloaked one',
     ],
     ref: { surahNumber: 74, quranComUrl: 'https://quran.com/74', totalAyahs: 56 },
   },
@@ -888,7 +799,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'القيامة', 'سورة القيامة', 'قيامه',
       'al-qiyamah', 'al qiyamah', 'qiyamah', 'qiyama',
-      'the resurrection',
     ],
     ref: { surahNumber: 75, quranComUrl: 'https://quran.com/75', totalAyahs: 40 },
   },
@@ -896,7 +806,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الإنسان', 'سورة الإنسان', 'انسان', 'الانسان', 'الدهر',
       'al-insan', 'al insan', 'insan', 'ad-dahr', 'dahr',
-      'the human',
     ],
     ref: { surahNumber: 76, quranComUrl: 'https://quran.com/76', totalAyahs: 31 },
   },
@@ -904,7 +813,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المرسلات', 'سورة المرسلات', 'مرسلات',
       'al-mursalat', 'al mursalat', 'mursalat',
-      'the emissaries',
     ],
     ref: { surahNumber: 77, quranComUrl: 'https://quran.com/77', totalAyahs: 50 },
   },
@@ -912,7 +820,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النبأ', 'سورة النبأ', 'نبا', 'عم',
       'an-naba', 'al-naba', 'an naba', 'naba', 'amma',
-      'the tidings',
     ],
     ref: { surahNumber: 78, quranComUrl: 'https://quran.com/78', totalAyahs: 40 },
   },
@@ -920,7 +827,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النازعات', 'سورة النازعات', 'نازعات',
       'an-naziat', 'al-naziat', 'an naziat', 'naziat', 'naziaat',
-      'those who drag forth',
     ],
     ref: { surahNumber: 79, quranComUrl: 'https://quran.com/79', totalAyahs: 46 },
   },
@@ -928,7 +834,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'عبس', 'سورة عبس',
       'abasa', 'abas',
-      'he frowned',
     ],
     ref: { surahNumber: 80, quranComUrl: 'https://quran.com/80', totalAyahs: 42 },
   },
@@ -936,7 +841,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'التكوير', 'سورة التكوير', 'تكوير',
       'at-takwir', 'al-takwir', 'at takwir', 'takwir', 'takweer',
-      'the overthrowing',
     ],
     ref: { surahNumber: 81, quranComUrl: 'https://quran.com/81', totalAyahs: 29 },
   },
@@ -944,7 +848,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الانفطار', 'سورة الانفطار', 'انفطار',
       'al-infitar', 'al infitar', 'infitar', 'infitaar',
-      'the cleaving',
     ],
     ref: { surahNumber: 82, quranComUrl: 'https://quran.com/82', totalAyahs: 19 },
   },
@@ -952,7 +855,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المطففين', 'سورة المطففين', 'مطففين',
       'al-mutaffifin', 'al mutaffifin', 'mutaffifin', 'mutaffifeen',
-      'the defrauding',
     ],
     ref: { surahNumber: 83, quranComUrl: 'https://quran.com/83', totalAyahs: 36 },
   },
@@ -960,7 +862,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الانشقاق', 'سورة الانشقاق', 'انشقاق',
       'al-inshiqaq', 'al inshiqaq', 'inshiqaq', 'inshiqaaq',
-      'the sundering',
     ],
     ref: { surahNumber: 84, quranComUrl: 'https://quran.com/84', totalAyahs: 25 },
   },
@@ -968,7 +869,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'البروج', 'سورة البروج', 'بروج',
       'al-buruj', 'al buruj', 'buruj', 'burooj',
-      'the mansions of the stars',
     ],
     ref: { surahNumber: 85, quranComUrl: 'https://quran.com/85', totalAyahs: 22 },
   },
@@ -976,7 +876,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الطارق', 'سورة الطارق', 'طارق',
       'at-tariq', 'al-tariq', 'at tariq', 'tariq', 'taariq',
-      'the night comer',
     ],
     ref: { surahNumber: 86, quranComUrl: 'https://quran.com/86', totalAyahs: 17 },
   },
@@ -984,7 +883,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الأعلى', 'سورة الأعلى', 'اعلى', 'الاعلى',
       'al-ala', 'al ala', 'ala', 'alaa',
-      'the most high',
     ],
     ref: { surahNumber: 87, quranComUrl: 'https://quran.com/87', totalAyahs: 19 },
   },
@@ -992,7 +890,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الغاشية', 'سورة الغاشية', 'غاشيه',
       'al-ghashiyah', 'al ghashiyah', 'ghashiyah', 'ghashiya',
-      'the overwhelming',
     ],
     ref: { surahNumber: 88, quranComUrl: 'https://quran.com/88', totalAyahs: 26 },
   },
@@ -1000,7 +897,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الفجر', 'سورة الفجر', 'فجر',
       'al-fajr', 'al fajr', 'fajr',
-      'the dawn',
     ],
     ref: { surahNumber: 89, quranComUrl: 'https://quran.com/89', totalAyahs: 30 },
   },
@@ -1008,7 +904,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'البلد', 'سورة البلد', 'بلد',
       'al-balad', 'al balad', 'balad',
-      'the city',
     ],
     ref: { surahNumber: 90, quranComUrl: 'https://quran.com/90', totalAyahs: 20 },
   },
@@ -1016,7 +911,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الشمس', 'سورة الشمس', 'شمس',
       'ash-shams', 'al-shams', 'ash shams', 'shams',
-      'the sun',
     ],
     ref: { surahNumber: 91, quranComUrl: 'https://quran.com/91', totalAyahs: 15 },
   },
@@ -1024,7 +918,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الليل', 'سورة الليل', 'ليل',
       'al-layl', 'al layl', 'layl', 'lail',
-      'the night',
     ],
     ref: { surahNumber: 92, quranComUrl: 'https://quran.com/92', totalAyahs: 21 },
   },
@@ -1032,7 +925,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الضحى', 'سورة الضحى', 'ضحى',
       'ad-dhuha', 'al-dhuha', 'ad dhuha', 'dhuha', 'duha',
-      'the morning hours',
     ],
     ref: { surahNumber: 93, quranComUrl: 'https://quran.com/93', totalAyahs: 11 },
   },
@@ -1040,7 +932,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الشرح', 'سورة الشرح', 'شرح', 'الانشراح', 'ألم نشرح',
       'ash-sharh', 'al-sharh', 'ash sharh', 'sharh', 'al-inshirah', 'inshirah',
-      'the relief',
     ],
     ref: { surahNumber: 94, quranComUrl: 'https://quran.com/94', totalAyahs: 8 },
   },
@@ -1048,7 +939,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'التين', 'سورة التين', 'تين',
       'at-tin', 'al-tin', 'at tin', 'tin', 'teen',
-      'the fig',
     ],
     ref: { surahNumber: 95, quranComUrl: 'https://quran.com/95', totalAyahs: 8 },
   },
@@ -1056,7 +946,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'العلق', 'سورة العلق', 'علق', 'اقرأ',
       'al-alaq', 'al alaq', 'alaq', 'iqra',
-      'the clot',
     ],
     ref: { surahNumber: 96, quranComUrl: 'https://quran.com/96', totalAyahs: 19 },
   },
@@ -1064,7 +953,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'القدر', 'سورة القدر', 'قدر', 'ليلة القدر',
       'al-qadr', 'al qadr', 'qadr', 'laylat al-qadr',
-      'the power',
     ],
     ref: { surahNumber: 97, quranComUrl: 'https://quran.com/97', totalAyahs: 5 },
   },
@@ -1072,7 +960,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'البينة', 'سورة البينة', 'بينه',
       'al-bayyinah', 'al bayyinah', 'bayyinah', 'bayyina',
-      'the clear proof',
     ],
     ref: { surahNumber: 98, quranComUrl: 'https://quran.com/98', totalAyahs: 8 },
   },
@@ -1080,7 +967,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الزلزلة', 'سورة الزلزلة', 'زلزله',
       'az-zalzalah', 'al-zalzalah', 'az zalzalah', 'zalzalah', 'zalzala',
-      'the earthquake',
     ],
     ref: { surahNumber: 99, quranComUrl: 'https://quran.com/99', totalAyahs: 8 },
   },
@@ -1088,7 +974,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'العاديات', 'سورة العاديات', 'عاديات',
       'al-adiyat', 'al adiyat', 'adiyat', 'aadiyat',
-      'the courser',
     ],
     ref: { surahNumber: 100, quranComUrl: 'https://quran.com/100', totalAyahs: 11 },
   },
@@ -1096,7 +981,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'القارعة', 'سورة القارعة', 'قارعه',
       'al-qariah', 'al qariah', 'qariah', 'qaaria',
-      'the calamity',
     ],
     ref: { surahNumber: 101, quranComUrl: 'https://quran.com/101', totalAyahs: 11 },
   },
@@ -1104,7 +988,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'التكاثر', 'سورة التكاثر', 'تكاثر',
       'at-takathur', 'al-takathur', 'at takathur', 'takathur', 'takaathur',
-      'the rivalry in world increase',
     ],
     ref: { surahNumber: 102, quranComUrl: 'https://quran.com/102', totalAyahs: 8 },
   },
@@ -1112,7 +995,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'العصر', 'سورة العصر', 'عصر',
       'al-asr', 'al asr', 'asr',
-      'the declining day',
     ],
     ref: { surahNumber: 103, quranComUrl: 'https://quran.com/103', totalAyahs: 3 },
   },
@@ -1120,7 +1002,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الهمزة', 'سورة الهمزة', 'همزه',
       'al-humazah', 'al humazah', 'humazah', 'humaza',
-      'the traducer',
     ],
     ref: { surahNumber: 104, quranComUrl: 'https://quran.com/104', totalAyahs: 9 },
   },
@@ -1128,7 +1009,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الفيل', 'سورة الفيل', 'فيل',
       'al-fil', 'al fil', 'fil', 'feel',
-      'the elephant',
     ],
     ref: { surahNumber: 105, quranComUrl: 'https://quran.com/105', totalAyahs: 5 },
   },
@@ -1143,7 +1023,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الماعون', 'سورة الماعون', 'ماعون',
       'al-maun', 'al maun', 'maun', 'maaoon',
-      'the small kindnesses',
     ],
     ref: { surahNumber: 107, quranComUrl: 'https://quran.com/107', totalAyahs: 7 },
   },
@@ -1151,7 +1030,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الكوثر', 'سورة الكوثر', 'كوثر',
       'al-kawthar', 'al kawthar', 'kawthar', 'kauthar', 'kausar',
-      'the abundance',
     ],
     ref: { surahNumber: 108, quranComUrl: 'https://quran.com/108', totalAyahs: 3 },
   },
@@ -1159,7 +1037,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الكافرون', 'سورة الكافرون', 'كافرون', 'قل يا أيها الكافرون',
       'al-kafirun', 'al kafirun', 'kafirun', 'kafiroon', 'kaafiroon',
-      'the disbelievers',
     ],
     ref: { surahNumber: 109, quranComUrl: 'https://quran.com/109', totalAyahs: 6 },
   },
@@ -1167,7 +1044,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'النصر', 'سورة النصر', 'نصر',
       'an-nasr', 'al-nasr', 'an nasr', 'nasr',
-      'the divine support',
     ],
     ref: { surahNumber: 110, quranComUrl: 'https://quran.com/110', totalAyahs: 3 },
   },
@@ -1175,7 +1051,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'المسد', 'سورة المسد', 'مسد', 'اللهب', 'تبت', 'أبو لهب',
       'al-masad', 'al masad', 'masad', 'al-lahab', 'lahab', 'tabbat',
-      'the palm fiber',
     ],
     ref: { surahNumber: 111, quranComUrl: 'https://quran.com/111', totalAyahs: 5 },
   },
@@ -1183,7 +1058,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الإخلاص', 'سورة الإخلاص', 'اخلاص', 'الاخلاص', 'قل هو الله أحد', 'قل هو الله احد', 'التوحيد',
       'al-ikhlas', 'al ikhlas', 'ikhlas', 'ikhlaas',
-      'the sincerity', 'purity',
     ],
     ref: { surahNumber: 112, quranComUrl: 'https://quran.com/112', totalAyahs: 4 },
   },
@@ -1191,7 +1065,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الفلق', 'سورة الفلق', 'فلق', 'قل أعوذ برب الفلق',
       'al-falaq', 'al falaq', 'falaq',
-      'the daybreak',
     ],
     ref: { surahNumber: 113, quranComUrl: 'https://quran.com/113', totalAyahs: 5 },
   },
@@ -1199,7 +1072,6 @@ export const SURAHS: FamousSource<SurahReference>[] = [
     names: [
       'الناس', 'سورة الناس', 'ناس', 'قل أعوذ برب الناس',
       'an-nas', 'al-nas', 'an nas', 'al nas', 'nas', 'naas',
-      'mankind',
     ],
     ref: { surahNumber: 114, quranComUrl: 'https://quran.com/114', totalAyahs: 6 },
   },

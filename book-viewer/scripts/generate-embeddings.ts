@@ -3,13 +3,22 @@
  *
  * Generates embeddings for all pages in the database and stores them in Qdrant.
  *
- * Usage: bun run scripts/generate-embeddings.ts [--force] [--batch-size=50] [--pages-only] [--hadiths-only]
+ * Collection-specific enrichment:
+ *   - Hisn al-Muslim: Prepends chapter title to text for better semantic search
+ *     (the dua texts are very short and need chapter context)
+ *
+ * Usage: bun run scripts/generate-embeddings.ts [options]
  *
  * Options:
- *   --force          Re-generate embeddings even if they already exist
- *   --batch-size=N   Number of pages to process in each batch (default: 50)
- *   --pages-only     Only process book pages, skip Quran and Hadith embeddings
- *   --hadiths-only   Only process hadiths, skip pages and quran
+ *   --force                    Re-generate embeddings even if they already exist
+ *   --batch-size=N             Number of pages to process in each batch (default: 50)
+ *   --pages-only               Only process book pages, skip Quran and Hadith embeddings
+ *   --hadiths-only             Only process hadiths, skip pages and quran
+ *   --hadith-collections=a,b   Only process specific hadith collections (comma-separated slugs)
+ *
+ * Examples:
+ *   bun run scripts/generate-embeddings.ts --hadiths-only --hadith-collections=hisn --force
+ *   bun run scripts/generate-embeddings.ts --hadith-collections=bukhari,muslim
  */
 
 import "dotenv/config";
@@ -41,6 +50,12 @@ const batchSizeArg = process.argv.find((arg) => arg.startsWith("--batch-size="))
 const BATCH_SIZE = batchSizeArg
   ? parseInt(batchSizeArg.split("=")[1], 10)
   : 50;
+
+// Parse --hadith-collections filter (comma-separated list of collection slugs)
+const hadithCollectionsArg = process.argv.find((arg) => arg.startsWith("--hadith-collections="));
+const hadithCollectionsFilter: string[] | null = hadithCollectionsArg
+  ? hadithCollectionsArg.split("=")[1].split(",").map((s) => s.trim())
+  : null;
 
 /**
  * Generate a deterministic point ID from book and page identifiers
@@ -452,12 +467,14 @@ async function initializeHadithCollection(): Promise<void> {
       (c) => c.name === QDRANT_HADITH_COLLECTION
     );
 
-    if (exists && forceFlag) {
+    // Only delete entire collection if --force is used WITHOUT --hadith-collections filter
+    // When filtering by collection, we just update those specific hadiths
+    if (exists && forceFlag && !hadithCollectionsFilter) {
       console.log(`Deleting existing collection: ${QDRANT_HADITH_COLLECTION}`);
       await qdrant.deleteCollection(QDRANT_HADITH_COLLECTION);
     }
 
-    if (!exists || forceFlag) {
+    if (!exists || (forceFlag && !hadithCollectionsFilter)) {
       console.log(`Creating collection: ${QDRANT_HADITH_COLLECTION}`);
       await qdrant.createCollection(QDRANT_HADITH_COLLECTION, {
         vectors: {
@@ -497,6 +514,7 @@ async function initializeHadithCollection(): Promise<void> {
  * Get existing Hadith point IDs from Qdrant to skip already processed hadiths
  */
 async function getExistingHadithPointIds(): Promise<Set<string>> {
+  // When using --force with or without filter, we want to regenerate
   if (forceFlag) {
     return new Set();
   }
@@ -531,6 +549,25 @@ async function getExistingHadithPointIds(): Promise<Set<string>> {
 }
 
 /**
+ * Get text for embedding with collection-specific enrichment.
+ *
+ * For Hisn al-Muslim: combines chapter title + text because the dua texts
+ * are very short (15-45 chars) and need chapter context for semantic search.
+ * Example: "الدعاء إذا تعس المركوب، بِسْـمِ اللهِ"
+ */
+function getHadithTextForEmbedding(
+  slug: string,
+  textPlain: string,
+  chapterArabic: string | null
+): string {
+  // Hisn al-Muslim: combine chapter title + text for better semantic search
+  if (slug === "hisn" && chapterArabic) {
+    return `${chapterArabic}، ${textPlain}`;
+  }
+  return textPlain;
+}
+
+/**
  * Process a batch of hadiths: generate embeddings and upsert to Qdrant
  */
 async function processHadithBatch(
@@ -553,9 +590,14 @@ async function processHadithBatch(
     };
   }>
 ): Promise<number> {
-  // Prepare texts for embedding - use plain text for better semantic matching
+  // Prepare texts for embedding with collection-specific enrichment
   const texts = hadiths.map((hadith) => {
-    const normalized = normalizeArabicText(hadith.textPlain);
+    const text = getHadithTextForEmbedding(
+      hadith.book.collection.slug,
+      hadith.textPlain,
+      hadith.chapterArabic
+    );
+    const normalized = normalizeArabicText(text);
     return truncateForEmbedding(normalized);
   });
 
@@ -563,24 +605,33 @@ async function processHadithBatch(
   const embeddings = await generateEmbeddings(texts);
 
   // Prepare points for Qdrant
-  const points = hadiths.map((hadith, index) => ({
-    id: generateHadithPointId(hadith.book.collection.slug, hadith.hadithNumber),
-    vector: embeddings[index],
-    payload: {
-      collectionSlug: hadith.book.collection.slug,
-      collectionNameArabic: hadith.book.collection.nameArabic,
-      collectionNameEnglish: hadith.book.collection.nameEnglish,
-      bookNumber: hadith.book.bookNumber,
-      bookNameArabic: hadith.book.nameArabic,
-      bookNameEnglish: hadith.book.nameEnglish,
-      hadithNumber: hadith.hadithNumber,
-      text: hadith.textArabic,
-      textPlain: hadith.textPlain,
-      chapterArabic: hadith.chapterArabic,
-      chapterEnglish: hadith.chapterEnglish,
-      sunnahComUrl: generateSunnahComUrl(hadith.book.collection.slug, hadith.hadithNumber, hadith.book.bookNumber),
-    },
-  }));
+  const points = hadiths.map((hadith, index) => {
+    const slug = hadith.book.collection.slug;
+
+    // For Hisn al-Muslim, enrich the displayed text with chapter context
+    const enrichedTextPlain = slug === "hisn" && hadith.chapterArabic
+      ? `${hadith.chapterArabic}، ${hadith.textPlain}`
+      : hadith.textPlain;
+
+    return {
+      id: generateHadithPointId(slug, hadith.hadithNumber),
+      vector: embeddings[index],
+      payload: {
+        collectionSlug: slug,
+        collectionNameArabic: hadith.book.collection.nameArabic,
+        collectionNameEnglish: hadith.book.collection.nameEnglish,
+        bookNumber: hadith.book.bookNumber,
+        bookNameArabic: hadith.book.nameArabic,
+        bookNameEnglish: hadith.book.nameEnglish,
+        hadithNumber: hadith.hadithNumber,
+        text: hadith.textArabic,
+        textPlain: enrichedTextPlain,
+        chapterArabic: hadith.chapterArabic,
+        chapterEnglish: hadith.chapterEnglish,
+        sunnahComUrl: generateSunnahComUrl(slug, hadith.hadithNumber, hadith.book.bookNumber),
+      },
+    };
+  });
 
   // Upsert to Qdrant
   await qdrant.upsert(QDRANT_HADITH_COLLECTION, {
@@ -598,6 +649,9 @@ async function generateHadithEmbeddings(): Promise<void> {
   console.log("\n" + "=".repeat(60));
   console.log("HADITH EMBEDDINGS");
   console.log("=".repeat(60));
+  if (hadithCollectionsFilter) {
+    console.log(`Filter: ${hadithCollectionsFilter.join(", ")}`);
+  }
 
   // Initialize Hadith collection
   await initializeHadithCollection();
@@ -607,12 +661,17 @@ async function generateHadithEmbeddings(): Promise<void> {
   const existingIds = await getExistingHadithPointIds();
   console.log(`Found ${existingIds.size} existing hadith embeddings\n`);
 
+  // Build where clause for collections filter
+  const whereClause = hadithCollectionsFilter
+    ? { book: { collection: { slug: { in: hadithCollectionsFilter } } } }
+    : {};
+
   // Get total hadith count
-  const totalHadiths = await prisma.hadith.count();
-  console.log(`Total hadiths in database: ${totalHadiths}\n`);
+  const totalHadiths = await prisma.hadith.count({ where: whereClause });
+  console.log(`Total hadiths to process: ${totalHadiths}\n`);
 
   if (totalHadiths === 0) {
-    console.log("No hadiths found in database. Run scrape-sunnah.ts first.");
+    console.log("No hadiths found. Check collection filter or run scrape-sunnah.ts first.");
     return;
   }
 
@@ -624,6 +683,7 @@ async function generateHadithEmbeddings(): Promise<void> {
   while (offset < totalHadiths) {
     // Fetch batch of hadiths with book and collection info
     const hadiths = await prisma.hadith.findMany({
+      where: whereClause,
       skip: offset,
       take: BATCH_SIZE,
       orderBy: [{ bookId: "asc" }, { hadithNumber: "asc" }],

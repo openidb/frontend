@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
 import { formatBookYear, getBookCentury, getCenturyLabel } from "@/lib/dates";
-import { defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import { useAppConfig, TranslationDisplayOption } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
 
 interface Author {
@@ -55,17 +55,19 @@ function getBookYear(book: Book, showPublicationDates: boolean): string {
   return result.isPublicationYear ? `${result.year} (pub.)` : result.year;
 }
 
-const STORAGE_KEY = "searchConfig";
+// Cache key for translated books
+const BOOKS_CACHE_KEY = "booksCache";
 
 export default function BooksClient({ books: initialBooks }: BooksClientProps) {
   const { t, locale } = useTranslation();
+  const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
-  const [showPublicationDates, setShowPublicationDates] = useState(defaultSearchConfig.showPublicationDates);
-  const [bookTitleDisplay, setBookTitleDisplay] = useState<TranslationDisplayOption>(defaultSearchConfig.bookTitleDisplay);
-  const [autoTranslation, setAutoTranslation] = useState(defaultSearchConfig.autoTranslation);
   const [books, setBooks] = useState<Book[]>(initialBooks);
+
+  // Extract config values
+  const { showPublicationDates, bookTitleDisplay, autoTranslation } = config;
 
   // Get effective book title display setting (auto uses UI locale)
   const effectiveBookTitleDisplay = useMemo(() => {
@@ -76,37 +78,27 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
     return bookTitleDisplay;
   }, [autoTranslation, bookTitleDisplay, locale]);
 
-  // Load display options from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.showPublicationDates === "boolean") {
-          setShowPublicationDates(parsed.showPublicationDates);
-        }
-        // Handle new bookTitleDisplay setting
-        if (parsed.bookTitleDisplay) {
-          setBookTitleDisplay(parsed.bookTitleDisplay);
-        } else if (typeof parsed.showTransliterations === "boolean") {
-          // Backward compatibility: migrate old setting
-          setBookTitleDisplay(parsed.showTransliterations ? "transliteration" : "none");
-        }
-        if (typeof parsed.autoTranslation === "boolean") {
-          setAutoTranslation(parsed.autoTranslation);
-        }
-      } catch {
-        // Invalid JSON, use defaults
-      }
-    }
-  }, []);
-
   // Fetch books with translations when display setting changes to a language
   useEffect(() => {
+    if (!isLoaded) return;
+
     const fetchBooksWithTranslations = async () => {
       if (effectiveBookTitleDisplay === "none" || effectiveBookTitleDisplay === "transliteration") {
         setBooks(initialBooks);
         return;
+      }
+
+      // Check sessionStorage cache first
+      const cacheKey = `${BOOKS_CACHE_KEY}_${effectiveBookTitleDisplay}`;
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const cachedBooks = JSON.parse(cached);
+          setBooks(cachedBooks);
+          return;
+        }
+      } catch {
+        // Cache read failed, continue to fetch
       }
 
       try {
@@ -114,6 +106,12 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
         if (response.ok) {
           const data = await response.json();
           setBooks(data.books);
+          // Cache the result
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(data.books));
+          } catch {
+            // Cache write failed, ignore
+          }
         }
       } catch (error) {
         console.error("Failed to fetch book translations:", error);
@@ -121,7 +119,7 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
     };
 
     fetchBooksWithTranslations();
-  }, [effectiveBookTitleDisplay, initialBooks]);
+  }, [effectiveBookTitleDisplay, initialBooks, isLoaded]);
 
   // Helper to get secondary title based on display setting
   const getSecondaryTitle = (book: Book): string | null => {
@@ -256,6 +254,28 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
       return matchesSearch && matchesCategory && matchesCentury;
     });
   }, [books, searchQuery, selectedCategories, selectedCenturies]);
+
+  // Show loading skeleton until config is loaded to prevent flicker
+  if (!isLoaded) {
+    return (
+      <div className="p-4 md:p-8">
+        <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="h-8 w-32 bg-muted animate-pulse rounded" />
+          <div className="h-10 w-64 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="rounded-md border">
+          <div className="h-12 bg-muted/50 border-b" />
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="h-16 border-b flex items-center gap-4 px-4">
+              <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8">

@@ -69,7 +69,7 @@ export const defaultSearchConfig: SearchConfig = {
   includeHadith: true,
   includeBooks: true,
   reranker: "none",
-  similarityCutoff: 0.15,
+  similarityCutoff: 0.6,
   preRerankLimit: 70,
   postRerankLimit: 10,
   fuzzyEnabled: true,
@@ -87,9 +87,7 @@ export const rerankerOptions: { value: RerankerType; label: string; description:
   { value: "none", label: "None", description: "Fast (default)" },
   { value: "gpt-oss-120b", label: "OpenAI/GPT-OSS 120B", description: "Highest quality, slower" },
   { value: "gemini-flash", label: "Gemini Flash", description: "High quality reasoning" },
-  { value: "gpt-oss-20b", label: "OpenAI/GPT-OSS 20B", description: "Good quality" },
   { value: "jina", label: "Jina Reranker", description: "Fast neural reranker" },
-  { value: "qwen4b", label: "Qwen 4B Embeddings", description: "Embedding-based reranking" },
 ];
 
 interface SearchConfigDropdownProps {

@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, HadithResultData } from "@/components/SearchResult";
-import { SearchConfigDropdown, SearchConfig, defaultSearchConfig } from "@/components/SearchConfigDropdown";
+import { SearchConfigDropdown, type TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import { useAppConfig, type SearchConfig } from "@/lib/config";
 import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import AlgorithmDescription from "@/components/AlgorithmDescription";
@@ -124,10 +125,6 @@ interface SearchResponse {
   debugStats?: DebugStats;
 }
 
-const SEARCH_CONFIG_KEY = "searchConfig";
-const SEARCH_CONFIG_VERSION_KEY = "searchConfigVersion";
-const CURRENT_CONFIG_VERSION = 6; // Bump when changing defaults - v6: ensure translation defaults
-
 interface SearchClientProps {
   bookCount: number;
 }
@@ -135,6 +132,7 @@ interface SearchClientProps {
 export default function SearchClient({ bookCount }: SearchClientProps) {
   const searchParams = useSearchParams();
   const { t, locale } = useTranslation();
+  const { config: searchConfig, setConfig: setSearchConfig } = useAppConfig();
 
   const [query, setQuery] = useState("");
   const [authors, setAuthors] = useState<AuthorResultData[]>([]);
@@ -150,38 +148,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const [showAlgorithm, setShowAlgorithm] = useState(false);
   const [surahMatch, setSurahMatch] = useState<SurahMatch | null>(null);
   const restoredQueryRef = useRef<string | null>(null);
-
-  // Search config with LocalStorage persistence
-  const [searchConfig, setSearchConfig] = useState<SearchConfig>(defaultSearchConfig);
-
-  // Load config from localStorage on mount (with migration for new defaults)
-  useEffect(() => {
-    try {
-      const storedVersion = parseInt(localStorage.getItem(SEARCH_CONFIG_VERSION_KEY) || "0", 10);
-      const stored = localStorage.getItem(SEARCH_CONFIG_KEY);
-
-      if (stored) {
-        const parsed = JSON.parse(stored);
-
-        // Migration: if version is old, reset to new defaults
-        if (storedVersion < CURRENT_CONFIG_VERSION) {
-          parsed.reranker = defaultSearchConfig.reranker;
-          parsed.autoTranslation = defaultSearchConfig.autoTranslation;
-          parsed.hadithTranslation = defaultSearchConfig.hadithTranslation;
-          parsed.quranTranslation = defaultSearchConfig.quranTranslation;
-          localStorage.setItem(SEARCH_CONFIG_VERSION_KEY, String(CURRENT_CONFIG_VERSION));
-          localStorage.setItem(SEARCH_CONFIG_KEY, JSON.stringify({ ...defaultSearchConfig, ...parsed }));
-        }
-
-        setSearchConfig({ ...defaultSearchConfig, ...parsed });
-      } else {
-        // New user, set version
-        localStorage.setItem(SEARCH_CONFIG_VERSION_KEY, String(CURRENT_CONFIG_VERSION));
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }, []);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Initialize query and restore cached results on mount only
   const initializedRef = useRef(false);
@@ -222,6 +189,15 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       return;
     }
 
+    // Cancel any previous in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     if (isRefineSearch) {
       setIsRefining(true);
     } else {
@@ -235,6 +211,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       // For quick search (typing), use reranker=none and no refine
       // For refine search (button click), use refine=true and the selected reranker
       const effectiveReranker = isRefineSearch ? config.reranker : "none";
+      // Compute effective book title language for API
+      const effectiveBookTitleLang = config.autoTranslation
+        ? (locale === "ar" ? "transliteration" : locale)
+        : config.bookTitleDisplay;
+
       const params = new URLSearchParams({
         q: searchQuery,
         mode: "hybrid",
@@ -254,10 +235,13 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         hadithTranslation: config.autoTranslation
           ? "en"  // Only English available for hadiths
           : (config.hadithTranslation || "none"),
+        bookTitleLang: effectiveBookTitleLang,
         ...(isRefineSearch && { refine: "true" }),
       });
 
-      const response = await fetch(`/api/search?${params.toString()}`);
+      const response = await fetch(`/api/search?${params.toString()}`, {
+        signal: controller.signal,
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -315,6 +299,10 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         // Ignore storage quota errors - caching is optional
       }
     } catch (err) {
+      // Check if this was an abort - don't update state for cancelled requests
+      if (controller.signal.aborted) {
+        return;
+      }
       console.error("Search error:", err);
       setError(err instanceof Error ? err.message : "Search failed");
       setUnifiedResults([]);
@@ -323,8 +311,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setDebugStats(null);
       setSurahMatch(null);
     } finally {
-      setIsLoading(false);
-      setIsRefining(false);
+      // Only update loading states if this request wasn't aborted
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+        setIsRefining(false);
+      }
     }
   }, []);
 
@@ -348,10 +339,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     };
   }, [debouncedSearch]);
 
-  // Save config to localStorage when it changes and re-search if needed
+  // Save config and re-search if needed
   const handleConfigChange = useCallback((newConfig: SearchConfig) => {
     setSearchConfig(newConfig);
-    localStorage.setItem(SEARCH_CONFIG_KEY, JSON.stringify(newConfig));
     // Clear restoration ref so config change triggers a fresh search
     restoredQueryRef.current = null;
     // Clear cached results since config affects results
@@ -369,7 +359,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     if (query.length >= 2) {
       fetchResults(query, newConfig, false);
     }
-  }, [query, fetchResults]);
+  }, [query, fetchResults, setSearchConfig]);
 
   // Handle input change - trigger debounced quick search
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -392,6 +382,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const handleRefineSearch = useCallback(() => {
     if (query.length < 2) return;
     debouncedSearch.cancel(); // Cancel any pending debounced search
+    setIsLoading(false); // Reset loading from typing search
     fetchResults(query, searchConfig, true);
     // Update URL without navigation
     window.history.replaceState({}, "", `/search?q=${encodeURIComponent(query)}`);
@@ -461,7 +452,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
           </div>
           <Button
             onClick={handleRefineSearch}
-            disabled={query.length < 2 || isLoading || isRefining}
+            disabled={query.length < 2 || isRefining}
             className="h-10 md:h-12 px-3 md:px-6 shrink-0 border box-border hover:opacity-90 focus:outline-none focus-visible:ring-0 active:transform-none"
             style={{
               borderColor: "#31b9c9",
@@ -824,7 +815,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
               } else {
                 key = `book-${result.data.bookId}-${result.data.pageNumber}-${index}`;
               }
-              return <UnifiedSearchResult key={key} result={result} />;
+              // Compute effective book title display based on autoTranslation setting
+              const effectiveBookTitleDisplay: TranslationDisplayOption = searchConfig.autoTranslation
+                ? (locale === "ar" ? "transliteration" : locale as TranslationDisplayOption)
+                : searchConfig.bookTitleDisplay;
+              return <UnifiedSearchResult key={key} result={result} bookTitleDisplay={effectiveBookTitleDisplay} />;
             })}
           </div>
         )}

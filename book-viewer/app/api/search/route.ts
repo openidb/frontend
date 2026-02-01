@@ -3,7 +3,7 @@
  *
  * GET /api/search?q={query}&limit={20}&mode={hybrid|semantic|keyword}&bookId={optional}
  *     &includeQuran={true}&includeHadith={true}&includeBooks={true}
- *     &reranker={qwen4b|qwen8b|jina|none}&similarityCutoff={0.15}
+ *     &reranker={qwen4b|qwen8b|jina|none}&similarityCutoff={0.6}
  *     &preRerankLimit={50}&postRerankLimit={10}
  *
  * Performs hybrid search combining:
@@ -2203,7 +2203,7 @@ async function searchAyahsHybrid(
   limit: number = 10,
   options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
 ): Promise<AyahResult[]> {
-  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -2382,7 +2382,7 @@ async function searchHadithsHybrid(
   limit: number = 10,
   options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
 ): Promise<HadithResult[]> {
-  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.15, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -2445,7 +2445,7 @@ export async function GET(request: NextRequest) {
   const reranker: RerankerType = rerankerParam && ["gpt-oss-20b", "gpt-oss-120b", "gemini-flash", "none"].includes(rerankerParam)
     ? rerankerParam
     : "none"; // No reranking by default - RRF fusion is sufficient
-  const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.15");
+  const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.6");
   const preRerankLimit = Math.min(Math.max(parseInt(searchParams.get("preRerankLimit") || "50", 10), 20), 200);
   const postRerankLimit = Math.min(Math.max(parseInt(searchParams.get("postRerankLimit") || "10", 10), 5), 50);
 

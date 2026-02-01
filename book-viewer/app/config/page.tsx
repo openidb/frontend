@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { HelpCircle } from "lucide-react";
 import {
   Select,
@@ -10,18 +9,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  defaultSearchConfig,
   rerankerOptions,
   QURAN_TRANSLATIONS,
   TRANSLATION_DISPLAY_OPTIONS,
-  type SearchConfig,
   type RerankerType,
   type TranslationDisplayOption,
 } from "@/components/SearchConfigDropdown";
+import { useAppConfig } from "@/lib/config";
 import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
 import { useTheme, type Theme } from "@/lib/theme";
-
-const STORAGE_KEY = "searchConfig";
 
 function InfoTooltip({ text }: { text: string }) {
   return (
@@ -147,40 +143,9 @@ function SelectSetting({
 export default function ConfigPage() {
   const { t, locale, setLocale } = useTranslation();
   const { theme, setTheme } = useTheme();
-  const [config, setConfig] = useState<SearchConfig>(defaultSearchConfig);
-  const [mounted, setMounted] = useState(false);
+  const { config, updateConfig, isLoaded } = useAppConfig();
 
-  useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Handle backward compatibility: migrate showTransliterations to bookTitleDisplay
-        if (parsed.showTransliterations !== undefined && !parsed.bookTitleDisplay) {
-          parsed.bookTitleDisplay = parsed.showTransliterations ? "transliteration" : "none";
-          delete parsed.showTransliterations;
-        }
-        // Clean up removed tocDisplay field
-        delete parsed.tocDisplay;
-        // Clamp similarityCutoff to new valid range (0.15-0.5)
-        if (typeof parsed.similarityCutoff === "number") {
-          parsed.similarityCutoff = Math.max(0.15, Math.min(0.5, parsed.similarityCutoff));
-        }
-        setConfig({ ...defaultSearchConfig, ...parsed });
-      } catch {
-        // Invalid JSON, use defaults
-      }
-    }
-  }, []);
-
-  const updateConfig = (updates: Partial<SearchConfig>) => {
-    const newConfig = { ...config, ...updates };
-    setConfig(newConfig);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
-  };
-
-  if (!mounted) {
+  if (!isLoaded) {
     return (
       <div className="p-4 md:p-8">
         <div className="max-w-md mx-auto space-y-8">
@@ -343,7 +308,7 @@ export default function ConfigPage() {
             label={t("config.similarity.cutoff")}
             value={config.similarityCutoff}
             min={0.15}
-            max={0.5}
+            max={0.8}
             step={0.05}
             onChange={(value) => updateConfig({ similarityCutoff: value })}
             format={(v) => v.toFixed(2)}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { BookOpen, FileText, ExternalLink } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import type { TranslationDisplayOption } from "@/components/SearchConfigDropdown";
 
 // Type definitions for result data
 export interface BookResultData {
@@ -20,6 +21,7 @@ export interface BookResultData {
     id: string;
     titleArabic: string;
     titleLatin: string;
+    titleTranslated?: string | null;
     filename: string;
     author: {
       nameArabic: string;
@@ -73,9 +75,10 @@ export type UnifiedResult =
 
 interface SearchResultProps {
   result: BookResultData;
+  bookTitleDisplay?: TranslationDisplayOption;
 }
 
-export default function SearchResult({ result }: SearchResultProps) {
+export default function SearchResult({ result, bookTitleDisplay = "transliteration" }: SearchResultProps) {
   const { t } = useTranslation();
 
   if (!result.book) return null;
@@ -85,6 +88,24 @@ export default function SearchResult({ result }: SearchResultProps) {
   // Build the reader URL with pn (page number) parameter - uses unique sequential page number
   // that maps directly to EPUB file names like page_0967.xhtml
   const readerUrl = `/reader/${book.id}?pn=${pageNumber}`;
+
+  // Determine secondary title based on bookTitleDisplay setting
+  const getSecondaryTitle = (): string | null => {
+    if (bookTitleDisplay === "none") {
+      return null;
+    }
+    if (bookTitleDisplay === "transliteration") {
+      return book.titleLatin;
+    }
+    // For language codes, use translated title if available
+    if (book.titleTranslated) {
+      return book.titleTranslated;
+    }
+    // Fallback to transliteration if no translation
+    return book.titleLatin;
+  };
+
+  const secondaryTitle = getSecondaryTitle();
 
   return (
     <Link
@@ -96,9 +117,11 @@ export default function SearchResult({ result }: SearchResultProps) {
         <h3 className="text-lg font-semibold truncate text-foreground" dir="rtl">
           {book.titleArabic}
         </h3>
-        <p className="text-sm truncate text-muted-foreground">
-          {book.titleLatin}
-        </p>
+        {secondaryTitle && (
+          <p className="text-sm truncate text-muted-foreground">
+            {secondaryTitle}
+          </p>
+        )}
       </div>
 
       {/* Author */}
@@ -332,16 +355,17 @@ export function HadithResult({ hadith }: HadithResultProps) {
 // Unified result component that renders the appropriate card based on type
 interface UnifiedSearchResultProps {
   result: UnifiedResult;
+  bookTitleDisplay?: TranslationDisplayOption;
 }
 
-export function UnifiedSearchResult({ result }: UnifiedSearchResultProps) {
+export function UnifiedSearchResult({ result, bookTitleDisplay }: UnifiedSearchResultProps) {
   switch (result.type) {
     case "quran":
       return <AyahResult ayah={result.data} />;
     case "hadith":
       return <HadithResult hadith={result.data} />;
     case "book":
-      return <SearchResult result={result.data} />;
+      return <SearchResult result={result.data} bookTitleDisplay={bookTitleDisplay} />;
     default:
       return null;
   }
