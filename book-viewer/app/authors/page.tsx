@@ -112,7 +112,7 @@ export default function AuthorsPage() {
           <Input
             type="text"
             placeholder={t("authors.searchPlaceholder")}
-            className="w-full sm:w-64"
+            className="w-full sm:w-64 text-base sm:text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

@@ -63,6 +63,17 @@ export interface SearchConfig {
   autoTranslation: boolean; // When true, use UI language for translations
   quranTranslation: string; // Language code ("en", "ur", "fr", etc.) or "none"
   hadithTranslation: "none" | "en"; // Hadith translation (English only for now)
+  // Refine search settings - Query weights (Step 1)
+  refineOriginalWeight: number;     // Weight of original query (default: 1.0)
+  refineExpandedWeight: number;     // Weight of LLM-expanded queries (default: 0.7)
+  // Refine search settings - Per-query retrieval limits (Step 2)
+  refineBookPerQuery: number;       // Books per expanded query (default: 30)
+  refineAyahPerQuery: number;       // Ayahs per expanded query (default: 30)
+  refineHadithPerQuery: number;     // Hadiths per expanded query (default: 30)
+  // Refine search settings - Reranker limits (Step 4)
+  refineBookRerank: number;         // Books to send to reranker (default: 20)
+  refineAyahRerank: number;         // Ayahs to send to reranker (default: 12)
+  refineHadithRerank: number;       // Hadiths to send to reranker (default: 15)
 }
 
 export const defaultSearchConfig: SearchConfig = {
@@ -83,6 +94,17 @@ export const defaultSearchConfig: SearchConfig = {
   autoTranslation: true,
   quranTranslation: "en",
   hadithTranslation: "en",  // Default to English
+  // Refine search settings - Query weights
+  refineOriginalWeight: 1.0,
+  refineExpandedWeight: 0.7,
+  // Refine search settings - Per-query retrieval limits
+  refineBookPerQuery: 30,
+  refineAyahPerQuery: 30,
+  refineHadithPerQuery: 30,
+  // Refine search settings - Reranker limits
+  refineBookRerank: 20,
+  refineAyahRerank: 12,
+  refineHadithRerank: 15,
 };
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [

@@ -299,7 +299,7 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
           <Input
             type="text"
             placeholder={t("books.searchPlaceholder")}
-            className="w-full sm:w-64"
+            className="w-full sm:w-64 text-base sm:text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

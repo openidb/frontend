@@ -1548,15 +1548,10 @@ If no documents are relevant, return an empty array []:
 // Refine Search: Query Expansion
 // ============================================================================
 
-/**
- * Performance limits for refine search
- */
-const REFINE_LIMITS = {
-  maxExpandedQueries: 5,
-  perQueryPreRerankLimit: 30,  // vs 60 for single query
-  totalCandidatesBeforeRerank: 100,
-  finalResultLimit: 20,
-};
+// Refine search limits are now configurable via URL parameters:
+// - refineOriginalWeight, refineExpandedWeight (query weights)
+// - refineBookPerQuery, refineAyahPerQuery, refineHadithPerQuery (per-query retrieval limits)
+// - refineBookRerank, refineAyahRerank, refineHadithRerank (reranker limits)
 
 /**
  * Expanded query with weight and reason
@@ -2435,6 +2430,16 @@ export async function GET(request: NextRequest) {
   // Refine search parameter - enables query expansion and multi-query retrieval
   const refine = searchParams.get("refine") === "true";
 
+  // Refine search configurable parameters
+  const refineOriginalWeight = Math.min(Math.max(parseFloat(searchParams.get("refineOriginalWeight") || "1.0"), 0.5), 1.0);
+  const refineExpandedWeight = Math.min(Math.max(parseFloat(searchParams.get("refineExpandedWeight") || "0.7"), 0.3), 1.0);
+  const refineBookPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineBookPerQuery") || "30", 10), 10), 60);
+  const refineAyahPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineAyahPerQuery") || "30", 10), 10), 60);
+  const refineHadithPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineHadithPerQuery") || "30", 10), 10), 60);
+  const refineBookRerank = Math.min(Math.max(parseInt(searchParams.get("refineBookRerank") || "20", 10), 5), 40);
+  const refineAyahRerank = Math.min(Math.max(parseInt(searchParams.get("refineAyahRerank") || "12", 10), 5), 25);
+  const refineHadithRerank = Math.min(Math.max(parseInt(searchParams.get("refineHadithRerank") || "15", 10), 5), 25);
+
   // Validate query
   if (!query || query.trim().length === 0) {
     return NextResponse.json(
@@ -2592,18 +2597,23 @@ export async function GET(request: NextRequest) {
     // REFINE SEARCH: Query expansion + multi-query retrieval + merge
     // ========================================================================
     if (refine && mode === "hybrid" && !bookId) {
-      console.log(`[Refine] Starting refine search for: "${query}"`);
+      console.log(`[Refine] Starting refine search for: "${query}" (weights: original=${refineOriginalWeight}, expanded=${refineExpandedWeight})`);
       const _refineStart = Date.now();
 
       // Step 1: Expand the query (with timing)
       const _expansionStart = Date.now();
-      const { queries: expanded, cached: expansionCached } = await expandQueryWithCacheInfo(query);
+      const { queries: expandedRaw, cached: expansionCached } = await expandQueryWithCacheInfo(query);
       _refineTiming.queryExpansion = Date.now() - _expansionStart;
       _refineQueryExpansionCached = expansionCached;
+
+      // Apply user-configured weights to the expanded queries
+      const expanded = expandedRaw.map((exp, idx) => ({
+        ...exp,
+        weight: idx === 0 ? refineOriginalWeight : refineExpandedWeight,
+      }));
       expandedQueries = expanded.map(e => ({ query: e.query, reason: e.reason }));
 
       // Step 2: Execute parallel searches for all expanded queries
-      const perQueryLimit = REFINE_LIMITS.perQueryPreRerankLimit;
       const _searchesStart = Date.now();
 
       // For each query, search books, ayahs, and hadiths in parallel
@@ -2621,21 +2631,21 @@ export async function GET(request: NextRequest) {
         const shouldSkipSemantic = normalizedQ.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(q);
         const qEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQ);
 
-        // Run semantic + keyword for books
+        // Run semantic + keyword for books (using configurable per-query limit)
         const [bookSemantic, bookKeyword] = await Promise.all([
-          semanticSearch(q, perQueryLimit, null, refineSimilarityCutoff, qEmbedding).catch(() => []),
-          keywordSearchES(q, perQueryLimit, null, fuzzyOptions).catch(() => []),
+          semanticSearch(q, refineBookPerQuery, null, refineSimilarityCutoff, qEmbedding).catch(() => []),
+          keywordSearchES(q, refineBookPerQuery, null, fuzzyOptions).catch(() => []),
         ]);
 
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
 
-        // Run hybrid for ayahs and hadiths (if enabled)
+        // Run hybrid for ayahs and hadiths (if enabled) with configurable per-query limits
         const refineHybridOptionsWithEmbedding = { ...refineHybridOptions, reranker: "none" as RerankerType, precomputedEmbedding: qEmbedding };
         const ayahResults = includeQuran
-          ? await searchAyahsHybrid(q, perQueryLimit, refineHybridOptionsWithEmbedding).catch(() => [])
+          ? await searchAyahsHybrid(q, refineAyahPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
           : [];
         const hadithResults = includeHadith
-          ? await searchHadithsHybrid(q, perQueryLimit, refineHybridOptionsWithEmbedding).catch(() => [])
+          ? await searchHadithsHybrid(q, refineHadithPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
           : [];
 
         perQueryTimings[queryIndex] = Date.now() - _queryStart;
@@ -2694,8 +2704,8 @@ export async function GET(request: NextRequest) {
       const preRerankBookIds = [...new Set(mergedBooks.slice(0, 30).map((r) => r.bookId))];
       const preRerankBookMap = await getBookMetadataForReranking(preRerankBookIds);
 
-      // Track candidates sent to reranker
-      const rerankLimits = { books: REFINE_LIMITS.finalResultLimit, ayahs: 12, hadiths: 15 };
+      // Track candidates sent to reranker (using configurable limits)
+      const rerankLimits = { books: refineBookRerank, ayahs: refineAyahRerank, hadiths: refineHadithRerank };
       _refineCandidates.sentToReranker = Math.min(mergedBooks.length, rerankLimits.books) +
                                           Math.min(mergedAyahs.length, rerankLimits.ayahs) +
                                           Math.min(mergedHadiths.length, rerankLimits.hadiths);

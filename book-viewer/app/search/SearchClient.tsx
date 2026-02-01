@@ -237,7 +237,17 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
           ? "en"  // Only English available for hadiths
           : (config.hadithTranslation || "none"),
         bookTitleLang: effectiveBookTitleLang,
-        ...(isRefineSearch && { refine: "true" }),
+        ...(isRefineSearch && {
+          refine: "true",
+          refineOriginalWeight: String(config.refineOriginalWeight),
+          refineExpandedWeight: String(config.refineExpandedWeight),
+          refineBookPerQuery: String(config.refineBookPerQuery),
+          refineAyahPerQuery: String(config.refineAyahPerQuery),
+          refineHadithPerQuery: String(config.refineHadithPerQuery),
+          refineBookRerank: String(config.refineBookRerank),
+          refineAyahRerank: String(config.refineAyahRerank),
+          refineHadithRerank: String(config.refineHadithRerank),
+        }),
       });
 
       const response = await fetch(`/api/search?${params.toString()}`, {
@@ -436,7 +446,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
             <Input
               type="text"
               placeholder={t("search.placeholder")}
-              className="text-sm h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg"
+              className="text-base md:text-sm h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg"
               dir="auto"
               value={query}
               onChange={handleInputChange}

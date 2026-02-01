@@ -1,6 +1,7 @@
 "use client";
 
-import { HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { HelpCircle, ChevronDown, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -40,6 +41,38 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 function Divider() {
   return <hr className="border-border" />;
+}
+
+function CollapsibleSection({
+  title,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-4">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center gap-2 w-full text-left group"
+      >
+        {isOpen ? (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        )}
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
+          {title}
+        </h2>
+      </button>
+      {isOpen && <div className="space-y-6 pl-6">{children}</div>}
+    </div>
+  );
 }
 
 function SliderSetting({
@@ -144,6 +177,7 @@ export default function ConfigPage() {
   const { t, locale, setLocale } = useTranslation();
   const { theme, setTheme } = useTheme();
   const { config, updateConfig, isLoaded } = useAppConfig();
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -301,130 +335,7 @@ export default function ConfigPage() {
 
         <Divider />
 
-        {/* Similarity */}
-        <div className="space-y-4">
-          <SectionHeader>{t("config.sections.similarity")}</SectionHeader>
-          <SliderSetting
-            label={t("config.similarity.cutoff")}
-            value={config.similarityCutoff}
-            min={0.5}
-            max={0.75}
-            step={0.01}
-            onChange={(value) => updateConfig({ similarityCutoff: value })}
-            format={(v) => v.toFixed(2)}
-            info={t("config.similarity.cutoffInfo")}
-          />
-          <SliderSetting
-            label={t("config.similarity.refineCutoff")}
-            value={config.refineSimilarityCutoff}
-            min={0.15}
-            max={0.65}
-            step={0.01}
-            onChange={(value) => updateConfig({ refineSimilarityCutoff: value })}
-            format={(v) => v.toFixed(2)}
-            info={t("config.similarity.refineCutoffInfo")}
-          />
-        </div>
-
-        <Divider />
-
-        {/* Fuzzy Search */}
-        <div className="space-y-4">
-          <SectionHeader>{t("config.sections.fuzzySearch")}</SectionHeader>
-          <ToggleSetting
-            label={t("config.fuzzy.enableFallback")}
-            checked={config.fuzzyEnabled}
-            onChange={(checked) => updateConfig({ fuzzyEnabled: checked })}
-            info={t("config.fuzzy.enableFallbackInfo")}
-          />
-          {config.fuzzyEnabled && (
-            <SliderSetting
-              label={t("config.fuzzy.threshold")}
-              value={config.fuzzyThreshold}
-              min={0.1}
-              max={0.5}
-              step={0.05}
-              onChange={(value) => updateConfig({ fuzzyThreshold: value })}
-              format={(v) => v.toFixed(2)}
-              info={t("config.fuzzy.thresholdInfo")}
-            />
-          )}
-        </div>
-
-        <Divider />
-
-        {/* Reranking */}
-        <div className="space-y-4">
-          <SectionHeader>{t("config.sections.reranking")}</SectionHeader>
-          <SelectSetting
-            label={t("config.reranker.model")}
-            info={t("config.reranker.modelInfo")}
-          >
-            <Select
-              value={config.reranker}
-              onValueChange={(value) => updateConfig({ reranker: value as RerankerType })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue>
-                  {(() => {
-                    const keyMap: Record<RerankerType, string> = {
-                      "gpt-oss-20b": "gptOss20b",
-                      "gpt-oss-120b": "gptOss120b",
-                      "gemini-flash": "geminiFlash",
-                      "qwen4b": "qwen4b",
-                      "jina": "jina",
-                      "none": "none",
-                    };
-                    return t(`config.rerankerOptions.${keyMap[config.reranker]}`);
-                  })()}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border">
-                {rerankerOptions.map((option) => {
-                  const keyMap: Record<RerankerType, string> = {
-                    "gpt-oss-20b": "gptOss20b",
-                    "gpt-oss-120b": "gptOss120b",
-                    "gemini-flash": "geminiFlash",
-                    "qwen4b": "qwen4b",
-                    "jina": "jina",
-                    "none": "none",
-                  };
-                  const key = keyMap[option.value];
-                  return (
-                    <SelectItem key={option.value} value={option.value} className="py-2">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{t(`config.rerankerOptions.${key}`)}</span>
-                        <span className="text-xs text-muted-foreground">{t(`config.rerankerOptions.${key}Desc`)}</span>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-          </SelectSetting>
-          <SliderSetting
-            label={t("config.reranker.candidates")}
-            value={config.preRerankLimit}
-            min={20}
-            max={150}
-            step={10}
-            onChange={(value) => updateConfig({ preRerankLimit: value })}
-            info={t("config.reranker.candidatesInfo")}
-          />
-          <SliderSetting
-            label={t("config.reranker.results")}
-            value={config.postRerankLimit}
-            min={5}
-            max={30}
-            step={5}
-            onChange={(value) => updateConfig({ postRerankLimit: value })}
-            info={t("config.reranker.resultsInfo")}
-          />
-        </div>
-
-        <Divider />
-
-        {/* Books Display */}
+        {/* Books Display - moved up */}
         <div className="space-y-4">
           <SectionHeader>{t("config.sections.booksDisplay")}</SectionHeader>
           <ToggleSetting
@@ -434,6 +345,223 @@ export default function ConfigPage() {
             info={t("config.display.showPublicationDatesInfo")}
           />
         </div>
+
+        <Divider />
+
+        {/* Advanced Settings - Collapsible */}
+        <CollapsibleSection
+          title={t("config.sections.advanced")}
+          isOpen={advancedOpen}
+          onToggle={() => setAdvancedOpen(!advancedOpen)}
+        >
+          {/* Similarity */}
+          <div className="space-y-4">
+            <SectionHeader>{t("config.sections.similarity")}</SectionHeader>
+            <SliderSetting
+              label={t("config.similarity.cutoff")}
+              value={config.similarityCutoff}
+              min={0.5}
+              max={0.75}
+              step={0.01}
+              onChange={(value) => updateConfig({ similarityCutoff: value })}
+              format={(v) => v.toFixed(2)}
+              info={t("config.similarity.cutoffInfo")}
+            />
+            <SliderSetting
+              label={t("config.similarity.refineCutoff")}
+              value={config.refineSimilarityCutoff}
+              min={0.15}
+              max={0.65}
+              step={0.01}
+              onChange={(value) => updateConfig({ refineSimilarityCutoff: value })}
+              format={(v) => v.toFixed(2)}
+              info={t("config.similarity.refineCutoffInfo")}
+            />
+          </div>
+
+          <Divider />
+
+          {/* Fuzzy Search */}
+          <div className="space-y-4">
+            <SectionHeader>{t("config.sections.fuzzySearch")}</SectionHeader>
+            <ToggleSetting
+              label={t("config.fuzzy.enableFallback")}
+              checked={config.fuzzyEnabled}
+              onChange={(checked) => updateConfig({ fuzzyEnabled: checked })}
+              info={t("config.fuzzy.enableFallbackInfo")}
+            />
+            {config.fuzzyEnabled && (
+              <SliderSetting
+                label={t("config.fuzzy.threshold")}
+                value={config.fuzzyThreshold}
+                min={0.1}
+                max={0.5}
+                step={0.05}
+                onChange={(value) => updateConfig({ fuzzyThreshold: value })}
+                format={(v) => v.toFixed(2)}
+                info={t("config.fuzzy.thresholdInfo")}
+              />
+            )}
+          </div>
+
+          <Divider />
+
+          {/* Search Settings */}
+          <div className="space-y-4">
+            <SectionHeader>{t("config.sections.searchSettings")}</SectionHeader>
+            <SelectSetting
+              label={t("config.reranker.model")}
+              info={t("config.reranker.modelInfo")}
+            >
+              <Select
+                value={config.reranker}
+                onValueChange={(value) => updateConfig({ reranker: value as RerankerType })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {(() => {
+                      const keyMap: Record<RerankerType, string> = {
+                        "gpt-oss-20b": "gptOss20b",
+                        "gpt-oss-120b": "gptOss120b",
+                        "gemini-flash": "geminiFlash",
+                        "qwen4b": "qwen4b",
+                        "jina": "jina",
+                        "none": "none",
+                      };
+                      return t(`config.rerankerOptions.${keyMap[config.reranker]}`);
+                    })()}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border">
+                  {rerankerOptions.map((option) => {
+                    const keyMap: Record<RerankerType, string> = {
+                      "gpt-oss-20b": "gptOss20b",
+                      "gpt-oss-120b": "gptOss120b",
+                      "gemini-flash": "geminiFlash",
+                      "qwen4b": "qwen4b",
+                      "jina": "jina",
+                      "none": "none",
+                    };
+                    const key = keyMap[option.value];
+                    return (
+                      <SelectItem key={option.value} value={option.value} className="py-2">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{t(`config.rerankerOptions.${key}`)}</span>
+                          <span className="text-xs text-muted-foreground">{t(`config.rerankerOptions.${key}Desc`)}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </SelectSetting>
+            <SliderSetting
+              label={t("config.reranker.regularCandidates")}
+              value={config.preRerankLimit}
+              min={20}
+              max={150}
+              step={10}
+              onChange={(value) => updateConfig({ preRerankLimit: value })}
+              info={t("config.reranker.regularCandidatesInfo")}
+            />
+            <SliderSetting
+              label={t("config.reranker.regularResults")}
+              value={config.postRerankLimit}
+              min={5}
+              max={30}
+              step={5}
+              onChange={(value) => updateConfig({ postRerankLimit: value })}
+              info={t("config.reranker.regularResultsInfo")}
+            />
+          </div>
+
+          <Divider />
+
+          {/* Refine Search */}
+          <div className="space-y-4">
+            <SectionHeader>{t("config.sections.refineSearch")}</SectionHeader>
+
+            {/* Query Weights */}
+            <SliderSetting
+              label={t("config.refine.originalWeight")}
+              value={config.refineOriginalWeight}
+              min={0.5}
+              max={1.0}
+              step={0.1}
+              onChange={(value) => updateConfig({ refineOriginalWeight: value })}
+              format={(v) => v.toFixed(1)}
+              info={t("config.refine.originalWeightInfo")}
+            />
+            <SliderSetting
+              label={t("config.refine.expandedWeight")}
+              value={config.refineExpandedWeight}
+              min={0.3}
+              max={1.0}
+              step={0.1}
+              onChange={(value) => updateConfig({ refineExpandedWeight: value })}
+              format={(v) => v.toFixed(1)}
+              info={t("config.refine.expandedWeightInfo")}
+            />
+
+            {/* Per-Query Limits */}
+            <SliderSetting
+              label={t("config.refine.bookPerQuery")}
+              value={config.refineBookPerQuery}
+              min={10}
+              max={60}
+              step={5}
+              onChange={(value) => updateConfig({ refineBookPerQuery: value })}
+              info={t("config.refine.perQueryInfo")}
+            />
+            <SliderSetting
+              label={t("config.refine.ayahPerQuery")}
+              value={config.refineAyahPerQuery}
+              min={10}
+              max={60}
+              step={5}
+              onChange={(value) => updateConfig({ refineAyahPerQuery: value })}
+              info={t("config.refine.perQueryInfo")}
+            />
+            <SliderSetting
+              label={t("config.refine.hadithPerQuery")}
+              value={config.refineHadithPerQuery}
+              min={10}
+              max={60}
+              step={5}
+              onChange={(value) => updateConfig({ refineHadithPerQuery: value })}
+              info={t("config.refine.perQueryInfo")}
+            />
+
+            {/* Reranker Limits */}
+            <SliderSetting
+              label={t("config.refine.bookRerank")}
+              value={config.refineBookRerank}
+              min={5}
+              max={40}
+              step={5}
+              onChange={(value) => updateConfig({ refineBookRerank: value })}
+              info={t("config.refine.rerankInfo")}
+            />
+            <SliderSetting
+              label={t("config.refine.ayahRerank")}
+              value={config.refineAyahRerank}
+              min={5}
+              max={25}
+              step={1}
+              onChange={(value) => updateConfig({ refineAyahRerank: value })}
+              info={t("config.refine.rerankInfo")}
+            />
+            <SliderSetting
+              label={t("config.refine.hadithRerank")}
+              value={config.refineHadithRerank}
+              min={5}
+              max={25}
+              step={1}
+              onChange={(value) => updateConfig({ refineHadithRerank: value })}
+              info={t("config.refine.rerankInfo")}
+            />
+          </div>
+        </CollapsibleSection>
       </div>
     </div>
   );

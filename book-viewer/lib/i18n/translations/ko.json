@@ -176,10 +176,12 @@
       "language": "언어",
       "appearance": "외관",
       "translations": "번역",
+      "booksDisplay": "책 표시",
+      "advanced": "고급 설정",
       "similarity": "유사도",
       "fuzzySearch": "퍼지 검색",
-      "reranking": "재정렬",
-      "booksDisplay": "책 표시"
+      "searchSettings": "Search Settings",
+      "refineSearch": "Refine Search"
     },
     "appearance": {
       "theme": "테마",
@@ -249,12 +251,26 @@
       "thresholdInfo": "텍스트 일치 정확도. 낮은 값은 더 많은 변형을 허용합니다."
     },
     "reranker": {
-      "model": "모델",
-      "modelInfo": "결과를 재정렬하는 AI 모델. 큰 모델은 더 정확하지만 느립니다.",
-      "candidates": "후보 수",
-      "candidatesInfo": "재정렬에 고려할 초기 결과 수. 후보가 많을수록 품질이 향상됩니다.",
-      "results": "결과 수",
-      "resultsInfo": "재정렬 후 반환할 최종 결과 수."
+      "model": "Model",
+      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
+      "regularCandidates": "Regular Candidates",
+      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
+      "regularResults": "Regular Results",
+      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+    },
+    "refine": {
+      "originalWeight": "Original Query Weight",
+      "originalWeightInfo": "Weight of your original query in merged results.",
+      "expandedWeight": "Expanded Queries Weight",
+      "expandedWeightInfo": "Weight of LLM-expanded queries in merged results.",
+      "bookPerQuery": "Books per Query",
+      "ayahPerQuery": "Quran per Query",
+      "hadithPerQuery": "Hadith per Query",
+      "perQueryInfo": "Results fetched per expanded query.",
+      "bookRerank": "Books to Rerank",
+      "ayahRerank": "Quran to Rerank",
+      "hadithRerank": "Hadith to Rerank",
+      "rerankInfo": "Merged results sent to LLM for final ranking."
     },
     "display": {
       "showTransliterations": "음역 표시",

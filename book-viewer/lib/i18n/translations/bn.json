@@ -176,10 +176,12 @@
       "language": "ভাষা",
       "appearance": "চেহারা",
       "translations": "অনুবাদসমূহ",
+      "booksDisplay": "বই প্রদর্শন",
+      "advanced": "উন্নত সেটিংস",
       "similarity": "সাদৃশ্য",
       "fuzzySearch": "ফাজি অনুসন্ধান",
-      "reranking": "পুনরায় সাজানো",
-      "booksDisplay": "বই প্রদর্শন"
+      "searchSettings": "Search Settings",
+      "refineSearch": "Refine Search"
     },
     "appearance": {
       "theme": "থিম",
@@ -249,12 +251,26 @@
       "thresholdInfo": "টেক্সট কতটা মিলতে হবে। কম মান বেশি তারতম্যের অনুমতি দেয়।"
     },
     "reranker": {
-      "model": "মডেল",
-      "modelInfo": "ফলাফল পুনরায় সাজানোর জন্য AI মডেল। বড় মডেল বেশি সঠিক কিন্তু ধীর।",
-      "candidates": "প্রার্থী",
-      "candidatesInfo": "পুনরায় সাজানোর জন্য বিবেচনা করার প্রাথমিক ফলাফলের সংখ্যা।",
-      "results": "ফলাফল",
-      "resultsInfo": "পুনরায় সাজানোর পরে চূড়ান্ত ফলাফলের সংখ্যা।"
+      "model": "Model",
+      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
+      "regularCandidates": "Regular Candidates",
+      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
+      "regularResults": "Regular Results",
+      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+    },
+    "refine": {
+      "originalWeight": "Original Query Weight",
+      "originalWeightInfo": "Weight of your original query in merged results.",
+      "expandedWeight": "Expanded Queries Weight",
+      "expandedWeightInfo": "Weight of LLM-expanded queries in merged results.",
+      "bookPerQuery": "Books per Query",
+      "ayahPerQuery": "Quran per Query",
+      "hadithPerQuery": "Hadith per Query",
+      "perQueryInfo": "Results fetched per expanded query.",
+      "bookRerank": "Books to Rerank",
+      "ayahRerank": "Quran to Rerank",
+      "hadithRerank": "Hadith to Rerank",
+      "rerankInfo": "Merged results sent to LLM for final ranking."
     },
     "display": {
       "showTransliterations": "প্রতিবর্ণীকরণ দেখান",

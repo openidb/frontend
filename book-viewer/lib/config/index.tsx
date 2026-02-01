@@ -38,6 +38,33 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           if (typeof parsed.refineSimilarityCutoff === "number") {
             parsed.refineSimilarityCutoff = Math.max(0.15, Math.min(0.65, parsed.refineSimilarityCutoff));
           }
+          // Clamp refine query weights
+          if (typeof parsed.refineOriginalWeight === "number") {
+            parsed.refineOriginalWeight = Math.max(0.5, Math.min(1.0, parsed.refineOriginalWeight));
+          }
+          if (typeof parsed.refineExpandedWeight === "number") {
+            parsed.refineExpandedWeight = Math.max(0.3, Math.min(1.0, parsed.refineExpandedWeight));
+          }
+          // Clamp refine per-query limits
+          if (typeof parsed.refineBookPerQuery === "number") {
+            parsed.refineBookPerQuery = Math.max(10, Math.min(60, parsed.refineBookPerQuery));
+          }
+          if (typeof parsed.refineAyahPerQuery === "number") {
+            parsed.refineAyahPerQuery = Math.max(10, Math.min(60, parsed.refineAyahPerQuery));
+          }
+          if (typeof parsed.refineHadithPerQuery === "number") {
+            parsed.refineHadithPerQuery = Math.max(10, Math.min(60, parsed.refineHadithPerQuery));
+          }
+          // Clamp refine reranker limits
+          if (typeof parsed.refineBookRerank === "number") {
+            parsed.refineBookRerank = Math.max(5, Math.min(40, parsed.refineBookRerank));
+          }
+          if (typeof parsed.refineAyahRerank === "number") {
+            parsed.refineAyahRerank = Math.max(5, Math.min(25, parsed.refineAyahRerank));
+          }
+          if (typeof parsed.refineHadithRerank === "number") {
+            parsed.refineHadithRerank = Math.max(5, Math.min(25, parsed.refineHadithRerank));
+          }
           setConfigState({ ...defaultSearchConfig, ...parsed });
         }
       } catch {
