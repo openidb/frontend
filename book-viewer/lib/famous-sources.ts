@@ -398,7 +398,7 @@ export const SURAHS: FamousSource<SurahReference>[] = [
   {
     names: [
       'الكهف', 'سورة الكهف', 'كهف',
-      'al-kahf', 'al kahf', 'kahf',
+      'al-kahf', 'al kahf', 'kahf', 'khaf', 'alkahf',
     ],
     ref: { surahNumber: 18, quranComUrl: 'https://quran.com/18', totalAyahs: 110 },
   },
