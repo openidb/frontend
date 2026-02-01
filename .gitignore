@@ -72,3 +72,17 @@ Thumbs.db
 # Project data directories (root level)
 /data/
 /output/
+
+# Python virtual environments (all directories)
+**/venv/
+**/env/
+**/__pycache__/
+*.pyc
+
+# Shamela scraper data and debug
+shamela-scraper/data/
+shamela-scraper/debug/
+shamela-scraper/test_output/
+
+# Embedding server
+embedding-server/venv/
