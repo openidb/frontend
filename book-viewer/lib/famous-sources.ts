@@ -1141,6 +1141,10 @@ const FUZZY_THRESHOLD = 0.3;
 /**
  * Look up a famous Quran verse by name (fuzzy + cross-language)
  * Returns the verse reference if found, undefined otherwise
+ *
+ * For multi-word queries, requires that the source name is a significant
+ * portion of the query to avoid false positives like "the fatiha is between
+ * you and allah" matching Al-Fatiha.
  */
 export function lookupFamousVerse(query: string): VerseReference | undefined {
   const normalized = normalize(query);
@@ -1148,6 +1152,9 @@ export function lookupFamousVerse(query: string): VerseReference | undefined {
   // Strip common prefixes for better matching
   const stripped = normalized
     .replace(/^(آيه?|ايه?|سوره?|surah|ayat?|ayah|verse|chapter)\s*/i, '');
+
+  // Count words in the stripped query
+  const wordCount = stripped.split(/\s+/).filter(w => w.length > 0).length;
 
   for (const source of FAMOUS_VERSES) {
     for (const name of source.names) {
@@ -1158,16 +1165,19 @@ export function lookupFamousVerse(query: string): VerseReference | undefined {
         return source.ref;
       }
 
-      // Contains match (query contains the name or vice versa)
-      if (normalized.includes(normName) || normName.includes(normalized)) {
-        // Require minimum length to avoid false positives
-        if (normName.length >= 4 && normalized.length >= 4) {
-          return source.ref;
+      // Contains match - but only for short queries (1-2 words)
+      // This prevents "the fatiha is between you and allah" from matching
+      if (wordCount <= 2) {
+        if (normalized.includes(normName) || normName.includes(normalized)) {
+          // Require minimum length to avoid false positives
+          if (normName.length >= 4 && normalized.length >= 4) {
+            return source.ref;
+          }
         }
       }
 
-      // Fuzzy match (for typos) - only for longer strings
-      if (stripped.length >= 5 && normName.length >= 5) {
+      // Fuzzy match (for typos) - only for short queries
+      if (wordCount <= 2 && stripped.length >= 5 && normName.length >= 5) {
         const distance = levenshtein(stripped, normName);
         const maxLen = Math.max(stripped.length, normName.length);
         if (distance / maxLen <= FUZZY_THRESHOLD) {
@@ -1183,6 +1193,9 @@ export function lookupFamousVerse(query: string): VerseReference | undefined {
 /**
  * Look up famous hadiths by name (fuzzy + cross-language)
  * Returns array of hadith references if found, empty array otherwise
+ *
+ * For multi-word queries, requires that the hadith name is a significant
+ * portion of the query to avoid false positives.
  */
 export function lookupFamousHadith(query: string): HadithReference[] {
   const normalized = normalize(query);
@@ -1190,6 +1203,9 @@ export function lookupFamousHadith(query: string): HadithReference[] {
   // Strip common prefixes
   const stripped = normalized
     .replace(/^(حديث|hadith|hadis)\s*/i, '');
+
+  // Count words in the stripped query
+  const wordCount = stripped.split(/\s+/).filter(w => w.length > 0).length;
 
   for (const source of FAMOUS_HADITHS) {
     for (const name of source.names) {
@@ -1200,15 +1216,18 @@ export function lookupFamousHadith(query: string): HadithReference[] {
         return source.ref;
       }
 
-      // Contains match
-      if (normalized.includes(normName) || normName.includes(normalized)) {
-        if (normName.length >= 6 && normalized.length >= 6) {
-          return source.ref;
+      // Contains match - but only for short queries (1-3 words)
+      // Hadith names tend to be longer, so allow up to 3 words
+      if (wordCount <= 3) {
+        if (normalized.includes(normName) || normName.includes(normalized)) {
+          if (normName.length >= 6 && normalized.length >= 6) {
+            return source.ref;
+          }
         }
       }
 
-      // Fuzzy match
-      if (stripped.length >= 6 && normName.length >= 6) {
+      // Fuzzy match - only for short queries
+      if (wordCount <= 3 && stripped.length >= 6 && normName.length >= 6) {
         const distance = levenshtein(stripped, normName);
         const maxLen = Math.max(stripped.length, normName.length);
         if (distance / maxLen <= FUZZY_THRESHOLD) {
