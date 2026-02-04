@@ -476,13 +476,24 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           if (currentHref !== currentHrefRef.current) {
             currentHrefRef.current = currentHref;
 
+            // Extract just the filename for matching (handles path differences)
+            const currentFilename = currentHref.split('/').pop() || currentHref;
+
+            // Update URL with page number (for bookmarking/refresh persistence)
+            // This is outside pageList check since we extract page number directly from href
+            const pageMatch = currentFilename.match(/page_(\d+)\.xhtml/);
+            if (pageMatch) {
+              const pageNum = parseInt(pageMatch[1], 10);
+              const url = new URL(window.location.href);
+              url.searchParams.set("pn", pageNum.toString());
+              // Remove legacy 'page' param if present
+              url.searchParams.delete("page");
+              window.history.replaceState({}, "", url.toString());
+            }
+
             // Try to find the current page label from page list
             // Match by href to get the correct printed page number
             if (pageList.length > 0) {
-
-              // Extract just the filename for matching (handles path differences)
-              const currentFilename = currentHref.split('/').pop() || currentHref;
-
               // Find the page in the page list that matches this href
               const foundPage = pageList.find((page: any) => {
                 const pageFilename = page.href.split('/').pop() || page.href;
