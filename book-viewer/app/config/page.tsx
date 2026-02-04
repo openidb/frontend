@@ -355,9 +355,9 @@ export default function ConfigPage() {
                     <span className="text-xs text-muted-foreground">{t("config.translations.geminiFlashDesc")}</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="gpt-oss-120b" className="py-2">
+                <SelectItem value="gpt-oss-120b" className="py-2 opacity-50" disabled>
                   <div className="flex flex-col">
-                    <span className="font-medium">GPT OSS 120B</span>
+                    <span className="font-medium text-muted-foreground">GPT OSS 120B</span>
                     <span className="text-xs text-muted-foreground">{t("config.translations.gptOss120bDesc")}</span>
                   </div>
                 </SelectItem>

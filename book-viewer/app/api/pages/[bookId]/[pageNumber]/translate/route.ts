@@ -131,12 +131,30 @@ export async function POST(
         },
       },
       select: {
+        id: true,
         contentHtml: true,
       },
     });
 
     if (!page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
+
+    // Check for existing cached translation
+    const existingTranslation = await prisma.pageTranslation.findUnique({
+      where: {
+        pageId_language: {
+          pageId: page.id,
+          language: lang,
+        },
+      },
+    });
+
+    if (existingTranslation) {
+      return NextResponse.json({
+        paragraphs: existingTranslation.paragraphs,
+        cached: true,
+      });
     }
 
     // Extract paragraphs from HTML
@@ -209,11 +227,17 @@ Respond with ONLY a valid JSON array, no other text. Example format:
       );
     }
 
-    const result: TranslationResult = {
-      paragraphs: translations,
-    };
+    // Cache the translation in the database
+    await prisma.pageTranslation.create({
+      data: {
+        pageId: page.id,
+        language: lang,
+        model: modelKey,
+        paragraphs: translations,
+      },
+    });
 
-    return NextResponse.json(result);
+    return NextResponse.json({ paragraphs: translations, cached: false });
   } catch (error) {
     console.error("Error translating page:", error);
     return NextResponse.json(

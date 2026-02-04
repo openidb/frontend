@@ -222,8 +222,9 @@ model Page {
   pdfUrl    String? @map("pdf_url")
 
   // Relationships
-  book      Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  footnotes Footnote[]
+  book         Book              @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  footnotes    Footnote[]
+  translations PageTranslation[]
 
   @@unique([bookId, pageNumber])
   @@index([bookId, pageNumber])
@@ -261,6 +262,23 @@ model BookTitleTranslation {
   @@index([bookId])
   @@index([language])
   @@map("book_title_translations")
+}
+
+model PageTranslation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pageId     Int    @map("page_id")
+  language   String // "en", "fr", "id", "ur", etc.
+  model      String // "gemini-flash", "gpt-oss-120b" - stored for reference but not part of unique key
+  paragraphs Json   // [{index: 0, translation: "..."}, ...]
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, language])
+  @@index([pageId])
+  @@map("page_translations")
 }
 
 model TableOfContentsEntry {
