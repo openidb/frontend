@@ -250,6 +250,14 @@
       "threshold": "থ্রেশহোল্ড",
       "thresholdInfo": "টেক্সট কতটা মিলতে হবে। কম মান বেশি তারতম্যের অনুমতি দেয়।"
     },
+    "embedding": {
+      "model": "এমবেডিং মডেল",
+      "modelInfo": "সেমান্টিক সার্চের জন্য AI মডেল। ক্লাউড মডেল স্থিতিশীল; স্থানীয় মডেল কাস্টমাইজযোগ্য।",
+      "gemini": "জেমিনি",
+      "geminiDesc": "স্থিতিশীল, উচ্চ মানের",
+      "bgeM3": "BGE-M3 (উন্নয়নাধীন)",
+      "bgeM3Desc": "স্থানীয় মডেল, আরবি ইসলামিক টেক্সটের জন্য অপ্টিমাইজড"
+    },
     "reranker": {
       "model": "Model",
       "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
@@ -259,18 +267,22 @@
       "regularResultsInfo": "Final number of results returned after fusion and ranking."
     },
     "refine": {
-      "originalWeight": "Original Query Weight",
-      "originalWeightInfo": "Weight of your original query in merged results.",
-      "expandedWeight": "Expanded Queries Weight",
-      "expandedWeightInfo": "Weight of LLM-expanded queries in merged results.",
-      "bookPerQuery": "Books per Query",
-      "ayahPerQuery": "Quran per Query",
-      "hadithPerQuery": "Hadith per Query",
-      "perQueryInfo": "Results fetched per expanded query.",
-      "bookRerank": "Books to Rerank",
-      "ayahRerank": "Quran to Rerank",
-      "hadithRerank": "Hadith to Rerank",
-      "rerankInfo": "Merged results sent to LLM for final ranking."
+      "queryExpansionModel": "কোয়েরি সম্প্রসারণ মডেল",
+      "queryExpansionModelInfo": "বিকল্প অনুসন্ধান কোয়েরি তৈরি করার AI মডেল",
+      "geminiFlashDesc": "দ্রুত, উচ্চ মানের",
+      "gptOss120bDesc": "সর্বোচ্চ মান, ধীর",
+      "originalWeight": "মূল কোয়েরি ওজন",
+      "originalWeightInfo": "মার্জ করা ফলাফলে আপনার মূল কোয়েরির ওজন।",
+      "expandedWeight": "সম্প্রসারিত কোয়েরি ওজন",
+      "expandedWeightInfo": "মার্জ করা ফলাফলে LLM-সম্প্রসারিত কোয়েরির ওজন।",
+      "bookPerQuery": "প্রতি কোয়েরিতে বই",
+      "ayahPerQuery": "প্রতি কোয়েরিতে কুরআন",
+      "hadithPerQuery": "প্রতি কোয়েরিতে হাদিস",
+      "perQueryInfo": "প্রতি সম্প্রসারিত কোয়েরিতে আনা ফলাফল।",
+      "bookRerank": "পুনরায় সাজাতে বই",
+      "ayahRerank": "পুনরায় সাজাতে কুরআন",
+      "hadithRerank": "পুনরায় সাজাতে হাদিস",
+      "rerankInfo": "চূড়ান্ত র্যাংকিংয়ের জন্য LLM এ পাঠানো মার্জ করা ফলাফল।"
     },
     "display": {
       "showTransliterations": "প্রতিবর্ণীকরণ দেখান",

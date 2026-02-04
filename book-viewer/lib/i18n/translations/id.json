@@ -250,6 +250,14 @@
       "threshold": "Ambang batas",
       "thresholdInfo": "Seberapa dekat teks harus cocok. Nilai lebih rendah memungkinkan lebih banyak variasi."
     },
+    "embedding": {
+      "model": "Model Embedding",
+      "modelInfo": "Model AI untuk pencarian semantik. Model cloud stabil; model lokal dapat disesuaikan.",
+      "gemini": "Gemini",
+      "geminiDesc": "Stabil, kualitas tinggi",
+      "bgeM3": "BGE-M3 (Dalam Pengembangan)",
+      "bgeM3Desc": "Model lokal, dioptimalkan untuk teks Islam Arab"
+    },
     "reranker": {
       "model": "Model",
       "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
@@ -259,18 +267,22 @@
       "regularResultsInfo": "Final number of results returned after fusion and ranking."
     },
     "refine": {
-      "originalWeight": "Original Query Weight",
-      "originalWeightInfo": "Weight of your original query in merged results.",
-      "expandedWeight": "Expanded Queries Weight",
-      "expandedWeightInfo": "Weight of LLM-expanded queries in merged results.",
-      "bookPerQuery": "Books per Query",
-      "ayahPerQuery": "Quran per Query",
-      "hadithPerQuery": "Hadith per Query",
-      "perQueryInfo": "Results fetched per expanded query.",
-      "bookRerank": "Books to Rerank",
-      "ayahRerank": "Quran to Rerank",
-      "hadithRerank": "Hadith to Rerank",
-      "rerankInfo": "Merged results sent to LLM for final ranking."
+      "queryExpansionModel": "Model Ekspansi Kueri",
+      "queryExpansionModelInfo": "Model AI untuk menghasilkan kueri pencarian alternatif",
+      "geminiFlashDesc": "Cepat, kualitas tinggi",
+      "gptOss120bDesc": "Kualitas tertinggi, lebih lambat",
+      "originalWeight": "Bobot Kueri Asli",
+      "originalWeightInfo": "Bobot kueri asli Anda dalam hasil gabungan.",
+      "expandedWeight": "Bobot Kueri yang Diperluas",
+      "expandedWeightInfo": "Bobot kueri yang diperluas LLM dalam hasil gabungan.",
+      "bookPerQuery": "Buku per Kueri",
+      "ayahPerQuery": "Quran per Kueri",
+      "hadithPerQuery": "Hadis per Kueri",
+      "perQueryInfo": "Hasil yang diambil per kueri yang diperluas.",
+      "bookRerank": "Buku untuk Diperingkat Ulang",
+      "ayahRerank": "Quran untuk Diperingkat Ulang",
+      "hadithRerank": "Hadis untuk Diperingkat Ulang",
+      "rerankInfo": "Hasil gabungan dikirim ke LLM untuk pemeringkatan akhir."
     },
     "display": {
       "showTransliterations": "Tampilkan transliterasi",

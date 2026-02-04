@@ -14,6 +14,10 @@ import { useTranslation } from "@/lib/i18n";
 
 export type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "jina" | "qwen4b" | "none";
 
+export type EmbeddingModelType = "gemini" | "bge-m3";
+
+export type QueryExpansionModelType = "gpt-oss-120b" | "gemini-flash";
+
 // Shared type for translation display options
 export type TranslationDisplayOption =
   | "none" | "transliteration"
@@ -63,6 +67,10 @@ export interface SearchConfig {
   autoTranslation: boolean; // When true, use UI language for translations
   quranTranslation: string; // Language code ("en", "ur", "fr", etc.) or "none"
   hadithTranslation: "none" | "en"; // Hadith translation (English only for now)
+  // Embedding model selection
+  embeddingModel: EmbeddingModelType; // "gemini" (cloud) or "bge-m3" (local)
+  // Query expansion model selection
+  queryExpansionModel: QueryExpansionModelType; // Model for expanding search queries
   // Refine search settings - Query weights (Step 1)
   refineOriginalWeight: number;     // Weight of original query (default: 1.0)
   refineExpandedWeight: number;     // Weight of LLM-expanded queries (default: 0.7)
@@ -80,7 +88,7 @@ export const defaultSearchConfig: SearchConfig = {
   includeQuran: true,
   includeHadith: true,
   includeBooks: true,
-  reranker: "none",
+  reranker: "gpt-oss-120b",
   similarityCutoff: 0.6,
   refineSimilarityCutoff: 0.25, // Lower threshold for refine searches (LLM filters further)
   preRerankLimit: 70,
@@ -94,6 +102,10 @@ export const defaultSearchConfig: SearchConfig = {
   autoTranslation: true,
   quranTranslation: "en",
   hadithTranslation: "en",  // Default to English
+  // Embedding model - default to Gemini (cloud)
+  embeddingModel: "gemini",
+  // Query expansion model - default to GPT OSS 120B
+  queryExpansionModel: "gpt-oss-120b",
   // Refine search settings - Query weights
   refineOriginalWeight: 1.0,
   refineExpandedWeight: 0.7,
@@ -106,6 +118,11 @@ export const defaultSearchConfig: SearchConfig = {
   refineAyahRerank: 12,
   refineHadithRerank: 15,
 };
+
+export const embeddingModelOptions: { value: EmbeddingModelType; labelKey: string; descKey: string }[] = [
+  { value: "gemini", labelKey: "gemini", descKey: "geminiDesc" },
+  { value: "bge-m3", labelKey: "bgeM3", descKey: "bgeM3Desc" },
+];
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [
   { value: "none", label: "None", description: "Fast (default)" },

@@ -250,6 +250,14 @@
       "threshold": "Порог",
       "thresholdInfo": "Насколько точно должен совпадать текст. Более низкие значения допускают больше вариаций."
     },
+    "embedding": {
+      "model": "Модель встраивания",
+      "modelInfo": "ИИ-модель для семантического поиска. Облачные модели стабильны; локальные можно настроить.",
+      "gemini": "Gemini",
+      "geminiDesc": "Стабильно, высокое качество",
+      "bgeM3": "BGE-M3 (В разработке)",
+      "bgeM3Desc": "Локальная модель, оптимизирована для арабских исламских текстов"
+    },
     "reranker": {
       "model": "Model",
       "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
@@ -259,18 +267,22 @@
       "regularResultsInfo": "Final number of results returned after fusion and ranking."
     },
     "refine": {
-      "originalWeight": "Original Query Weight",
-      "originalWeightInfo": "Weight of your original query in merged results.",
-      "expandedWeight": "Expanded Queries Weight",
-      "expandedWeightInfo": "Weight of LLM-expanded queries in merged results.",
-      "bookPerQuery": "Books per Query",
-      "ayahPerQuery": "Quran per Query",
-      "hadithPerQuery": "Hadith per Query",
-      "perQueryInfo": "Results fetched per expanded query.",
-      "bookRerank": "Books to Rerank",
-      "ayahRerank": "Quran to Rerank",
-      "hadithRerank": "Hadith to Rerank",
-      "rerankInfo": "Merged results sent to LLM for final ranking."
+      "queryExpansionModel": "Модель расширения запроса",
+      "queryExpansionModelInfo": "ИИ-модель для генерации альтернативных запросов",
+      "geminiFlashDesc": "Быстрый, высокое качество",
+      "gptOss120bDesc": "Высшее качество, медленнее",
+      "originalWeight": "Вес исходного запроса",
+      "originalWeightInfo": "Вес вашего исходного запроса в объединенных результатах.",
+      "expandedWeight": "Вес расширенных запросов",
+      "expandedWeightInfo": "Вес LLM-расширенных запросов в объединенных результатах.",
+      "bookPerQuery": "Книг на запрос",
+      "ayahPerQuery": "Аятов на запрос",
+      "hadithPerQuery": "Хадисов на запрос",
+      "perQueryInfo": "Результатов на расширенный запрос.",
+      "bookRerank": "Книг для переранжирования",
+      "ayahRerank": "Аятов для переранжирования",
+      "hadithRerank": "Хадисов для переранжирования",
+      "rerankInfo": "Объединенные результаты отправляются LLM для финального ранжирования."
     },
     "display": {
       "showTransliterations": "Показать транслитерацию",
