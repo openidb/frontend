@@ -65,6 +65,10 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           if (typeof parsed.refineHadithRerank === "number") {
             parsed.refineHadithRerank = Math.max(5, Math.min(25, parsed.refineHadithRerank));
           }
+          // Validate embedding model (default to gemini if invalid)
+          if (parsed.embeddingModel !== "gemini" && parsed.embeddingModel !== "bge-m3") {
+            parsed.embeddingModel = "gemini";
+          }
           setConfigState({ ...defaultSearchConfig, ...parsed });
         }
       } catch {

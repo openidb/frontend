@@ -15,19 +15,31 @@
  *   --pages-only               Only process book pages, skip Quran and Hadith embeddings
  *   --hadiths-only             Only process hadiths, skip pages and quran
  *   --hadith-collections=a,b   Only process specific hadith collections (comma-separated slugs)
+ *   --model=gemini|bge-m3      Embedding model to use (default: gemini)
  *
  * Examples:
  *   bun run scripts/generate-embeddings.ts --hadiths-only --hadith-collections=hisn --force
  *   bun run scripts/generate-embeddings.ts --hadith-collections=bukhari,muslim
+ *   bun run scripts/generate-embeddings.ts --model=bge-m3 --force
  */
 
 import "dotenv/config";
 import { prisma } from "../lib/db";
-import { qdrant, QDRANT_COLLECTION, QDRANT_QURAN_COLLECTION, QDRANT_HADITH_COLLECTION, EMBEDDING_DIMENSIONS } from "../lib/qdrant";
+import {
+  qdrant,
+  PAGES_COLLECTION,
+  QDRANT_QURAN_COLLECTION,
+  HADITHS_COLLECTION,
+  PAGES_COLLECTION_BGE,
+  HADITHS_COLLECTION_BGE,
+  GEMINI_DIMENSIONS,
+  BGE_DIMENSIONS,
+} from "../lib/qdrant";
 import {
   generateEmbeddings,
   normalizeArabicText,
   truncateForEmbedding,
+  type EmbeddingModel,
 } from "../lib/embeddings";
 import crypto from "crypto";
 
@@ -56,6 +68,19 @@ const hadithCollectionsArg = process.argv.find((arg) => arg.startsWith("--hadith
 const hadithCollectionsFilter: string[] | null = hadithCollectionsArg
   ? hadithCollectionsArg.split("=")[1].split(",").map((s) => s.trim())
   : null;
+
+// Parse --model flag (gemini or bge-m3)
+const modelArg = process.argv.find((arg) => arg.startsWith("--model="));
+const embeddingModel: EmbeddingModel = modelArg?.split("=")[1] === "bge-m3" ? "bge-m3" : "gemini";
+const EMBEDDING_DIMENSIONS = embeddingModel === "bge-m3" ? BGE_DIMENSIONS : GEMINI_DIMENSIONS;
+
+// Determine collections based on model
+const PAGES_COLLECTION = embeddingModel === "bge-m3" ? PAGES_COLLECTION_BGE : PAGES_COLLECTION;
+const HADITHS_COLLECTION = embeddingModel === "bge-m3" ? HADITHS_COLLECTION_BGE : HADITHS_COLLECTION;
+
+console.log(`Using embedding model: ${embeddingModel} (${EMBEDDING_DIMENSIONS} dimensions)`);
+console.log(`Pages collection: ${PAGES_COLLECTION}`);
+console.log(`Hadiths collection: ${HADITHS_COLLECTION}`);
 
 /**
  * Generate a deterministic point ID from book and page identifiers
@@ -92,17 +117,17 @@ async function initializeCollection(): Promise<void> {
   try {
     const collections = await qdrant.getCollections();
     const exists = collections.collections.some(
-      (c) => c.name === QDRANT_COLLECTION
+      (c) => c.name === PAGES_COLLECTION
     );
 
     if (exists && forceFlag) {
-      console.log(`Deleting existing collection: ${QDRANT_COLLECTION}`);
-      await qdrant.deleteCollection(QDRANT_COLLECTION);
+      console.log(`Deleting existing collection: ${PAGES_COLLECTION}`);
+      await qdrant.deleteCollection(PAGES_COLLECTION);
     }
 
     if (!exists || forceFlag) {
-      console.log(`Creating collection: ${QDRANT_COLLECTION}`);
-      await qdrant.createCollection(QDRANT_COLLECTION, {
+      console.log(`Creating collection: ${PAGES_COLLECTION}`);
+      await qdrant.createCollection(PAGES_COLLECTION, {
         vectors: {
           size: EMBEDDING_DIMENSIONS,
           distance: "Cosine",
@@ -113,18 +138,18 @@ async function initializeCollection(): Promise<void> {
       });
 
       // Create payload indexes for filtering
-      await qdrant.createPayloadIndex(QDRANT_COLLECTION, {
+      await qdrant.createPayloadIndex(PAGES_COLLECTION, {
         field_name: "bookId",
         field_schema: "integer",
       });
-      await qdrant.createPayloadIndex(QDRANT_COLLECTION, {
+      await qdrant.createPayloadIndex(PAGES_COLLECTION, {
         field_name: "volumeNumber",
         field_schema: "integer",
       });
 
       console.log("Collection created with payload indexes\n");
     } else {
-      console.log(`Collection already exists: ${QDRANT_COLLECTION}\n`);
+      console.log(`Collection already exists: ${PAGES_COLLECTION}\n`);
     }
   } catch (error) {
     console.error("Error initializing collection:", error);
@@ -146,7 +171,7 @@ async function getExistingPointIds(): Promise<Set<string>> {
 
     // Scroll through all points to get their IDs
     while (true) {
-      const result = await qdrant.scroll(QDRANT_COLLECTION, {
+      const result = await qdrant.scroll(PAGES_COLLECTION, {
         limit: 1000,
         offset: offset ?? undefined,
         with_payload: false,
@@ -194,7 +219,7 @@ async function processBatch(
   });
 
   // Generate embeddings in batch
-  const embeddings = await generateEmbeddings(texts);
+  const embeddings = await generateEmbeddings(texts, embeddingModel);
 
   // Prepare points for Qdrant
   const points = pages.map((page, index) => ({
@@ -212,7 +237,7 @@ async function processBatch(
   }));
 
   // Upsert to Qdrant
-  await qdrant.upsert(QDRANT_COLLECTION, {
+  await qdrant.upsert(PAGES_COLLECTION, {
     wait: true,
     points,
   });
@@ -329,7 +354,7 @@ async function processAyahBatch(
   });
 
   // Generate embeddings in batch
-  const embeddings = await generateEmbeddings(texts);
+  const embeddings = await generateEmbeddings(texts, embeddingModel);
 
   // Prepare points for Qdrant
   const points = ayahs.map((ayah, index) => ({
@@ -464,19 +489,19 @@ async function initializeHadithCollection(): Promise<void> {
   try {
     const collections = await qdrant.getCollections();
     const exists = collections.collections.some(
-      (c) => c.name === QDRANT_HADITH_COLLECTION
+      (c) => c.name === HADITHS_COLLECTION
     );
 
     // Only delete entire collection if --force is used WITHOUT --hadith-collections filter
     // When filtering by collection, we just update those specific hadiths
     if (exists && forceFlag && !hadithCollectionsFilter) {
-      console.log(`Deleting existing collection: ${QDRANT_HADITH_COLLECTION}`);
-      await qdrant.deleteCollection(QDRANT_HADITH_COLLECTION);
+      console.log(`Deleting existing collection: ${HADITHS_COLLECTION}`);
+      await qdrant.deleteCollection(HADITHS_COLLECTION);
     }
 
     if (!exists || (forceFlag && !hadithCollectionsFilter)) {
-      console.log(`Creating collection: ${QDRANT_HADITH_COLLECTION}`);
-      await qdrant.createCollection(QDRANT_HADITH_COLLECTION, {
+      console.log(`Creating collection: ${HADITHS_COLLECTION}`);
+      await qdrant.createCollection(HADITHS_COLLECTION, {
         vectors: {
           size: EMBEDDING_DIMENSIONS,
           distance: "Cosine",
@@ -487,22 +512,22 @@ async function initializeHadithCollection(): Promise<void> {
       });
 
       // Create payload indexes for filtering
-      await qdrant.createPayloadIndex(QDRANT_HADITH_COLLECTION, {
+      await qdrant.createPayloadIndex(HADITHS_COLLECTION, {
         field_name: "collectionSlug",
         field_schema: "keyword",
       });
-      await qdrant.createPayloadIndex(QDRANT_HADITH_COLLECTION, {
+      await qdrant.createPayloadIndex(HADITHS_COLLECTION, {
         field_name: "bookNumber",
         field_schema: "integer",
       });
-      await qdrant.createPayloadIndex(QDRANT_HADITH_COLLECTION, {
+      await qdrant.createPayloadIndex(HADITHS_COLLECTION, {
         field_name: "hadithNumber",
         field_schema: "keyword",
       });
 
       console.log("Hadith collection created with payload indexes\n");
     } else {
-      console.log(`Collection already exists: ${QDRANT_HADITH_COLLECTION}\n`);
+      console.log(`Collection already exists: ${HADITHS_COLLECTION}\n`);
     }
   } catch (error) {
     console.error("Error initializing Hadith collection:", error);
@@ -524,7 +549,7 @@ async function getExistingHadithPointIds(): Promise<Set<string>> {
     let offset: string | null = null;
 
     while (true) {
-      const result = await qdrant.scroll(QDRANT_HADITH_COLLECTION, {
+      const result = await qdrant.scroll(HADITHS_COLLECTION, {
         limit: 1000,
         offset: offset ?? undefined,
         with_payload: false,
@@ -602,7 +627,7 @@ async function processHadithBatch(
   });
 
   // Generate embeddings in batch
-  const embeddings = await generateEmbeddings(texts);
+  const embeddings = await generateEmbeddings(texts, embeddingModel);
 
   // Prepare points for Qdrant
   const points = hadiths.map((hadith, index) => {
@@ -634,7 +659,7 @@ async function processHadithBatch(
   });
 
   // Upsert to Qdrant
-  await qdrant.upsert(QDRANT_HADITH_COLLECTION, {
+  await qdrant.upsert(HADITHS_COLLECTION, {
     wait: true,
     points,
   });
@@ -752,7 +777,7 @@ async function generateHadithEmbeddings(): Promise<void> {
 
   // Verify collection
   try {
-    const info = await qdrant.getCollection(QDRANT_HADITH_COLLECTION);
+    const info = await qdrant.getCollection(HADITHS_COLLECTION);
     console.log(`\nHadith collection points: ${info.points_count}`);
   } catch (error) {
     console.error("Could not get Hadith collection info:", error);
@@ -762,9 +787,9 @@ async function generateHadithEmbeddings(): Promise<void> {
 async function main() {
   console.log("Embedding Generation");
   console.log("=".repeat(60));
-  console.log(`Collection: ${QDRANT_COLLECTION}`);
+  console.log(`Collection: ${PAGES_COLLECTION}`);
   console.log(`Quran Collection: ${QDRANT_QURAN_COLLECTION}`);
-  console.log(`Hadith Collection: ${QDRANT_HADITH_COLLECTION}`);
+  console.log(`Hadith Collection: ${HADITHS_COLLECTION}`);
   console.log(`Batch size: ${BATCH_SIZE}`);
   const modeDesc = forceFlag
     ? "Force regenerate all"
@@ -863,7 +888,7 @@ async function main() {
 
     // Verify collection
     try {
-      const info = await qdrant.getCollection(QDRANT_COLLECTION);
+      const info = await qdrant.getCollection(PAGES_COLLECTION);
       console.log(`\nCollection points: ${info.points_count}`);
       console.log(`Vectors size: ${info.config.params.vectors}`);
     } catch (error) {

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { EpubReader } from "@/components/EpubReader";
 import { prisma } from "@/lib/db";
-
-export const dynamic = "force-dynamic";
 
 interface TocEntry {
   id: number;
@@ -25,6 +24,37 @@ interface BookMetadata {
   toc: TocEntry[];
 }
 
+// Cache book metadata (without language-specific translations)
+const getBookMetadata = unstable_cache(
+  async (id: string) => {
+    return prisma.book.findUnique({
+      where: { id },
+      include: {
+        author: true,
+        toc: {
+          orderBy: { orderIndex: "asc" },
+        },
+      },
+    });
+  },
+  ["book-metadata"],
+  { revalidate: 86400 } // 24 hours
+);
+
+// Fetch title translation separately (not cached due to language parameter)
+async function getTitleTranslation(bookId: string, lang: string) {
+  if (!lang || lang === "none" || lang === "transliteration") {
+    return null;
+  }
+
+  const translation = await prisma.bookTitleTranslation.findFirst({
+    where: { bookId, language: lang },
+    select: { title: true },
+  });
+
+  return translation?.title || null;
+}
+
 export default async function ReaderPage({
   params,
   searchParams,
@@ -35,27 +65,10 @@ export default async function ReaderPage({
   const { id } = await params;
   const { page, pn, lang } = await searchParams;
 
-  // Fetch book from database with TOC and optional title translation
+  // Fetch book metadata from cache
   let book;
   try {
-    book = await prisma.book.findUnique({
-      where: { id },
-      include: {
-        author: true,
-        toc: {
-          orderBy: { orderIndex: "asc" },
-        },
-        ...(lang && lang !== "none" && lang !== "transliteration"
-          ? {
-              titleTranslations: {
-                where: { language: lang },
-                select: { title: true },
-                take: 1,
-              },
-            }
-          : {}),
-      },
-    });
+    book = await getBookMetadata(id);
   } catch (error) {
     console.error("Failed to fetch book:", error);
     notFound();
@@ -65,11 +78,8 @@ export default async function ReaderPage({
     notFound();
   }
 
-  // Extract title translation
-  const bookWithTranslations = book as typeof book & {
-    titleTranslations?: { title: string }[];
-  };
-  const titleTranslated = bookWithTranslations.titleTranslations?.[0]?.title || null;
+  // Fetch title translation separately if needed
+  const titleTranslated = lang ? await getTitleTranslation(id, lang) : null;
 
   // Map TOC entries
   const toc: TocEntry[] = book.toc.map((entry) => ({

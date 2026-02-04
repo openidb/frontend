@@ -8,24 +8,28 @@
  * Stores embeddings in a separate Qdrant collection while preserving
  * original ayah text in payload for display.
  *
- * Usage: bun run scripts/generate-quran-enriched-embeddings.ts [--force] [--batch-size=50]
+ * Usage: bun run scripts/generate-quran-enriched-embeddings.ts [--force] [--batch-size=50] [--model=gemini|bge-m3]
  *
  * Options:
  *   --force          Re-generate embeddings even if they already exist
  *   --batch-size=N   Number of ayahs to process in each batch (default: 50)
+ *   --model=gemini|bge-m3   Embedding model to use (default: gemini)
  */
 
 import "dotenv/config";
 import { prisma } from "../lib/db";
 import {
   qdrant,
-  QDRANT_QURAN_ENRICHED_COLLECTION,
-  EMBEDDING_DIMENSIONS,
+  QURAN_COLLECTION,
+  QURAN_COLLECTION_BGE,
+  GEMINI_DIMENSIONS,
+  BGE_DIMENSIONS,
 } from "../lib/qdrant";
 import {
   generateEmbeddings,
   normalizeArabicText,
   truncateForEmbedding,
+  type EmbeddingModel,
 } from "../lib/embeddings";
 import crypto from "crypto";
 
@@ -35,6 +39,17 @@ const batchSizeArg = process.argv.find((arg) => arg.startsWith("--batch-size="))
 const BATCH_SIZE = batchSizeArg
   ? parseInt(batchSizeArg.split("=")[1], 10)
   : 50;
+
+// Parse --model flag (gemini or bge-m3)
+const modelArg = process.argv.find((arg) => arg.startsWith("--model="));
+const embeddingModel: EmbeddingModel = modelArg?.split("=")[1] === "bge-m3" ? "bge-m3" : "gemini";
+const EMBEDDING_DIMENSIONS = embeddingModel === "bge-m3" ? BGE_DIMENSIONS : GEMINI_DIMENSIONS;
+
+// Determine collection based on model
+const QURAN_COLLECTION = embeddingModel === "bge-m3" ? QURAN_COLLECTION_BGE : QURAN_COLLECTION;
+
+console.log(`Using embedding model: ${embeddingModel} (${EMBEDDING_DIMENSIONS} dimensions)`);
+console.log(`Collection: ${QURAN_COLLECTION}`);
 
 const TAFSIR_SOURCE = "jalalayn";
 
@@ -56,17 +71,17 @@ async function initializeCollection(): Promise<void> {
   try {
     const collections = await qdrant.getCollections();
     const exists = collections.collections.some(
-      (c) => c.name === QDRANT_QURAN_ENRICHED_COLLECTION
+      (c) => c.name === QURAN_COLLECTION
     );
 
     if (exists && forceFlag) {
-      console.log(`Deleting existing collection: ${QDRANT_QURAN_ENRICHED_COLLECTION}`);
-      await qdrant.deleteCollection(QDRANT_QURAN_ENRICHED_COLLECTION);
+      console.log(`Deleting existing collection: ${QURAN_COLLECTION}`);
+      await qdrant.deleteCollection(QURAN_COLLECTION);
     }
 
     if (!exists || forceFlag) {
-      console.log(`Creating collection: ${QDRANT_QURAN_ENRICHED_COLLECTION}`);
-      await qdrant.createCollection(QDRANT_QURAN_ENRICHED_COLLECTION, {
+      console.log(`Creating collection: ${QURAN_COLLECTION}`);
+      await qdrant.createCollection(QURAN_COLLECTION, {
         vectors: {
           size: EMBEDDING_DIMENSIONS,
           distance: "Cosine",
@@ -77,18 +92,18 @@ async function initializeCollection(): Promise<void> {
       });
 
       // Create payload indexes for filtering
-      await qdrant.createPayloadIndex(QDRANT_QURAN_ENRICHED_COLLECTION, {
+      await qdrant.createPayloadIndex(QURAN_COLLECTION, {
         field_name: "surahNumber",
         field_schema: "integer",
       });
-      await qdrant.createPayloadIndex(QDRANT_QURAN_ENRICHED_COLLECTION, {
+      await qdrant.createPayloadIndex(QURAN_COLLECTION, {
         field_name: "ayahNumber",
         field_schema: "integer",
       });
 
       console.log("Enriched Quran collection created with payload indexes\n");
     } else {
-      console.log(`Collection already exists: ${QDRANT_QURAN_ENRICHED_COLLECTION}\n`);
+      console.log(`Collection already exists: ${QURAN_COLLECTION}\n`);
     }
   } catch (error) {
     console.error("Error initializing collection:", error);
@@ -109,7 +124,7 @@ async function getExistingPointIds(): Promise<Set<string>> {
     let offset: string | null = null;
 
     while (true) {
-      const result = await qdrant.scroll(QDRANT_QURAN_ENRICHED_COLLECTION, {
+      const result = await qdrant.scroll(QURAN_COLLECTION, {
         limit: 1000,
         offset: offset ?? undefined,
         with_payload: false,
@@ -231,7 +246,7 @@ async function processBatch(ayahs: AyahWithTafsir[]): Promise<number> {
   });
 
   // Generate embeddings in batch
-  const embeddings = await generateEmbeddings(texts);
+  const embeddings = await generateEmbeddings(texts, embeddingModel);
 
   // Prepare points for Qdrant
   // Store original ayah text (not tafsir) in payload for display
@@ -252,7 +267,7 @@ async function processBatch(ayahs: AyahWithTafsir[]): Promise<number> {
   }));
 
   // Upsert to Qdrant
-  await qdrant.upsert(QDRANT_QURAN_ENRICHED_COLLECTION, {
+  await qdrant.upsert(QURAN_COLLECTION, {
     wait: true,
     points,
   });
@@ -263,7 +278,7 @@ async function processBatch(ayahs: AyahWithTafsir[]): Promise<number> {
 async function main() {
   console.log("Tafsir-Enriched Quran Embedding Generation");
   console.log("=".repeat(60));
-  console.log(`Collection: ${QDRANT_QURAN_ENRICHED_COLLECTION}`);
+  console.log(`Collection: ${QURAN_COLLECTION}`);
   console.log(`Tafsir source: ${TAFSIR_SOURCE}`);
   console.log(`Batch size: ${BATCH_SIZE}`);
   console.log(`Mode: ${forceFlag ? "Force regenerate all" : "Skip existing"}`);
@@ -357,7 +372,7 @@ async function main() {
 
   // Verify collection
   try {
-    const info = await qdrant.getCollection(QDRANT_QURAN_ENRICHED_COLLECTION);
+    const info = await qdrant.getCollection(QURAN_COLLECTION);
     console.log(`\nEnriched collection points: ${info.points_count}`);
   } catch (error) {
     console.error("Could not get collection info:", error);

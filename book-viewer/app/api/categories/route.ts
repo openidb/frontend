@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
-
-/**
- * GET /api/categories
- *
- * Fetch all categories with book counts
- */
-export async function GET(request: NextRequest) {
-  try {
-    const categories = await prisma.category.findMany({
+const getCategories = unstable_cache(
+  async () => {
+    return prisma.category.findMany({
       include: {
         _count: {
           select: { books: true },
@@ -34,8 +28,28 @@ export async function GET(request: NextRequest) {
         nameArabic: "asc",
       },
     });
+  },
+  ["categories"],
+  { revalidate: 86400 } // 24 hours
+);
 
-    return NextResponse.json({ categories });
+/**
+ * GET /api/categories
+ *
+ * Fetch all categories with book counts
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const categories = await getCategories();
+
+    return NextResponse.json(
+      { categories },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json(

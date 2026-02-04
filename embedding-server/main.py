@@ -1,16 +1,16 @@
 """
-Multilingual E5 FastAPI Server
+BGE-M3 FastAPI Embedding Server
 
-Local embedding server using intfloat/multilingual-e5-base model.
+Local embedding server using BAAI/bge-m3 model.
 Provides fast, low-latency embeddings for Arabic/multilingual text.
 
-Model: intfloat/multilingual-e5-base
-Dimensions: 768
+Model: BAAI/bge-m3 (or custom fine-tuned variant)
+Dimensions: 1024
 License: MIT (fully open, no authentication required)
 
-Note: Originally planned to use google/embeddinggemma-300m but it requires
-HuggingFace authentication. multilingual-e5-base has similar performance
-for multilingual semantic search tasks.
+Environment Variables:
+    EMBEDDING_MODEL - Model name (default: BAAI/bge-m3)
+    CUSTOM_WEIGHTS_PATH - Path to fine-tuned weights (optional)
 
 Usage:
     uvicorn main:app --host 0.0.0.0 --port 8000
@@ -38,16 +38,22 @@ logger = logging.getLogger(__name__)
 # Global model instance
 model = None
 
+# Model configuration
+MODEL_NAME = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3")
+CUSTOM_WEIGHTS_PATH = os.environ.get("CUSTOM_WEIGHTS_PATH", None)
 
-# Model to use - can be overridden via environment variable
-MODEL_NAME = os.environ.get("EMBEDDING_MODEL", "intfloat/multilingual-e5-base")
+# BGE-M3 query instruction prefix
+BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load the model on startup"""
     global model
-    logger.info(f"Loading model: {MODEL_NAME}...")
+
+    # Determine which model to load
+    model_path = CUSTOM_WEIGHTS_PATH if CUSTOM_WEIGHTS_PATH and os.path.exists(CUSTOM_WEIGHTS_PATH) else MODEL_NAME
+    logger.info(f"Loading model: {model_path}...")
     start_time = time.time()
 
     from sentence_transformers import SentenceTransformer
@@ -64,7 +70,7 @@ async def lifespan(app: FastAPI):
 
     # Load model
     model = SentenceTransformer(
-        MODEL_NAME,
+        model_path,
         device=device,
     )
 
@@ -79,25 +85,22 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Local Embedding Server",
-    description="Local embedding server for multilingual text (Arabic, English, etc.)",
-    version="1.0.0",
+    title="BGE-M3 Embedding Server",
+    description="Local embedding server for Arabic/multilingual text using BAAI/bge-m3",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
 
-# Check if model is E5 (requires query/passage prefixes)
-def is_e5_model() -> bool:
-    return "e5" in MODEL_NAME.lower()
-
-
 def format_text(text: str, text_type: str = "query") -> str:
-    """Format text with appropriate prefix for E5 models"""
-    if is_e5_model():
-        if text_type == "query":
-            return f"query: {text}"
-        else:
-            return f"passage: {text}"
+    """
+    Format text with appropriate instruction prefix for BGE-M3.
+
+    BGE-M3 uses an instruction prefix for queries to improve retrieval.
+    Passages are embedded as-is.
+    """
+    if text_type == "query":
+        return f"{BGE_QUERY_PREFIX}{text}"
     return text
 
 
@@ -161,7 +164,7 @@ async def embed(req: EmbedRequest) -> EmbedResponse:
 
     start_time = time.time()
 
-    # Format text with appropriate prefix for E5 models
+    # Format text with appropriate prefix
     formatted_text = format_text(req.text, req.text_type)
 
     # Generate embedding
@@ -189,14 +192,14 @@ async def embed_batch(req: EmbedBatchRequest) -> EmbedBatchResponse:
     if len(req.texts) == 0:
         return EmbedBatchResponse(
             embeddings=[],
-            dimensions=768,
+            dimensions=1024,
             count=0,
             latency_ms=0,
         )
 
     start_time = time.time()
 
-    # Format texts with appropriate prefix for E5 models
+    # Format texts with appropriate prefix
     formatted_texts = [format_text(t, req.text_type) for t in req.texts]
 
     # Generate embeddings in batch (more efficient)
@@ -231,9 +234,12 @@ async def health() -> HealthResponse:
     else:
         device = "cpu"
 
+    # Determine model name for display
+    display_model = CUSTOM_WEIGHTS_PATH if CUSTOM_WEIGHTS_PATH and os.path.exists(CUSTOM_WEIGHTS_PATH) else MODEL_NAME
+
     return HealthResponse(
         status="ok",
-        model=MODEL_NAME,
+        model=display_model,
         dimensions=model.get_sentence_embedding_dimension(),
         device=device,
     )
