@@ -1,6 +1,10 @@
 # Stage 1: Dependencies
 FROM oven/bun:1-debian AS deps
 WORKDIR /app
+
+# Install Python and build tools for native modules
+RUN apt-get update && apt-get install -y python3 build-essential && rm -rf /var/lib/apt/lists/*
+
 COPY package.json bun.lock ./
 COPY prisma ./prisma/
 RUN bun install --frozen-lockfile
