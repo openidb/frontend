@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, Calendar, BookOpen } from "lucide-react";
+import { ArrowLeft, Calendar } from "lucide-react";
 import { formatAuthorDates, formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 
@@ -110,15 +110,6 @@ export default function AuthorDetailClient({
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground" dir="ltr">
                   {authorDatesDisplay}
-                </span>
-              </div>
-            )}
-
-            {metadata.books_count && (
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {metadata.books_count} {metadata.books_count === 1 ? t("authors.bookSingular") : t("authors.bookPlural")}
                 </span>
               </div>
             )}
