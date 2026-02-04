@@ -13,8 +13,25 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { qdrant, QDRANT_COLLECTION, QDRANT_AUTHORS_COLLECTION, QDRANT_QURAN_COLLECTION, QDRANT_QURAN_ENRICHED_COLLECTION, QDRANT_HADITH_COLLECTION } from "@/lib/qdrant";
-import { generateEmbedding, normalizeArabicText } from "@/lib/embeddings";
+import {
+  qdrant,
+  QDRANT_COLLECTION,
+  QDRANT_AUTHORS_COLLECTION,
+  QDRANT_QURAN_COLLECTION,
+  QDRANT_QURAN_ENRICHED_COLLECTION,
+  QDRANT_HADITH_COLLECTION,
+  QDRANT_COLLECTION_BGE,
+  QDRANT_QURAN_ENRICHED_COLLECTION_BGE,
+  QDRANT_HADITH_COLLECTION_BGE,
+  GEMINI_DIMENSIONS,
+  BGE_DIMENSIONS,
+} from "@/lib/qdrant";
+import {
+  generateEmbedding,
+  normalizeArabicText,
+  getEmbeddingModelName,
+  type EmbeddingModel,
+} from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import OpenAI from "openai";
@@ -899,7 +916,7 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-001",
+        model: "google/gemini-3-flash-preview",
         messages: [{ role: "user", content: prompt }],
         temperature: 0,
       }),
@@ -1235,7 +1252,7 @@ Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
     const model = reranker === "gpt-oss-20b" ? "openai/gpt-oss-20b" :
                   reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
-                  "google/gemini-2.0-flash-001";
+                  "google/gemini-3-flash-preview";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -1456,7 +1473,7 @@ If no documents are relevant, return an empty array []:
 
     const model = reranker === "gpt-oss-20b" ? "openai/gpt-oss-20b" :
                   reranker === "gpt-oss-120b" ? "openai/gpt-oss-120b" :
-                  "google/gemini-2.0-flash-001";
+                  "google/gemini-3-flash-preview";
 
     const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -1563,11 +1580,24 @@ interface ExpandedQuery {
 }
 
 /**
- * Expand a search query into multiple alternative queries using GPT-OSS
+ * Map query expansion model config value to OpenRouter model ID
+ */
+function getQueryExpansionModelId(model: string): string {
+  switch (model) {
+    case "gpt-oss-120b":
+      return "openai/gpt-oss-120b";
+    case "gemini-flash":
+    default:
+      return "google/gemini-3-flash-preview";
+  }
+}
+
+/**
+ * Expand a search query into multiple alternative queries using LLM
  * Returns original query (weight=1.0) plus expanded queries (weight=0.7)
  * Results are cached to avoid redundant LLM calls
  */
-async function expandQuery(query: string): Promise<ExpandedQuery[]> {
+async function expandQuery(query: string, model: string = "gemini-flash"): Promise<ExpandedQuery[]> {
   // Check cache first (saves 500-1000ms per repeated query)
   const cached = getCachedExpansion(query);
   if (cached) {
@@ -1619,6 +1649,7 @@ IMPORTANT:
 - Think: "What text would contain the answer to this?"
 - Don't include the original query in your response`;
 
+    const modelId = getQueryExpansionModelId(model);
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -1626,7 +1657,7 @@ IMPORTANT:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: modelId,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
       }),
@@ -1678,13 +1709,13 @@ IMPORTANT:
 /**
  * Wrapper for expandQuery that also returns cache status
  */
-async function expandQueryWithCacheInfo(query: string): Promise<{ queries: ExpandedQuery[]; cached: boolean }> {
+async function expandQueryWithCacheInfo(query: string, model: string = "gemini-flash"): Promise<{ queries: ExpandedQuery[]; cached: boolean }> {
   const cached = getCachedExpansion(query);
   if (cached) {
     console.log(`[Refine] Cache hit for query expansion: "${query}"`);
     return { queries: cached, cached: true };
   }
-  const queries = await expandQuery(query);
+  const queries = await expandQuery(query, model);
   return { queries, cached: false };
 }
 
@@ -1796,13 +1827,17 @@ function mergeAndDeduplicateHadiths(
 /**
  * Perform semantic search using Qdrant
  * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
+ * @param collection - Qdrant collection to search (default: QDRANT_COLLECTION)
+ * @param embeddingModel - Embedding model to use if generating new embedding
  */
 async function semanticSearch(
   query: string,
   limit: number,
   bookId: string | null,
   similarityCutoff: number = 0.25,
-  precomputedEmbedding?: number[]
+  precomputedEmbedding?: number[],
+  collection: string = QDRANT_COLLECTION,
+  embeddingModel: EmbeddingModel = "gemini"
 ): Promise<RankedResult[]> {
   // Skip semantic search for quoted phrase queries (user wants exact match)
   if (hasQuotedPhrases(query)) {
@@ -1822,7 +1857,7 @@ async function semanticSearch(
   const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
   // Use precomputed embedding if provided, otherwise generate one
-  const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
+  const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery, embeddingModel);
 
   // Filter by shamelaBookId (now the primary key)
   const filter = bookId
@@ -1836,7 +1871,7 @@ async function semanticSearch(
       }
     : undefined;
 
-  const searchResults = await qdrant.search(QDRANT_COLLECTION, {
+  const searchResults = await qdrant.search(collection, {
     vector: queryEmbedding,
     limit: limit,
     filter: filter,
@@ -2041,12 +2076,24 @@ async function searchAuthors(query: string, limit: number = 5): Promise<AuthorRe
  * @param useEnriched - Whether to use tafsir-enriched embeddings (default: true)
  * @returns Results array and metadata about which collection was used
  */
-async function searchAyahsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.28, precomputedEmbedding?: number[], useEnriched: boolean = true): Promise<AyahSemanticSearchResult> {
+async function searchAyahsSemantic(
+  query: string,
+  limit: number = 10,
+  similarityCutoff: number = 0.28,
+  precomputedEmbedding?: number[],
+  useEnriched: boolean = true,
+  quranCollectionOverride?: string,
+  embeddingModel: EmbeddingModel = "gemini"
+): Promise<AyahSemanticSearchResult> {
+  // Determine collection based on override or enriched flag
+  const baseCollection = quranCollectionOverride || (useEnriched ? QDRANT_QURAN_ENRICHED_COLLECTION : QDRANT_QURAN_COLLECTION);
+  const fallbackCollection = QDRANT_QURAN_COLLECTION;
+
   // Default metadata for early returns
   const defaultMeta: AyahSearchMeta = {
-    collection: useEnriched ? QDRANT_QURAN_ENRICHED_COLLECTION : QDRANT_QURAN_COLLECTION,
+    collection: baseCollection,
     usedFallback: false,
-    tafsirSource: useEnriched ? "jalalayn" : undefined,
+    tafsirSource: useEnriched && !quranCollectionOverride ? "jalalayn" : undefined,
   };
 
   try {
@@ -2068,10 +2115,10 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
     const effectiveCutoff = getDynamicSimilarityThreshold(query, similarityCutoff);
 
     // Use precomputed embedding if provided, otherwise generate one
-    const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
+    const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery, embeddingModel);
 
-    // Try enriched collection first, fall back to original if it fails or returns no results
-    let collection = useEnriched ? QDRANT_QURAN_ENRICHED_COLLECTION : QDRANT_QURAN_COLLECTION;
+    // Try the specified collection first
+    let collection = baseCollection;
     let usedFallback = false;
     let searchResults;
 
@@ -2086,10 +2133,10 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
         score_threshold: effectiveCutoff,
       });
 
-      // Fall back to original collection if enriched returns no results
-      if (useEnriched && searchResults.length === 0) {
+      // Fall back to original collection if enriched returns no results (only if not using BGE override)
+      if (useEnriched && !quranCollectionOverride && searchResults.length === 0) {
         console.log(`[searchAyahsSemantic] Enriched collection empty, falling back to original`);
-        collection = QDRANT_QURAN_COLLECTION;
+        collection = fallbackCollection;
         usedFallback = true;
         searchResults = await qdrant.search(collection, {
           vector: queryEmbedding,
@@ -2099,10 +2146,10 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
         });
       }
     } catch (enrichedErr) {
-      // If enriched collection doesn't exist, fall back to original
-      if (useEnriched) {
+      // If enriched collection doesn't exist, fall back to original (only if not using BGE override)
+      if (useEnriched && !quranCollectionOverride) {
         console.log(`[searchAyahsSemantic] Enriched collection unavailable, using original`);
-        collection = QDRANT_QURAN_COLLECTION;
+        collection = fallbackCollection;
         usedFallback = true;
         searchResults = await qdrant.search(collection, {
           vector: queryEmbedding,
@@ -2161,20 +2208,23 @@ async function searchAyahsSemantic(query: string, limit: number = 10, similarity
 /**
  * Hybrid search for Quran ayahs using RRF fusion + reranking
  * @param options.precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
+ * @param options.quranCollection - Collection to search for ayahs
+ * @param options.embeddingModel - Embedding model to use
  */
 async function searchAyahsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[]; quranCollection?: string; embeddingModel?: EmbeddingModel } = {}
 ): Promise<AyahResult[]> {
-  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding, quranCollection, embeddingModel = "gemini" } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
-  const defaultMeta: AyahSearchMeta = { collection: QDRANT_QURAN_ENRICHED_COLLECTION, usedFallback: false, tafsirSource: "jalalayn" };
+  const collectionToUse = quranCollection || QDRANT_QURAN_ENRICHED_COLLECTION;
+  const defaultMeta: AyahSearchMeta = { collection: collectionToUse, usedFallback: false, tafsirSource: "jalalayn" };
   const [semanticSearchResult, keywordResults] = await Promise.all([
-    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
+    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
     keywordSearchAyahsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
 
@@ -2215,8 +2265,17 @@ async function searchAyahsHybrid(
 /**
  * Search for Hadiths using semantic search (returns ranked results)
  * @param precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
+ * @param hadithCollectionOverride - Collection to search (default: QDRANT_HADITH_COLLECTION)
+ * @param embeddingModel - Embedding model to use if generating new embedding
  */
-async function searchHadithsSemantic(query: string, limit: number = 10, similarityCutoff: number = 0.25, precomputedEmbedding?: number[]): Promise<HadithRankedResult[]> {
+async function searchHadithsSemantic(
+  query: string,
+  limit: number = 10,
+  similarityCutoff: number = 0.25,
+  precomputedEmbedding?: number[],
+  hadithCollectionOverride?: string,
+  embeddingModel: EmbeddingModel = "gemini"
+): Promise<HadithRankedResult[]> {
   const _t0 = Date.now();
   try {
     // Skip semantic search for quoted phrase queries (user wants exact match)
@@ -2238,12 +2297,13 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
 
     // Use precomputed embedding if provided, otherwise generate one
     const _tEmb = Date.now();
-    const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery);
+    const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery, embeddingModel);
     const _tEmbEnd = Date.now();
     if (!precomputedEmbedding) console.log(`[HadithSemantic] embedding generated: ${_tEmbEnd - _tEmb}ms`);
 
+    const hadithCollection = hadithCollectionOverride || QDRANT_HADITH_COLLECTION;
     const _tQdrant = Date.now();
-    const searchResults = await qdrant.search(QDRANT_HADITH_COLLECTION, {
+    const searchResults = await qdrant.search(hadithCollection, {
       vector: queryEmbedding,
       limit: limit,
       with_payload: true,
@@ -2340,13 +2400,15 @@ async function searchHadithsSemantic(query: string, limit: number = 10, similari
 /**
  * Hybrid search for Hadiths using RRF fusion + reranking
  * @param options.precomputedEmbedding - Optional pre-generated embedding to avoid redundant API calls
+ * @param options.hadithCollection - Collection to search for hadiths
+ * @param options.embeddingModel - Embedding model to use
  */
 async function searchHadithsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[] } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[]; hadithCollection?: string; embeddingModel?: EmbeddingModel } = {}
 ): Promise<HadithResult[]> {
-  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding, hadithCollection, embeddingModel = "gemini" } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -2354,7 +2416,7 @@ async function searchHadithsHybrid(
   // Time each component
   const _t0 = Date.now();
   const [semanticResults, keywordResults] = await Promise.all([
-    searchHadithsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding).catch(() => []),
+    searchHadithsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, hadithCollection, embeddingModel).catch(() => []),
     keywordSearchHadithsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
   ]);
   const _t1 = Date.now();
@@ -2439,6 +2501,17 @@ export async function GET(request: NextRequest) {
   const refineBookRerank = Math.min(Math.max(parseInt(searchParams.get("refineBookRerank") || "20", 10), 5), 40);
   const refineAyahRerank = Math.min(Math.max(parseInt(searchParams.get("refineAyahRerank") || "12", 10), 5), 25);
   const refineHadithRerank = Math.min(Math.max(parseInt(searchParams.get("refineHadithRerank") || "15", 10), 5), 25);
+  const queryExpansionModel = searchParams.get("queryExpansionModel") || "gemini-flash";
+
+  // Embedding model selection
+  const embeddingModelParam = searchParams.get("embeddingModel") as EmbeddingModel | null;
+  const embeddingModel: EmbeddingModel = embeddingModelParam === "bge-m3" ? "bge-m3" : "gemini";
+
+  // Get collections based on embedding model
+  const pageCollection = embeddingModel === "bge-m3" ? QDRANT_COLLECTION_BGE : QDRANT_COLLECTION;
+  const quranCollection = embeddingModel === "bge-m3" ? QDRANT_QURAN_ENRICHED_COLLECTION_BGE : QDRANT_QURAN_ENRICHED_COLLECTION;
+  const hadithCollection = embeddingModel === "bge-m3" ? QDRANT_HADITH_COLLECTION_BGE : QDRANT_HADITH_COLLECTION;
+  const embeddingDimensions = embeddingModel === "bge-m3" ? BGE_DIMENSIONS : GEMINI_DIMENSIONS;
 
   // Validate query
   if (!query || query.trim().length === 0) {
@@ -2602,7 +2675,7 @@ export async function GET(request: NextRequest) {
 
       // Step 1: Expand the query (with timing)
       const _expansionStart = Date.now();
-      const { queries: expandedRaw, cached: expansionCached } = await expandQueryWithCacheInfo(query);
+      const { queries: expandedRaw, cached: expansionCached } = await expandQueryWithCacheInfo(query, queryExpansionModel);
       _refineTiming.queryExpansion = Date.now() - _expansionStart;
       _refineQueryExpansionCached = expansionCached;
 
@@ -2629,18 +2702,25 @@ export async function GET(request: NextRequest) {
         // Pre-generate embedding ONCE for this expanded query (saves 200-400ms per query)
         const normalizedQ = normalizeArabicText(q);
         const shouldSkipSemantic = normalizedQ.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(q);
-        const qEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQ);
+        const qEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQ, embeddingModel);
 
         // Run semantic + keyword for books (using configurable per-query limit)
         const [bookSemantic, bookKeyword] = await Promise.all([
-          semanticSearch(q, refineBookPerQuery, null, refineSimilarityCutoff, qEmbedding).catch(() => []),
+          semanticSearch(q, refineBookPerQuery, null, refineSimilarityCutoff, qEmbedding, pageCollection, embeddingModel).catch(() => []),
           keywordSearchES(q, refineBookPerQuery, null, fuzzyOptions).catch(() => []),
         ]);
 
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
 
         // Run hybrid for ayahs and hadiths (if enabled) with configurable per-query limits
-        const refineHybridOptionsWithEmbedding = { ...refineHybridOptions, reranker: "none" as RerankerType, precomputedEmbedding: qEmbedding };
+        const refineHybridOptionsWithEmbedding = {
+          ...refineHybridOptions,
+          reranker: "none" as RerankerType,
+          precomputedEmbedding: qEmbedding,
+          quranCollection,
+          hadithCollection,
+          embeddingModel,
+        };
         const ayahResults = includeQuran
           ? await searchAyahsHybrid(q, refineAyahPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
           : [];
@@ -2749,7 +2829,7 @@ export async function GET(request: NextRequest) {
       const _embStart = Date.now();
       const embeddingPromise = shouldSkipSemantic
         ? Promise.resolve(undefined)
-        : generateEmbedding(normalizedQuery);
+        : generateEmbedding(normalizedQuery, embeddingModel);
 
       // Start all keyword searches immediately (parallel with embedding)
       // Using Elasticsearch for fast keyword search
@@ -2784,15 +2864,15 @@ export async function GET(request: NextRequest) {
       const _semBooksStart = Date.now();
       const semanticBooksPromise = (mode === "keyword" || !includeBooks)
         ? Promise.resolve([] as RankedResult[])
-        : semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding)
+        : semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding, pageCollection, embeddingModel)
             .then(res => { _timing.semantic.books = Date.now() - _semBooksStart; return res; })
             .catch(() => [] as RankedResult[]);
 
       const _semAyahsStart = Date.now();
-      const defaultAyahMeta: AyahSearchMeta = { collection: QDRANT_QURAN_ENRICHED_COLLECTION, usedFallback: false, tafsirSource: "jalalayn" };
+      const defaultAyahMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, tafsirSource: "jalalayn" };
       const semanticAyahsPromise = (mode === "keyword" || bookId || !includeQuran)
         ? Promise.resolve({ results: [] as AyahRankedResult[], meta: defaultAyahMeta })
-        : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding)
+        : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, true, quranCollection, embeddingModel)
             .then(res => {
               _timing.semantic.ayahs = Date.now() - _semAyahsStart;
               console.log(`[SemanticAyahs] returned ${res.results.length} results from ${res.meta.collection}`);
@@ -2807,7 +2887,7 @@ export async function GET(request: NextRequest) {
       const _semHadithsStart = Date.now();
       const semanticHadithsPromise = (mode === "keyword" || bookId || !includeHadith)
         ? Promise.resolve([] as HadithRankedResult[])
-        : searchHadithsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding)
+        : searchHadithsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, hadithCollection, embeddingModel)
             .then(res => { _timing.semantic.hadiths = Date.now() - _semHadithsStart; return res; })
             .catch(() => [] as HadithRankedResult[]);
 
@@ -3209,10 +3289,10 @@ export async function GET(request: NextRequest) {
         keywordEngine: 'elasticsearch',
         bm25Params: { k1: 1.2, b: 0.75, normK: 5 }, // ES defaults
         rrfK: RRF_K,
-        embeddingModel: "Google Gemini embedding-001",
-        embeddingDimensions: 3072,
+        embeddingModel: getEmbeddingModelName(embeddingModel),
+        embeddingDimensions: embeddingDimensions,
         rerankerModel: reranker === 'none' ? null : reranker,
-        queryExpansionModel: refine ? 'google/gemini-3-flash-preview' : null,
+        queryExpansionModel: refine ? getQueryExpansionModelId(queryExpansionModel) : null,
         // Quran embedding collection info
         quranCollection: ayahSearchMeta.collection,
         quranCollectionFallback: ayahSearchMeta.usedFallback,

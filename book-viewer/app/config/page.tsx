@@ -11,10 +11,13 @@ import {
 } from "@/components/ui/select";
 import {
   rerankerOptions,
+  embeddingModelOptions,
   QURAN_TRANSLATIONS,
   TRANSLATION_DISPLAY_OPTIONS,
   type RerankerType,
   type TranslationDisplayOption,
+  type EmbeddingModelType,
+  type QueryExpansionModelType,
 } from "@/components/SearchConfigDropdown";
 import { useAppConfig } from "@/lib/config";
 import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
@@ -410,6 +413,89 @@ export default function ConfigPage() {
           <div className="space-y-4">
             <SectionHeader>{t("config.sections.searchSettings")}</SectionHeader>
             <SelectSetting
+              label={t("config.embedding.model")}
+              info={t("config.embedding.modelInfo")}
+            >
+              <Select
+                value={config.embeddingModel}
+                onValueChange={(value) => updateConfig({ embeddingModel: value as EmbeddingModelType })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {t(`config.embedding.${config.embeddingModel}`)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border">
+                  {embeddingModelOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="py-2">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{t(`config.embedding.${option.labelKey}`)}</span>
+                        <span className="text-xs text-muted-foreground">{t(`config.embedding.${option.descKey}`)}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </SelectSetting>
+            <SliderSetting
+              label={t("config.reranker.regularCandidates")}
+              value={config.preRerankLimit}
+              min={20}
+              max={150}
+              step={10}
+              onChange={(value) => updateConfig({ preRerankLimit: value })}
+              info={t("config.reranker.regularCandidatesInfo")}
+            />
+            <SliderSetting
+              label={t("config.reranker.regularResults")}
+              value={config.postRerankLimit}
+              min={5}
+              max={30}
+              step={5}
+              onChange={(value) => updateConfig({ postRerankLimit: value })}
+              info={t("config.reranker.regularResultsInfo")}
+            />
+          </div>
+
+          <Divider />
+
+          {/* Refine Search */}
+          <div className="space-y-4">
+            <SectionHeader>{t("config.sections.refineSearch")}</SectionHeader>
+
+            {/* Query Expansion Model */}
+            <SelectSetting
+              label={t("config.refine.queryExpansionModel")}
+              info={t("config.refine.queryExpansionModelInfo")}
+            >
+              <Select
+                value={config.queryExpansionModel}
+                onValueChange={(value) => updateConfig({ queryExpansionModel: value as QueryExpansionModelType })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {config.queryExpansionModel === "gemini-flash" ? "Gemini Flash" : "GPT OSS 120B"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border">
+                  <SelectItem value="gemini-flash" className="py-2">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Gemini Flash</span>
+                      <span className="text-xs text-muted-foreground">{t("config.refine.geminiFlashDesc")}</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="gpt-oss-120b" className="py-2">
+                    <div className="flex flex-col">
+                      <span className="font-medium">GPT OSS 120B</span>
+                      <span className="text-xs text-muted-foreground">{t("config.refine.gptOss120bDesc")}</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </SelectSetting>
+
+            {/* Reranker Model */}
+            <SelectSetting
               label={t("config.reranker.model")}
               info={t("config.reranker.modelInfo")}
             >
@@ -455,31 +541,6 @@ export default function ConfigPage() {
                 </SelectContent>
               </Select>
             </SelectSetting>
-            <SliderSetting
-              label={t("config.reranker.regularCandidates")}
-              value={config.preRerankLimit}
-              min={20}
-              max={150}
-              step={10}
-              onChange={(value) => updateConfig({ preRerankLimit: value })}
-              info={t("config.reranker.regularCandidatesInfo")}
-            />
-            <SliderSetting
-              label={t("config.reranker.regularResults")}
-              value={config.postRerankLimit}
-              min={5}
-              max={30}
-              step={5}
-              onChange={(value) => updateConfig({ postRerankLimit: value })}
-              info={t("config.reranker.regularResultsInfo")}
-            />
-          </div>
-
-          <Divider />
-
-          {/* Refine Search */}
-          <div className="space-y-4">
-            <SectionHeader>{t("config.sections.refineSearch")}</SectionHeader>
 
             {/* Query Weights */}
             <SliderSetting

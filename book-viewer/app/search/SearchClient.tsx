@@ -230,6 +230,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         postRerankLimit: String(config.postRerankLimit),
         fuzzy: String(config.fuzzyEnabled),
         fuzzyThreshold: String(config.fuzzyThreshold),
+        embeddingModel: config.embeddingModel || "gemini",
         quranTranslation: config.autoTranslation
           ? (locale === "ar" ? "en" : locale)
           : (config.quranTranslation || "none"),
@@ -247,6 +248,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
           refineBookRerank: String(config.refineBookRerank),
           refineAyahRerank: String(config.refineAyahRerank),
           refineHadithRerank: String(config.refineHadithRerank),
+          queryExpansionModel: config.queryExpansionModel,
         }),
       });
 

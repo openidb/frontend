@@ -250,8 +250,16 @@
       "threshold": "Threshold",
       "thresholdInfo": "How closely text must match. Lower values allow more variation in spelling and word forms."
     },
+    "embedding": {
+      "model": "Embedding Model",
+      "modelInfo": "AI model for semantic search. Cloud models are stable; local models can be fine-tuned.",
+      "gemini": "Gemini",
+      "geminiDesc": "Stable, high quality",
+      "bgeM3": "BGE-M3 (In Development)",
+      "bgeM3Desc": "Local model, fine-tuned for Arabic Islamic texts"
+    },
     "reranker": {
-      "model": "Model",
+      "model": "Reranker Model",
       "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
       "regularCandidates": "Regular Candidates",
       "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
@@ -259,6 +267,10 @@
       "regularResultsInfo": "Final number of results returned after fusion and ranking."
     },
     "refine": {
+      "queryExpansionModel": "Query Expansion Model",
+      "queryExpansionModelInfo": "AI model used to generate alternative search queries",
+      "geminiFlashDesc": "Fast, high quality reasoning",
+      "gptOss120bDesc": "Highest quality, slower",
       "originalWeight": "Original Query Weight",
       "originalWeightInfo": "Weight of your original query in merged results.",
       "expandedWeight": "Expanded Queries Weight",
