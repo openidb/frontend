@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, ReactNode, useMemo } from "react";
+import { useEffect, useRef, useState, ReactNode, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ePub, { Book, Rendition } from "epubjs";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
   const renditionRef = useRef<Rendition | null>(null);
   const bookRef = useRef<Book | null>(null);
   const currentHrefRef = useRef<string>("");  // Track current href to prevent unnecessary updates
+  const prefetchedSectionsRef = useRef<Set<number>>(new Set());
   const [isReady, setIsReady] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
   const [totalSections, setTotalSections] = useState(0);
@@ -419,6 +420,44 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
       }
     };
   }, []); // Empty deps - only initialize once
+
+  // Prefetch next sections for smoother navigation
+  const prefetchNextSections = useCallback(async (currentIndex: number, count = 3) => {
+    if (!bookRef.current) return;
+
+    try {
+      const spine: any = await bookRef.current.loaded.spine;
+      for (let i = 1; i <= count; i++) {
+        const targetIndex = currentIndex + i;
+        if (targetIndex >= spine.length || prefetchedSectionsRef.current.has(targetIndex)) continue;
+
+        const section = spine.get(targetIndex);
+        if (section) {
+          await section.load(bookRef.current.load.bind(bookRef.current));
+          prefetchedSectionsRef.current.add(targetIndex);
+        }
+      }
+    } catch (error) {
+      console.debug("Prefetch failed:", error);
+    }
+  }, []);
+
+  // Trigger prefetch after navigation
+  useEffect(() => {
+    if (isReady && currentSection > 0) {
+      const prefetch = () => prefetchNextSections(currentSection - 1, 3);
+      if ("requestIdleCallback" in window) {
+        (window as any).requestIdleCallback(prefetch, { timeout: 2000 });
+      } else {
+        setTimeout(prefetch, 100);
+      }
+    }
+  }, [currentSection, isReady, prefetchNextSections]);
+
+  // Clear prefetch cache on book change
+  useEffect(() => {
+    prefetchedSectionsRef.current.clear();
+  }, [bookMetadata.filename]);
 
   // Handle keyboard navigation - language-aware
   // In RTL languages (Arabic, Urdu): ArrowLeft = next, ArrowRight = prev

@@ -1,28 +1,27 @@
 /**
- * Local Embedding Client for EmbeddingGemma-300M
+ * BGE-M3 Embeddings Client
  *
- * Connects to a local FastAPI server running EmbeddingGemma-300M model.
- * Provides fast, low-latency embeddings (~10-20ms vs ~500ms with Gemini API).
+ * Connects to a local FastAPI server running BAAI/bge-m3 model.
+ * Provides embeddings for Arabic/multilingual text with 1024 dimensions.
  *
- * Model: google/embeddinggemma-300m
- * Dimensions: 768
+ * Model: BAAI/bge-m3 (or fine-tuned variant)
+ * Dimensions: 1024
  *
  * Usage:
  *   1. Start the Python server: cd embedding-server && uvicorn main:app --port 8000
  *   2. Use these functions to generate embeddings
  *
  * Environment variables:
- *   EMBEDDINGGEMMA_URL - Server URL (default: http://localhost:8000)
+ *   BGE_M3_URL - Server URL (default: http://localhost:8000)
  */
 
-import { EMBEDDINGGEMMA_DIMENSIONS } from "./constants";
+import { BGE_DIMENSIONS } from "./constants";
 
 // Re-export for convenience
-export { EMBEDDINGGEMMA_DIMENSIONS };
+export { BGE_DIMENSIONS };
 
 // Default server URL
-const EMBEDDING_SERVER_URL =
-  process.env.EMBEDDINGGEMMA_URL || "http://localhost:8000";
+const BGE_SERVER_URL = process.env.BGE_M3_URL || "http://localhost:8000";
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 30000;
@@ -48,14 +47,14 @@ interface HealthResponse {
 }
 
 /**
- * Check if the local embedding server is available
+ * Check if the BGE-M3 embedding server is available
  */
-export async function isEmbeddingServerAvailable(): Promise<boolean> {
+export async function isBGEServerAvailable(): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    const response = await fetch(`${EMBEDDING_SERVER_URL}/health`, {
+    const response = await fetch(`${BGE_SERVER_URL}/health`, {
       signal: controller.signal,
     });
 
@@ -67,10 +66,10 @@ export async function isEmbeddingServerAvailable(): Promise<boolean> {
 }
 
 /**
- * Get health information from the embedding server
+ * Get health information from the BGE-M3 embedding server
  */
-export async function getEmbeddingServerHealth(): Promise<HealthResponse> {
-  const response = await fetch(`${EMBEDDING_SERVER_URL}/health`);
+export async function getBGEServerHealth(): Promise<HealthResponse> {
+  const response = await fetch(`${BGE_SERVER_URL}/health`);
 
   if (!response.ok) {
     throw new Error(`Health check failed: ${response.status}`);
@@ -80,14 +79,14 @@ export async function getEmbeddingServerHealth(): Promise<HealthResponse> {
 }
 
 /**
- * Generate embedding for a single text using local EmbeddingGemma model
+ * Generate embedding for a single text using BGE-M3 model
  *
  * @param text - Text to embed
  * @param textType - Type of text: 'query' for search queries, 'passage' for documents (default: 'query')
- * @returns Promise<number[]> - 768-dimensional embedding vector
+ * @returns Promise<number[]> - 1024-dimensional embedding vector
  * @throws Error if server is unavailable or request fails
  */
-export async function generateEmbeddingLocal(
+export async function generateEmbeddingBGE(
   text: string,
   textType: "query" | "passage" = "query"
 ): Promise<number[]> {
@@ -95,7 +94,7 @@ export async function generateEmbeddingLocal(
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
   try {
-    const response = await fetch(`${EMBEDDING_SERVER_URL}/embed`, {
+    const response = await fetch(`${BGE_SERVER_URL}/embed`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -109,15 +108,15 @@ export async function generateEmbeddingLocal(
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Embedding request failed: ${response.status} - ${errorText}`
+        `BGE embedding request failed: ${response.status} - ${errorText}`
       );
     }
 
     const data: EmbedResponse = await response.json();
 
-    if (data.dimensions !== EMBEDDINGGEMMA_DIMENSIONS) {
+    if (data.dimensions !== BGE_DIMENSIONS) {
       console.warn(
-        `Unexpected embedding dimensions: ${data.dimensions}, expected ${EMBEDDINGGEMMA_DIMENSIONS}`
+        `Unexpected BGE embedding dimensions: ${data.dimensions}, expected ${BGE_DIMENSIONS}`
       );
     }
 
@@ -126,7 +125,7 @@ export async function generateEmbeddingLocal(
     clearTimeout(timeoutId);
 
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(`Embedding request timed out after ${REQUEST_TIMEOUT}ms`);
+      throw new Error(`BGE embedding request timed out after ${REQUEST_TIMEOUT}ms`);
     }
 
     throw error;
@@ -136,15 +135,15 @@ export async function generateEmbeddingLocal(
 /**
  * Generate embeddings for multiple texts in a single batch request
  *
- * More efficient than calling generateEmbeddingLocal multiple times.
+ * More efficient than calling generateEmbeddingBGE multiple times.
  * Maximum batch size is 32 texts.
  *
  * @param texts - Array of texts to embed
  * @param textType - Type of text: 'query' for search queries, 'passage' for documents (default: 'passage')
- * @returns Promise<number[][]> - Array of 768-dimensional embedding vectors
+ * @returns Promise<number[][]> - Array of 1024-dimensional embedding vectors
  * @throws Error if server is unavailable or request fails
  */
-export async function generateEmbeddingsLocal(
+export async function generateEmbeddingsBGE(
   texts: string[],
   textType: "query" | "passage" = "passage"
 ): Promise<number[][]> {
@@ -158,7 +157,7 @@ export async function generateEmbeddingsLocal(
     const results: number[][] = [];
     for (let i = 0; i < texts.length; i += MAX_BATCH_SIZE) {
       const chunk = texts.slice(i, i + MAX_BATCH_SIZE);
-      const chunkEmbeddings = await generateEmbeddingsLocal(chunk, textType);
+      const chunkEmbeddings = await generateEmbeddingsBGE(chunk, textType);
       results.push(...chunkEmbeddings);
     }
     return results;
@@ -168,7 +167,7 @@ export async function generateEmbeddingsLocal(
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
   try {
-    const response = await fetch(`${EMBEDDING_SERVER_URL}/embed/batch`, {
+    const response = await fetch(`${BGE_SERVER_URL}/embed/batch`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -182,15 +181,15 @@ export async function generateEmbeddingsLocal(
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Batch embedding request failed: ${response.status} - ${errorText}`
+        `BGE batch embedding request failed: ${response.status} - ${errorText}`
       );
     }
 
     const data: EmbedBatchResponse = await response.json();
 
-    if (data.dimensions !== EMBEDDINGGEMMA_DIMENSIONS) {
+    if (data.dimensions !== BGE_DIMENSIONS) {
       console.warn(
-        `Unexpected embedding dimensions: ${data.dimensions}, expected ${EMBEDDINGGEMMA_DIMENSIONS}`
+        `Unexpected BGE embedding dimensions: ${data.dimensions}, expected ${BGE_DIMENSIONS}`
       );
     }
 
@@ -200,54 +199,10 @@ export async function generateEmbeddingsLocal(
 
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(
-        `Batch embedding request timed out after ${REQUEST_TIMEOUT}ms`
+        `BGE batch embedding request timed out after ${REQUEST_TIMEOUT}ms`
       );
     }
 
     throw error;
   }
-}
-
-/**
- * Normalize Arabic text for better embedding quality
- * Re-exported from embeddings.ts for convenience
- */
-export function normalizeArabicText(text: string): string {
-  return (
-    text
-      // Remove Arabic diacritics (tashkeel)
-      .replace(/[\u064B-\u065F\u0670]/g, "")
-      // Normalize alef variants to plain alef
-      .replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627")
-      // Normalize teh marbuta to heh
-      .replace(/\u0629/g, "\u0647")
-      // Normalize whitespace
-      .replace(/\s+/g, " ")
-      .trim()
-  );
-}
-
-/**
- * Truncate text to fit within model token limits
- * EmbeddingGemma has 8192 token context
- * Rough estimate: 1 token ~ 4 characters for Arabic
- */
-export function truncateForEmbedding(
-  text: string,
-  maxChars: number = 6000
-): string {
-  if (text.length <= maxChars) return text;
-
-  // Try to cut at a sentence boundary
-  const truncated = text.slice(0, maxChars);
-  const lastPeriod = truncated.lastIndexOf(".");
-  const lastArabicPeriod = truncated.lastIndexOf("\u06D4");
-
-  const cutPoint = Math.max(lastPeriod, lastArabicPeriod);
-
-  if (cutPoint > maxChars * 0.7) {
-    return truncated.slice(0, cutPoint + 1);
-  }
-
-  return truncated;
 }

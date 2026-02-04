@@ -1,22 +1,12 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import AuthorDetailClient from "./AuthorDetailClient";
 
-export const dynamic = "force-dynamic";
-
-export default async function AuthorDetailPage({
-  params,
-}: {
-  params: Promise<{ name: string }>;
-}) {
-  const { name } = await params;
-  const authorLatin = decodeURIComponent(name);
-
-  // Fetch author with all books from database
-  let author;
-  try {
-    author = await prisma.author.findUnique({
-      where: { nameLatin: authorLatin },
+const getAuthorByName = unstable_cache(
+  async (nameLatin: string) => {
+    return prisma.author.findUnique({
+      where: { nameLatin },
       include: {
         books: {
           include: {
@@ -34,6 +24,23 @@ export default async function AuthorDetailPage({
         },
       },
     });
+  },
+  ["author-detail"],
+  { revalidate: 3600 } // 1 hour
+);
+
+export default async function AuthorDetailPage({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}) {
+  const { name } = await params;
+  const authorLatin = decodeURIComponent(name);
+
+  // Fetch author with all books from database
+  let author;
+  try {
+    author = await getAuthorByName(authorLatin);
   } catch (error) {
     console.error("Failed to fetch author:", error);
     notFound();

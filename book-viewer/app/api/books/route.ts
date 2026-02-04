@@ -1,8 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import { parsePagination, createPaginationResponse } from "@/lib/api-utils";
 
-export const dynamic = "force-dynamic";
+// Cache for unfiltered paginated queries
+const getBooksPage = unstable_cache(
+  async (page: number, limit: number, skip: number) => {
+    const [booksRaw, total] = await Promise.all([
+      prisma.book.findMany({
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          titleArabic: true,
+          titleLatin: true,
+          filename: true,
+          timePeriod: true,
+          publicationYearHijri: true,
+          publicationYearGregorian: true,
+          createdAt: true,
+          updatedAt: true,
+          authorId: true,
+          categoryId: true,
+          author: {
+            select: {
+              id: true,
+              nameArabic: true,
+              nameLatin: true,
+              deathDateHijri: true,
+              deathDateGregorian: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              nameArabic: true,
+              nameEnglish: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.book.count(),
+    ]);
+
+    const books = booksRaw.map((book) => ({
+      ...book,
+      titleTranslated: null,
+    }));
+
+    return { books, total };
+  },
+  ["books-list"],
+  { revalidate: 3600 } // 1 hour
+);
 
 /**
  * GET /api/books
@@ -28,7 +81,27 @@ export async function GET(request: NextRequest) {
     const timePeriod = searchParams.get("timePeriod");
     const bookTitleLang = searchParams.get("bookTitleLang");
 
-    // Build where clause
+    // Check if request has any filters
+    const hasFilters = search || categoryId || authorId || timePeriod || bookTitleLang;
+
+    if (!hasFilters) {
+      // Use cached query for unfiltered requests
+      const { books, total } = await getBooksPage(page, limit, skip);
+
+      return NextResponse.json(
+        {
+          books,
+          pagination: createPaginationResponse(page, limit, total),
+        },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600",
+          },
+        }
+      );
+    }
+
+    // Build where clause for filtered queries
     const where: any = {};
 
     if (search) {
@@ -64,7 +137,18 @@ export async function GET(request: NextRequest) {
         where,
         skip,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          titleArabic: true,
+          titleLatin: true,
+          filename: true,
+          timePeriod: true,
+          publicationYearHijri: true,
+          publicationYearGregorian: true,
+          createdAt: true,
+          updatedAt: true,
+          authorId: true,
+          categoryId: true,
           author: {
             select: {
               id: true,

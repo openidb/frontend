@@ -1,8 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import { parsePagination, createPaginationResponse } from "@/lib/api-utils";
 
-export const dynamic = "force-dynamic";
+// Cache for paginated (non-search) queries
+const getAuthorsPage = unstable_cache(
+  async (page: number, limit: number, offset: number) => {
+    const [authors, total] = await Promise.all([
+      prisma.author.findMany({
+        skip: offset,
+        take: limit,
+        include: {
+          _count: {
+            select: { books: true },
+          },
+        },
+        orderBy: {
+          nameLatin: "asc",
+        },
+      }),
+      prisma.author.count(),
+    ]);
+    return { authors, total };
+  },
+  ["authors-list"],
+  { revalidate: 3600 } // 1 hour
+);
 
 /**
  * GET /api/authors
@@ -89,27 +112,20 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // No search - use standard Prisma query
-    const [authors, total] = await Promise.all([
-      prisma.author.findMany({
-        skip: offset,
-        take: limit,
-        include: {
-          _count: {
-            select: { books: true },
-          },
-        },
-        orderBy: {
-          nameLatin: "asc",
-        },
-      }),
-      prisma.author.count(),
-    ]);
+    // No search - use cached query
+    const { authors, total } = await getAuthorsPage(page, limit, offset);
 
-    return NextResponse.json({
-      authors,
-      pagination: createPaginationResponse(page, limit, total),
-    });
+    return NextResponse.json(
+      {
+        authors,
+        pagination: createPaginationResponse(page, limit, total),
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching authors:", error);
     return NextResponse.json(
