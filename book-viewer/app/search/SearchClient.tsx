@@ -61,6 +61,7 @@ interface DebugStats {
     totalShown: number;
   };
   algorithm: {
+    fusionMethod: string;
     fusionWeights: { semantic: number; keyword: number };
     keywordEngine: string;
     bm25Params: { k1: number; b: number; normK: number };
@@ -599,10 +600,10 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
             <div className="space-y-2">
               <h4 className="text-xs font-medium text-muted-foreground uppercase">{t("search.searchStats")}</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                <div><span className="text-muted-foreground">Mode:</span> <span className="font-mono">{debugStats.searchParams.mode}</span></div>
+                <div><span className="text-muted-foreground">Mode:</span> <span className="font-mono">{debugStats.algorithm.fusionMethod}</span></div>
                 <div><span className="text-muted-foreground">{t("search.cutoffValue")}:</span> <span className="font-mono">{debugStats.searchParams.cutoff}</span></div>
-                <div><span className="text-muted-foreground">{t("search.aboveCutoff")}:</span> <span className="font-mono">{debugStats.searchParams.totalAboveCutoff}</span></div>
-                <div><span className="text-muted-foreground">{t("search.resultsShown")}:</span> <span className="font-mono">{debugStats.searchParams.totalShown}</span></div>
+                <div><span className="text-muted-foreground">{t("search.candidatesLimit")}:</span> <span className="font-mono">{debugStats.searchParams.totalAboveCutoff}</span></div>
+                <div><span className="text-muted-foreground">{t("search.retrieved")}:</span> <span className="font-mono">{debugStats.searchParams.totalShown}</span></div>
               </div>
             </div>
 

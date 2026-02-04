@@ -9,7 +9,6 @@ import { useTranslation } from "@/lib/i18n";
 interface AlgorithmStats {
   fusionMethod?: string;
   fusionWeights: { semantic: number; keyword: number };
-  confirmationBonusMultiplier?: number;
   keywordEngine: string; // e.g., "elasticsearch"
   bm25Params: { k1: number; b: number; normK: number };
   rrfK: number;
@@ -350,11 +349,11 @@ FINAL RESULTS`}
               <p className="text-[10px]">{t("algorithm.scenarioBothDesc")}</p>
               <div className="bg-muted/50 p-2 rounded overflow-x-auto">
                 <LaTeX
-                  math={`S_{\\text{fused}} = S_{\\text{semantic}} + ${stats.confirmationBonusMultiplier ?? 0.15} \\cdot \\hat{S}_{\\text{BM25}}`}
+                  math={`S_{\\text{fused}} = 0.8 \\cdot S_{\\text{semantic}} + 0.3 \\cdot \\hat{S}_{\\text{BM25}}`}
                   display
                 />
               </div>
-              <p className="text-[10px]">{t("algorithm.confirmationBonusExplain")}</p>
+              <p className="text-[10px]">{t("algorithm.weightedCombinationExplain")}</p>
             </div>
 
             {/* Scenario 2: Semantic only */}
@@ -397,8 +396,8 @@ FINAL RESULTS`}
             <div className="space-y-2">
               <p className="font-medium text-foreground">{t("algorithm.currentSettings")}</p>
               <div className="bg-muted/50 p-2 rounded text-[10px] space-y-1">
-                <div><strong>{t("algorithm.fusionMethodLabel")}:</strong> {t("algorithm.confirmationBonusMethod")}</div>
-                <div><strong>{t("algorithm.confirmationBonusLabel")}:</strong> {((stats.confirmationBonusMultiplier ?? 0.15) * 100).toFixed(0)}% {t("algorithm.maxBoost")}</div>
+                <div><strong>{t("algorithm.fusionMethodLabel")}:</strong> {stats.fusionMethod === 'semantic_only' ? t("algorithm.scenarioSemanticOnly") : t("algorithm.weightedCombinationMethod")}</div>
+                <div><strong>{t("algorithm.fusionWeightsLabel")}:</strong> {t("algorithm.semantic")} {stats.fusionWeights.semantic}, {t("algorithm.keyword")} {stats.fusionWeights.keyword}</div>
                 <div><strong>Keyword Engine:</strong> {stats.keywordEngine} (BM25 k1={stats.bm25Params.k1}, b={stats.bm25Params.b})</div>
               </div>
             </div>

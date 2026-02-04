@@ -222,7 +222,6 @@ interface SearchDebugStats {
   algorithm: {
     fusionMethod: string;
     fusionWeights: { semantic: number; keyword: number };
-    confirmationBonusMultiplier: number;
     keywordEngine: string; // e.g., "elasticsearch"
     bm25Params: { k1: number; b: number; normK: number };
     rrfK: number;
@@ -460,6 +459,20 @@ function isArabicQuery(query: string): boolean {
 }
 
 /**
+ * Search strategy based on query language
+ * - Non-Arabic queries use semantic only (database content is Arabic)
+ * - Arabic/mixed queries use hybrid (semantic + keyword)
+ */
+type SearchStrategy = 'semantic_only' | 'hybrid';
+
+function getSearchStrategy(query: string): SearchStrategy {
+  if (!isArabicQuery(query)) {
+    return 'semantic_only';
+  }
+  return 'hybrid';
+}
+
+/**
  * Prepare search terms for PostgreSQL full-text search
  */
 function prepareSearchTerms(query: string): string[] {
@@ -506,14 +519,13 @@ async function fetchWithTimeout(
 }
 
 // ============================================================================
-// Score Fusion: Confirmation Bonus Approach
+// Score Fusion: Weighted Combination Approach
 // ============================================================================
 
-// When a result has BOTH semantic and keyword matches, the keyword match
-// serves as confirmation that the semantic match is relevant. We give a
-// bonus proportional to the keyword score strength.
-// 15% max bonus means a perfect keyword match adds up to 0.15 to the semantic score.
-const CONFIRMATION_BONUS_MULTIPLIER = 0.15;
+// Weighted fusion: combine semantic and keyword scores
+// Max fused score = 0.8 + 0.3 = 1.1 (rewards results found by both methods)
+const SEMANTIC_WEIGHT = 0.8;
+const KEYWORD_WEIGHT = 0.3;
 
 /**
  * Parsed search query with phrases and individual terms
@@ -642,7 +654,7 @@ function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: nu
     }
   }
 
-  // Calculate fused scores and RRF scores using confirmation bonus approach
+  // Calculate fused scores and RRF scores using weighted combination approach
   const merged = Array.from(resultMap.values()).map((item) => {
     const hasSemantic = item.semanticRank !== undefined;
     const hasKeyword = item.keywordRank !== undefined;
@@ -651,16 +663,16 @@ function mergeWithRRFGeneric<T extends { semanticRank?: number; keywordRank?: nu
     let fusedScore: number;
 
     if (hasSemantic && hasKeyword) {
-      // Both signals: semantic base + confirmation bonus from keyword
+      // Both signals: weighted combination (max 1.1 = 0.8 + 0.3)
       // Use RAW bm25Score (typically 8-13 range), not the already-normalized keywordScore
       const rawBM25 = item.bm25Score ?? 0;
       const normalizedBM25 = normalizeBM25Score(rawBM25);
-      fusedScore = semanticScore + CONFIRMATION_BONUS_MULTIPLIER * normalizedBM25;
+      fusedScore = SEMANTIC_WEIGHT * semanticScore + KEYWORD_WEIGHT * normalizedBM25;
     } else if (hasSemantic) {
-      // Semantic only: use semantic score as-is (no penalty)
+      // Semantic only: full semantic score
       fusedScore = semanticScore;
     } else {
-      // Keyword only: normalize BM25 score to 0-1 range for fair comparison with semantic
+      // Keyword only: full normalized BM25 score
       const rawBM25 = item.bm25Score ?? item.keywordScore ?? 0;
       fusedScore = normalizeBM25Score(rawBM25);
     }
@@ -1447,8 +1459,8 @@ async function rerankUnifiedRefine(
   // Build unified list of all candidates with type labels
   const unified: UnifiedRefineResult[] = [];
 
-  // Add books (up to 30 candidates)
-  books.slice(0, 30).forEach((b, i) => {
+  // Add books (up to limits.books candidates)
+  books.slice(0, limits.books).forEach((b, i) => {
     const book = bookMetaMap.get(b.bookId);
     unified.push({
       type: 'book',
@@ -1458,8 +1470,8 @@ async function rerankUnifiedRefine(
     });
   });
 
-  // Add ayahs (up to 20 candidates)
-  ayahs.slice(0, 20).forEach((a, i) => {
+  // Add ayahs (up to limits.ayahs candidates)
+  ayahs.slice(0, limits.ayahs).forEach((a, i) => {
     unified.push({
       type: 'ayah',
       index: i,
@@ -1468,8 +1480,8 @@ async function rerankUnifiedRefine(
     });
   });
 
-  // Add hadiths (up to 25 candidates)
-  hadiths.slice(0, 25).forEach((h, i) => {
+  // Add hadiths (up to limits.hadiths candidates)
+  hadiths.slice(0, limits.hadiths).forEach((h, i) => {
     unified.push({
       type: 'hadith',
       index: i,
@@ -2006,7 +2018,7 @@ function mergeWithRRF(
     }
   }
 
-  // Calculate fused scores and RRF scores using confirmation bonus approach
+  // Calculate fused scores and RRF scores using weighted combination approach
   const merged = Array.from(resultMap.values()).map((result) => {
     const hasSemantic = result.semanticRank !== undefined;
     const hasKeyword = result.keywordRank !== undefined;
@@ -2015,16 +2027,16 @@ function mergeWithRRF(
     let fusedScore: number;
 
     if (hasSemantic && hasKeyword) {
-      // Both signals: semantic base + confirmation bonus from keyword
+      // Both signals: weighted combination (max 1.1 = 0.8 + 0.3)
       // Use RAW bm25Score (typically 8-13 range), not the already-normalized keywordScore
       const rawBM25 = result.bm25Score ?? 0;
       const normalizedBM25 = normalizeBM25Score(rawBM25);
-      fusedScore = semanticScore + CONFIRMATION_BONUS_MULTIPLIER * normalizedBM25;
+      fusedScore = SEMANTIC_WEIGHT * semanticScore + KEYWORD_WEIGHT * normalizedBM25;
     } else if (hasSemantic) {
-      // Semantic only: use semantic score as-is (no penalty)
+      // Semantic only: full semantic score
       fusedScore = semanticScore;
     } else {
-      // Keyword only: normalize BM25 score to 0-1 range for fair comparison with semantic
+      // Keyword only: full normalized BM25 score
       const rawBM25 = result.bm25Score ?? result.keywordScore ?? 0;
       fusedScore = normalizeBM25Score(rawBM25);
     }
@@ -2740,6 +2752,15 @@ export async function GET(request: NextRequest) {
     const refineSearchOptions = { ...searchOptions, similarityCutoff: refineSimilarityCutoff };
     const refineHybridOptions = { ...refineSearchOptions, ...fuzzyOptions };
 
+    // Determine search strategy based on query language
+    // Non-Arabic queries skip keyword search since database content is Arabic
+    const searchStrategy = getSearchStrategy(query);
+    const shouldSkipKeyword = searchStrategy === 'semantic_only' || mode === "semantic";
+
+    if (searchStrategy === 'semantic_only') {
+      console.log(`[Search] Non-Arabic query detected, using semantic-only search`);
+    }
+
     // ========================================================================
     // REFINE SEARCH: Query expansion + multi-query retrieval + merge
     // ========================================================================
@@ -2779,28 +2800,47 @@ export async function GET(request: NextRequest) {
         const qEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQ, embeddingModel);
 
         // Run semantic + keyword for books (using configurable per-query limit)
+        // Skip keyword search for non-Arabic queries (database content is Arabic)
         const [bookSemantic, bookKeyword] = await Promise.all([
           semanticSearch(q, refineBookPerQuery, null, refineSimilarityCutoff, qEmbedding, pageCollection, embeddingModel).catch(() => []),
-          keywordSearchES(q, refineBookPerQuery, null, fuzzyOptions).catch(() => []),
+          shouldSkipKeyword
+            ? Promise.resolve([] as RankedResult[])
+            : keywordSearchES(q, refineBookPerQuery, null, fuzzyOptions).catch(() => []),
         ]);
 
         const mergedBooks = mergeWithRRF(bookSemantic, bookKeyword, q);
 
-        // Run hybrid for ayahs and hadiths (if enabled) with configurable per-query limits
-        const refineHybridOptionsWithEmbedding = {
-          ...refineHybridOptions,
-          reranker: "none" as RerankerType,
-          precomputedEmbedding: qEmbedding,
-          quranCollection,
-          hadithCollection,
-          embeddingModel,
-        };
-        const ayahResults = includeQuran
-          ? await searchAyahsHybrid(q, refineAyahPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
-          : [];
-        const hadithResults = includeHadith
-          ? await searchHadithsHybrid(q, refineHadithPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
-          : [];
+        // Run hybrid or semantic-only for ayahs and hadiths (if enabled)
+        // Skip keyword search for non-Arabic queries
+        let ayahResults: AyahRankedResult[] = [];
+        let hadithResults: HadithRankedResult[] = [];
+
+        if (shouldSkipKeyword) {
+          // Semantic-only search for non-Arabic queries
+          const defaultMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, tafsirSource: "jalalayn" };
+          ayahResults = includeQuran
+            ? (await searchAyahsSemantic(q, refineAyahPerQuery, refineSimilarityCutoff, qEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [], meta: defaultMeta }))).results
+            : [];
+          hadithResults = includeHadith
+            ? await searchHadithsSemantic(q, refineHadithPerQuery, refineSimilarityCutoff, qEmbedding, hadithCollection, embeddingModel).catch(() => [])
+            : [];
+        } else {
+          // Hybrid search for Arabic queries
+          const refineHybridOptionsWithEmbedding = {
+            ...refineHybridOptions,
+            reranker: "none" as RerankerType,
+            precomputedEmbedding: qEmbedding,
+            quranCollection,
+            hadithCollection,
+            embeddingModel,
+          };
+          ayahResults = includeQuran
+            ? await searchAyahsHybrid(q, refineAyahPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
+            : [];
+          hadithResults = includeHadith
+            ? await searchHadithsHybrid(q, refineHadithPerQuery, refineHybridOptionsWithEmbedding).catch(() => [])
+            : [];
+        }
 
         perQueryTimings[queryIndex] = Date.now() - _queryStart;
 
@@ -2894,7 +2934,7 @@ export async function GET(request: NextRequest) {
 
       const normalizedQuery = normalizeArabicText(query);
       const shouldSkipSemantic = normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(query);
-      const fetchLimit = mode === "hybrid" ? Math.min(preRerankLimit, 100) : limit;
+      const fetchLimit = mode === "hybrid" ? preRerankLimit : limit;
 
       // ========================================================================
       // PHASE 1: Start keyword searches AND embedding generation in parallel
@@ -2907,22 +2947,23 @@ export async function GET(request: NextRequest) {
 
       // Start all keyword searches immediately (parallel with embedding)
       // Using Elasticsearch for fast keyword search
+      // Skip keyword search for non-Arabic queries (database is Arabic)
       const _kwBooksStart = Date.now();
-      const keywordBooksPromise = (mode === "semantic" || !includeBooks)
+      const keywordBooksPromise = (shouldSkipKeyword || !includeBooks)
         ? Promise.resolve([] as RankedResult[])
         : keywordSearchES(query, fetchLimit, bookId, fuzzyOptions)
             .then(res => { _timing.keyword.books = Date.now() - _kwBooksStart; return res; })
             .catch(() => [] as RankedResult[]);
 
       const _kwAyahsStart = Date.now();
-      const keywordAyahsPromise = (mode === "semantic" || bookId || !includeQuran)
+      const keywordAyahsPromise = (shouldSkipKeyword || bookId || !includeQuran)
         ? Promise.resolve([] as AyahRankedResult[])
         : keywordSearchAyahsES(query, fetchLimit, fuzzyOptions)
             .then(res => { _timing.keyword.ayahs = Date.now() - _kwAyahsStart; return res; })
             .catch(() => [] as AyahRankedResult[]);
 
       const _kwHadithsStart = Date.now();
-      const keywordHadithsPromise = (mode === "semantic" || bookId || !includeHadith)
+      const keywordHadithsPromise = (shouldSkipKeyword || bookId || !includeHadith)
         ? Promise.resolve([] as HadithRankedResult[])
         : keywordSearchHadithsES(query, fetchLimit, fuzzyOptions)
             .then(res => { _timing.keyword.hadiths = Date.now() - _kwHadithsStart; return res; })
@@ -3421,9 +3462,10 @@ export async function GET(request: NextRequest) {
         totalShown: results.length + ayahs.length + hadiths.length,
       },
       algorithm: {
-        fusionMethod: 'confirmation_bonus',
-        fusionWeights: { semantic: 1.0, keyword: CONFIRMATION_BONUS_MULTIPLIER },
-        confirmationBonusMultiplier: CONFIRMATION_BONUS_MULTIPLIER,
+        fusionMethod: shouldSkipKeyword ? 'semantic_only' : 'weighted_combination',
+        fusionWeights: shouldSkipKeyword
+          ? { semantic: 1.0, keyword: 0 }
+          : { semantic: SEMANTIC_WEIGHT, keyword: KEYWORD_WEIGHT },
         keywordEngine: 'elasticsearch',
         bm25Params: { k1: 1.2, b: 0.75, normK: 5 }, // ES defaults
         rrfK: RRF_K,
