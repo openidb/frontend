@@ -75,6 +75,8 @@ export interface SearchConfig {
   queryExpansionModel: QueryExpansionModelType; // Model for expanding search queries
   // Page translation model selection
   pageTranslationModel: PageTranslationModelType; // Model for translating book pages
+  // Book content translation in search results (from cached translations only)
+  bookContentTranslation: string; // "none" | "en" | "fr" | ... (language codes)
   // Refine search settings - Query weights (Step 1)
   refineOriginalWeight: number;     // Weight of original query (default: 1.0)
   refineExpandedWeight: number;     // Weight of LLM-expanded queries (default: 0.7)
@@ -112,6 +114,8 @@ export const defaultSearchConfig: SearchConfig = {
   queryExpansionModel: "gpt-oss-120b",
   // Page translation model - default to Gemini Flash
   pageTranslationModel: "gemini-flash",
+  // Book content translation - default to none (only shows if cached)
+  bookContentTranslation: "none",
   // Refine search settings - Query weights
   refineOriginalWeight: 1.0,
   refineExpandedWeight: 0.7,

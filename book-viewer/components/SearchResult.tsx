@@ -17,6 +17,7 @@ export interface BookResultData {
   highlightedSnippet: string;
   matchType: "semantic" | "keyword" | "both";
   urlPageIndex?: string;
+  contentTranslation?: string | null;  // Cached translation of the matched paragraph
   book: {
     id: string;
     titleArabic: string;
@@ -147,6 +148,16 @@ export default function SearchResult({ result, bookTitleDisplay = "transliterati
         dir="rtl"
         dangerouslySetInnerHTML={{ __html: highlightedSnippet }}
       />
+
+      {/* Content Translation - from database cache */}
+      {result.contentTranslation && (
+        <div
+          className="text-sm text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/50 pt-2"
+          dir="auto"
+        >
+          {result.contentTranslation}
+        </div>
+      )}
 
       {/* Style for highlighted text */}
       <style jsx global>{`

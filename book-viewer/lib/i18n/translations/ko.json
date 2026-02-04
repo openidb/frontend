@@ -208,6 +208,23 @@
       "pageTranslationModelInfo": "페이지 번역용 AI 모델. GPT가 더 빠르고, Gemini가 품질이 높습니다.",
       "geminiFlashDesc": "최고 품질, 느림",
       "gptOss120bDesc": "빠름, 좋은 품질",
+      "bookContentTranslation": "도서 콘텐츠 번역",
+      "bookContentTranslationInfo": "검색 결과에 캐시된 번역을 표시합니다.",
+      "bookContentOptions": {
+        "none": "없음",
+        "en": "영어 (가능한 경우)",
+        "fr": "프랑스어 (가능한 경우)",
+        "id": "인도네시아어 (가능한 경우)",
+        "ur": "우르두어 (가능한 경우)",
+        "es": "스페인어 (가능한 경우)",
+        "zh": "중국어 (가능한 경우)",
+        "pt": "포르투갈어 (가능한 경우)",
+        "ru": "러시아어 (가능한 경우)",
+        "ja": "일본어 (가능한 경우)",
+        "ko": "한국어 (가능한 경우)",
+        "it": "이탈리아어 (가능한 경우)",
+        "bn": "벵골어 (가능한 경우)"
+      },
       "options": {
         "none": "없음",
         "en": "영어 - 무스타파 핫탑 박사",

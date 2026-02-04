@@ -336,6 +336,35 @@ export default function ConfigPage() {
             </Select>
           </SelectSetting>
           <SelectSetting
+            label={t("config.translations.bookContentTranslation")}
+            info={t("config.translations.bookContentTranslationInfo")}
+          >
+            <Select
+              value={config.autoTranslation
+                ? (locale === "ar" ? "en" : locale)
+                : (config.bookContentTranslation || "none")}
+              onValueChange={(value) => updateConfig({ bookContentTranslation: value, autoTranslation: false })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {(() => {
+                    const effectiveCode = config.autoTranslation
+                      ? (locale === "ar" ? "en" : locale)
+                      : (config.bookContentTranslation || "none");
+                    return t(`config.translations.bookContentOptions.${effectiveCode}`);
+                  })()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border max-h-64">
+                {QURAN_TRANSLATIONS.map((trans) => (
+                  <SelectItem key={trans.code} value={trans.code} className="py-2">
+                    {t(`config.translations.bookContentOptions.${trans.code}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SelectSetting>
+          <SelectSetting
             label={t("config.translations.pageTranslationModel")}
             info={t("config.translations.pageTranslationModelInfo")}
           >

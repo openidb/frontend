@@ -208,6 +208,23 @@
       "pageTranslationModelInfo": "Modele IA pour traduire les pages. GPT est plus rapide, Gemini est de meilleure qualite.",
       "geminiFlashDesc": "Meilleure qualite, plus lent",
       "gptOss120bDesc": "Rapide, bonne qualite",
+      "bookContentTranslation": "Traduction du contenu",
+      "bookContentTranslationInfo": "Afficher les traductions en cache dans les resultats de recherche de livres.",
+      "bookContentOptions": {
+        "none": "Aucune",
+        "en": "Anglais (si disponible)",
+        "fr": "Francais (si disponible)",
+        "id": "Indonesien (si disponible)",
+        "ur": "Ourdou (si disponible)",
+        "es": "Espagnol (si disponible)",
+        "zh": "Chinois (si disponible)",
+        "pt": "Portugais (si disponible)",
+        "ru": "Russe (si disponible)",
+        "ja": "Japonais (si disponible)",
+        "ko": "Coreen (si disponible)",
+        "it": "Italien (si disponible)",
+        "bn": "Bengali (si disponible)"
+      },
       "options": {
         "none": "Aucune",
         "en": "Anglais - Dr. Mustafa Khattab",

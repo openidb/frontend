@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, KeyboardEvent, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, KeyboardEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, X, Loader2, User, BookOpen, Bug } from "lucide-react";
-import debounce from "lodash/debounce";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -99,6 +98,8 @@ interface DebugStats {
     semantic: { books: number; ayahs: number; hadiths: number };
     keyword: { books: number; ayahs: number; hadiths: number };
     merge: number;
+    directLookup: number;
+    authorSearch: number;
     rerank?: number;
     translations: number;
     bookMetadata: number;
@@ -237,6 +238,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         hadithTranslation: config.autoTranslation
           ? "en"  // Only English available for hadiths
           : (config.hadithTranslation || "none"),
+        bookContentTranslation: config.autoTranslation
+          ? (locale === "ar" ? "en" : locale)
+          : (config.bookContentTranslation || "none"),
         bookTitleLang: effectiveBookTitleLang,
         ...(isRefineSearch && {
           refine: "true",
@@ -332,25 +336,14 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     }
   }, []);
 
-  // Debounced search for typing (fast, no reranking)
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((searchQuery: string, config: SearchConfig) => {
-        if (searchQuery.length >= 2) {
-          fetchResults(searchQuery, config, false);
-          // Update URL without navigation
-          window.history.replaceState({}, "", `/search?q=${encodeURIComponent(searchQuery)}`);
-        }
-      }, 300),
-    [fetchResults]
-  );
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
+  // Direct search for typing (fast, no reranking)
+  const triggerSearch = useCallback((searchQuery: string, config: SearchConfig) => {
+    if (searchQuery.length >= 2) {
+      fetchResults(searchQuery, config, false);
+      // Update URL without navigation
+      window.history.replaceState({}, "", `/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  }, [fetchResults]);
 
   // Save config and re-search if needed
   const handleConfigChange = useCallback((newConfig: SearchConfig) => {
@@ -374,14 +367,14 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     }
   }, [query, fetchResults, setSearchConfig]);
 
-  // Handle input change - trigger debounced quick search
+  // Handle input change - trigger quick search directly
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
     setIsRefined(false); // Reset refined state when typing
     setExpandedQueries([]); // Clear expanded queries when typing
     if (newQuery.length >= 2) {
-      debouncedSearch(newQuery, searchConfig);
+      triggerSearch(newQuery, searchConfig);
     } else if (newQuery.length === 0) {
       setUnifiedResults([]);
       setAuthors([]);
@@ -389,17 +382,15 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setSurahMatch(null);
       window.history.replaceState({}, "", "/search");
     }
-  }, [debouncedSearch, searchConfig]);
+  }, [triggerSearch, searchConfig]);
 
   // Refine Search handler - applies query expansion + reranking
   const handleRefineSearch = useCallback(() => {
     if (query.length < 2) return;
-    debouncedSearch.cancel(); // Cancel any pending debounced search
-    setIsLoading(false); // Reset loading from typing search
     fetchResults(query, searchConfig, true);
     // Update URL without navigation
     window.history.replaceState({}, "", `/search?q=${encodeURIComponent(query)}`);
-  }, [query, searchConfig, fetchResults, debouncedSearch]);
+  }, [query, searchConfig, fetchResults]);
 
   // Handle Enter key press - trigger Refine Search
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -647,6 +638,8 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                   <div><span className="text-muted-foreground">Merge:</span> <span className="font-mono">{debugStats.timing.merge}ms</span></div>
+                  <div><span className="text-muted-foreground">Direct Lookup:</span> <span className="font-mono">{debugStats.timing.directLookup}ms</span></div>
+                  <div><span className="text-muted-foreground">Author Search:</span> <span className="font-mono">{debugStats.timing.authorSearch}ms</span></div>
                   {debugStats.timing.rerank !== undefined && (
                     <div><span className="text-muted-foreground">Rerank:</span> <span className="font-mono">{debugStats.timing.rerank}ms</span></div>
                   )}

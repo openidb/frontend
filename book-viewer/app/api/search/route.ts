@@ -74,6 +74,7 @@ interface SearchResult {
   highlightedSnippet: string;
   matchType: "semantic" | "keyword" | "both";
   urlPageIndex?: string;
+  contentTranslation?: string | null;  // Cached translation of the matched paragraph
   book: {
     id: string;
     titleArabic: string;
@@ -148,6 +149,7 @@ interface RankedResult {
   bm25Score?: number;     // Raw BM25 score before fusion
   fusedScore?: number;    // Weighted fusion score (semantic + bm25)
   urlPageIndex?: string;
+  contentTranslation?: string | null;  // Cached translation of the matched paragraph
 }
 
 interface HadithRankedResult extends HadithResult {
@@ -265,6 +267,8 @@ interface SearchDebugStats {
     semantic: { books: number; ayahs: number; hadiths: number };
     keyword: { books: number; ayahs: number; hadiths: number };
     merge: number;
+    directLookup: number;
+    authorSearch: number;
     rerank?: number;
     translations: number;
     bookMetadata: number;
@@ -273,6 +277,66 @@ interface SearchDebugStats {
 
 // RRF constant (standard value is 60)
 const RRF_K = 60;
+
+// ============================================================================
+// Book Content Translation Helpers
+// ============================================================================
+
+/**
+ * Extract paragraph texts from page HTML content
+ * Used to match search snippets to their corresponding translated paragraphs
+ */
+function extractParagraphTexts(html: string): string[] {
+  const paragraphs: string[] = [];
+  const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let match;
+  while ((match = pRegex.exec(html)) !== null) {
+    const text = match[1]
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (text.length > 1) paragraphs.push(text);
+  }
+  return paragraphs;
+}
+
+/**
+ * Find the paragraph index that best matches a search snippet
+ * Returns the index of the paragraph containing the snippet, or 0 as fallback
+ */
+function findMatchingParagraphIndex(snippet: string, paragraphs: string[]): number {
+  // Clean snippet for comparison (remove highlight marks, normalize whitespace)
+  const cleanSnippet = snippet
+    .replace(/<\/?mark>/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Find paragraph that contains or matches the snippet
+  for (let i = 0; i < paragraphs.length; i++) {
+    const normalizedParagraph = paragraphs[i].replace(/\s+/g, " ").trim();
+    // Check if either contains the other (handles partial matches)
+    if (normalizedParagraph.includes(cleanSnippet) || cleanSnippet.includes(normalizedParagraph)) {
+      return i;
+    }
+  }
+
+  // Fallback: find paragraph with most word overlap
+  const snippetWords = new Set(cleanSnippet.split(/\s+/).filter(w => w.length > 2));
+  let bestIndex = 0;
+  let bestOverlap = 0;
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraphWords = paragraphs[i].split(/\s+/).filter(w => w.length > 2);
+    const overlap = paragraphWords.filter(w => snippetWords.has(w)).length;
+    if (overlap > bestOverlap) {
+      bestOverlap = overlap;
+      bestIndex = i;
+    }
+  }
+
+  return bestIndex;
+}
 
 // ============================================================================
 // Database Statistics Caching (for debug panel)
@@ -1875,7 +1939,9 @@ async function semanticSearch(
     vector: queryEmbedding,
     limit: limit,
     filter: filter,
-    with_payload: true,
+    with_payload: {
+      include: ["shamelaBookId", "pageNumber", "volumeNumber", "textSnippet"],
+    },
     score_threshold: effectiveCutoff,
   });
 
@@ -2005,7 +2071,9 @@ async function searchAuthors(query: string, limit: number = 5): Promise<AuthorRe
     const searchResults = await qdrant.search(QDRANT_AUTHORS_COLLECTION, {
       vector: queryEmbedding,
       limit: limit,
-      with_payload: true,
+      with_payload: {
+        include: ["authorId", "nameArabic", "nameLatin", "deathDateHijri", "deathDateGregorian", "booksCount"],
+      },
       score_threshold: 0.3, // Only return reasonably similar authors
     });
 
@@ -2129,7 +2197,7 @@ async function searchAyahsSemantic(
       searchResults = await qdrant.search(collection, {
         vector: queryEmbedding,
         limit: limit,
-        with_payload: true,
+        with_payload: true,  // Ayahs need full payload for various fields
         score_threshold: effectiveCutoff,
       });
 
@@ -2306,7 +2374,7 @@ async function searchHadithsSemantic(
     const searchResults = await qdrant.search(hadithCollection, {
       vector: queryEmbedding,
       limit: limit,
-      with_payload: true,
+      with_payload: true,  // Hadith needs full payload for various fields
       score_threshold: effectiveCutoff,
       filter: {
         must_not: [{ key: "isChainVariation", match: { value: true } }],
@@ -2489,6 +2557,10 @@ export async function GET(request: NextRequest) {
   // Book title translation parameter (language code like "en", "fr", or "none"/"transliteration")
   const bookTitleLang = searchParams.get("bookTitleLang");
 
+  // Book content translation parameter (language code like "en", "fr", or "none")
+  // This fetches cached translations from page_translations table
+  const bookContentTranslation = searchParams.get("bookContentTranslation") || "none";
+
   // Refine search parameter - enables query expansion and multi-query retrieval
   const refine = searchParams.get("refine") === "true";
 
@@ -2579,6 +2651,8 @@ export async function GET(request: NextRequest) {
       semantic: { books: 0, ayahs: 0, hadiths: 0 },
       keyword: { books: 0, ayahs: 0, hadiths: 0 },
       merge: 0,
+      directLookup: 0,
+      authorSearch: 0,
       rerank: 0,
       translations: 0,
       bookMetadata: 0,
@@ -2977,11 +3051,13 @@ export async function GET(request: NextRequest) {
     // MERGE DIRECT LOOKUP RESULTS
     // ========================================================================
     // Wait for direct lookup promises and merge with search results
+    const _directLookupStart = Date.now();
     const [directAyahs, directHadiths, directSurahAyahs] = await Promise.all([
       directAyahsPromise,
       directHadithsPromise,
       directSurahAyahsPromise,
     ]);
+    _timing.directLookup = Date.now() - _directLookupStart;
 
     // Merge direct ayah results (they have score: 1.0, should rank first)
     if (directAyahs.length > 0) {
@@ -3013,14 +3089,16 @@ export async function GET(request: NextRequest) {
     // Standard search uses RRF fusion only (no reranking API calls)
 
     // Wait for author search to complete
+    const _authorSearchStart = Date.now();
     const authorsRaw = await authorsPromise;
+    _timing.authorSearch = Date.now() - _authorSearchStart;
 
     // Use all authors (no filtering by era)
     const authors = authorsRaw;
 
-    // Fetch translations for ayahs and hadiths in parallel (saves 50-100ms)
+    // Fetch translations for ayahs, hadiths, and book content in parallel (saves 50-100ms)
     const _translationsStart = Date.now();
-    const [ayahTranslations, hadithTranslationsRaw] = await Promise.all([
+    const [ayahTranslations, hadithTranslationsRaw, bookContentTranslationsRaw] = await Promise.all([
       // Fetch Quran translations if requested
       (quranTranslation && quranTranslation !== "none" && ayahsRaw.length > 0)
         ? prisma.ayahTranslation.findMany({
@@ -3055,6 +3133,30 @@ export async function GET(request: NextRequest) {
             },
           })
         : Promise.resolve([]),
+      // Fetch Book content translations if requested (from cached page_translations)
+      (bookContentTranslation && bookContentTranslation !== "none" && rankedResults.length > 0)
+        ? prisma.pageTranslation.findMany({
+            where: {
+              language: bookContentTranslation,
+              page: {
+                OR: rankedResults.map((r) => ({
+                  bookId: r.bookId,
+                  pageNumber: r.pageNumber,
+                })),
+              },
+            },
+            select: {
+              page: {
+                select: {
+                  bookId: true,
+                  pageNumber: true,
+                  contentHtml: true,  // Need HTML to extract paragraphs for matching
+                },
+              },
+              paragraphs: true,
+            },
+          })
+        : Promise.resolve([]),
     ]);
     _timing.translations = Date.now() - _translationsStart;
 
@@ -3079,6 +3181,41 @@ export async function GET(request: NextRequest) {
         ...hadith,
         translation: hadithTranslationMap.get(`${hadith.bookId}-${hadith.hadithNumber}`),
       }));
+    }
+
+    // Merge book content translations into results
+    // Build a map of book-page -> { paragraphs, contentHtml } for matching
+    type BookTranslationData = {
+      paragraphs: Array<{ index: number; translation: string }>;
+      contentHtml: string;
+    };
+    const bookContentTranslationMap = new Map<string, BookTranslationData>();
+    if (bookContentTranslationsRaw.length > 0) {
+      for (const t of bookContentTranslationsRaw) {
+        const key = `${t.page.bookId}-${t.page.pageNumber}`;
+        bookContentTranslationMap.set(key, {
+          paragraphs: t.paragraphs as Array<{ index: number; translation: string }>,
+          contentHtml: t.page.contentHtml,
+        });
+      }
+
+      // Add contentTranslation to each ranked result
+      rankedResults = rankedResults.map((r) => {
+        const translationData = bookContentTranslationMap.get(`${r.bookId}-${r.pageNumber}`);
+        if (!translationData) return r;
+
+        const { paragraphs: translations, contentHtml } = translationData;
+        const pageParagraphs = extractParagraphTexts(contentHtml);
+        const matchIndex = findMatchingParagraphIndex(r.textSnippet, pageParagraphs);
+
+        // Find translation for the matched paragraph
+        const matchedTranslation = translations.find((t) => t.index === matchIndex);
+
+        return {
+          ...r,
+          contentTranslation: matchedTranslation?.translation || null,
+        };
+      });
     }
 
     // Limit final results
@@ -3191,6 +3328,7 @@ export async function GET(request: NextRequest) {
         highlightedSnippet: result.highlightedSnippet,
         matchType,
         urlPageIndex: result.urlPageIndex,
+        contentTranslation: result.contentTranslation,
         book,
       };
     });
@@ -3323,6 +3461,8 @@ export async function GET(request: NextRequest) {
         semantic: _timing.semantic,
         keyword: _timing.keyword,
         merge: _timing.merge,
+        directLookup: _timing.directLookup,
+        authorSearch: _timing.authorSearch,
         ...(_timing.rerank > 0 && { rerank: _timing.rerank }),
         translations: _timing.translations,
         bookMetadata: _timing.bookMetadata,

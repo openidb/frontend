@@ -208,6 +208,23 @@
       "pageTranslationModelInfo": "用于翻译页面的AI模型。GPT更快，Gemini质量更高。",
       "geminiFlashDesc": "最高质量，较慢",
       "gptOss120bDesc": "快速，质量好",
+      "bookContentTranslation": "书籍内容翻译",
+      "bookContentTranslationInfo": "在搜索结果中显示缓存的翻译内容。",
+      "bookContentOptions": {
+        "none": "无",
+        "en": "英语（如有）",
+        "fr": "法语（如有）",
+        "id": "印尼语（如有）",
+        "ur": "乌尔都语（如有）",
+        "es": "西班牙语（如有）",
+        "zh": "中文（如有）",
+        "pt": "葡萄牙语（如有）",
+        "ru": "俄语（如有）",
+        "ja": "日语（如有）",
+        "ko": "韩语（如有）",
+        "it": "意大利语（如有）",
+        "bn": "孟加拉语（如有）"
+      },
       "options": {
         "none": "无",
         "en": "英语 - 穆斯塔法·哈塔卜博士",

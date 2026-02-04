@@ -19,6 +19,12 @@ import {
   getCachedEmbeddings,
   setCachedEmbeddings,
 } from "./embedding-cache";
+import {
+  getPersistentCachedEmbedding,
+  setPersistentCachedEmbedding,
+  getPersistentCachedEmbeddings,
+  setPersistentCachedEmbeddings,
+} from "./embedding-cache-persistent";
 
 // Re-export dimensions
 export { GEMINI_DIMENSIONS };
@@ -34,13 +40,21 @@ const EMBEDDING_MODEL = "google/gemini-embedding-001";
 
 /**
  * Generate embedding for a single text string
- * Uses in-memory cache to avoid redundant API calls
+ * Uses two-tier cache: in-memory (fast) + SQLite persistent (survives restarts)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  // Check cache first
-  const cached = getCachedEmbedding(text);
-  if (cached) {
-    return cached;
+  // Check in-memory cache first (fastest)
+  const memCached = getCachedEmbedding(text);
+  if (memCached) {
+    return memCached;
+  }
+
+  // Check persistent SQLite cache (survives restarts)
+  const persistentCached = getPersistentCachedEmbedding(text);
+  if (persistentCached) {
+    // Promote to in-memory cache for faster subsequent access
+    setCachedEmbedding(text, persistentCached);
+    return persistentCached;
   }
 
   // Generate embedding via API
@@ -50,8 +64,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   });
   const embedding = response.data[0].embedding;
 
-  // Cache for future use
+  // Cache in both tiers
   setCachedEmbedding(text, embedding);
+  setPersistentCachedEmbedding(text, embedding);
 
   return embedding;
 }
@@ -59,13 +74,36 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 /**
  * Generate embeddings for multiple text strings in a single API call
  * More efficient than calling generateEmbedding multiple times
- * Uses batch caching to avoid redundant API calls for cached texts
+ * Uses two-tier caching: in-memory + persistent SQLite
  */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
 
-  // Check which texts are already cached
-  const cachedMap = getCachedEmbeddings(texts);
+  // Check in-memory cache first
+  const memCachedMap = getCachedEmbeddings(texts);
+
+  // For texts not in memory, check persistent cache
+  const notInMemory = texts.filter((t) => !memCachedMap.has(t));
+  const persistentCachedMap = notInMemory.length > 0
+    ? getPersistentCachedEmbeddings(notInMemory)
+    : new Map<string, number[]>();
+
+  // Promote persistent cache hits to memory cache
+  if (persistentCachedMap.size > 0) {
+    const toPromote = Array.from(persistentCachedMap.entries()).map(([text, embedding]) => ({
+      text,
+      embedding,
+    }));
+    setCachedEmbeddings(toPromote);
+  }
+
+  // Merge both cache maps
+  const cachedMap = new Map(memCachedMap);
+  for (const [text, embedding] of persistentCachedMap) {
+    cachedMap.set(text, embedding);
+  }
+
+  // Find texts that need API call
   const uncachedTexts: string[] = [];
   const uncachedIndices: number[] = [];
 
@@ -89,12 +127,13 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
 
   const newEmbeddings = response.data.map((d) => d.embedding);
 
-  // Cache the new embeddings
+  // Cache in both tiers
   const entriesToCache = uncachedTexts.map((text, i) => ({
     text,
     embedding: newEmbeddings[i],
   }));
   setCachedEmbeddings(entriesToCache);
+  setPersistentCachedEmbeddings(entriesToCache);
 
   // Build result array preserving original order
   const result: number[][] = new Array(texts.length);

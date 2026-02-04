@@ -208,6 +208,23 @@
       "pageTranslationModelInfo": "Model AI untuk menerjemahkan halaman. GPT lebih cepat, Gemini kualitas lebih tinggi.",
       "geminiFlashDesc": "Kualitas tertinggi, lebih lambat",
       "gptOss120bDesc": "Cepat, kualitas bagus",
+      "bookContentTranslation": "Terjemahan Konten Buku",
+      "bookContentTranslationInfo": "Tampilkan terjemahan yang tersimpan di hasil pencarian buku.",
+      "bookContentOptions": {
+        "none": "Tidak ada",
+        "en": "Inggris (jika tersedia)",
+        "fr": "Prancis (jika tersedia)",
+        "id": "Indonesia (jika tersedia)",
+        "ur": "Urdu (jika tersedia)",
+        "es": "Spanyol (jika tersedia)",
+        "zh": "Mandarin (jika tersedia)",
+        "pt": "Portugis (jika tersedia)",
+        "ru": "Rusia (jika tersedia)",
+        "ja": "Jepang (jika tersedia)",
+        "ko": "Korea (jika tersedia)",
+        "it": "Italia (jika tersedia)",
+        "bn": "Bengali (jika tersedia)"
+      },
       "options": {
         "none": "Tidak ada",
         "en": "Inggris - Dr. Mustafa Khattab",

@@ -11,11 +11,11 @@ interface CacheEntry {
   timestamp: number;
 }
 
-// Cache TTL: 5 minutes (embeddings don't change, but we limit memory)
-const TTL_MS = 5 * 60 * 1000;
+// Cache TTL: 30 minutes (embeddings don't change, longer TTL = higher hit rate)
+const TTL_MS = 30 * 60 * 1000;
 
-// Maximum cache size to prevent memory issues
-const MAX_CACHE_SIZE = 1000;
+// Maximum cache size to prevent memory issues (increased for better hit rate)
+const MAX_CACHE_SIZE = 5000;
 
 // Number of entries to evict when cache is full
 const EVICTION_COUNT = 100;
