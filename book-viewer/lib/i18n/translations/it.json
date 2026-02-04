@@ -180,8 +180,8 @@
       "advanced": "Impostazioni avanzate",
       "similarity": "Similarita",
       "fuzzySearch": "Ricerca fuzzy",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "Impostazioni di Ricerca",
+      "refineSearch": "Affina Ricerca"
     },
     "appearance": {
       "theme": "Tema",
@@ -204,6 +204,10 @@
         "none": "Nessuna",
         "en": "Inglese (sunnah.com)"
       },
+      "pageTranslationModel": "Modello di traduzione pagine",
+      "pageTranslationModelInfo": "Modello AI per tradurre le pagine. GPT e piu veloce, Gemini e di qualita superiore.",
+      "geminiFlashDesc": "Massima qualita, piu lento",
+      "gptOss120bDesc": "Veloce, buona qualita",
       "options": {
         "none": "Nessuna",
         "en": "Inglese - Dr. Mustafa Khattab",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "Soglia",
       "cutoffInfo": "Punteggio minimo di similarita. Valori piu alti restituiscono meno risultati ma piu rilevanti.",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "Soglia di Affinamento",
+      "refineCutoffInfo": "Soglia di similarità per ricerche affinate. Valori più bassi ampliano la rete prima del filtraggio LLM."
     },
     "fuzzy": {
       "enableFallback": "Abilita fallback",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "Modello locale, ottimizzato per testi islamici arabi"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "Modello",
+      "modelInfo": "Modello IA per rivalutare e riordinare i risultati. Modelli più grandi sono più precisi ma più lenti.",
+      "regularCandidates": "Candidati regolari",
+      "regularCandidatesInfo": "Risultati ottenuti prima della fusione RRF. Più candidati può migliorare la qualità ma aumenta la latenza.",
+      "regularResults": "Risultati regolari",
+      "regularResultsInfo": "Numero finale di risultati dopo fusione e classificazione."
     },
     "refine": {
       "queryExpansionModel": "Modello di espansione query",
       "queryExpansionModelInfo": "Modello AI per generare query alternative",
-      "geminiFlashDesc": "Veloce, alta qualita",
-      "gptOss120bDesc": "Massima qualita, piu lento",
+      "geminiFlashDesc": "Massima qualita, piu lento",
+      "gptOss120bDesc": "Veloce, buona qualita",
       "originalWeight": "Peso query originale",
       "originalWeightInfo": "Peso della tua query originale nei risultati uniti.",
       "expandedWeight": "Peso query espanse",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "Massima qualita (Consigliato)",
+      "gptOss120bDesc": "Veloce, buona qualita (Consigliato)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "Veloce, ragionamento di alta qualita",
+      "geminiFlashDesc": "Massima qualita, piu lento",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "Alta qualita, piu veloce",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "Veloce, multilingue",
+      "gptOssDesc": "Veloce, qualita media",
       "jina": "Jina",
       "jinaDesc": "Il piu veloce",
       "none": "Nessuno",
@@ -330,7 +332,11 @@
     "chapters": "Capitoli",
     "noChapters": "Nessun capitolo disponibile",
     "nextPage": "Pagina successiva",
-    "prevPage": "Pagina precedente"
+    "prevPage": "Pagina precedente",
+    "next": "Avanti",
+    "prev": "Indietro",
+    "translate": "Traduci",
+    "hideTranslation": "Nascondi traduzione"
   },
   "common": {
     "loading": "Caricamento...",

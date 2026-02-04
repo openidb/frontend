@@ -180,8 +180,8 @@
       "advanced": "Configuracoes avancadas",
       "similarity": "Similaridade",
       "fuzzySearch": "Busca aproximada",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "Configurações de Busca",
+      "refineSearch": "Refinar Busca"
     },
     "appearance": {
       "theme": "Tema",
@@ -204,6 +204,10 @@
         "none": "Nenhuma",
         "en": "Ingles (sunnah.com)"
       },
+      "pageTranslationModel": "Modelo de traducao de paginas",
+      "pageTranslationModelInfo": "Modelo de IA para traduzir paginas. GPT e mais rapido, Gemini e de maior qualidade.",
+      "geminiFlashDesc": "Maior qualidade, mais lento",
+      "gptOss120bDesc": "Rapido, boa qualidade",
       "options": {
         "none": "Nenhuma",
         "en": "Ingles - Dr. Mustafa Khattab",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "Limite",
       "cutoffInfo": "Pontuacao minima de similaridade. Valores mais altos retornam menos resultados, mas mais relevantes.",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "Limite de Refinamento",
+      "refineCutoffInfo": "Limite de similaridade para buscas refinadas. Valores mais baixos ampliam a rede antes da filtragem LLM."
     },
     "fuzzy": {
       "enableFallback": "Ativar fallback",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "Modelo local, otimizado para textos islâmicos árabes"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "Modelo",
+      "modelInfo": "Modelo de IA para reavaliar e reordenar resultados. Modelos maiores são mais precisos, mas mais lentos.",
+      "regularCandidates": "Candidatos regulares",
+      "regularCandidatesInfo": "Resultados obtidos antes da fusão RRF. Mais candidatos pode melhorar a qualidade, mas aumenta a latência.",
+      "regularResults": "Resultados regulares",
+      "regularResultsInfo": "Número final de resultados após fusão e classificação."
     },
     "refine": {
       "queryExpansionModel": "Modelo de expansao de consulta",
       "queryExpansionModelInfo": "Modelo de IA para gerar consultas alternativas",
-      "geminiFlashDesc": "Rapido, alta qualidade",
-      "gptOss120bDesc": "Maxima qualidade, mais lento",
+      "geminiFlashDesc": "Maior qualidade, mais lento",
+      "gptOss120bDesc": "Rapido, boa qualidade",
       "originalWeight": "Peso da consulta original",
       "originalWeightInfo": "Peso da sua consulta original nos resultados mesclados.",
       "expandedWeight": "Peso das consultas expandidas",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "Maxima qualidade (Recomendado)",
+      "gptOss120bDesc": "Rapido, boa qualidade (Recomendado)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "Rapido, raciocinio de alta qualidade",
+      "geminiFlashDesc": "Maior qualidade, mais lento",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "Alta qualidade, mais rapido",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "Rapido, multilingue",
+      "gptOssDesc": "Rapido, qualidade media",
       "jina": "Jina",
       "jinaDesc": "O mais rapido",
       "none": "Nenhum",
@@ -330,7 +332,11 @@
     "chapters": "Capitulos",
     "noChapters": "Nenhum capitulo disponivel",
     "nextPage": "Proxima pagina",
-    "prevPage": "Pagina anterior"
+    "prevPage": "Pagina anterior",
+    "next": "Prox",
+    "prev": "Ant",
+    "translate": "Traduzir",
+    "hideTranslation": "Ocultar traducao"
   },
   "common": {
     "loading": "Carregando...",

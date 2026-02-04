@@ -18,6 +18,7 @@ import {
   type TranslationDisplayOption,
   type EmbeddingModelType,
   type QueryExpansionModelType,
+  type PageTranslationModelType,
 } from "@/components/SearchConfigDropdown";
 import { useAppConfig } from "@/lib/config";
 import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
@@ -330,6 +331,35 @@ export default function ConfigPage() {
                 </SelectItem>
                 <SelectItem value="en" className="py-2">
                   {t("config.translations.hadithOptions.en")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </SelectSetting>
+          <SelectSetting
+            label={t("config.translations.pageTranslationModel")}
+            info={t("config.translations.pageTranslationModelInfo")}
+          >
+            <Select
+              value={config.pageTranslationModel}
+              onValueChange={(value) => updateConfig({ pageTranslationModel: value as PageTranslationModelType })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {config.pageTranslationModel === "gemini-flash" ? "Gemini Flash" : "GPT OSS 120B"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border">
+                <SelectItem value="gemini-flash" className="py-2">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Gemini Flash</span>
+                    <span className="text-xs text-muted-foreground">{t("config.translations.geminiFlashDesc")}</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="gpt-oss-120b" className="py-2">
+                  <div className="flex flex-col">
+                    <span className="font-medium">GPT OSS 120B</span>
+                    <span className="text-xs text-muted-foreground">{t("config.translations.gptOss120bDesc")}</span>
+                  </div>
                 </SelectItem>
               </SelectContent>
             </Select>

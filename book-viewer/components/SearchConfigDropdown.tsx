@@ -18,6 +18,8 @@ export type EmbeddingModelType = "gemini" | "bge-m3";
 
 export type QueryExpansionModelType = "gpt-oss-120b" | "gemini-flash";
 
+export type PageTranslationModelType = "gemini-flash" | "gpt-oss-120b";
+
 // Shared type for translation display options
 export type TranslationDisplayOption =
   | "none" | "transliteration"
@@ -71,6 +73,8 @@ export interface SearchConfig {
   embeddingModel: EmbeddingModelType; // "gemini" (cloud) or "bge-m3" (local)
   // Query expansion model selection
   queryExpansionModel: QueryExpansionModelType; // Model for expanding search queries
+  // Page translation model selection
+  pageTranslationModel: PageTranslationModelType; // Model for translating book pages
   // Refine search settings - Query weights (Step 1)
   refineOriginalWeight: number;     // Weight of original query (default: 1.0)
   refineExpandedWeight: number;     // Weight of LLM-expanded queries (default: 0.7)
@@ -106,6 +110,8 @@ export const defaultSearchConfig: SearchConfig = {
   embeddingModel: "gemini",
   // Query expansion model - default to GPT OSS 120B
   queryExpansionModel: "gpt-oss-120b",
+  // Page translation model - default to Gemini Flash
+  pageTranslationModel: "gemini-flash",
   // Refine search settings - Query weights
   refineOriginalWeight: 1.0,
   refineExpandedWeight: 0.7,

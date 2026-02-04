@@ -204,6 +204,10 @@
         "none": "None",
         "en": "English (sunnah.com)"
       },
+      "pageTranslationModel": "Page Translation Model",
+      "pageTranslationModelInfo": "AI model for translating book pages. GPT is faster, Gemini is higher quality.",
+      "geminiFlashDesc": "Highest quality, slower",
+      "gptOss120bDesc": "Fast, good quality",
       "options": {
         "none": "None",
         "en": "English - Dr. Mustafa Khattab",
@@ -269,8 +273,8 @@
     "refine": {
       "queryExpansionModel": "Query Expansion Model",
       "queryExpansionModelInfo": "AI model used to generate alternative search queries",
-      "geminiFlashDesc": "Fast, high quality reasoning",
-      "gptOss120bDesc": "Highest quality, slower",
+      "geminiFlashDesc": "Highest quality, slower",
+      "gptOss120bDesc": "Fast, good quality",
       "originalWeight": "Original Query Weight",
       "originalWeightInfo": "Weight of your original query in merged results.",
       "expandedWeight": "Expanded Queries Weight",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "Highest quality (Recommended)",
+      "gptOss120bDesc": "Fast, good quality (Recommended)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "Fast, high quality reasoning",
+      "geminiFlashDesc": "Highest quality, slower",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "High quality, faster",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "Fast, cross-lingual",
+      "gptOssDesc": "Fast, moderate quality",
       "jina": "Jina",
       "jinaDesc": "Fastest",
       "none": "None",
@@ -330,7 +332,11 @@
     "chapters": "Chapters",
     "noChapters": "No chapters available",
     "nextPage": "Next page",
-    "prevPage": "Previous page"
+    "prevPage": "Previous page",
+    "next": "Next",
+    "prev": "Prev",
+    "translate": "Translate",
+    "hideTranslation": "Hide Translation"
   },
   "common": {
     "loading": "Loading...",

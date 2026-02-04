@@ -180,8 +180,8 @@
       "advanced": "Pengaturan Lanjutan",
       "similarity": "Kemiripan",
       "fuzzySearch": "Pencarian Fuzzy",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "Pengaturan Pencarian",
+      "refineSearch": "Perbaiki Pencarian"
     },
     "appearance": {
       "theme": "Tema",
@@ -204,6 +204,10 @@
         "none": "Tidak ada",
         "en": "Inggris (sunnah.com)"
       },
+      "pageTranslationModel": "Model Terjemahan Halaman",
+      "pageTranslationModelInfo": "Model AI untuk menerjemahkan halaman. GPT lebih cepat, Gemini kualitas lebih tinggi.",
+      "geminiFlashDesc": "Kualitas tertinggi, lebih lambat",
+      "gptOss120bDesc": "Cepat, kualitas bagus",
       "options": {
         "none": "Tidak ada",
         "en": "Inggris - Dr. Mustafa Khattab",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "Batas",
       "cutoffInfo": "Skor kemiripan minimum. Nilai lebih tinggi menghasilkan lebih sedikit tapi lebih relevan.",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "Batas Perbaikan",
+      "refineCutoffInfo": "Ambang kemiripan untuk pencarian yang diperbaiki. Nilai lebih rendah memperluas jaring sebelum penyaringan LLM."
     },
     "fuzzy": {
       "enableFallback": "Aktifkan fallback",
@@ -260,17 +264,17 @@
     },
     "reranker": {
       "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "modelInfo": "Model AI untuk menilai ulang dan mengurutkan ulang hasil. Model lebih besar lebih akurat tapi lebih lambat.",
+      "regularCandidates": "Kandidat Reguler",
+      "regularCandidatesInfo": "Hasil yang diambil sebelum fusi RRF. Lebih banyak kandidat dapat meningkatkan kualitas tapi menambah latensi.",
+      "regularResults": "Hasil Reguler",
+      "regularResultsInfo": "Jumlah hasil akhir setelah fusi dan peringkat."
     },
     "refine": {
       "queryExpansionModel": "Model Ekspansi Kueri",
       "queryExpansionModelInfo": "Model AI untuk menghasilkan kueri pencarian alternatif",
-      "geminiFlashDesc": "Cepat, kualitas tinggi",
-      "gptOss120bDesc": "Kualitas tertinggi, lebih lambat",
+      "geminiFlashDesc": "Kualitas tertinggi, lebih lambat",
+      "gptOss120bDesc": "Cepat, kualitas bagus",
       "originalWeight": "Bobot Kueri Asli",
       "originalWeightInfo": "Bobot kueri asli Anda dalam hasil gabungan.",
       "expandedWeight": "Bobot Kueri yang Diperluas",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "Kualitas tertinggi (Direkomendasikan)",
+      "gptOss120bDesc": "Cepat, kualitas bagus (Direkomendasikan)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "Cepat, penalaran berkualitas tinggi",
+      "geminiFlashDesc": "Kualitas tertinggi, lebih lambat",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "Kualitas tinggi, lebih cepat",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "Cepat, lintas bahasa",
+      "gptOssDesc": "Cepat, kualitas sedang",
       "jina": "Jina",
       "jinaDesc": "Tercepat",
       "none": "Tidak ada",
@@ -330,7 +332,11 @@
     "chapters": "Bab",
     "noChapters": "Tidak ada bab tersedia",
     "nextPage": "Halaman berikutnya",
-    "prevPage": "Halaman sebelumnya"
+    "prevPage": "Halaman sebelumnya",
+    "next": "Lanjut",
+    "prev": "Kembali",
+    "translate": "Terjemahkan",
+    "hideTranslation": "Sembunyikan terjemahan"
   },
   "common": {
     "loading": "Memuat...",

@@ -180,8 +180,8 @@
       "advanced": "高级设置",
       "similarity": "相似度",
       "fuzzySearch": "模糊搜索",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "搜索设置",
+      "refineSearch": "优化搜索"
     },
     "appearance": {
       "theme": "主题",
@@ -204,6 +204,10 @@
         "none": "无",
         "en": "英语 (sunnah.com)"
       },
+      "pageTranslationModel": "页面翻译模型",
+      "pageTranslationModelInfo": "用于翻译页面的AI模型。GPT更快，Gemini质量更高。",
+      "geminiFlashDesc": "最高质量，较慢",
+      "gptOss120bDesc": "快速，质量好",
       "options": {
         "none": "无",
         "en": "英语 - 穆斯塔法·哈塔卜博士",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "阈值",
       "cutoffInfo": "结果的最低相似度分数。较高的值返回更少但更相关的结果。",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "优化阈值",
+      "refineCutoffInfo": "优化搜索的相似度阈值。较低的值在LLM过滤前撒下更广的网。"
     },
     "fuzzy": {
       "enableFallback": "启用回退",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "本地模型，针对阿拉伯伊斯兰文本优化"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "模型",
+      "modelInfo": "用于重新评分和重排结果的AI模型。较大的模型更准确但较慢。",
+      "regularCandidates": "常规候选项",
+      "regularCandidatesInfo": "RRF融合前获取的结果。更多候选项可能提高质量但增加延迟。",
+      "regularResults": "常规结果",
+      "regularResultsInfo": "融合和排序后返回的最终结果数。"
     },
     "refine": {
       "queryExpansionModel": "查询扩展模型",
       "queryExpansionModelInfo": "用于生成替代搜索查询的AI模型",
-      "geminiFlashDesc": "快速，高质量",
-      "gptOss120bDesc": "最高质量，较慢",
+      "geminiFlashDesc": "最高质量，较慢",
+      "gptOss120bDesc": "快速，质量好",
       "originalWeight": "原始查询权重",
       "originalWeightInfo": "您的原始查询在合并结果中的权重。",
       "expandedWeight": "扩展查询权重",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "最高质量（推荐）",
+      "gptOss120bDesc": "快速，质量好（推荐）",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "快速，高质量推理",
+      "geminiFlashDesc": "最高质量，较慢",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "高质量，更快",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "快速，跨语言",
+      "gptOssDesc": "快速，中等质量",
       "jina": "Jina",
       "jinaDesc": "最快",
       "none": "无",
@@ -330,7 +332,11 @@
     "chapters": "章节",
     "noChapters": "没有可用的章节",
     "nextPage": "下一页",
-    "prevPage": "上一页"
+    "prevPage": "上一页",
+    "next": "下页",
+    "prev": "上页",
+    "translate": "翻译",
+    "hideTranslation": "隐藏翻译"
   },
   "common": {
     "loading": "加载中...",

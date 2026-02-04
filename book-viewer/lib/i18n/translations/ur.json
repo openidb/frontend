@@ -180,8 +180,8 @@
       "advanced": "ایڈوانسڈ ترتیبات",
       "similarity": "مماثلت",
       "fuzzySearch": "فزی تلاش",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "تلاش کی ترتیبات",
+      "refineSearch": "تلاش بہتر کریں"
     },
     "appearance": {
       "theme": "تھیم",
@@ -204,6 +204,10 @@
         "none": "کوئی نہیں",
         "en": "انگریزی (sunnah.com)"
       },
+      "pageTranslationModel": "صفحہ ترجمہ ماڈل",
+      "pageTranslationModelInfo": "صفحات کے ترجمے کے لیے AI ماڈل۔ GPT تیز ہے، Gemini اعلیٰ معیار کا ہے۔",
+      "geminiFlashDesc": "اعلیٰ ترین معیار، سست",
+      "gptOss120bDesc": "تیز، اچھا معیار",
       "options": {
         "none": "کوئی نہیں",
         "en": "انگریزی - ڈاکٹر مصطفیٰ خطاب",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "کٹ آف",
       "cutoffInfo": "نتائج کے لیے کم از کم مماثلت کا سکور۔ زیادہ قدریں کم لیکن زیادہ متعلقہ نتائج دیتی ہیں۔",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "بہتری کی حد",
+      "refineCutoffInfo": "بہتر تلاش کے لیے مماثلت کی حد۔ کم قدریں LLM فلٹرنگ سے پہلے وسیع تر جال پھیلاتی ہیں۔"
     },
     "fuzzy": {
       "enableFallback": "فال بیک فعال کریں",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "لوکل ماڈل، عربی اسلامی متون کے لیے بہتر"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "ماڈل",
+      "modelInfo": "نتائج کو دوبارہ اسکور اور ترتیب دینے کے لیے AI ماڈل۔ بڑے ماڈل زیادہ درست لیکن سست ہیں۔",
+      "regularCandidates": "عام امیدوار",
+      "regularCandidatesInfo": "RRF فیوژن سے پہلے حاصل کردہ نتائج۔ زیادہ امیدوار معیار بہتر کر سکتے ہیں لیکن تاخیر بڑھاتے ہیں۔",
+      "regularResults": "عام نتائج",
+      "regularResultsInfo": "فیوژن اور درجہ بندی کے بعد حتمی نتائج کی تعداد۔"
     },
     "refine": {
       "queryExpansionModel": "استفسار توسیع ماڈل",
       "queryExpansionModelInfo": "متبادل تلاش کے سوالات بنانے کے لیے AI ماڈل",
-      "geminiFlashDesc": "تیز، اعلیٰ معیار",
-      "gptOss120bDesc": "اعلیٰ ترین معیار، سست",
+      "geminiFlashDesc": "اعلیٰ ترین معیار، سست",
+      "gptOss120bDesc": "تیز، اچھا معیار",
       "originalWeight": "اصل استفسار وزن",
       "originalWeightInfo": "ملے ہوئے نتائج میں آپ کے اصل استفسار کا وزن۔",
       "expandedWeight": "توسیع شدہ استفسارات وزن",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "اعلیٰ ترین معیار (تجویز کردہ)",
+      "gptOss120bDesc": "تیز، اچھا معیار (تجویز کردہ)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "تیز، اعلیٰ معیار کی استدلال",
+      "geminiFlashDesc": "اعلیٰ ترین معیار، سست",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "اعلیٰ معیار، تیز",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "تیز، کثیر لسانی",
+      "gptOssDesc": "تیز، درمیانہ معیار",
       "jina": "Jina",
       "jinaDesc": "تیز ترین",
       "none": "کوئی نہیں",
@@ -330,7 +332,11 @@
     "chapters": "ابواب",
     "noChapters": "کوئی باب دستیاب نہیں",
     "nextPage": "اگلا صفحہ",
-    "prevPage": "پچھلا صفحہ"
+    "prevPage": "پچھلا صفحہ",
+    "next": "اگلا",
+    "prev": "پچھلا",
+    "translate": "ترجمہ",
+    "hideTranslation": "ترجمہ چھپائیں"
   },
   "common": {
     "loading": "لوڈ ہو رہا ہے...",

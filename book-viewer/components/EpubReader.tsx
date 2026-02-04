@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, ReactNode, useMemo, useCallback } from "re
 import { useRouter } from "next/navigation";
 import ePub, { Book, Rendition } from "epubjs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, Menu } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, Menu, Languages, Loader2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
@@ -65,10 +65,16 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
   const [hasNavigatedToInitialPage, setHasNavigatedToInitialPage] = useState(false);
   const [bookTitleDisplay, setBookTitleDisplay] = useState<TranslationDisplayOption>(defaultSearchConfig.bookTitleDisplay);
   const [autoTranslation, setAutoTranslation] = useState(defaultSearchConfig.autoTranslation);
+  const [pageTranslationModel, setPageTranslationModel] = useState(defaultSearchConfig.pageTranslationModel);
   const [selectedWord, setSelectedWord] = useState<{
     word: string;
     position: { x: number; y: number };
   } | null>(null);
+
+  // Translation state
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationVisible, setTranslationVisible] = useState(false);
+  const translationCacheRef = useRef<Map<string, { index: number; translation: string }[]>>(new Map());
 
   // Client-side fetched translations
   const [fetchedTitleTranslation, setFetchedTitleTranslation] = useState<string | null>(null);
@@ -84,6 +90,9 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         }
         if (typeof parsed.autoTranslation === "boolean") {
           setAutoTranslation(parsed.autoTranslation);
+        }
+        if (parsed.pageTranslationModel) {
+          setPageTranslationModel(parsed.pageTranslationModel);
         }
       } catch {
         // Invalid JSON, use defaults
@@ -786,6 +795,127 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
     }
   }, [initialPage, initialPageNumber, pageList, isReady, hasNavigatedToInitialPage]);
 
+  // Get translation target language from interface language
+  const getTranslationLanguage = useCallback(() => {
+    // Use interface language if it's a supported translation language
+    const supportedLangs = ["en", "fr", "id", "ur", "es", "zh", "pt", "ru", "ja", "ko", "it", "bn"];
+    if (supportedLangs.includes(locale)) {
+      return locale;
+    }
+    return "en";
+  }, [locale]);
+
+  // Remove translation elements from the iframe
+  const removeTranslations = useCallback(() => {
+    const iframe = viewerRef.current?.querySelector("iframe");
+    if (!iframe?.contentDocument) return;
+
+    const translationElements = iframe.contentDocument.querySelectorAll(".paragraph-translation");
+    translationElements.forEach((el) => el.remove());
+  }, []);
+
+  // Inject translations into the iframe DOM
+  const injectTranslations = useCallback((translations: { index: number; translation: string }[]) => {
+    const iframe = viewerRef.current?.querySelector("iframe");
+    if (!iframe?.contentDocument) return;
+
+    const paragraphs = iframe.contentDocument.querySelectorAll("p");
+
+    // Determine text direction for translation (Urdu is RTL, others are LTR)
+    const translationLang = getTranslationLanguage();
+    const isTranslationRtl = translationLang === "ur";
+
+    translations.forEach(({ index, translation }) => {
+      const paragraph = paragraphs[index];
+      if (!paragraph || !translation) return;
+
+      // Create translation element
+      const translationDiv = iframe.contentDocument!.createElement("div");
+      translationDiv.className = "paragraph-translation";
+      translationDiv.textContent = translation;
+      translationDiv.style.cssText = `
+        font-size: 0.9em;
+        opacity: 0.75;
+        margin-top: 4px;
+        margin-bottom: 16px;
+        padding-${isTranslationRtl ? "right" : "left"}: 8px;
+        border-${isTranslationRtl ? "right" : "left"}: 2px solid currentColor;
+        direction: ${isTranslationRtl ? "rtl" : "ltr"};
+        text-align: ${isTranslationRtl ? "right" : "left"};
+      `;
+
+      // Insert after the paragraph
+      paragraph.parentNode?.insertBefore(translationDiv, paragraph.nextSibling);
+    });
+  }, [getTranslationLanguage]);
+
+  // Handle translate button click
+  const handleTranslate = useCallback(async () => {
+    // Toggle off if already showing
+    if (translationVisible) {
+      removeTranslations();
+      setTranslationVisible(false);
+      return;
+    }
+
+    // Get current page number from href
+    const currentHref = currentHrefRef.current;
+    if (!currentHref) return;
+
+    // Extract page number from href (e.g., "page_0057.xhtml" -> 57)
+    const pageMatch = currentHref.match(/page_(\d+)\.xhtml/);
+    if (!pageMatch) return;
+
+    const pageNum = parseInt(pageMatch[1], 10);
+    const lang = getTranslationLanguage();
+    const cacheKey = `${bookMetadata.id}-${pageNum}-${lang}`;
+
+    // Check cache first
+    const cached = translationCacheRef.current.get(cacheKey);
+    if (cached) {
+      injectTranslations(cached);
+      setTranslationVisible(true);
+      return;
+    }
+
+    // Fetch translations from API
+    setIsTranslating(true);
+    try {
+      const response = await fetch(`/api/pages/${bookMetadata.id}/${pageNum}/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lang, model: pageTranslationModel }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Translation failed");
+      }
+
+      const data = await response.json();
+      const translations = data.paragraphs || [];
+
+      // Cache the result
+      translationCacheRef.current.set(cacheKey, translations);
+
+      // Inject translations
+      injectTranslations(translations);
+      setTranslationVisible(true);
+    } catch (error) {
+      console.error("Translation error:", error);
+    } finally {
+      setIsTranslating(false);
+    }
+  }, [translationVisible, bookMetadata.id, getTranslationLanguage, injectTranslations, removeTranslations, pageTranslationModel]);
+
+  // Clear translations when navigating to a different page
+  useEffect(() => {
+    if (translationVisible) {
+      removeTranslations();
+      setTranslationVisible(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSection]);
+
   const goBack = () => {
     router.back();
   };
@@ -1013,6 +1143,20 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
             >
               <span className="text-xs md:text-sm">{t("reader.prev")}</span>
               <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleTranslate}
+              disabled={isTranslating}
+              title={translationVisible ? t("reader.hideTranslation") : t("reader.translate")}
+              className={`transition-transform active:scale-95 h-8 w-8 md:h-9 md:w-9 ${translationVisible ? "bg-primary/10" : ""}`}
+            >
+              {isTranslating ? (
+                <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
+              ) : (
+                <Languages className="h-4 w-4 md:h-5 md:w-5" />
+              )}
             </Button>
             <Button
               variant="outline"

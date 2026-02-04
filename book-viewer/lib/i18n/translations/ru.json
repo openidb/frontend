@@ -180,8 +180,8 @@
       "advanced": "Расширенные настройки",
       "similarity": "Сходство",
       "fuzzySearch": "Нечеткий поиск",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "Настройки поиска",
+      "refineSearch": "Уточнение поиска"
     },
     "appearance": {
       "theme": "Тема",
@@ -204,6 +204,10 @@
         "none": "Нет",
         "en": "Английский (sunnah.com)"
       },
+      "pageTranslationModel": "Модель перевода страниц",
+      "pageTranslationModelInfo": "ИИ-модель для перевода страниц. GPT быстрее, Gemini качественнее.",
+      "geminiFlashDesc": "Лучшее качество, медленнее",
+      "gptOss120bDesc": "Быстрый, хорошее качество",
       "options": {
         "none": "Нет",
         "en": "Английский - Д-р Мустафа Хаттаб",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "Порог",
       "cutoffInfo": "Минимальный балл сходства. Более высокие значения возвращают меньше, но более релевантных результатов.",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "Порог уточнения",
+      "refineCutoffInfo": "Порог сходства для уточненного поиска. Более низкие значения расширяют охват перед фильтрацией LLM."
     },
     "fuzzy": {
       "enableFallback": "Включить запасной вариант",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "Локальная модель, оптимизирована для арабских исламских текстов"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "Модель",
+      "modelInfo": "ИИ-модель для переоценки и переупорядочивания результатов. Более крупные модели точнее, но медленнее.",
+      "regularCandidates": "Обычные кандидаты",
+      "regularCandidatesInfo": "Результаты до RRF-слияния. Больше кандидатов может улучшить качество, но увеличивает задержку.",
+      "regularResults": "Обычные результаты",
+      "regularResultsInfo": "Итоговое количество результатов после слияния и ранжирования."
     },
     "refine": {
       "queryExpansionModel": "Модель расширения запроса",
       "queryExpansionModelInfo": "ИИ-модель для генерации альтернативных запросов",
-      "geminiFlashDesc": "Быстрый, высокое качество",
-      "gptOss120bDesc": "Высшее качество, медленнее",
+      "geminiFlashDesc": "Лучшее качество, медленнее",
+      "gptOss120bDesc": "Быстрый, хорошее качество",
       "originalWeight": "Вес исходного запроса",
       "originalWeightInfo": "Вес вашего исходного запроса в объединенных результатах.",
       "expandedWeight": "Вес расширенных запросов",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "Высшее качество (Рекомендуется)",
+      "gptOss120bDesc": "Быстрый, хорошее качество (Рекомендуется)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "Быстрый, высококачественное рассуждение",
+      "geminiFlashDesc": "Лучшее качество, медленнее",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "Высокое качество, быстрее",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "Быстрый, многоязычный",
+      "gptOssDesc": "Быстрый, среднее качество",
       "jina": "Jina",
       "jinaDesc": "Самый быстрый",
       "none": "Нет",
@@ -330,7 +332,11 @@
     "chapters": "Главы",
     "noChapters": "Главы недоступны",
     "nextPage": "Следующая страница",
-    "prevPage": "Предыдущая страница"
+    "prevPage": "Предыдущая страница",
+    "next": "Далее",
+    "prev": "Назад",
+    "translate": "Перевести",
+    "hideTranslation": "Скрыть перевод"
   },
   "common": {
     "loading": "Загрузка...",

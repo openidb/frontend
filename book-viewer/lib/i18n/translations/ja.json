@@ -180,8 +180,8 @@
       "advanced": "詳細設定",
       "similarity": "類似度",
       "fuzzySearch": "あいまい検索",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "検索設定",
+      "refineSearch": "検索絞り込み"
     },
     "appearance": {
       "theme": "テーマ",
@@ -204,6 +204,10 @@
         "none": "なし",
         "en": "英語 (sunnah.com)"
       },
+      "pageTranslationModel": "ページ翻訳モデル",
+      "pageTranslationModelInfo": "ページ翻訳用のAIモデル。GPTは高速、Geminiは高品質。",
+      "geminiFlashDesc": "最高品質、低速",
+      "gptOss120bDesc": "高速、良質",
       "options": {
         "none": "なし",
         "en": "英語 - ムスタファ・ハッターブ博士",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "カットオフ",
       "cutoffInfo": "結果の最小類似度スコア。高い値はより少ないが関連性の高い結果を返します。",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "絞り込み閾値",
+      "refineCutoffInfo": "絞り込み検索の類似度閾値。低い値はLLMフィルタリング前により広い範囲をカバーします。"
     },
     "fuzzy": {
       "enableFallback": "フォールバックを有効化",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "ローカルモデル、アラビア語イスラム文書に最適化"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "モデル",
+      "modelInfo": "結果を再スコアリングおよび再順序付けするAIモデル。大きなモデルはより正確ですが遅くなります。",
+      "regularCandidates": "通常候補",
+      "regularCandidatesInfo": "RRF融合前に取得された結果。候補が多いと品質が向上しますが、遅延が増加します。",
+      "regularResults": "通常結果",
+      "regularResultsInfo": "融合とランキング後の最終結果数。"
     },
     "refine": {
       "queryExpansionModel": "クエリ拡張モデル",
       "queryExpansionModelInfo": "代替検索クエリを生成するAIモデル",
-      "geminiFlashDesc": "高速、高品質",
-      "gptOss120bDesc": "最高品質、低速",
+      "geminiFlashDesc": "最高品質、低速",
+      "gptOss120bDesc": "高速、良質",
       "originalWeight": "元のクエリの重み",
       "originalWeightInfo": "マージ結果における元のクエリの重み。",
       "expandedWeight": "拡張クエリの重み",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "最高品質（推奨）",
+      "gptOss120bDesc": "高速、良質（推奨）",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "高速、高品質な推論",
+      "geminiFlashDesc": "最高品質、低速",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "高品質、高速",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "高速、多言語対応",
+      "gptOssDesc": "高速、中程度の品質",
       "jina": "Jina",
       "jinaDesc": "最速",
       "none": "なし",
@@ -330,7 +332,11 @@
     "chapters": "章",
     "noChapters": "章がありません",
     "nextPage": "次のページ",
-    "prevPage": "前のページ"
+    "prevPage": "前のページ",
+    "next": "次へ",
+    "prev": "前へ",
+    "translate": "翻訳",
+    "hideTranslation": "翻訳を非表示"
   },
   "common": {
     "loading": "読み込み中...",

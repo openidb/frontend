@@ -180,8 +180,8 @@
       "advanced": "উন্নত সেটিংস",
       "similarity": "সাদৃশ্য",
       "fuzzySearch": "ফাজি অনুসন্ধান",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "অনুসন্ধান সেটিংস",
+      "refineSearch": "অনুসন্ধান পরিমার্জন"
     },
     "appearance": {
       "theme": "থিম",
@@ -204,6 +204,10 @@
         "none": "কোনোটি নয়",
         "en": "ইংরেজি (sunnah.com)"
       },
+      "pageTranslationModel": "পৃষ্ঠা অনুবাদ মডেল",
+      "pageTranslationModelInfo": "পৃষ্ঠা অনুবাদের জন্য AI মডেল। GPT দ্রুত, Gemini উচ্চ মানের।",
+      "geminiFlashDesc": "সর্বোচ্চ মান, ধীর",
+      "gptOss120bDesc": "দ্রুত, ভালো মান",
       "options": {
         "none": "কোনোটি নয়",
         "en": "ইংরেজি - ড. মুস্তফা খাত্তাব",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "কাটঅফ",
       "cutoffInfo": "ফলাফলের জন্য সর্বনিম্ন সাদৃশ্য স্কোর। উচ্চ মান কম কিন্তু বেশি প্রাসঙ্গিক ফলাফল দেয়।",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "পরিমার্জন সীমা",
+      "refineCutoffInfo": "পরিমার্জিত অনুসন্ধানের জন্য সাদৃশ্য সীমা। কম মান LLM ফিল্টারিংয়ের আগে বিস্তৃত পরিসর কভার করে।"
     },
     "fuzzy": {
       "enableFallback": "ফলব্যাক সক্রিয় করুন",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "স্থানীয় মডেল, আরবি ইসলামিক টেক্সটের জন্য অপ্টিমাইজড"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "মডেল",
+      "modelInfo": "ফলাফল পুনরায় স্কোর এবং পুনরায় সাজানোর জন্য AI মডেল। বড় মডেল আরও সঠিক কিন্তু ধীর।",
+      "regularCandidates": "নিয়মিত প্রার্থী",
+      "regularCandidatesInfo": "RRF ফিউশনের আগে প্রাপ্ত ফলাফল। বেশি প্রার্থী মান উন্নত করতে পারে কিন্তু বিলম্ব বাড়ায়।",
+      "regularResults": "নিয়মিত ফলাফল",
+      "regularResultsInfo": "ফিউশন এবং র্যাংকিংয়ের পরে চূড়ান্ত ফলাফল সংখ্যা।"
     },
     "refine": {
       "queryExpansionModel": "কোয়েরি সম্প্রসারণ মডেল",
       "queryExpansionModelInfo": "বিকল্প অনুসন্ধান কোয়েরি তৈরি করার AI মডেল",
-      "geminiFlashDesc": "দ্রুত, উচ্চ মানের",
-      "gptOss120bDesc": "সর্বোচ্চ মান, ধীর",
+      "geminiFlashDesc": "সর্বোচ্চ মান, ধীর",
+      "gptOss120bDesc": "দ্রুত, ভালো মান",
       "originalWeight": "মূল কোয়েরি ওজন",
       "originalWeightInfo": "মার্জ করা ফলাফলে আপনার মূল কোয়েরির ওজন।",
       "expandedWeight": "সম্প্রসারিত কোয়েরি ওজন",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "সর্বোচ্চ মান (প্রস্তাবিত)",
+      "gptOss120bDesc": "দ্রুত, ভালো মান (প্রস্তাবিত)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "দ্রুত, উচ্চ মানের যুক্তি",
+      "geminiFlashDesc": "সর্বোচ্চ মান, ধীর",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "উচ্চ মান, দ্রুত",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "দ্রুত, বহুভাষিক",
+      "gptOssDesc": "দ্রুত, মাঝারি মান",
       "jina": "Jina",
       "jinaDesc": "সবচেয়ে দ্রুত",
       "none": "কোনোটি নয়",
@@ -330,7 +332,11 @@
     "chapters": "অধ্যায়",
     "noChapters": "কোনো অধ্যায় নেই",
     "nextPage": "পরবর্তী পৃষ্ঠা",
-    "prevPage": "পূর্ববর্তী পৃষ্ঠা"
+    "prevPage": "পূর্ববর্তী পৃষ্ঠা",
+    "next": "পরবর্তী",
+    "prev": "পূর্ববর্তী",
+    "translate": "অনুবাদ",
+    "hideTranslation": "অনুবাদ লুকান"
   },
   "common": {
     "loading": "লোড হচ্ছে...",

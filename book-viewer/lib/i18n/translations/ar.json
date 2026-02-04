@@ -204,6 +204,10 @@
         "none": "بدون",
         "en": "الإنجليزية (sunnah.com)"
       },
+      "pageTranslationModel": "نموذج ترجمة الصفحات",
+      "pageTranslationModelInfo": "نموذج الذكاء الاصطناعي لترجمة صفحات الكتب. GPT أسرع، جيميني أعلى جودة.",
+      "geminiFlashDesc": "أعلى جودة، أبطأ",
+      "gptOss120bDesc": "سريع، جودة جيدة",
       "options": {
         "none": "بدون",
         "en": "الإنجليزية - د. مصطفى خطاب",
@@ -269,8 +273,8 @@
     "refine": {
       "queryExpansionModel": "نموذج توسيع الاستعلام",
       "queryExpansionModelInfo": "نموذج الذكاء الاصطناعي المستخدم لتوليد استعلامات بحث بديلة",
-      "geminiFlashDesc": "سريع، جودة عالية",
-      "gptOss120bDesc": "أعلى جودة، أبطأ",
+      "geminiFlashDesc": "أعلى جودة، أبطأ",
+      "gptOss120bDesc": "سريع، جودة جيدة",
       "originalWeight": "وزن الاستعلام الأصلي",
       "originalWeightInfo": "وزن استعلامك الأصلي في النتائج المدمجة.",
       "expandedWeight": "وزن الاستعلامات الموسعة",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "أعلى جودة (موصى به)",
+      "gptOss120bDesc": "سريع، جودة جيدة (موصى به)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "سريع، استدلال عالي الجودة",
+      "geminiFlashDesc": "أعلى جودة، أبطأ",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "جودة عالية، أسرع",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "سريع، متعدد اللغات",
+      "gptOssDesc": "سريع، جودة متوسطة",
       "jina": "Jina",
       "jinaDesc": "الأسرع",
       "none": "بدون",
@@ -330,7 +332,11 @@
     "chapters": "الفصول",
     "noChapters": "لا توجد فصول متاحة",
     "nextPage": "الصفحة التالية",
-    "prevPage": "الصفحة السابقة"
+    "prevPage": "الصفحة السابقة",
+    "next": "التالي",
+    "prev": "السابق",
+    "translate": "ترجمة",
+    "hideTranslation": "إخفاء الترجمة"
   },
   "common": {
     "loading": "جارٍ التحميل...",

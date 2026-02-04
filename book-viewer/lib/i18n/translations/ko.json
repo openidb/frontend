@@ -180,8 +180,8 @@
       "advanced": "고급 설정",
       "similarity": "유사도",
       "fuzzySearch": "퍼지 검색",
-      "searchSettings": "Search Settings",
-      "refineSearch": "Refine Search"
+      "searchSettings": "검색 설정",
+      "refineSearch": "검색 정제"
     },
     "appearance": {
       "theme": "테마",
@@ -204,6 +204,10 @@
         "none": "없음",
         "en": "영어 (sunnah.com)"
       },
+      "pageTranslationModel": "페이지 번역 모델",
+      "pageTranslationModelInfo": "페이지 번역용 AI 모델. GPT가 더 빠르고, Gemini가 품질이 높습니다.",
+      "geminiFlashDesc": "최고 품질, 느림",
+      "gptOss120bDesc": "빠름, 좋은 품질",
       "options": {
         "none": "없음",
         "en": "영어 - 무스타파 핫탑 박사",
@@ -241,8 +245,8 @@
       "similarity": {
       "cutoff": "임계값",
       "cutoffInfo": "결과의 최소 유사도 점수. 높은 값은 더 적지만 관련성 높은 결과를 반환합니다.",
-      "refineCutoff": "Refine Cutoff",
-      "refineCutoffInfo": "Similarity threshold for refine searches. Lower values cast a wider net before LLM filtering."
+      "refineCutoff": "정제 임계값",
+      "refineCutoffInfo": "정제 검색의 유사도 임계값. 낮은 값은 LLM 필터링 전에 더 넓은 범위를 커버합니다."
     },
     "fuzzy": {
       "enableFallback": "폴백 활성화",
@@ -259,18 +263,18 @@
       "bgeM3Desc": "로컬 모델, 아랍어 이슬람 텍스트에 최적화"
     },
     "reranker": {
-      "model": "Model",
-      "modelInfo": "AI model used to re-score and reorder results. Larger models are more accurate but slower.",
-      "regularCandidates": "Regular Candidates",
-      "regularCandidatesInfo": "Results fetched before RRF fusion. More candidates may improve quality but increases latency.",
-      "regularResults": "Regular Results",
-      "regularResultsInfo": "Final number of results returned after fusion and ranking."
+      "model": "모델",
+      "modelInfo": "결과를 재점수화하고 재정렬하는 AI 모델. 큰 모델이 더 정확하지만 느립니다.",
+      "regularCandidates": "일반 후보",
+      "regularCandidatesInfo": "RRF 융합 전 가져온 결과. 더 많은 후보는 품질을 향상시킬 수 있지만 지연이 증가합니다.",
+      "regularResults": "일반 결과",
+      "regularResultsInfo": "융합과 순위 지정 후 반환되는 최종 결과 수."
     },
     "refine": {
       "queryExpansionModel": "쿼리 확장 모델",
       "queryExpansionModelInfo": "대체 검색 쿼리를 생성하는 AI 모델",
-      "geminiFlashDesc": "빠름, 고품질",
-      "gptOss120bDesc": "최고 품질, 느림",
+      "geminiFlashDesc": "최고 품질, 느림",
+      "gptOss120bDesc": "빠름, 좋은 품질",
       "originalWeight": "원본 쿼리 가중치",
       "originalWeightInfo": "병합된 결과에서 원본 쿼리의 가중치.",
       "expandedWeight": "확장된 쿼리 가중치",
@@ -292,13 +296,11 @@
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
-      "gptOss120bDesc": "최고 품질 (권장)",
+      "gptOss120bDesc": "빠름, 좋은 품질 (권장)",
       "geminiFlash": "Gemini Flash",
-      "geminiFlashDesc": "빠름, 고품질 추론",
+      "geminiFlashDesc": "최고 품질, 느림",
       "gptOss": "GPT-OSS 20B",
-      "gptOssDesc": "고품질, 빠름",
-      "qwen4b": "Qwen 4B",
-      "qwen4bDesc": "빠름, 다국어",
+      "gptOssDesc": "빠름, 보통 품질",
       "jina": "Jina",
       "jinaDesc": "가장 빠름",
       "none": "없음",
@@ -330,7 +332,11 @@
     "chapters": "장",
     "noChapters": "장이 없습니다",
     "nextPage": "다음 페이지",
-    "prevPage": "이전 페이지"
+    "prevPage": "이전 페이지",
+    "next": "다음",
+    "prev": "이전",
+    "translate": "번역",
+    "hideTranslation": "번역 숨기기"
   },
   "common": {
     "loading": "로딩 중...",
