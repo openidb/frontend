@@ -8,6 +8,7 @@ import { ArrowLeft, ChevronRight, ChevronLeft, Menu } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import { WordDefinitionPopover } from "@/components/WordDefinitionPopover";
 
 interface TocEntry {
   id: number;
@@ -59,6 +60,10 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
   const [hasNavigatedToInitialPage, setHasNavigatedToInitialPage] = useState(false);
   const [bookTitleDisplay, setBookTitleDisplay] = useState<TranslationDisplayOption>(defaultSearchConfig.bookTitleDisplay);
   const [autoTranslation, setAutoTranslation] = useState(defaultSearchConfig.autoTranslation);
+  const [selectedWord, setSelectedWord] = useState<{
+    word: string;
+    position: { x: number; y: number };
+  } | null>(null);
 
   // Client-side fetched translations
   const [fetchedTitleTranslation, setFetchedTitleTranslation] = useState<string | null>(null);
@@ -206,6 +211,85 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         const spacer = contents.document.createElement("div");
         spacer.style.cssText = "height: 100px; width: 100%; background: transparent;";
         contents.document.body.appendChild(spacer);
+
+        // Add click handler for word definitions
+        const handleWordClick = (e: MouseEvent) => {
+          // Get the iframe element to calculate offset
+          const iframe = viewerElement?.querySelector("iframe");
+          if (!iframe) return;
+
+          const iframeRect = iframe.getBoundingClientRect();
+          const contentWindow = contents.window;
+
+          // Only proceed if clicking on text content
+          const target = e.target as Node;
+          if (target.nodeType !== Node.TEXT_NODE &&
+              !(target as Element).closest?.('p, span, div, h1, h2, h3, h4, h5, h6, li, a')) {
+            setSelectedWord(null);
+            return;
+          }
+
+          // Get selection at click point
+          const selection = contentWindow.getSelection();
+          if (!selection) return;
+
+          // Clear any existing selection first
+          selection.removeAllRanges();
+
+          // Create a range at the click position
+          const range = contents.document.caretRangeFromPoint(e.clientX, e.clientY);
+          if (!range) return;
+
+          // Expand selection to word boundaries
+          selection.addRange(range);
+          selection.modify("move", "backward", "word");
+          selection.modify("extend", "forward", "word");
+
+          const word = selection.toString().trim();
+
+          // Check if we got a valid word (Arabic characters)
+          // Arabic Unicode range: \u0600-\u06FF (basic Arabic)
+          // Extended ranges: \u0750-\u077F, \u08A0-\u08FF, \uFB50-\uFDFF, \uFE70-\uFEFF
+          const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/;
+          if (!word || !arabicRegex.test(word)) {
+            selection.removeAllRanges();
+            setSelectedWord(null);
+            return;
+          }
+
+          // Get the actual word's bounding rect for positioning
+          const wordRange = selection.getRangeAt(0);
+          const wordRect = wordRange.getBoundingClientRect();
+
+          // Check if the click was actually near the word (within ~10px tolerance)
+          // This prevents triggering on empty space that snaps to distant words
+          const tolerance = 10;
+          const clickNearWord =
+            e.clientX >= wordRect.left - tolerance &&
+            e.clientX <= wordRect.right + tolerance &&
+            e.clientY >= wordRect.top - tolerance &&
+            e.clientY <= wordRect.bottom + tolerance;
+
+          if (!clickNearWord) {
+            selection.removeAllRanges();
+            setSelectedWord(null);
+            return;
+          }
+
+          // Clean up selection
+          selection.removeAllRanges();
+
+          // Position popover centered below the word
+          const x = wordRect.left + wordRect.width / 2 + iframeRect.left;
+          const y = wordRect.bottom + iframeRect.top + 8; // 8px gap below word
+
+          setSelectedWord({
+            word,
+            position: { x, y },
+          });
+        };
+
+        contents.document.addEventListener("click", handleWordClick);
       });
 
       // Register light and dark themes
@@ -858,6 +942,15 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           )}
         </div>
       </div>
+
+      {/* Word Definition Popover */}
+      {selectedWord && (
+        <WordDefinitionPopover
+          word={selectedWord.word}
+          position={selectedWord.position}
+          onClose={() => setSelectedWord(null)}
+        />
+      )}
     </div>
   );
 }
