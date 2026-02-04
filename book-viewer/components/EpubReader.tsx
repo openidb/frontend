@@ -48,6 +48,11 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
   const bookRef = useRef<Book | null>(null);
   const currentHrefRef = useRef<string>("");  // Track current href to prevent unnecessary updates
   const prefetchedSectionsRef = useRef<Set<number>>(new Set());
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTargetRef = useRef<{ x: number; y: number } | null>(null);
+  const longPressTriggeredRef = useRef<boolean>(false);
+  const longPressFeedbackTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressFeedbackRef = useRef<HTMLElement | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
   const [totalSections, setTotalSections] = useState(0);
@@ -202,6 +207,29 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
           }
+
+          /* Long-press feedback animation */
+          @keyframes long-press-pulse {
+            0% {
+              transform: translate(-50%, -50%) scale(0.5);
+              opacity: 0.6;
+            }
+            100% {
+              transform: translate(-50%, -50%) scale(1.5);
+              opacity: 0;
+            }
+          }
+
+          .long-press-feedback {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0) 70%);
+            animation: long-press-pulse 0.4s ease-out infinite;
+          }
         `;
 
         style.textContent = cssContent;
@@ -212,8 +240,10 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         spacer.style.cssText = "height: 100px; width: 100%; background: transparent;";
         contents.document.body.appendChild(spacer);
 
-        // Add click handler for word definitions
-        const handleWordClick = (e: MouseEvent) => {
+        // Long-press handler for word definitions
+        const LONG_PRESS_DURATION = 300; // ms
+
+        const showWordDefinition = (clientX: number, clientY: number) => {
           // Get the iframe element to calculate offset
           const iframe = viewerElement?.querySelector("iframe");
           if (!iframe) return;
@@ -221,23 +251,25 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           const iframeRect = iframe.getBoundingClientRect();
           const contentWindow = contents.window;
 
-          // Only proceed if clicking on text content
-          const target = e.target as Node;
+          // Get element at point
+          const target = contents.document.elementFromPoint(clientX, clientY) as Node;
+          if (!target) return;
+
+          // Only proceed if pointing at text content
           if (target.nodeType !== Node.TEXT_NODE &&
               !(target as Element).closest?.('p, span, div, h1, h2, h3, h4, h5, h6, li, a')) {
-            setSelectedWord(null);
             return;
           }
 
-          // Get selection at click point
+          // Get selection at point
           const selection = contentWindow.getSelection();
           if (!selection) return;
 
           // Clear any existing selection first
           selection.removeAllRanges();
 
-          // Create a range at the click position
-          const range = contents.document.caretRangeFromPoint(e.clientX, e.clientY);
+          // Create a range at the position
+          const range = contents.document.caretRangeFromPoint(clientX, clientY);
           if (!range) return;
 
           // Expand selection to word boundaries
@@ -253,7 +285,6 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/;
           if (!word || !arabicRegex.test(word)) {
             selection.removeAllRanges();
-            setSelectedWord(null);
             return;
           }
 
@@ -261,18 +292,17 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           const wordRange = selection.getRangeAt(0);
           const wordRect = wordRange.getBoundingClientRect();
 
-          // Check if the click was actually near the word (within ~10px tolerance)
+          // Check if the point was actually near the word (within ~10px tolerance)
           // This prevents triggering on empty space that snaps to distant words
           const tolerance = 10;
-          const clickNearWord =
-            e.clientX >= wordRect.left - tolerance &&
-            e.clientX <= wordRect.right + tolerance &&
-            e.clientY >= wordRect.top - tolerance &&
-            e.clientY <= wordRect.bottom + tolerance;
+          const pointNearWord =
+            clientX >= wordRect.left - tolerance &&
+            clientX <= wordRect.right + tolerance &&
+            clientY >= wordRect.top - tolerance &&
+            clientY <= wordRect.bottom + tolerance;
 
-          if (!clickNearWord) {
+          if (!pointNearWord) {
             selection.removeAllRanges();
-            setSelectedWord(null);
             return;
           }
 
@@ -289,7 +319,89 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           });
         };
 
-        contents.document.addEventListener("click", handleWordClick);
+        const removeFeedback = () => {
+          if (longPressFeedbackTimerRef.current) {
+            clearTimeout(longPressFeedbackTimerRef.current);
+            longPressFeedbackTimerRef.current = null;
+          }
+          if (longPressFeedbackRef.current) {
+            longPressFeedbackRef.current.remove();
+            longPressFeedbackRef.current = null;
+          }
+        };
+
+        const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+          // Clear any existing popover and feedback
+          setSelectedWord(null);
+          removeFeedback();
+
+          const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+          const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+          longPressTargetRef.current = { x: clientX, y: clientY };
+
+          // Show visual feedback after a short delay (150ms)
+          longPressFeedbackTimerRef.current = setTimeout(() => {
+            const feedback = contents.document.createElement("div");
+            feedback.className = "long-press-feedback";
+            feedback.style.left = `${clientX}px`;
+            feedback.style.top = `${clientY}px`;
+            contents.document.body.appendChild(feedback);
+            longPressFeedbackRef.current = feedback;
+          }, 150);
+
+          longPressTimerRef.current = setTimeout(() => {
+            removeFeedback(); // Remove feedback when showing popover
+            if (longPressTargetRef.current) {
+              showWordDefinition(longPressTargetRef.current.x, longPressTargetRef.current.y);
+              longPressTriggeredRef.current = true; // Mark that long-press was triggered
+            }
+            longPressTargetRef.current = null;
+          }, LONG_PRESS_DURATION);
+        };
+
+        const handlePointerUp = () => {
+          removeFeedback();
+          if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+          }
+          longPressTargetRef.current = null;
+        };
+
+        const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+          if (!longPressTargetRef.current) return;
+
+          const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+          const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+          // Cancel if moved more than 10px (prevents accidental triggers while scrolling)
+          const dx = clientX - longPressTargetRef.current.x;
+          const dy = clientY - longPressTargetRef.current.y;
+          if (Math.sqrt(dx * dx + dy * dy) > 10) {
+            handlePointerUp();
+          }
+        };
+
+        // Prevent click from firing after a successful long-press
+        const handleClick = (e: MouseEvent) => {
+          if (longPressTriggeredRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            longPressTriggeredRef.current = false;
+          }
+        };
+
+        // Register event listeners for long-press detection
+        contents.document.addEventListener("mousedown", handlePointerDown);
+        contents.document.addEventListener("mouseup", handlePointerUp);
+        contents.document.addEventListener("mouseleave", handlePointerUp);
+        contents.document.addEventListener("mousemove", handlePointerMove);
+        contents.document.addEventListener("touchstart", handlePointerDown);
+        contents.document.addEventListener("touchend", handlePointerUp);
+        contents.document.addEventListener("touchmove", handlePointerMove);
+        contents.document.addEventListener("touchcancel", handlePointerUp);
+        contents.document.addEventListener("click", handleClick, true); // Use capture to intercept before link navigation
       });
 
       // Register light and dark themes
@@ -492,6 +604,22 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
     return () => {
       clearTimeout(resizeTimeout);
       window.removeEventListener("resize", handleResize);
+
+      // Clean up long-press state
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      if (longPressFeedbackTimerRef.current) {
+        clearTimeout(longPressFeedbackTimerRef.current);
+        longPressFeedbackTimerRef.current = null;
+      }
+      if (longPressFeedbackRef.current) {
+        longPressFeedbackRef.current.remove();
+        longPressFeedbackRef.current = null;
+      }
+      longPressTargetRef.current = null;
+      longPressTriggeredRef.current = false;
 
       if (renditionRef.current) {
         renditionRef.current.destroy();
@@ -870,18 +998,20 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
           <div className="flex items-center gap-1 md:gap-2 ml-1 md:ml-3" dir="ltr">
             <Button
               variant="outline"
-              onClick={dir === "rtl" ? goToNextPage : goToPrevPage}
-              title={dir === "rtl" ? t("reader.nextPage") : t("reader.prevPage")}
-              className="transition-transform active:scale-95 h-8 w-10 md:h-9 md:w-12"
+              onClick={goToNextPage}
+              title={t("reader.nextPage")}
+              className="transition-transform active:scale-95 h-8 px-2 md:h-9 md:px-3"
             >
               <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-xs md:text-sm">{t("reader.next")}</span>
             </Button>
             <Button
               variant="outline"
-              onClick={dir === "rtl" ? goToPrevPage : goToNextPage}
-              title={dir === "rtl" ? t("reader.prevPage") : t("reader.nextPage")}
-              className="transition-transform active:scale-95 h-8 w-10 md:h-9 md:w-12"
+              onClick={goToPrevPage}
+              title={t("reader.prevPage")}
+              className="transition-transform active:scale-95 h-8 px-2 md:h-9 md:px-3"
             >
+              <span className="text-xs md:text-sm">{t("reader.prev")}</span>
               <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
             <Button
