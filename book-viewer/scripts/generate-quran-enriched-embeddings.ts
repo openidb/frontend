@@ -1,9 +1,12 @@
 /**
- * Generate Tafsir-Enriched Quran Embeddings
+ * Generate Metadata+Translation Enriched Quran Embeddings
  *
- * Creates embeddings for Quran ayahs using Al-Jalalayn tafsir text.
- * The tafsir text already includes the ayah (marked with brackets), providing
- * richer semantic content for better search retrieval of short ayahs.
+ * Creates embeddings for Quran ayahs using:
+ *   1. Metadata prefix (surah name + ayah number)
+ *   2. Normalized Arabic text
+ *   3. English translation (Dr. Mustafa Khattab)
+ *
+ * Format: "سورة البقرة، آية 255:\nالله لا اله الا هو الحي القيوم\n ||| Allah! There is no god but He..."
  *
  * Stores embeddings in a separate Qdrant collection while preserving
  * original ayah text in payload for display.
@@ -20,8 +23,8 @@ import "dotenv/config";
 import { prisma } from "../lib/db";
 import {
   qdrant,
-  QURAN_COLLECTION,
-  QURAN_COLLECTION_BGE,
+  QDRANT_QURAN_COLLECTION,
+  QDRANT_QURAN_COLLECTION_BGE,
   GEMINI_DIMENSIONS,
   BGE_DIMENSIONS,
 } from "../lib/qdrant";
@@ -46,12 +49,10 @@ const embeddingModel: EmbeddingModel = modelArg?.split("=")[1] === "bge-m3" ? "b
 const EMBEDDING_DIMENSIONS = embeddingModel === "bge-m3" ? BGE_DIMENSIONS : GEMINI_DIMENSIONS;
 
 // Determine collection based on model
-const QURAN_COLLECTION = embeddingModel === "bge-m3" ? QURAN_COLLECTION_BGE : QURAN_COLLECTION;
+const QURAN_COLLECTION = embeddingModel === "bge-m3" ? QDRANT_QURAN_COLLECTION_BGE : QDRANT_QURAN_COLLECTION;
 
 console.log(`Using embedding model: ${embeddingModel} (${EMBEDDING_DIMENSIONS} dimensions)`);
 console.log(`Collection: ${QURAN_COLLECTION}`);
-
-const TAFSIR_SOURCE = "jalalayn";
 
 /**
  * Generate a deterministic point ID for enriched ayahs
@@ -148,7 +149,7 @@ async function getExistingPointIds(): Promise<Set<string>> {
   }
 }
 
-interface AyahWithTafsir {
+interface AyahWithTranslation {
   ayahNumber: number;
   textUthmani: string;
   textPlain: string;
@@ -159,16 +160,16 @@ interface AyahWithTafsir {
     nameArabic: string;
     nameEnglish: string;
   };
-  tafsirText: string;
+  translationText: string | null;
 }
 
 /**
- * Fetch ayahs with their tafsir text
+ * Fetch ayahs with their English translations
  */
-async function fetchAyahsWithTafsir(
+async function fetchAyahsWithTranslations(
   skip: number,
   take: number
-): Promise<AyahWithTafsir[]> {
+): Promise<AyahWithTranslation[]> {
   // Get ayahs
   const ayahs = await prisma.ayah.findMany({
     skip,
@@ -190,15 +191,15 @@ async function fetchAyahsWithTafsir(
     },
   });
 
-  // Fetch tafsir for these ayahs
+  // Fetch English translations for these ayahs
   const surahAyahPairs = ayahs.map((a) => ({
     surahNumber: a.surah.number,
     ayahNumber: a.ayahNumber,
   }));
 
-  const tafsirs = await prisma.ayahTafsir.findMany({
+  const translations = await prisma.ayahTranslation.findMany({
     where: {
-      source: TAFSIR_SOURCE,
+      language: "en",
       OR: surahAyahPairs.map((p) => ({
         surahNumber: p.surahNumber,
         ayahNumber: p.ayahNumber,
@@ -212,57 +213,64 @@ async function fetchAyahsWithTafsir(
   });
 
   // Create a map for quick lookup
-  const tafsirMap = new Map<string, string>();
-  for (const t of tafsirs) {
-    tafsirMap.set(`${t.surahNumber}:${t.ayahNumber}`, t.text);
+  const translationMap = new Map<string, string>();
+  for (const t of translations) {
+    translationMap.set(`${t.surahNumber}:${t.ayahNumber}`, t.text);
   }
 
-  // Combine ayahs with tafsir
-  return ayahs
-    .map((ayah) => {
-      const key = `${ayah.surah.number}:${ayah.ayahNumber}`;
-      const tafsirText = tafsirMap.get(key);
-
-      if (!tafsirText) {
-        return null; // Skip ayahs without tafsir
-      }
-
-      return {
-        ...ayah,
-        tafsirText,
-      };
-    })
-    .filter((a): a is AyahWithTafsir => a !== null);
+  // Combine ayahs with translations (all ayahs included, translation may be null)
+  return ayahs.map((ayah) => {
+    const key = `${ayah.surah.number}:${ayah.ayahNumber}`;
+    return {
+      ...ayah,
+      translationText: translationMap.get(key) || null,
+    };
+  });
 }
 
 /**
  * Process a batch of ayahs: generate embeddings and upsert to Qdrant
+ *
+ * Embedding text format:
+ *   سورة البقرة، آية 255:
+ *   الله لا اله الا هو الحي القيوم
+ *    ||| Allah! There is no god but He...
  */
-async function processBatch(ayahs: AyahWithTafsir[]): Promise<number> {
-  // Prepare texts for embedding - use tafsir text which includes the ayah
+async function processBatch(ayahs: AyahWithTranslation[]): Promise<number> {
+  // Prepare texts for embedding - metadata + Arabic + English translation
   const texts = ayahs.map((ayah) => {
-    const normalized = normalizeArabicText(ayah.tafsirText);
-    return truncateForEmbedding(normalized);
+    const metadata = `سورة ${ayah.surah.nameArabic}، آية ${ayah.ayahNumber}:`;
+    const normalizedArabic = normalizeArabicText(ayah.textPlain);
+    const parts = [metadata, normalizedArabic];
+    if (ayah.translationText) {
+      parts.push(` ||| ${ayah.translationText}`);
+    }
+    return truncateForEmbedding(parts.join("\n"));
   });
 
   // Generate embeddings in batch
   const embeddings = await generateEmbeddings(texts, embeddingModel);
 
   // Prepare points for Qdrant
-  // Store original ayah text (not tafsir) in payload for display
+  // Store both original text (for display) and embedded text (for debugging)
   const points = ayahs.map((ayah, index) => ({
     id: generateEnrichedAyahPointId(ayah.surah.number, ayah.ayahNumber),
     vector: embeddings[index],
     payload: {
+      // Ayah identification
       surahNumber: ayah.surah.number,
       ayahNumber: ayah.ayahNumber,
       surahNameArabic: ayah.surah.nameArabic,
       surahNameEnglish: ayah.surah.nameEnglish,
-      text: ayah.textUthmani, // Original ayah for display
-      textPlain: ayah.textPlain, // For keyword matching
+      // Original text for display
+      text: ayah.textUthmani,
+      textPlain: ayah.textPlain,
+      // Navigation
       juzNumber: ayah.juzNumber,
       pageNumber: ayah.pageNumber,
-      tafsirSource: TAFSIR_SOURCE,
+      // Embedding metadata - stores EXACTLY what was embedded
+      embeddedText: texts[index],
+      embeddingModel: embeddingModel,
     },
   }));
 
@@ -276,27 +284,23 @@ async function processBatch(ayahs: AyahWithTafsir[]): Promise<number> {
 }
 
 async function main() {
-  console.log("Tafsir-Enriched Quran Embedding Generation");
+  console.log("Metadata+Translation Enriched Quran Embedding Generation");
   console.log("=".repeat(60));
   console.log(`Collection: ${QURAN_COLLECTION}`);
-  console.log(`Tafsir source: ${TAFSIR_SOURCE}`);
+  console.log(`Technique: metadata + Arabic + English translation`);
   console.log(`Batch size: ${BATCH_SIZE}`);
   console.log(`Mode: ${forceFlag ? "Force regenerate all" : "Skip existing"}`);
   console.log();
 
-  // Check if tafsir data exists
-  const tafsirCount = await prisma.ayahTafsir.count({
-    where: { source: TAFSIR_SOURCE },
+  // Check if translations exist
+  const translationCount = await prisma.ayahTranslation.count({
+    where: { language: "en" },
   });
 
-  if (tafsirCount === 0) {
-    console.error(
-      "No tafsir data found in database. Run import-tafsir.ts first."
-    );
-    return;
+  console.log(`Found ${translationCount} English translations in database`);
+  if (translationCount === 0) {
+    console.warn("Warning: No English translations found. Embeddings will use metadata + Arabic only.");
   }
-
-  console.log(`Found ${tafsirCount} tafsir entries in database`);
 
   // Initialize collection
   await initializeCollection();
@@ -313,24 +317,27 @@ async function main() {
   let processed = 0;
   let skipped = 0;
   let failed = 0;
-  let noTafsir = 0;
+  let withTranslation = 0;
+  let withoutTranslation = 0;
   let offset = 0;
 
   while (offset < totalAyahs) {
-    // Fetch batch of ayahs with tafsir
-    const ayahsWithTafsir = await fetchAyahsWithTafsir(offset, BATCH_SIZE);
+    // Fetch batch of ayahs with translations
+    const ayahsWithTranslations = await fetchAyahsWithTranslations(offset, BATCH_SIZE);
 
-    // Track ayahs without tafsir
-    const fetchedCount = Math.min(BATCH_SIZE, totalAyahs - offset);
-    noTafsir += fetchedCount - ayahsWithTafsir.length;
-
-    if (ayahsWithTafsir.length === 0) {
+    if (ayahsWithTranslations.length === 0) {
       offset += BATCH_SIZE;
       continue;
     }
 
+    // Track translation coverage
+    for (const ayah of ayahsWithTranslations) {
+      if (ayah.translationText) withTranslation++;
+      else withoutTranslation++;
+    }
+
     // Filter out already processed ayahs
-    const ayahsToProcess = ayahsWithTafsir.filter((ayah) => {
+    const ayahsToProcess = ayahsWithTranslations.filter((ayah) => {
       const pointId = generateEnrichedAyahPointId(
         ayah.surah.number,
         ayah.ayahNumber
@@ -347,7 +354,7 @@ async function main() {
         const count = await processBatch(ayahsToProcess);
         processed += count;
         console.log(
-          `Processed ${processed} ayahs (skipped: ${skipped}, no tafsir: ${noTafsir}, failed: ${failed})`
+          `Processed ${processed} ayahs (skipped: ${skipped}, failed: ${failed})`
         );
       } catch (error) {
         console.error(`Batch failed:`, error);
@@ -364,16 +371,17 @@ async function main() {
   console.log("\n" + "=".repeat(60));
   console.log("EMBEDDING SUMMARY");
   console.log("=".repeat(60));
-  console.log(`Processed:  ${processed}`);
-  console.log(`Skipped:    ${skipped}`);
-  console.log(`No tafsir:  ${noTafsir}`);
-  console.log(`Failed:     ${failed}`);
+  console.log(`Processed:          ${processed}`);
+  console.log(`Skipped:            ${skipped}`);
+  console.log(`With translation:   ${withTranslation}`);
+  console.log(`Without translation:${withoutTranslation}`);
+  console.log(`Failed:             ${failed}`);
   console.log("=".repeat(60));
 
   // Verify collection
   try {
     const info = await qdrant.getCollection(QURAN_COLLECTION);
-    console.log(`\nEnriched collection points: ${info.points_count}`);
+    console.log(`\nMetadata+Translation collection points: ${info.points_count}`);
   } catch (error) {
     console.error("Could not get collection info:", error);
   }

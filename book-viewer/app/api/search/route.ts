@@ -18,10 +18,9 @@ import {
   QDRANT_COLLECTION,
   QDRANT_AUTHORS_COLLECTION,
   QDRANT_QURAN_COLLECTION,
-  QDRANT_QURAN_ENRICHED_COLLECTION,
+  QDRANT_QURAN_COLLECTION_BGE,
   QDRANT_HADITH_COLLECTION,
   QDRANT_COLLECTION_BGE,
-  QDRANT_QURAN_ENRICHED_COLLECTION_BGE,
   QDRANT_HADITH_COLLECTION_BGE,
   GEMINI_DIMENSIONS,
   BGE_DIMENSIONS,
@@ -2167,7 +2166,7 @@ async function searchAyahsSemantic(
   embeddingModel: EmbeddingModel = "gemini"
 ): Promise<AyahSemanticSearchResult> {
   // Determine collection based on override or enriched flag
-  const baseCollection = quranCollectionOverride || (useEnriched ? QDRANT_QURAN_ENRICHED_COLLECTION : QDRANT_QURAN_COLLECTION);
+  const baseCollection = quranCollectionOverride || (useEnriched ? QDRANT_QURAN_COLLECTION : QDRANT_QURAN_COLLECTION);
   const fallbackCollection = QDRANT_QURAN_COLLECTION;
 
   // Default metadata for early returns
@@ -2248,7 +2247,7 @@ async function searchAyahsSemantic(
     const meta: AyahSearchMeta = {
       collection,
       usedFallback,
-      embeddingTechnique: collection === QDRANT_QURAN_ENRICHED_COLLECTION ? "metadata-translation" : undefined,
+      embeddingTechnique: collection === QDRANT_QURAN_COLLECTION ? "metadata-translation" : undefined,
     };
 
     const results = searchResults.map((result, index) => {
@@ -2302,7 +2301,7 @@ async function searchAyahsHybrid(
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
 
-  const collectionToUse = quranCollection || QDRANT_QURAN_ENRICHED_COLLECTION;
+  const collectionToUse = quranCollection || QDRANT_QURAN_COLLECTION;
   const defaultMeta: AyahSearchMeta = { collection: collectionToUse, usedFallback: false, embeddingTechnique: "metadata-translation" };
   const [semanticSearchResult, keywordResults] = await Promise.all([
     searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
@@ -2594,7 +2593,7 @@ export async function GET(request: NextRequest) {
 
   // Get collections based on embedding model
   const pageCollection = embeddingModel === "bge-m3" ? QDRANT_COLLECTION_BGE : QDRANT_COLLECTION;
-  const quranCollection = embeddingModel === "bge-m3" ? QDRANT_QURAN_ENRICHED_COLLECTION_BGE : QDRANT_QURAN_ENRICHED_COLLECTION;
+  const quranCollection = embeddingModel === "bge-m3" ? QDRANT_QURAN_COLLECTION_BGE : QDRANT_QURAN_COLLECTION;
   const hadithCollection = embeddingModel === "bge-m3" ? QDRANT_HADITH_COLLECTION_BGE : QDRANT_HADITH_COLLECTION;
   const embeddingDimensions = embeddingModel === "bge-m3" ? BGE_DIMENSIONS : GEMINI_DIMENSIONS;
 
@@ -2633,7 +2632,7 @@ export async function GET(request: NextRequest) {
 
     // Track Quran collection metadata for debug stats
     let ayahSearchMeta: AyahSearchMeta = {
-      collection: QDRANT_QURAN_ENRICHED_COLLECTION,
+      collection: QDRANT_QURAN_COLLECTION,
       usedFallback: false,
       embeddingTechnique: "metadata-translation",
     };
