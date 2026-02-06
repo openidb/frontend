@@ -35,6 +35,7 @@ interface TopResultBreakdown {
   keywordScore: number | null; // BM25 score from Elasticsearch
   semanticScore: number | null;
   finalScore: number;
+  matchType: 'semantic' | 'keyword' | 'both'; // How this result was matched
 }
 
 interface ExpandedQueryStats {
@@ -73,7 +74,7 @@ interface DebugStats {
     // Quran embedding collection info
     quranCollection: string;
     quranCollectionFallback: boolean;
-    tafsirSource?: string;
+    embeddingTechnique?: string;
   };
   topResultsBreakdown: TopResultBreakdown[];
   refineStats?: {
@@ -693,16 +694,14 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                 )}
                 {debugStats.algorithm.quranCollection && (
                   <div className="flex items-center gap-1 flex-wrap">
-                    <span className="text-muted-foreground">Quran Embeddings:</span>{" "}
-                    {debugStats.algorithm.quranCollection.includes("enriched") ? (
+                    <span className="text-muted-foreground">Embeddings:</span>{" "}
+                    {debugStats.algorithm.embeddingTechnique === "metadata-translation" ? (
                       <>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-600">tafsir-enriched</span>
-                        {debugStats.algorithm.tafsirSource && (
-                          <span className="text-muted-foreground">(via {debugStats.algorithm.tafsirSource === "jalalayn" ? "Al-Jalalayn tafsir" : debugStats.algorithm.tafsirSource})</span>
-                        )}
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-600">metadata + translation</span>
+                        <span className="text-muted-foreground">(metadata-prefixed Arabic with English translation)</span>
                       </>
                     ) : (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-600">original ayah text</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-600">original text</span>
                     )}
                     {debugStats.algorithm.quranCollectionFallback && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-600">fallback</span>
@@ -730,10 +729,27 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                         r.type === 'hadith' ? 'bg-blue-500/20 text-blue-600' :
                         'bg-orange-500/20 text-orange-600'
                       }`}>{r.type}</span>
+                      {/* Match type badge */}
+                      <span className={`px-1 rounded text-[10px] ${
+                        r.matchType === 'both' ? 'bg-purple-500/20 text-purple-600' :
+                        r.matchType === 'semantic' ? 'bg-cyan-500/20 text-cyan-600' :
+                        'bg-yellow-500/20 text-yellow-600'
+                      }`}>
+                        {r.matchType === 'both' ? 'sem+kw' : r.matchType === 'semantic' ? 'sem' : 'kw'}
+                      </span>
                       <span className="truncate max-w-[150px]" dir="auto" title={r.title}>{r.title}</span>
-                      <span className="text-muted-foreground ml-auto">
-                        kw={r.keywordScore?.toFixed(2) ?? 'N/A'} |
-                        sem={r.semanticScore?.toFixed(3) ?? 'N/A'} |
+                      {/* Show scores with weights applied */}
+                      <span className="text-muted-foreground ml-auto text-[10px]">
+                        {r.matchType === 'both' ? (
+                          <>
+                            kw={r.keywordScore?.toFixed(2)}×0.3 |
+                            sem={r.semanticScore?.toFixed(3)}×0.8 |
+                          </>
+                        ) : r.matchType === 'semantic' ? (
+                          <>sem={r.semanticScore?.toFixed(3)}×1.0 |</>
+                        ) : (
+                          <>kw={r.keywordScore?.toFixed(2)}×1.0 |</>
+                        )}
                         final=<span className="text-foreground">{r.finalScore.toFixed(3)}</span>
                       </span>
                     </div>

@@ -172,7 +172,7 @@ interface AyahRankedResult extends AyahResult {
 interface AyahSearchMeta {
   collection: string;
   usedFallback: boolean;
-  tafsirSource?: string;
+  embeddingTechnique?: string;
 }
 
 /**
@@ -194,6 +194,7 @@ interface TopResultBreakdown {
   keywordScore: number | null; // BM25 score from Elasticsearch
   semanticScore: number | null;
   finalScore: number;
+  matchType: 'semantic' | 'keyword' | 'both'; // How this result was matched
 }
 
 interface ExpandedQueryStats {
@@ -232,7 +233,7 @@ interface SearchDebugStats {
     // Quran embedding collection info
     quranCollection: string;
     quranCollectionFallback: boolean;
-    tafsirSource?: string;
+    embeddingTechnique?: string;
   };
   // Top results breakdown
   topResultsBreakdown: TopResultBreakdown[];
@@ -2173,7 +2174,7 @@ async function searchAyahsSemantic(
   const defaultMeta: AyahSearchMeta = {
     collection: baseCollection,
     usedFallback: false,
-    tafsirSource: useEnriched && !quranCollectionOverride ? "jalalayn" : undefined,
+    embeddingTechnique: useEnriched && !quranCollectionOverride ? "metadata-translation" : undefined,
   };
 
   try {
@@ -2247,7 +2248,7 @@ async function searchAyahsSemantic(
     const meta: AyahSearchMeta = {
       collection,
       usedFallback,
-      tafsirSource: collection === QDRANT_QURAN_ENRICHED_COLLECTION ? "jalalayn" : undefined,
+      embeddingTechnique: collection === QDRANT_QURAN_ENRICHED_COLLECTION ? "metadata-translation" : undefined,
     };
 
     const results = searchResults.map((result, index) => {
@@ -2260,7 +2261,7 @@ async function searchAyahsSemantic(
         textPlain: string;
         juzNumber: number;
         pageNumber: number;
-        tafsirSource?: string; // Present in enriched collection
+        embeddingTechnique?: string; // Present in enriched collection
       };
 
       return {
@@ -2302,7 +2303,7 @@ async function searchAyahsHybrid(
   const fetchLimit = Math.min(preRerankLimit, 100);
 
   const collectionToUse = quranCollection || QDRANT_QURAN_ENRICHED_COLLECTION;
-  const defaultMeta: AyahSearchMeta = { collection: collectionToUse, usedFallback: false, tafsirSource: "jalalayn" };
+  const defaultMeta: AyahSearchMeta = { collection: collectionToUse, usedFallback: false, embeddingTechnique: "metadata-translation" };
   const [semanticSearchResult, keywordResults] = await Promise.all([
     searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
     keywordSearchAyahsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
@@ -2634,7 +2635,7 @@ export async function GET(request: NextRequest) {
     let ayahSearchMeta: AyahSearchMeta = {
       collection: QDRANT_QURAN_ENRICHED_COLLECTION,
       usedFallback: false,
-      tafsirSource: "jalalayn",
+      embeddingTechnique: "metadata-translation",
     };
 
     // Track stats for debug panel
@@ -2817,7 +2818,7 @@ export async function GET(request: NextRequest) {
 
         if (shouldSkipKeyword) {
           // Semantic-only search for non-Arabic queries
-          const defaultMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, tafsirSource: "jalalayn" };
+          const defaultMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, embeddingTechnique: "metadata-translation" };
           ayahResults = includeQuran
             ? (await searchAyahsSemantic(q, refineAyahPerQuery, refineSimilarityCutoff, qEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [], meta: defaultMeta }))).results
             : [];
@@ -2984,7 +2985,7 @@ export async function GET(request: NextRequest) {
             .catch(() => [] as RankedResult[]);
 
       const _semAyahsStart = Date.now();
-      const defaultAyahMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, tafsirSource: "jalalayn" };
+      const defaultAyahMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, embeddingTechnique: "metadata-translation" };
       const semanticAyahsPromise = (mode === "keyword" || bookId || !includeQuran)
         ? Promise.resolve({ results: [] as AyahRankedResult[], meta: defaultAyahMeta })
         : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, true, quranCollection, embeddingModel)
@@ -3103,18 +3104,51 @@ export async function GET(request: NextRequest) {
     // Merge direct ayah results (they have score: 1.0, should rank first)
     if (directAyahs.length > 0) {
       const directKeys = new Set(directAyahs.map(a => `${a.surahNumber}-${a.ayahNumber}`));
+      // Build map of existing results to preserve their search scores
+      const existingAyahMap = new Map(ayahsRaw.map(a => [`${a.surahNumber}-${a.ayahNumber}`, a as AyahRankedResult]));
+      // Merge direct results with existing search scores preserved
+      const mergedDirectAyahs = directAyahs.map(direct => {
+        const existing = existingAyahMap.get(`${direct.surahNumber}-${direct.ayahNumber}`);
+        if (existing) {
+          // Preserve actual search scores from hybrid results
+          return {
+            ...direct,
+            score: direct.score, // Keep score=1 for ranking
+            semanticScore: existing.semanticScore ?? direct.semanticScore,
+            bm25Score: existing.bm25Score,
+            fusedScore: (existing as any).fusedScore,
+          } as AyahResult & { bm25Score?: number; fusedScore?: number };
+        }
+        return direct;
+      });
       // Remove duplicates from hybrid search, then prepend direct results
       const filteredAyahs = ayahsRaw.filter(a => !directKeys.has(`${a.surahNumber}-${a.ayahNumber}`));
-      ayahsRaw = [...directAyahs, ...filteredAyahs];
+      ayahsRaw = [...mergedDirectAyahs, ...filteredAyahs];
       console.log(`[Direct] Merged ${directAyahs.length} direct ayah(s) into results`);
     }
 
     // Merge direct surah ayahs (full surah results from surah name lookup)
     if (directSurahAyahs.length > 0) {
       const surahKeys = new Set(directSurahAyahs.map(a => `${a.surahNumber}-${a.ayahNumber}`));
+      // Build map of existing results to preserve their search scores
+      const existingAyahMap = new Map(ayahsRaw.map(a => [`${a.surahNumber}-${a.ayahNumber}`, a as AyahRankedResult]));
+      // Merge surah results with existing search scores preserved
+      const mergedSurahAyahs = directSurahAyahs.map(direct => {
+        const existing = existingAyahMap.get(`${direct.surahNumber}-${direct.ayahNumber}`);
+        if (existing) {
+          return {
+            ...direct,
+            score: direct.score,
+            semanticScore: existing.semanticScore ?? direct.semanticScore,
+            bm25Score: existing.bm25Score,
+            fusedScore: (existing as any).fusedScore,
+          } as AyahResult & { bm25Score?: number; fusedScore?: number };
+        }
+        return direct;
+      });
       // Remove duplicates from existing results, then prepend surah ayahs
       const filteredAyahs = ayahsRaw.filter(a => !surahKeys.has(`${a.surahNumber}-${a.ayahNumber}`));
-      ayahsRaw = [...directSurahAyahs, ...filteredAyahs];
+      ayahsRaw = [...mergedSurahAyahs, ...filteredAyahs];
       console.log(`[Direct] Merged ${directSurahAyahs.length} surah ayah(s) into results`);
     }
 
@@ -3419,6 +3453,10 @@ export async function GET(request: NextRequest) {
         if (item.type === 'book') {
           const r = item.data as SearchResult;
           const ranked = item.rankedData as RankedResult & { fusedScore?: number };
+          const hasSemantic = ranked?.semanticScore != null;
+          const hasKeyword = ranked?.bm25Score != null;
+          const matchType: 'semantic' | 'keyword' | 'both' =
+            hasSemantic && hasKeyword ? 'both' : hasSemantic ? 'semantic' : 'keyword';
           return {
             rank,
             type: 'book' as const,
@@ -3426,10 +3464,15 @@ export async function GET(request: NextRequest) {
             keywordScore: ranked?.bm25Score ?? null, // ES BM25 score
             semanticScore: ranked?.semanticScore ?? null,
             finalScore: r.score,
+            matchType,
           };
         } else if (item.type === 'quran') {
           const a = item.data as AyahResult;
           const ranked = item.rankedData as AyahRankedResult;
+          const hasSemantic = a.semanticScore != null;
+          const hasKeyword = ranked?.bm25Score != null;
+          const matchType: 'semantic' | 'keyword' | 'both' =
+            hasSemantic && hasKeyword ? 'both' : hasSemantic ? 'semantic' : 'keyword';
           return {
             rank,
             type: 'quran' as const,
@@ -3437,10 +3480,15 @@ export async function GET(request: NextRequest) {
             keywordScore: ranked?.bm25Score ?? null, // ES BM25 score
             semanticScore: a.semanticScore ?? null,
             finalScore: a.score,
+            matchType,
           };
         } else {
           const h = item.data as HadithResult;
           const ranked = item.rankedData as HadithRankedResult;
+          const hasSemantic = h.semanticScore != null;
+          const hasKeyword = ranked?.bm25Score != null;
+          const matchType: 'semantic' | 'keyword' | 'both' =
+            hasSemantic && hasKeyword ? 'both' : hasSemantic ? 'semantic' : 'keyword';
           return {
             rank,
             type: 'hadith' as const,
@@ -3448,6 +3496,7 @@ export async function GET(request: NextRequest) {
             keywordScore: ranked?.bm25Score ?? null, // ES BM25 score
             semanticScore: h.semanticScore ?? null,
             finalScore: h.score,
+            matchType,
           };
         }
       });
@@ -3476,7 +3525,7 @@ export async function GET(request: NextRequest) {
         // Quran embedding collection info
         quranCollection: ayahSearchMeta.collection,
         quranCollectionFallback: ayahSearchMeta.usedFallback,
-        tafsirSource: ayahSearchMeta.tafsirSource,
+        embeddingTechnique: ayahSearchMeta.embeddingTechnique,
       },
       topResultsBreakdown: top5Breakdown,
       ...(refine && refineQueryStats.length > 0 && {
