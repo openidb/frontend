@@ -42,7 +42,6 @@
     "fusion": "Fusion",
     "keyword": "Mots-cles",
     "embedding": "Embedding",
-    "surahMatch": "Sourate",
     "ayahs": "versets"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "Supprimer les diacritiques (tashkeel)",
     "normalizeAlef": "Normaliser les variantes alef: أ إ آ ٱ → ا",
     "normalizeTeh": "Normaliser teh marbuta: ة → ه",
-    "famousSources": "Dictionnaire des sources celebres",
-    "famousSourcesDesc": "Avant la recherche standard, les requetes sont comparees a un dictionnaire de versets, sourates et hadiths celebres pour des resultats directs instantanes.",
-    "famousVerses": "Versets celebres",
-    "famousVersesExample1": "آية الكرسي → Ayat al-Kursi (2:255)",
-    "famousVersesExample2": "ayat al-nur, verset du trone, verset de lumiere...",
-    "surahLookup": "Recherche de sourate (114 sourates)",
-    "surahLookupDesc": "Correspond aux noms de sourates en arabe, translitteration ou anglais avec correspondance floue pour les fautes",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → Lien direct vers quran.com",
-    "famousHadiths": "Hadiths celebres",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → Bukhari #1",
-    "famousHadithsExample2": "hadith jibreel, les actions par intentions...",
-    "directMatchScore": "Score de correspondance directe",
-    "directMatchScoreDesc": "Les correspondances du dictionnaire sont retournees avec un score parfait (1.0) et apparaissent en premier.",
     "step2Keyword": "Etape 2: Recherche par mots-cles (PostgreSQL FTS + BM25)",
     "keywordDesc": "Deux signaux combines: ts_rank (recherche texte integral PostgreSQL) pour la correspondance de phrases, et BM25 pour l'importance des termes ponderee par IDF.",
     "idfFormula": "IDF (Frequence inverse du document)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "Activer le repli",
-      "enableFallbackInfo": "Active la correspondance approximative si la recherche semantique renvoie peu de resultats.",
-      "threshold": "Seuil",
-      "thresholdInfo": "Precision de la correspondance. Des valeurs plus basses permettent plus de variation."
+      "enableFallbackInfo": "Active la correspondance approximative si la recherche semantique renvoie peu de resultats."
     },
     "embedding": {
       "model": "Modele d'embedding",

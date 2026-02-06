@@ -7,6 +7,7 @@
  * Usage: bun run scripts/sync-elasticsearch.ts
  */
 
+import "dotenv/config";
 import { prisma } from "../lib/db";
 import {
   elasticsearch,
@@ -43,6 +44,12 @@ async function syncPages() {
         volumeNumber: true,
         contentPlain: true,
         urlPageIndex: true,
+        book: {
+          select: {
+            titleArabic: true,
+            author: { select: { nameArabic: true } },
+          },
+        },
       },
     });
 
@@ -51,6 +58,9 @@ async function syncPages() {
     const bulkBody: BulkBody = [];
 
     for (const page of pages) {
+      // Build text_searchable: metadata + content_plain for BM25 keyword search
+      const textSearchable = `${page.book.titleArabic} ${page.book.author.nameArabic} ${page.contentPlain}`;
+
       bulkBody.push({
         index: {
           _index: ES_PAGES_INDEX,
@@ -61,7 +71,8 @@ async function syncPages() {
         book_id: page.bookId,
         page_number: page.pageNumber,
         volume_number: page.volumeNumber,
-        content_plain: page.contentPlain,
+        content_plain: page.contentPlain, // Stored for display, not indexed
+        text_searchable: textSearchable,
         url_page_index: page.urlPageIndex,
       });
     }
@@ -136,6 +147,12 @@ async function syncHadiths() {
     const bulkBody: BulkBody = [];
 
     for (const hadith of hadiths) {
+      // Build text_searchable: metadata + text_plain for BM25 keyword search
+      const searchableParts = [hadith.book.collection.nameArabic];
+      if (hadith.chapterArabic) searchableParts.push(hadith.chapterArabic);
+      searchableParts.push(hadith.textPlain);
+      const textSearchable = searchableParts.join(" ");
+
       bulkBody.push({
         index: {
           _index: ES_HADITHS_INDEX,
@@ -148,6 +165,7 @@ async function syncHadiths() {
         hadith_number: hadith.hadithNumber,
         text_arabic: hadith.textArabic,
         text_plain: hadith.textPlain,
+        text_searchable: textSearchable,
         chapter_arabic: hadith.chapterArabic,
         chapter_english: hadith.chapterEnglish,
         is_chain_variation: hadith.isChainVariation,
@@ -222,6 +240,9 @@ async function syncAyahs() {
     const bulkBody: BulkBody = [];
 
     for (const ayah of ayahs) {
+      // Build text_searchable: metadata + text_plain for BM25 keyword search
+      const textSearchable = `سورة ${ayah.surah.nameArabic} آية ${ayah.ayahNumber} ${ayah.textPlain}`;
+
       bulkBody.push({
         index: {
           _index: ES_AYAHS_INDEX,
@@ -233,6 +254,7 @@ async function syncAyahs() {
         ayah_number: ayah.ayahNumber,
         text_uthmani: ayah.textUthmani,
         text_plain: ayah.textPlain,
+        text_searchable: textSearchable,
         juz_number: ayah.juzNumber,
         page_number: ayah.pageNumber,
         surah_id: ayah.surahId,

@@ -27,9 +27,9 @@ import "dotenv/config";
 import { prisma } from "../lib/db";
 import {
   qdrant,
-  PAGES_COLLECTION,
+  PAGES_COLLECTION as PAGES_COLLECTION_GEMINI,
   QDRANT_QURAN_COLLECTION,
-  HADITHS_COLLECTION,
+  HADITHS_COLLECTION as HADITHS_COLLECTION_GEMINI,
   PAGES_COLLECTION_BGE,
   HADITHS_COLLECTION_BGE,
   GEMINI_DIMENSIONS,
@@ -75,8 +75,8 @@ const embeddingModel: EmbeddingModel = modelArg?.split("=")[1] === "bge-m3" ? "b
 const EMBEDDING_DIMENSIONS = embeddingModel === "bge-m3" ? BGE_DIMENSIONS : GEMINI_DIMENSIONS;
 
 // Determine collections based on model
-const PAGES_COLLECTION = embeddingModel === "bge-m3" ? PAGES_COLLECTION_BGE : PAGES_COLLECTION;
-const HADITHS_COLLECTION = embeddingModel === "bge-m3" ? HADITHS_COLLECTION_BGE : HADITHS_COLLECTION;
+const PAGES_COLLECTION = embeddingModel === "bge-m3" ? PAGES_COLLECTION_BGE : PAGES_COLLECTION_GEMINI;
+const HADITHS_COLLECTION = embeddingModel === "bge-m3" ? HADITHS_COLLECTION_BGE : HADITHS_COLLECTION_GEMINI;
 
 console.log(`Using embedding model: ${embeddingModel} (${EMBEDDING_DIMENSIONS} dimensions)`);
 console.log(`Pages collection: ${PAGES_COLLECTION}`);
@@ -103,7 +103,9 @@ function generateAyahPointId(surahNumber: number, ayahNumber: number): string {
 }
 
 /**
- * Generate a deterministic point ID for hadiths
+ * Generate a deterministic point ID for hadiths.
+ * Uses collection slug + hadith number to deduplicate narration variations
+ * (different chains for the same hadith).
  */
 function generateHadithPointId(collectionSlug: string, hadithNumber: string): string {
   const input = `hadith_${collectionSlug}_${hadithNumber}`;
@@ -212,10 +214,11 @@ async function processBatch(
     };
   }>
 ): Promise<number> {
-  // Prepare texts for embedding
+  // Prepare texts for embedding with metadata prefix (book title, author)
   const texts = pages.map((page) => {
+    const metadata = `${page.book.titleArabic}، ${page.book.author.nameArabic}:`;
     const normalized = normalizeArabicText(page.contentPlain);
-    return truncateForEmbedding(normalized);
+    return truncateForEmbedding(`${metadata}\n${normalized}`);
   });
 
   // Generate embeddings in batch
@@ -233,6 +236,7 @@ async function processBatch(
       bookTitle: page.book.titleArabic,
       authorName: page.book.author.nameArabic,
       textSnippet: page.contentPlain.slice(0, 200),
+      embeddingTechnique: "metadata",
     },
   }));
 
@@ -574,22 +578,42 @@ async function getExistingHadithPointIds(): Promise<Set<string>> {
 }
 
 /**
- * Get text for embedding with collection-specific enrichment.
+ * Get text for embedding with metadata prefix and optional translation.
  *
- * For Hisn al-Muslim: combines chapter title + text because the dua texts
- * are very short (15-45 chars) and need chapter context for semantic search.
- * Example: "الدعاء إذا تعس المركوب، بِسْـمِ اللهِ"
+ * Format:
+ *   ${collectionNameArabic}، ${chapterArabic}:
+ *   ${normalizedArabicText}
+ *    ||| ${englishTranslation}          (only if available)
+ *
+ * For Hisn al-Muslim: also includes chapter in display text.
  */
 function getHadithTextForEmbedding(
+  collectionNameArabic: string,
   slug: string,
   textPlain: string,
-  chapterArabic: string | null
+  chapterArabic: string | null,
+  translationText: string | null
 ): string {
-  // Hisn al-Muslim: combine chapter title + text for better semantic search
-  if (slug === "hisn" && chapterArabic) {
-    return `${chapterArabic}، ${textPlain}`;
+  // Build metadata prefix
+  const metadataParts = [collectionNameArabic];
+  if (chapterArabic) {
+    metadataParts.push(chapterArabic);
   }
-  return textPlain;
+  const metadata = `${metadataParts.join("، ")}:`;
+
+  // For Hisn al-Muslim: also prepend chapter to Arabic text (short duas need context)
+  const arabicText = slug === "hisn" && chapterArabic
+    ? `${chapterArabic}، ${textPlain}`
+    : textPlain;
+
+  const normalized = normalizeArabicText(arabicText);
+  const parts = [metadata, normalized];
+
+  if (translationText) {
+    parts.push(` ||| ${translationText}`);
+  }
+
+  return parts.join("\n");
 }
 
 /**
@@ -603,6 +627,7 @@ async function processHadithBatch(
     textPlain: string;
     chapterArabic: string | null;
     chapterEnglish: string | null;
+    translationText: string | null;
     book: {
       bookNumber: number;
       nameArabic: string;
@@ -615,15 +640,16 @@ async function processHadithBatch(
     };
   }>
 ): Promise<number> {
-  // Prepare texts for embedding with collection-specific enrichment
+  // Prepare texts for embedding with metadata + Arabic + translation
   const texts = hadiths.map((hadith) => {
     const text = getHadithTextForEmbedding(
+      hadith.book.collection.nameArabic,
       hadith.book.collection.slug,
       hadith.textPlain,
-      hadith.chapterArabic
+      hadith.chapterArabic,
+      hadith.translationText
     );
-    const normalized = normalizeArabicText(text);
-    return truncateForEmbedding(normalized);
+    return truncateForEmbedding(text);
   });
 
   // Generate embeddings in batch
@@ -654,6 +680,7 @@ async function processHadithBatch(
         chapterArabic: hadith.chapterArabic,
         chapterEnglish: hadith.chapterEnglish,
         sunnahComUrl: generateSunnahComUrl(slug, hadith.hadithNumber, hadith.book.bookNumber),
+        embeddingTechnique: "metadata-translation",
       },
     };
   });
@@ -700,9 +727,23 @@ async function generateHadithEmbeddings(): Promise<void> {
     return;
   }
 
+  // Pre-fetch all English translations for hadiths into a map (keyed by bookId:hadithNumber)
+  console.log("Loading English translations for hadiths...");
+  const allTranslations = await prisma.hadithTranslation.findMany({
+    where: { language: "en" },
+    select: { bookId: true, hadithNumber: true, text: true },
+  });
+  const translationMap = new Map<string, string>();
+  for (const t of allTranslations) {
+    translationMap.set(`${t.bookId}:${t.hadithNumber}`, t.text);
+  }
+  console.log(`Loaded ${translationMap.size} English hadith translations\n`);
+
   let processed = 0;
   let skipped = 0;
   let failed = 0;
+  let withTranslation = 0;
+  let withoutTranslation = 0;
   let offset = 0;
 
   while (offset < totalHadiths) {
@@ -714,6 +755,7 @@ async function generateHadithEmbeddings(): Promise<void> {
       orderBy: [{ bookId: "asc" }, { hadithNumber: "asc" }],
       select: {
         id: true,
+        bookId: true,
         hadithNumber: true,
         textArabic: true,
         textPlain: true,
@@ -738,8 +780,16 @@ async function generateHadithEmbeddings(): Promise<void> {
 
     if (hadiths.length === 0) break;
 
+    // Attach translations to hadiths
+    const hadithsWithTranslations = hadiths.map((hadith) => {
+      const translation = translationMap.get(`${hadith.bookId}:${hadith.hadithNumber}`) || null;
+      if (translation) withTranslation++;
+      else withoutTranslation++;
+      return { ...hadith, translationText: translation };
+    });
+
     // Filter out already processed hadiths
-    const hadithsToProcess = hadiths.filter((hadith) => {
+    const hadithsToProcess = hadithsWithTranslations.filter((hadith) => {
       const pointId = generateHadithPointId(hadith.book.collection.slug, hadith.hadithNumber);
       if (existingIds.has(pointId)) {
         skipped++;
@@ -770,9 +820,11 @@ async function generateHadithEmbeddings(): Promise<void> {
   console.log("\n" + "=".repeat(60));
   console.log("HADITH EMBEDDING SUMMARY");
   console.log("=".repeat(60));
-  console.log(`Processed: ${processed}`);
-  console.log(`Skipped:   ${skipped}`);
-  console.log(`Failed:    ${failed}`);
+  console.log(`Processed:           ${processed}`);
+  console.log(`Skipped:             ${skipped}`);
+  console.log(`With translation:    ${withTranslation}`);
+  console.log(`Without translation: ${withoutTranslation}`);
+  console.log(`Failed:              ${failed}`);
   console.log("=".repeat(60));
 
   // Verify collection

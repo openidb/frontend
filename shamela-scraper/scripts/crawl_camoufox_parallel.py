@@ -35,9 +35,9 @@ class ParallelCamoufoxCrawler:
         self.delay = delay
         self.base_url = "https://shamela.ws"
 
-        # Setup directories
+        # Setup directories - save directly to external drive
         self.project_root = Path(__file__).parent.parent
-        self.raw_dir = self.project_root / 'data' / 'shamela' / 'raw'
+        self.raw_dir = Path('/Volumes/KIOXIA/shamela-backup')
         self.books_dir = self.raw_dir / 'books'
         self.discovery_dir = self.project_root / 'data' / 'shamela' / 'discovery'
 

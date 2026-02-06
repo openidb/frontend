@@ -100,18 +100,11 @@ interface DebugStats {
     semantic: { books: number; ayahs: number; hadiths: number };
     keyword: { books: number; ayahs: number; hadiths: number };
     merge: number;
-    directLookup: number;
     authorSearch: number;
     rerank?: number;
     translations: number;
     bookMetadata: number;
   };
-}
-
-interface SurahMatch {
-  surahNumber: number;
-  url: string;
-  totalAyahs: number;
 }
 
 interface SearchResponse {
@@ -122,7 +115,6 @@ interface SearchResponse {
   authors: AuthorResultData[];
   ayahs: AyahResultData[];
   hadiths: HadithResultData[];
-  surah?: SurahMatch;
   refined?: boolean;
   expandedQueries?: ExpandedQueryData[];
   debugStats?: DebugStats;
@@ -149,9 +141,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const [debugStats, setDebugStats] = useState<DebugStats | null>(null);
   const [showDebugStats, setShowDebugStats] = useState(false);
   const [showAlgorithm, setShowAlgorithm] = useState(false);
-  const [surahMatch, setSurahMatch] = useState<SurahMatch | null>(null);
   const restoredQueryRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize query and restore cached results on mount only
   const initializedRef = useRef(false);
@@ -232,7 +224,6 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         preRerankLimit: String(config.preRerankLimit),
         postRerankLimit: String(config.postRerankLimit),
         fuzzy: String(config.fuzzyEnabled),
-        fuzzyThreshold: String(config.fuzzyThreshold),
         embeddingModel: config.embeddingModel || "gemini",
         quranTranslation: config.autoTranslation
           ? (locale === "ar" ? "en" : locale)
@@ -303,7 +294,6 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setIsRefined(data.refined || false);
       setExpandedQueries(data.expandedQueries || []);
       setDebugStats(data.debugStats || null);
-      setSurahMatch(data.surah || null);
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
@@ -328,7 +318,6 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setAuthors([]);
       setExpandedQueries([]);
       setDebugStats(null);
-      setSurahMatch(null);
     } finally {
       // Only update loading states if this request wasn't aborted
       if (!controller.signal.aborted) {
@@ -369,19 +358,27 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     }
   }, [query, fetchResults, setSearchConfig]);
 
-  // Handle input change - trigger quick search directly
+  // Handle input change - trigger quick search with debounce
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
     setIsRefined(false); // Reset refined state when typing
     setExpandedQueries([]); // Clear expanded queries when typing
+
+    // Clear existing debounce timeout
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
     if (newQuery.length >= 2) {
-      triggerSearch(newQuery, searchConfig);
+      // Debounce search by 300ms
+      debounceRef.current = setTimeout(() => {
+        triggerSearch(newQuery, searchConfig);
+      }, 300);
     } else if (newQuery.length === 0) {
       setUnifiedResults([]);
       setAuthors([]);
       setExpandedQueries([]);
-      setSurahMatch(null);
       window.history.replaceState({}, "", "/search");
     }
   }, [triggerSearch, searchConfig]);
@@ -410,6 +407,15 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     }
   }, [searchParams, hasSearched, fetchResults, searchConfig]);
 
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
   // Clear search
   const handleClear = () => {
     setQuery("");
@@ -419,7 +425,6 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     setIsRefined(false);
     setDebugStats(null);
     setShowDebugStats(false);
-    setSurahMatch(null);
     window.history.replaceState({}, "", "/search");
   };
 
@@ -640,7 +645,6 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                   <div><span className="text-muted-foreground">Merge:</span> <span className="font-mono">{debugStats.timing.merge}ms</span></div>
-                  <div><span className="text-muted-foreground">Direct Lookup:</span> <span className="font-mono">{debugStats.timing.directLookup}ms</span></div>
                   <div><span className="text-muted-foreground">Author Search:</span> <span className="font-mono">{debugStats.timing.authorSearch}ms</span></div>
                   {debugStats.timing.rerank !== undefined && (
                     <div><span className="text-muted-foreground">Rerank:</span> <span className="font-mono">{debugStats.timing.rerank}ms</span></div>

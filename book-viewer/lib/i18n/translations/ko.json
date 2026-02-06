@@ -42,7 +42,6 @@
     "fusion": "융합",
     "keyword": "키워드",
     "embedding": "임베딩",
-    "surahMatch": "수라",
     "ayahs": "아야"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "발음 부호(타시킬) 제거",
     "normalizeAlef": "알레프 변형 정규화: أ إ آ ٱ → ا",
     "normalizeTeh": "타 마르부타 정규화: ة → ه",
-    "famousSources": "유명 출처 사전",
-    "famousSourcesDesc": "표준 검색 전에 쿼리가 유명한 구절, 수라, 하디스 사전과 대조되어 즉각적인 직접 결과를 제공합니다.",
-    "famousVerses": "유명한 구절",
-    "famousVersesExample1": "آية الكرسي → 아야트 알쿠르시 (2:255)",
-    "famousVersesExample2": "ayat al-nur, 왕좌의 구절, 빛의 구절...",
-    "surahLookup": "수라 검색 (전체 114장)",
-    "surahLookupDesc": "아랍어, 음역 또는 영어로 수라 이름을 오타에 대한 퍼지 매칭으로 매칭",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → quran.com 직접 링크",
-    "famousHadiths": "유명한 하디스",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → 부하리 #1",
-    "famousHadithsExample2": "지브릴 하디스, 의도에 따른 행위...",
-    "directMatchScore": "직접 매치 점수",
-    "directMatchScoreDesc": "사전 매치는 완벽한 점수(1.0)로 반환되어 결과에서 먼저 나타납니다.",
     "step2Keyword": "단계 2: 키워드 검색 (PostgreSQL FTS + BM25)",
     "keywordDesc": "두 신호 결합: ts_rank(PostgreSQL 전문 검색)으로 구문 매칭, BM25로 IDF 가중 용어 중요도.",
     "idfFormula": "IDF (역문서 빈도)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "폴백 활성화",
-      "enableFallbackInfo": "시맨틱 검색 결과가 적을 경우 퍼지 매칭을 활성화합니다.",
-      "threshold": "임계값",
-      "thresholdInfo": "텍스트 일치 정확도. 낮은 값은 더 많은 변형을 허용합니다."
+      "enableFallbackInfo": "시맨틱 검색 결과가 적을 경우 퍼지 매칭을 활성화합니다."
     },
     "embedding": {
       "model": "임베딩 모델",

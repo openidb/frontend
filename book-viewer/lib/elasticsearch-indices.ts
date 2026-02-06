@@ -153,7 +153,8 @@ export const pagesIndexConfig: IndicesCreateRequest = {
       book_id: { type: "keyword" },
       page_number: { type: "integer" },
       volume_number: { type: "integer" },
-      content_plain: {
+      content_plain: { type: "text", index: false }, // Stored for display, not searchable
+      text_searchable: {
         type: "text",
         analyzer: "arabic_normalized",
         search_analyzer: "arabic_normalized",
@@ -187,7 +188,8 @@ export const hadithsIndexConfig: IndicesCreateRequest = {
       book_id: { type: "integer" },
       hadith_number: { type: "keyword" },
       text_arabic: { type: "text", index: false }, // Stored but not searchable (original with diacritics)
-      text_plain: {
+      text_plain: { type: "text", index: false }, // Stored for display, not searchable (redundant with text_searchable)
+      text_searchable: {
         type: "text",
         analyzer: "arabic_normalized",
         search_analyzer: "arabic_normalized",
@@ -228,7 +230,8 @@ export const ayahsIndexConfig: IndicesCreateRequest = {
       id: { type: "integer" },
       ayah_number: { type: "integer" },
       text_uthmani: { type: "text", index: false }, // Stored but not searchable (with diacritics)
-      text_plain: {
+      text_plain: { type: "text", index: false }, // Stored for display, not searchable (redundant with text_searchable)
+      text_searchable: {
         type: "text",
         analyzer: "arabic_normalized",
         search_analyzer: "arabic_normalized",

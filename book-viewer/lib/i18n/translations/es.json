@@ -42,7 +42,6 @@
     "fusion": "Fusion",
     "keyword": "Palabras clave",
     "embedding": "Embedding",
-    "surahMatch": "Sura",
     "ayahs": "aleyas"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "Eliminar diacriticos (tashkeel)",
     "normalizeAlef": "Normalizar variantes de alef: أ إ آ ٱ → ا",
     "normalizeTeh": "Normalizar teh marbuta: ة → ه",
-    "famousSources": "Diccionario de fuentes famosas",
-    "famousSourcesDesc": "Antes de la busqueda estandar, las consultas se comparan con un diccionario de versos, suras y hadices famosos para resultados directos instantaneos.",
-    "famousVerses": "Versos famosos",
-    "famousVersesExample1": "آية الكرسي → Ayat al-Kursi (2:255)",
-    "famousVersesExample2": "ayat al-nur, verso del trono, verso de la luz...",
-    "surahLookup": "Busqueda de sura (114 suras)",
-    "surahLookupDesc": "Coincide nombres de suras en arabe, transliteracion o ingles con coincidencia difusa para errores tipograficos",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → Enlace directo a quran.com",
-    "famousHadiths": "Hadices famosos",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → Bukhari #1",
-    "famousHadithsExample2": "hadith jibreel, acciones por intenciones...",
-    "directMatchScore": "Puntuacion de coincidencia directa",
-    "directMatchScoreDesc": "Las coincidencias del diccionario se devuelven con puntuacion perfecta (1.0) y aparecen primero.",
     "step2Keyword": "Paso 2: Busqueda por palabras clave (PostgreSQL FTS + BM25)",
     "keywordDesc": "Dos senales combinadas: ts_rank (busqueda de texto completo PostgreSQL) para coincidencia de frases, y BM25 para importancia de terminos ponderada por IDF.",
     "idfFormula": "IDF (Frecuencia inversa del documento)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "Activar respaldo",
-      "enableFallbackInfo": "Activa coincidencia difusa si la busqueda semantica devuelve pocos resultados.",
-      "threshold": "Umbral",
-      "thresholdInfo": "Que tan cerca debe coincidir el texto. Valores mas bajos permiten mas variacion."
+      "enableFallbackInfo": "Activa coincidencia difusa si la busqueda semantica devuelve pocos resultados."
     },
     "embedding": {
       "model": "Modelo de Embedding",

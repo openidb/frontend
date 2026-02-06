@@ -42,7 +42,6 @@
     "fusion": "融合",
     "keyword": "キーワード",
     "embedding": "埋め込み",
-    "surahMatch": "スーラ",
     "ayahs": "アーヤ"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "発音記号（タシュキール）を削除",
     "normalizeAlef": "アリフの変種を正規化：أ إ آ ٱ → ا",
     "normalizeTeh": "ター・マルブータを正規化：ة → ه",
-    "famousSources": "有名ソース辞書",
-    "famousSourcesDesc": "標準検索の前に、クエリは有名な節、章、ハディースの辞書と照合され、即座に直接結果が得られます。",
-    "famousVerses": "有名な節",
-    "famousVersesExample1": "آية الكرسي → アーヤト・アル・クルスィー (2:255)",
-    "famousVersesExample2": "ayat al-nur、玉座の節、光の節...",
-    "surahLookup": "スーラ検索（全114章）",
-    "surahLookupDesc": "アラビア語、音訳、または英語のスーラ名を、タイプミスのあいまい検索でマッチング",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → quran.comへの直接リンク",
-    "famousHadiths": "有名なハディース",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → ブハーリー #1",
-    "famousHadithsExample2": "ジブリールのハディース、意図による行為...",
-    "directMatchScore": "直接マッチスコア",
-    "directMatchScoreDesc": "辞書のマッチは完璧なスコア（1.0）で返され、結果の最初に表示されます。",
     "step2Keyword": "ステップ2：キーワード検索（PostgreSQL FTS + BM25）",
     "keywordDesc": "2つのシグナルを組み合わせ：ts_rank（PostgreSQL全文検索）でフレーズマッチング、BM25でIDF重み付け用語重要度。",
     "idfFormula": "IDF（逆文書頻度）",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "フォールバックを有効化",
-      "enableFallbackInfo": "セマンティック検索の結果が少ない場合にあいまい一致を有効にします。",
-      "threshold": "しきい値",
-      "thresholdInfo": "テキストの一致精度。低い値はより多くのバリエーションを許容します。"
+      "enableFallbackInfo": "セマンティック検索の結果が少ない場合にあいまい一致を有効にします。"
     },
     "embedding": {
       "model": "埋め込みモデル",

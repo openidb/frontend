@@ -42,7 +42,6 @@
     "fusion": "Fusao",
     "keyword": "Palavras-chave",
     "embedding": "Embedding",
-    "surahMatch": "Surata",
     "ayahs": "versiculos"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "Remover diacriticos (tashkeel)",
     "normalizeAlef": "Normalizar variantes de alef: أ إ آ ٱ → ا",
     "normalizeTeh": "Normalizar teh marbuta: ة → ه",
-    "famousSources": "Dicionario de fontes famosas",
-    "famousSourcesDesc": "Antes da busca padrao, as consultas sao comparadas com um dicionario de versiculos, suras e hadices famosos para resultados diretos instantaneos.",
-    "famousVerses": "Versiculos famosos",
-    "famousVersesExample1": "آية الكرسي → Ayat al-Kursi (2:255)",
-    "famousVersesExample2": "ayat al-nur, versiculo do trono, versiculo da luz...",
-    "surahLookup": "Busca de sura (114 suras)",
-    "surahLookupDesc": "Corresponde nomes de suras em arabe, transliteracao ou ingles com correspondencia aproximada para erros de digitacao",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → Link direto para quran.com",
-    "famousHadiths": "Hadices famosos",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → Bukhari #1",
-    "famousHadithsExample2": "hadith jibreel, acoes pelas intencoes...",
-    "directMatchScore": "Pontuacao de correspondencia direta",
-    "directMatchScoreDesc": "Correspondencias do dicionario sao retornadas com pontuacao perfeita (1.0) e aparecem primeiro.",
     "step2Keyword": "Passo 2: Busca por palavras-chave (PostgreSQL FTS + BM25)",
     "keywordDesc": "Dois sinais combinados: ts_rank (busca de texto completo PostgreSQL) para correspondencia de frases, e BM25 para importancia de termos ponderada por IDF.",
     "idfFormula": "IDF (Frequencia inversa do documento)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "Ativar fallback",
-      "enableFallbackInfo": "Ativa correspondencia aproximada se a busca semantica retornar poucos resultados.",
-      "threshold": "Limite",
-      "thresholdInfo": "Quao proximo o texto deve corresponder. Valores mais baixos permitem mais variacao."
+      "enableFallbackInfo": "Ativa correspondencia aproximada se a busca semantica retornar poucos resultados."
     },
     "embedding": {
       "model": "Modelo de Embedding",

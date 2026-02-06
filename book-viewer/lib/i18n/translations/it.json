@@ -42,7 +42,6 @@
     "fusion": "Fusione",
     "keyword": "Parole chiave",
     "embedding": "Embedding",
-    "surahMatch": "Sura",
     "ayahs": "versetti"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "Rimozione segni diacritici (tashkeel)",
     "normalizeAlef": "Normalizzazione varianti alef: أ إ آ ٱ → ا",
     "normalizeTeh": "Normalizzazione teh marbuta: ة → ه",
-    "famousSources": "Dizionario fonti famose",
-    "famousSourcesDesc": "Prima della ricerca standard, le query vengono confrontate con un dizionario di versetti, sure e hadith famosi per risultati diretti istantanei.",
-    "famousVerses": "Versetti famosi",
-    "famousVersesExample1": "آية الكرسي → Ayat al-Kursi (2:255)",
-    "famousVersesExample2": "ayat al-nur, versetto del trono, versetto della luce...",
-    "surahLookup": "Ricerca sura (tutte le 114 sure)",
-    "surahLookupDesc": "Corrisponde i nomi delle sure in arabo, traslitterazione o inglese con corrispondenza fuzzy per errori di battitura",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → Link diretto a quran.com",
-    "famousHadiths": "Hadith famosi",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → Bukhari #1",
-    "famousHadithsExample2": "hadith jibreel, azioni per intenzioni...",
-    "directMatchScore": "Punteggio corrispondenza diretta",
-    "directMatchScoreDesc": "Le corrispondenze del dizionario vengono restituite con punteggio perfetto (1.0) e appaiono per prime nei risultati.",
     "step2Keyword": "Passaggio 2: Ricerca per parole chiave (PostgreSQL FTS + BM25)",
     "keywordDesc": "Combina due segnali: ts_rank (ricerca full-text PostgreSQL) per corrispondenza di frasi, e BM25 per importanza dei termini ponderata IDF.",
     "idfFormula": "IDF (Frequenza inversa del documento)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "Abilita fallback",
-      "enableFallbackInfo": "Abilita corrispondenza fuzzy se la ricerca semantica restituisce pochi risultati.",
-      "threshold": "Soglia",
-      "thresholdInfo": "Quanto deve corrispondere il testo. Valori piu bassi permettono piu variazione."
+      "enableFallbackInfo": "Abilita corrispondenza fuzzy se la ricerca semantica restituisce pochi risultati."
     },
     "embedding": {
       "model": "Modello di Embedding",

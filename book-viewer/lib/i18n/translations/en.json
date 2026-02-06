@@ -42,7 +42,6 @@
     "fusion": "Fusion",
     "keyword": "Keyword",
     "embedding": "Embedding",
-    "surahMatch": "Surah",
     "ayahs": "ayahs"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "Remove diacritics (tashkeel)",
     "normalizeAlef": "Normalize alef variants: أ إ آ ٱ → ا",
     "normalizeTeh": "Normalize teh marbuta: ة → ه",
-    "famousSources": "Famous Sources Dictionary",
-    "famousSourcesDesc": "Before standard search, queries are matched against a dictionary of well-known verses, surahs, and hadiths for instant direct results.",
-    "famousVerses": "Famous Verses",
-    "famousVersesExample1": "آية الكرسي → Ayat al-Kursi (2:255)",
-    "famousVersesExample2": "ayat al-nur, throne verse, light verse...",
-    "surahLookup": "Surah Lookup (All 114 Surahs)",
-    "surahLookupDesc": "Matches surah names in Arabic, transliteration, or English with fuzzy matching for typos",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → Direct link to quran.com",
-    "famousHadiths": "Famous Hadiths",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → Bukhari #1",
-    "famousHadithsExample2": "hadith jibreel, actions by intentions...",
-    "directMatchScore": "Direct Match Score",
-    "directMatchScoreDesc": "Dictionary matches are returned with perfect score (1.0) and appear first in results.",
     "step2Keyword": "Step 2: Keyword Search (PostgreSQL FTS + BM25)",
     "keywordDesc": "Two signals combined: ts_rank (PostgreSQL Full-Text Search) for phrase matching, and BM25 for IDF-weighted term importance.",
     "idfFormula": "IDF (Inverse Document Frequency)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "Enable fallback",
-      "enableFallbackInfo": "When enabled, performs text-based fuzzy matching if semantic search returns few results.",
-      "threshold": "Threshold",
-      "thresholdInfo": "How closely text must match. Lower values allow more variation in spelling and word forms."
+      "enableFallbackInfo": "When enabled, performs text-based fuzzy matching if semantic search returns few results."
     },
     "embedding": {
       "model": "Embedding Model",

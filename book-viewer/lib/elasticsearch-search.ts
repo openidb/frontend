@@ -292,6 +292,7 @@ interface PageDoc {
   page_number: number;
   volume_number: number;
   content_plain: string;
+  text_searchable: string;
   url_page_index?: string;
 }
 
@@ -301,6 +302,7 @@ interface HadithDoc {
   hadith_number: string;
   text_arabic: string;
   text_plain: string;
+  text_searchable: string;
   chapter_arabic: string | null;
   chapter_english: string | null;
   is_chain_variation: boolean;
@@ -317,6 +319,7 @@ interface AyahDoc {
   ayah_number: number;
   text_uthmani: string;
   text_plain: string;
+  text_searchable: string;
   juz_number: number;
   page_number: number;
   surah_id: number;
@@ -337,7 +340,7 @@ export async function keywordSearchES(
   query: string,
   limit: number,
   bookId: string | null,
-  options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
+  options: { fuzzyFallback?: boolean } = {}
 ): Promise<RankedResult[]> {
   const { fuzzyFallback = true } = options;
 
@@ -352,7 +355,7 @@ export async function keywordSearchES(
     return [];
   }
 
-  const esQuery = buildESQuery(parsed, "content_plain", bookId);
+  const esQuery = buildESQuery(parsed, "text_searchable", bookId);
 
   try {
     const response = await elasticsearch.search<PageDoc>({
@@ -361,7 +364,7 @@ export async function keywordSearchES(
       size: limit,
       highlight: {
         fields: {
-          content_plain: {
+          text_searchable: {
             pre_tags: ["<mark>"],
             post_tags: ["</mark>"],
             fragment_size: 200,
@@ -407,7 +410,7 @@ export async function fuzzyKeywordSearchES(
   const normalized = normalizeArabicText(query);
   if (normalized.trim().length < 2) return [];
 
-  const esQuery = buildFuzzyESQuery(query, "content_plain", fuzziness, bookId);
+  const esQuery = buildFuzzyESQuery(query, "text_searchable", fuzziness, bookId);
 
   try {
     const response = await elasticsearch.search<PageDoc>({
@@ -435,7 +438,7 @@ function mapPageHitToResult(
   index: number
 ): RankedResult {
   const source = hit._source!;
-  const highlight = hit.highlight?.content_plain?.[0];
+  const highlight = hit.highlight?.text_searchable?.[0];
 
   return {
     bookId: source.book_id,
@@ -464,7 +467,7 @@ function mapPageHitToResult(
 export async function keywordSearchHadithsES(
   query: string,
   limit: number,
-  options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
+  options: { fuzzyFallback?: boolean } = {}
 ): Promise<HadithRankedResult[]> {
   const _t0 = Date.now();
   const { fuzzyFallback = true } = options;
@@ -485,7 +488,7 @@ export async function keywordSearchHadithsES(
     JSON.stringify(parsed)
   );
 
-  const baseQuery = buildESQuery(parsed, "text_plain", null);
+  const baseQuery = buildESQuery(parsed, "text_searchable", null);
 
   // Wrap with filter to exclude chain variations
   const esQuery: QueryDslQueryContainer = {
@@ -559,7 +562,7 @@ export async function fuzzyKeywordSearchHadithsES(
   const normalized = normalizeArabicText(query);
   if (normalized.trim().length < 2) return [];
 
-  const baseQuery = buildFuzzyESQuery(query, "text_plain", fuzziness, null);
+  const baseQuery = buildFuzzyESQuery(query, "text_searchable", fuzziness, null);
 
   // Wrap with filter to exclude chain variations
   const esQuery: QueryDslQueryContainer = {
@@ -637,7 +640,7 @@ function mapHadithHitToResult(
 export async function keywordSearchAyahsES(
   query: string,
   limit: number,
-  options: { fuzzyFallback?: boolean; fuzzyThreshold?: number } = {}
+  options: { fuzzyFallback?: boolean } = {}
 ): Promise<AyahRankedResult[]> {
   const { fuzzyFallback = true } = options;
 
@@ -652,7 +655,7 @@ export async function keywordSearchAyahsES(
     return [];
   }
 
-  const esQuery = buildESQuery(parsed, "text_plain", null);
+  const esQuery = buildESQuery(parsed, "text_searchable", null);
 
   try {
     const response = await elasticsearch.search<AyahDoc>({
@@ -701,7 +704,7 @@ export async function fuzzyKeywordSearchAyahsES(
   const normalized = normalizeArabicText(query);
   if (normalized.trim().length < 2) return [];
 
-  const esQuery = buildFuzzyESQuery(query, "text_plain", fuzziness, null);
+  const esQuery = buildFuzzyESQuery(query, "text_searchable", fuzziness, null);
 
   try {
     const response = await elasticsearch.search<AyahDoc>({

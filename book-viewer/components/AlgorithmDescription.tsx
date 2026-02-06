@@ -76,30 +76,25 @@ export default function AlgorithmDescription({ stats }: AlgorithmDescriptionProp
 
 USER QUERY
     |
-    +------------------+
-    |                  |
-    v                  v
-[Famous Sources    [Normalize
- Dictionary]        Arabic Text]
-    |                  |
-    v           +------+------+
-Direct Match    |             |
-(score=1.0)     v             v
-    |       KEYWORD       SEMANTIC
-    |       SEARCH        SEARCH
-    |          |             |
-    |          v             v
-    |    [Elasticsearch   [Qdrant
-    |       BM25]          Cosine]
-    |          |             |
-    |          +------+------+
-    |                 |
-    |          [RRF FUSION]
-    |          (No Reranking)
-    |                 |
-    +--------+--------+
-             |
-       FINAL RESULTS`}
+    v
+[Normalize Arabic Text]
+    |
+    +------+------+
+    |             |
+    v             v
+ KEYWORD       SEMANTIC
+ SEARCH        SEARCH
+    |             |
+    v             v
+[Elasticsearch  [Qdrant
+   BM25]         Cosine]
+    |             |
+    +------+------+
+           |
+     [RRF FUSION]
+     (No Reranking)
+           |
+     FINAL RESULTS`}
               </pre>
             </div>
             <div>
@@ -154,61 +149,6 @@ FINAL RESULTS`}
               <li>{t("algorithm.normalizeAlef")}</li>
               <li>{t("algorithm.normalizeTeh")}</li>
             </ul>
-          </div>
-        )}
-      </div>
-
-      {/* Famous Sources Dictionary */}
-      <div className="bg-background rounded p-3 border">
-        <button
-          onClick={() => toggleSection("famousSources")}
-          className="w-full flex items-center justify-between text-left"
-        >
-          <span className="font-medium">{t("algorithm.famousSources")}</span>
-          {expandedSection === "famousSources" ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
-        </button>
-        {expandedSection === "famousSources" && (
-          <div className="mt-3 space-y-3 text-muted-foreground">
-            <p>{t("algorithm.famousSourcesDesc")}</p>
-
-            <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.famousVerses")}</p>
-              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
-                <li>{t("algorithm.famousVersesExample1")}</li>
-                <li>{t("algorithm.famousVersesExample2")}</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.surahLookup")}</p>
-              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
-                <li>{t("algorithm.surahLookupDesc")}</li>
-                <li>{t("algorithm.surahLookupExample")}</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.famousHadiths")}</p>
-              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
-                <li>{t("algorithm.famousHadithsExample1")}</li>
-                <li>{t("algorithm.famousHadithsExample2")}</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <p className="font-medium text-foreground">{t("algorithm.directMatchScore")}</p>
-              <div className="bg-muted/50 p-2 rounded overflow-x-auto">
-                <LaTeX
-                  math={`S_{\\text{direct}} = 1.0 \\text{ (perfect match)}`}
-                  display
-                />
-              </div>
-              <p className="text-[10px]">{t("algorithm.directMatchScoreDesc")}</p>
-            </div>
           </div>
         )}
       </div>

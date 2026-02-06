@@ -42,7 +42,6 @@
     "fusion": "فیوژن",
     "keyword": "کلیدی الفاظ",
     "embedding": "ایمبیڈنگ",
-    "surahMatch": "سورة",
     "ayahs": "آیات"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "اعراب ہٹائیں (تشکیل)",
     "normalizeAlef": "الف کی شکلیں نارملائز کریں: أ إ آ ٱ ← ا",
     "normalizeTeh": "تائے مربوطہ نارملائز کریں: ة ← ه",
-    "famousSources": "مشہور ذرائع کی ڈکشنری",
-    "famousSourcesDesc": "معیاری تلاش سے پہلے، استفسارات کو مشہور آیات، سورتوں اور احادیث کی ڈکشنری سے ملایا جاتا ہے فوری براہ راست نتائج کے لیے۔",
-    "famousVerses": "مشہور آیات",
-    "famousVersesExample1": "آية الكرسي → آیت الکرسی (2:255)",
-    "famousVersesExample2": "آیت النور، عرش کی آیت، نور کی آیت...",
-    "surahLookup": "سورہ کی تلاش (114 سورتیں)",
-    "surahLookupDesc": "عربی، لاطینی حروف، یا انگریزی میں سورتوں کے ناموں کو غلط ہجے کے لیے فزی میچنگ کے ساتھ ملاتا ہے",
-    "surahLookupExample": "baqarah، البقرة، al-kahf، yasin → quran.com کا براہ راست لنک",
-    "famousHadiths": "مشہور احادیث",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → بخاری #1",
-    "famousHadithsExample2": "حدیث جبریل، نیتوں سے اعمال...",
-    "directMatchScore": "براہ راست میچ سکور",
-    "directMatchScoreDesc": "ڈکشنری میچز کامل سکور (1.0) کے ساتھ واپس کیے جاتے ہیں اور نتائج میں پہلے ظاہر ہوتے ہیں۔",
     "step2Keyword": "مرحلہ 2: کلیدی الفاظ کی تلاش (PostgreSQL FTS + BM25)",
     "keywordDesc": "دو سگنلز کا مجموعہ: ts_rank (PostgreSQL مکمل متن کی تلاش) جملوں کی مماثلت کے لیے، اور BM25 IDF وزنی اصطلاحی اہمیت کے لیے۔",
     "idfFormula": "IDF (الٹی دستاویز فریکوئنسی)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "فال بیک فعال کریں",
-      "enableFallbackInfo": "اگر سیمینٹک تلاش کم نتائج دے تو فزی میچنگ استعمال کریں۔",
-      "threshold": "حد",
-      "thresholdInfo": "متن کتنا قریب سے ملنا چاہیے۔ کم قدریں زیادہ تغیر کی اجازت دیتی ہیں۔"
+      "enableFallbackInfo": "اگر سیمینٹک تلاش کم نتائج دے تو فزی میچنگ استعمال کریں۔"
     },
     "embedding": {
       "model": "ایمبیڈنگ ماڈل",

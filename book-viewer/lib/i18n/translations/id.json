@@ -42,7 +42,6 @@
     "fusion": "Fusi",
     "keyword": "Kata kunci",
     "embedding": "Embedding",
-    "surahMatch": "Surah",
     "ayahs": "ayat"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "Hapus tanda baca (tashkeel)",
     "normalizeAlef": "Normalisasi varian alef: أ إ آ ٱ → ا",
     "normalizeTeh": "Normalisasi teh marbuta: ة → ه",
-    "famousSources": "Kamus Sumber Terkenal",
-    "famousSourcesDesc": "Sebelum pencarian standar, kueri dicocokkan dengan kamus ayat, surah, dan hadis terkenal untuk hasil langsung instan.",
-    "famousVerses": "Ayat Terkenal",
-    "famousVersesExample1": "آية الكرسي → Ayat al-Kursi (2:255)",
-    "famousVersesExample2": "ayat al-nur, ayat kursi, ayat cahaya...",
-    "surahLookup": "Pencarian Surah (114 Surah)",
-    "surahLookupDesc": "Mencocokkan nama surah dalam bahasa Arab, transliterasi, atau Inggris dengan pencocokan fuzzy untuk kesalahan ketik",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → Tautan langsung ke quran.com",
-    "famousHadiths": "Hadis Terkenal",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → Bukhari #1",
-    "famousHadithsExample2": "hadis jibreel, amal dengan niat...",
-    "directMatchScore": "Skor Kecocokan Langsung",
-    "directMatchScoreDesc": "Kecocokan kamus dikembalikan dengan skor sempurna (1.0) dan muncul pertama dalam hasil.",
     "step2Keyword": "Langkah 2: Pencarian Kata Kunci (PostgreSQL FTS + BM25)",
     "keywordDesc": "Dua sinyal digabungkan: ts_rank (pencarian teks lengkap PostgreSQL) untuk pencocokan frasa, dan BM25 untuk bobot kepentingan istilah IDF.",
     "idfFormula": "IDF (Frekuensi Dokumen Terbalik)",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "Aktifkan fallback",
-      "enableFallbackInfo": "Aktifkan pencocokan fuzzy jika pencarian semantik menghasilkan sedikit hasil.",
-      "threshold": "Ambang batas",
-      "thresholdInfo": "Seberapa dekat teks harus cocok. Nilai lebih rendah memungkinkan lebih banyak variasi."
+      "enableFallbackInfo": "Aktifkan pencocokan fuzzy jika pencarian semantik menghasilkan sedikit hasil."
     },
     "embedding": {
       "model": "Model Embedding",

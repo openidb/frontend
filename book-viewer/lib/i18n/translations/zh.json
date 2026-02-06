@@ -42,7 +42,6 @@
     "fusion": "融合",
     "keyword": "关键词",
     "embedding": "嵌入",
-    "surahMatch": "章",
     "ayahs": "节"
   },
   "algorithm": {
@@ -52,19 +51,6 @@
     "removeDiacritics": "移除变音符号（塔什基尔）",
     "normalizeAlef": "规范化阿利夫变体：أ إ آ ٱ → ا",
     "normalizeTeh": "规范化塔玛布塔：ة → ه",
-    "famousSources": "著名来源词典",
-    "famousSourcesDesc": "在标准搜索之前，查询会与著名经文、章节和圣训词典进行匹配，以获得即时直接结果。",
-    "famousVerses": "著名经文",
-    "famousVersesExample1": "آية الكرسي → 宝座经文 (2:255)",
-    "famousVersesExample2": "ayat al-nur，宝座经文，光明经文...",
-    "surahLookup": "章节查找（全部114章）",
-    "surahLookupDesc": "用阿拉伯语、音译或英语匹配章节名称，支持拼写错误的模糊匹配",
-    "surahLookupExample": "baqarah, البقرة, al-kahf, yasin → 直接链接到quran.com",
-    "famousHadiths": "著名圣训",
-    "famousHadithsExample1": "إنما الأعمال بالنيات → 布哈里 #1",
-    "famousHadithsExample2": "吉卜利勒圣训，行为取决于意图...",
-    "directMatchScore": "直接匹配分数",
-    "directMatchScoreDesc": "词典匹配以满分（1.0）返回，并首先出现在结果中。",
     "step2Keyword": "步骤2：关键词搜索（PostgreSQL FTS + BM25）",
     "keywordDesc": "结合两个信号：ts_rank（PostgreSQL全文搜索）用于短语匹配，BM25用于IDF加权的术语重要性。",
     "idfFormula": "IDF（逆文档频率）",
@@ -268,9 +254,7 @@
     },
     "fuzzy": {
       "enableFallback": "启用回退",
-      "enableFallbackInfo": "当语义搜索返回较少结果时，启用模糊匹配。",
-      "threshold": "阈值",
-      "thresholdInfo": "文本匹配的精确程度。较低的值允许更多变化。"
+      "enableFallbackInfo": "当语义搜索返回较少结果时，启用模糊匹配。"
     },
     "embedding": {
       "model": "嵌入模型",

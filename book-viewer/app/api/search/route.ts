@@ -41,7 +41,6 @@ import {
   keywordSearchAyahsES,
   generateSunnahComUrl,
 } from "@/lib/elasticsearch-search";
-import { lookupFamousVerse, lookupFamousHadith, lookupSurah, type VerseReference, type HadithReference, type SurahReference } from "@/lib/famous-sources";
 import { getCachedExpansion, setCachedExpansion } from "@/lib/query-expansion-cache";
 
 // OpenRouter client for Qwen embeddings
@@ -266,7 +265,6 @@ interface SearchDebugStats {
     semantic: { books: number; ayahs: number; hadiths: number };
     keyword: { books: number; ayahs: number; hadiths: number };
     merge: number;
-    directLookup: number;
     authorSearch: number;
     rerank?: number;
     translations: number;
@@ -1077,169 +1075,6 @@ async function rerank<T>(
 
 // ============================================================================
 // Famous Source Direct Lookup
-// ============================================================================
-
-/**
- * Fetch a specific ayah directly by surah/ayah reference
- * Used when famous source lookup matches a known verse
- * Returns with score: 1.0 (perfect match)
- */
-async function fetchAyahDirect(
-  surahNumber: number,
-  ayahNumber: number,
-  ayahEnd?: number
-): Promise<AyahRankedResult[]> {
-  try {
-    // Fetch surah metadata
-    const surah = await prisma.surah.findUnique({
-      where: { number: surahNumber },
-      select: { nameArabic: true, nameEnglish: true },
-    });
-
-    if (!surah) {
-      console.warn(`[Direct] Surah ${surahNumber} not found`);
-      return [];
-    }
-
-    // Fetch ayah(s)
-    const ayahNumbers = ayahEnd
-      ? Array.from({ length: ayahEnd - ayahNumber + 1 }, (_, i) => ayahNumber + i)
-      : [ayahNumber];
-
-    const ayahs = await prisma.ayah.findMany({
-      where: {
-        surah: { number: surahNumber },
-        ayahNumber: { in: ayahNumbers },
-      },
-      select: {
-        ayahNumber: true,
-        textUthmani: true,
-        juzNumber: true,
-        pageNumber: true,
-      },
-      orderBy: { ayahNumber: 'asc' },
-    });
-
-    if (ayahs.length === 0) {
-      console.warn(`[Direct] Ayah ${surahNumber}:${ayahNumber} not found`);
-      return [];
-    }
-
-    // If multiple ayahs, combine into one result
-    if (ayahs.length > 1) {
-      const combinedText = ayahs.map(a => a.textUthmani).join(' ');
-      return [{
-        score: 1.0,
-        semanticScore: 1.0,
-        surahNumber,
-        ayahNumber: ayahs[0].ayahNumber,
-        ayahEnd: ayahs[ayahs.length - 1].ayahNumber,
-        ayahNumbers: ayahs.map(a => a.ayahNumber),
-        surahNameArabic: surah.nameArabic,
-        surahNameEnglish: surah.nameEnglish,
-        text: combinedText,
-        juzNumber: ayahs[0].juzNumber,
-        pageNumber: ayahs[0].pageNumber,
-        quranComUrl: `https://quran.com/${surahNumber}/${ayahNumber}`,
-        isChunk: true,
-        wordCount: combinedText.split(/\s+/).length,
-        semanticRank: 1,
-      }];
-    }
-
-    // Single ayah
-    const ayah = ayahs[0];
-    return [{
-      score: 1.0,
-      semanticScore: 1.0,
-      surahNumber,
-      ayahNumber: ayah.ayahNumber,
-      surahNameArabic: surah.nameArabic,
-      surahNameEnglish: surah.nameEnglish,
-      text: ayah.textUthmani,
-      juzNumber: ayah.juzNumber,
-      pageNumber: ayah.pageNumber,
-      quranComUrl: `https://quran.com/${surahNumber}/${ayah.ayahNumber}`,
-      semanticRank: 1,
-    }];
-  } catch (err) {
-    console.error(`[Direct] Error fetching ayah ${surahNumber}:${ayahNumber}:`, err);
-    return [];
-  }
-}
-
-/**
- * Fetch specific hadiths directly by collection/number reference
- * Used when famous source lookup matches known hadiths
- * Returns with score: 1.0 (perfect match)
- */
-async function fetchHadithsDirect(
-  references: HadithReference[]
-): Promise<HadithRankedResult[]> {
-  if (references.length === 0) return [];
-
-  try {
-    const results: HadithRankedResult[] = [];
-
-    for (const ref of references) {
-      const hadith = await prisma.hadith.findFirst({
-        where: {
-          hadithNumber: ref.hadithNumber,
-          book: {
-            collection: { slug: ref.collectionSlug },
-          },
-        },
-        select: {
-          hadithNumber: true,
-          textArabic: true,
-          chapterArabic: true,
-          chapterEnglish: true,
-          book: {
-            select: {
-              id: true,
-              bookNumber: true,
-              nameArabic: true,
-              nameEnglish: true,
-              collection: {
-                select: {
-                  slug: true,
-                  nameArabic: true,
-                  nameEnglish: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (hadith) {
-        results.push({
-          score: 1.0,
-          semanticScore: 1.0,
-          bookId: hadith.book.id,
-          collectionSlug: hadith.book.collection.slug,
-          collectionNameArabic: hadith.book.collection.nameArabic,
-          collectionNameEnglish: hadith.book.collection.nameEnglish,
-          bookNumber: hadith.book.bookNumber,
-          bookNameArabic: hadith.book.nameArabic,
-          bookNameEnglish: hadith.book.nameEnglish,
-          hadithNumber: hadith.hadithNumber,
-          text: hadith.textArabic,
-          chapterArabic: hadith.chapterArabic,
-          chapterEnglish: hadith.chapterEnglish,
-          sunnahComUrl: generateSunnahComUrl(hadith.book.collection.slug, hadith.hadithNumber, hadith.book.bookNumber),
-          semanticRank: 1,
-        });
-      }
-    }
-
-    return results;
-  } catch (err) {
-    console.error('[Direct] Error fetching hadiths:', err);
-    return [];
-  }
-}
-
 // ============================================================================
 // Unified Cross-Type Reranking
 // ============================================================================
@@ -2161,19 +1996,17 @@ async function searchAyahsSemantic(
   limit: number = 10,
   similarityCutoff: number = 0.28,
   precomputedEmbedding?: number[],
-  useEnriched: boolean = true,
   quranCollectionOverride?: string,
   embeddingModel: EmbeddingModel = "gemini"
 ): Promise<AyahSemanticSearchResult> {
-  // Determine collection based on override or enriched flag
-  const baseCollection = quranCollectionOverride || (useEnriched ? QDRANT_QURAN_COLLECTION : QDRANT_QURAN_COLLECTION);
-  const fallbackCollection = QDRANT_QURAN_COLLECTION;
+  // Determine collection based on override or default
+  const collection = quranCollectionOverride || QDRANT_QURAN_COLLECTION;
 
   // Default metadata for early returns
   const defaultMeta: AyahSearchMeta = {
-    collection: baseCollection,
+    collection,
     usedFallback: false,
-    embeddingTechnique: useEnriched && !quranCollectionOverride ? "metadata-translation" : undefined,
+    embeddingTechnique: !quranCollectionOverride ? "metadata-translation" : undefined,
   };
 
   try {
@@ -2197,56 +2030,21 @@ async function searchAyahsSemantic(
     // Use precomputed embedding if provided, otherwise generate one
     const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery, embeddingModel);
 
-    // Try the specified collection first
-    let collection = baseCollection;
-    let usedFallback = false;
-    let searchResults;
+    console.log(`[searchAyahsSemantic] Searching ${collection} for: "${query.substring(0, 50)}..."`);
+    console.log(`[searchAyahsSemantic] effectiveCutoff=${effectiveCutoff}, limit=${limit}`);
 
-    try {
-      console.log(`[searchAyahsSemantic] Searching ${collection} for: "${query.substring(0, 50)}..."`);
-      console.log(`[searchAyahsSemantic] effectiveCutoff=${effectiveCutoff}, limit=${limit}`);
-
-      searchResults = await qdrant.search(collection, {
-        vector: queryEmbedding,
-        limit: limit,
-        with_payload: true,  // Ayahs need full payload for various fields
-        score_threshold: effectiveCutoff,
-      });
-
-      // Fall back to original collection if enriched returns no results (only if not using BGE override)
-      if (useEnriched && !quranCollectionOverride && searchResults.length === 0) {
-        console.log(`[searchAyahsSemantic] Enriched collection empty, falling back to original`);
-        collection = fallbackCollection;
-        usedFallback = true;
-        searchResults = await qdrant.search(collection, {
-          vector: queryEmbedding,
-          limit: limit,
-          with_payload: true,
-          score_threshold: effectiveCutoff,
-        });
-      }
-    } catch (enrichedErr) {
-      // If enriched collection doesn't exist, fall back to original (only if not using BGE override)
-      if (useEnriched && !quranCollectionOverride) {
-        console.log(`[searchAyahsSemantic] Enriched collection unavailable, using original`);
-        collection = fallbackCollection;
-        usedFallback = true;
-        searchResults = await qdrant.search(collection, {
-          vector: queryEmbedding,
-          limit: limit,
-          with_payload: true,
-          score_threshold: effectiveCutoff,
-        });
-      } else {
-        throw enrichedErr;
-      }
-    }
+    const searchResults = await qdrant.search(collection, {
+      vector: queryEmbedding,
+      limit: limit,
+      with_payload: true,
+      score_threshold: effectiveCutoff,
+    });
 
     console.log(`[searchAyahsSemantic] ${collection} returned ${searchResults.length} results`);
 
     const meta: AyahSearchMeta = {
       collection,
-      usedFallback,
+      usedFallback: false,
       embeddingTechnique: collection === QDRANT_QURAN_COLLECTION ? "metadata-translation" : undefined,
     };
 
@@ -2260,7 +2058,8 @@ async function searchAyahsSemantic(
         textPlain: string;
         juzNumber: number;
         pageNumber: number;
-        embeddingTechnique?: string; // Present in enriched collection
+        embeddedText?: string;   // Exact text that was embedded
+        embeddingModel?: string; // Model used for embedding
       };
 
       return {
@@ -2294,9 +2093,9 @@ async function searchAyahsSemantic(
 async function searchAyahsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[]; quranCollection?: string; embeddingModel?: EmbeddingModel } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; precomputedEmbedding?: number[]; quranCollection?: string; embeddingModel?: EmbeddingModel } = {}
 ): Promise<AyahResult[]> {
-  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding, quranCollection, embeddingModel = "gemini" } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, precomputedEmbedding, quranCollection, embeddingModel = "gemini" } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -2304,8 +2103,8 @@ async function searchAyahsHybrid(
   const collectionToUse = quranCollection || QDRANT_QURAN_COLLECTION;
   const defaultMeta: AyahSearchMeta = { collection: collectionToUse, usedFallback: false, embeddingTechnique: "metadata-translation" };
   const [semanticSearchResult, keywordResults] = await Promise.all([
-    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
-    keywordSearchAyahsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
+    searchAyahsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, quranCollection, embeddingModel).catch(() => ({ results: [] as AyahRankedResult[], meta: defaultMeta })),
+    keywordSearchAyahsES(query, fetchLimit, { fuzzyFallback }).catch(() => []),
   ]);
 
   const merged = mergeWithRRFGeneric(
@@ -2486,9 +2285,9 @@ async function searchHadithsSemantic(
 async function searchHadithsHybrid(
   query: string,
   limit: number = 10,
-  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; fuzzyThreshold?: number; precomputedEmbedding?: number[]; hadithCollection?: string; embeddingModel?: EmbeddingModel } = {}
+  options: { reranker?: RerankerType; preRerankLimit?: number; postRerankLimit?: number; similarityCutoff?: number; fuzzyFallback?: boolean; precomputedEmbedding?: number[]; hadithCollection?: string; embeddingModel?: EmbeddingModel } = {}
 ): Promise<HadithResult[]> {
-  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, fuzzyThreshold = 0.3, precomputedEmbedding, hadithCollection, embeddingModel = "gemini" } = options;
+  const { reranker = "none", preRerankLimit = 60, postRerankLimit = limit, similarityCutoff = 0.6, fuzzyFallback = true, precomputedEmbedding, hadithCollection, embeddingModel = "gemini" } = options;
 
   // Fetch more candidates for reranking
   const fetchLimit = Math.min(preRerankLimit, 100);
@@ -2497,7 +2296,7 @@ async function searchHadithsHybrid(
   const _t0 = Date.now();
   const [semanticResults, keywordResults] = await Promise.all([
     searchHadithsSemantic(query, fetchLimit, similarityCutoff, precomputedEmbedding, hadithCollection, embeddingModel).catch(() => []),
-    keywordSearchHadithsES(query, fetchLimit, { fuzzyFallback, fuzzyThreshold }).catch(() => []),
+    keywordSearchHadithsES(query, fetchLimit, { fuzzyFallback }).catch(() => []),
   ]);
   const _t1 = Date.now();
   console.log(`[HadithHybrid] semantic+keyword parallel: ${_t1 - _t0}ms (sem=${semanticResults.length}, kw=${keywordResults.length})`);
@@ -2558,7 +2357,6 @@ export async function GET(request: NextRequest) {
 
   // Fuzzy search parameters
   const fuzzyEnabled = searchParams.get("fuzzy") !== "false"; // Default true
-  const fuzzyThreshold = parseFloat(searchParams.get("fuzzyThreshold") || "0.3");
 
   // Quran translation parameter (language code like "en", "ur", "fr", or "none")
   const quranTranslation = searchParams.get("quranTranslation") || "none";
@@ -2622,7 +2420,7 @@ export async function GET(request: NextRequest) {
   const searchOptions = { reranker, preRerankLimit, postRerankLimit, similarityCutoff };
 
   // Fuzzy search options
-  const fuzzyOptions = { fuzzyFallback: fuzzyEnabled, fuzzyThreshold };
+  const fuzzyOptions = { fuzzyFallback: fuzzyEnabled };
 
   try {
     let rankedResults: RankedResult[];
@@ -2663,7 +2461,6 @@ export async function GET(request: NextRequest) {
       semantic: { books: 0, ayahs: 0, hadiths: 0 },
       keyword: { books: 0, ayahs: 0, hadiths: 0 },
       merge: 0,
-      directLookup: 0,
       authorSearch: 0,
       rerank: 0,
       translations: 0,
@@ -2713,37 +2510,6 @@ export async function GET(request: NextRequest) {
 
     // Fetch database stats (cached)
     const databaseStats = await getDatabaseStats();
-
-    // ========================================================================
-    // FAMOUS SOURCE DIRECT LOOKUP
-    // ========================================================================
-    // Look up famous verses/hadiths/surahs directly (runs in parallel with search)
-    const famousVerse = includeQuran ? lookupFamousVerse(query) : undefined;
-    const famousHadiths = includeHadith ? lookupFamousHadith(query) : [];
-    // Always look up surah - user might want the full surah page link
-    const famousSurah = includeQuran ? lookupSurah(query) : undefined;
-
-    // Direct lookup promises (will be awaited later)
-    const directAyahsPromise = famousVerse
-      ? fetchAyahDirect(famousVerse.surahNumber, famousVerse.ayahNumber, famousVerse.ayahEnd)
-      : Promise.resolve([]);
-    const directHadithsPromise = famousHadiths.length > 0
-      ? fetchHadithsDirect(famousHadiths)
-      : Promise.resolve([]);
-    // Fetch full surah ayahs if surah matched but no specific verse (avoids duplicate fetch)
-    const directSurahAyahsPromise = (famousSurah && !famousVerse)
-      ? fetchAyahDirect(famousSurah.surahNumber, 1, famousSurah.totalAyahs)
-      : Promise.resolve([]);
-
-    if (famousVerse) {
-      console.log(`[Direct] Famous verse match: ${famousVerse.surahNumber}:${famousVerse.ayahNumber}${famousVerse.ayahEnd ? `-${famousVerse.ayahEnd}` : ''}`);
-    }
-    if (famousSurah) {
-      console.log(`[Direct] Surah match: ${famousSurah.surahNumber} -> ${famousSurah.quranComUrl}`);
-    }
-    if (famousHadiths.length > 0) {
-      console.log(`[Direct] Famous hadith match: ${famousHadiths.map(h => `${h.collectionSlug}:${h.hadithNumber}`).join(', ')}`);
-    }
 
     // Search for authors (independent of refine mode)
     const authorsPromise = bookId ? Promise.resolve([]) : searchAuthors(query, 5);
@@ -2819,7 +2585,7 @@ export async function GET(request: NextRequest) {
           // Semantic-only search for non-Arabic queries
           const defaultMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, embeddingTechnique: "metadata-translation" };
           ayahResults = includeQuran
-            ? (await searchAyahsSemantic(q, refineAyahPerQuery, refineSimilarityCutoff, qEmbedding, true, quranCollection, embeddingModel).catch(() => ({ results: [], meta: defaultMeta }))).results
+            ? (await searchAyahsSemantic(q, refineAyahPerQuery, refineSimilarityCutoff, qEmbedding, quranCollection, embeddingModel).catch(() => ({ results: [], meta: defaultMeta }))).results
             : [];
           hadithResults = includeHadith
             ? await searchHadithsSemantic(q, refineHadithPerQuery, refineSimilarityCutoff, qEmbedding, hadithCollection, embeddingModel).catch(() => [])
@@ -2987,7 +2753,7 @@ export async function GET(request: NextRequest) {
       const defaultAyahMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, embeddingTechnique: "metadata-translation" };
       const semanticAyahsPromise = (mode === "keyword" || bookId || !includeQuran)
         ? Promise.resolve({ results: [] as AyahRankedResult[], meta: defaultAyahMeta })
-        : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, true, quranCollection, embeddingModel)
+        : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, quranCollection, embeddingModel)
             .then(res => {
               _timing.semantic.ayahs = Date.now() - _semAyahsStart;
               console.log(`[SemanticAyahs] returned ${res.results.length} results from ${res.meta.collection}`);
@@ -3086,77 +2852,6 @@ export async function GET(request: NextRequest) {
       }
 
       _timing.merge = Date.now() - _mergeStart;
-    }
-
-    // ========================================================================
-    // MERGE DIRECT LOOKUP RESULTS
-    // ========================================================================
-    // Wait for direct lookup promises and merge with search results
-    const _directLookupStart = Date.now();
-    const [directAyahs, directHadiths, directSurahAyahs] = await Promise.all([
-      directAyahsPromise,
-      directHadithsPromise,
-      directSurahAyahsPromise,
-    ]);
-    _timing.directLookup = Date.now() - _directLookupStart;
-
-    // Merge direct ayah results (they have score: 1.0, should rank first)
-    if (directAyahs.length > 0) {
-      const directKeys = new Set(directAyahs.map(a => `${a.surahNumber}-${a.ayahNumber}`));
-      // Build map of existing results to preserve their search scores
-      const existingAyahMap = new Map(ayahsRaw.map(a => [`${a.surahNumber}-${a.ayahNumber}`, a as AyahRankedResult]));
-      // Merge direct results with existing search scores preserved
-      const mergedDirectAyahs = directAyahs.map(direct => {
-        const existing = existingAyahMap.get(`${direct.surahNumber}-${direct.ayahNumber}`);
-        if (existing) {
-          // Preserve actual search scores from hybrid results
-          return {
-            ...direct,
-            score: direct.score, // Keep score=1 for ranking
-            semanticScore: existing.semanticScore ?? direct.semanticScore,
-            bm25Score: existing.bm25Score,
-            fusedScore: (existing as any).fusedScore,
-          } as AyahResult & { bm25Score?: number; fusedScore?: number };
-        }
-        return direct;
-      });
-      // Remove duplicates from hybrid search, then prepend direct results
-      const filteredAyahs = ayahsRaw.filter(a => !directKeys.has(`${a.surahNumber}-${a.ayahNumber}`));
-      ayahsRaw = [...mergedDirectAyahs, ...filteredAyahs];
-      console.log(`[Direct] Merged ${directAyahs.length} direct ayah(s) into results`);
-    }
-
-    // Merge direct surah ayahs (full surah results from surah name lookup)
-    if (directSurahAyahs.length > 0) {
-      const surahKeys = new Set(directSurahAyahs.map(a => `${a.surahNumber}-${a.ayahNumber}`));
-      // Build map of existing results to preserve their search scores
-      const existingAyahMap = new Map(ayahsRaw.map(a => [`${a.surahNumber}-${a.ayahNumber}`, a as AyahRankedResult]));
-      // Merge surah results with existing search scores preserved
-      const mergedSurahAyahs = directSurahAyahs.map(direct => {
-        const existing = existingAyahMap.get(`${direct.surahNumber}-${direct.ayahNumber}`);
-        if (existing) {
-          return {
-            ...direct,
-            score: direct.score,
-            semanticScore: existing.semanticScore ?? direct.semanticScore,
-            bm25Score: existing.bm25Score,
-            fusedScore: (existing as any).fusedScore,
-          } as AyahResult & { bm25Score?: number; fusedScore?: number };
-        }
-        return direct;
-      });
-      // Remove duplicates from existing results, then prepend surah ayahs
-      const filteredAyahs = ayahsRaw.filter(a => !surahKeys.has(`${a.surahNumber}-${a.ayahNumber}`));
-      ayahsRaw = [...mergedSurahAyahs, ...filteredAyahs];
-      console.log(`[Direct] Merged ${directSurahAyahs.length} surah ayah(s) into results`);
-    }
-
-    // Merge direct hadith results
-    if (directHadiths.length > 0) {
-      const directKeys = new Set(directHadiths.map(h => `${h.collectionSlug}-${h.hadithNumber}`));
-      const filteredHadiths = (hadiths as HadithRankedResult[]).filter(h => !directKeys.has(`${h.collectionSlug}-${h.hadithNumber}`));
-      hadiths = [...directHadiths, ...filteredHadiths];
-      console.log(`[Direct] Merged ${directHadiths.length} direct hadith(s) into results`);
     }
 
     // Note: Cross-type reranking is now only done in refine mode via unified reranking
@@ -3551,7 +3246,6 @@ export async function GET(request: NextRequest) {
         semantic: _timing.semantic,
         keyword: _timing.keyword,
         merge: _timing.merge,
-        directLookup: _timing.directLookup,
         authorSearch: _timing.authorSearch,
         ...(_timing.rerank > 0 && { rerank: _timing.rerank }),
         translations: _timing.translations,
@@ -3567,14 +3261,6 @@ export async function GET(request: NextRequest) {
       authors,
       ayahs,
       hadiths,
-      // Include surah direct link if matched
-      ...(famousSurah && {
-        surah: {
-          surahNumber: famousSurah.surahNumber,
-          url: famousSurah.quranComUrl,
-          totalAyahs: famousSurah.totalAyahs,
-        },
-      }),
       debugStats,
       ...(refine && {
         refined: true,

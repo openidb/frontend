@@ -452,18 +452,6 @@ export default function ConfigPage() {
               onChange={(checked) => updateConfig({ fuzzyEnabled: checked })}
               info={t("config.fuzzy.enableFallbackInfo")}
             />
-            {config.fuzzyEnabled && (
-              <SliderSetting
-                label={t("config.fuzzy.threshold")}
-                value={config.fuzzyThreshold}
-                min={0.1}
-                max={0.5}
-                step={0.05}
-                onChange={(value) => updateConfig({ fuzzyThreshold: value })}
-                format={(v) => v.toFixed(2)}
-                info={t("config.fuzzy.thresholdInfo")}
-              />
-            )}
           </div>
 
           <Divider />

@@ -61,7 +61,6 @@ export interface SearchConfig {
   preRerankLimit: number;
   postRerankLimit: number;
   fuzzyEnabled: boolean;
-  fuzzyThreshold: number;
   // Books display options
   bookTitleDisplay: TranslationDisplayOption;  // Replaces showTransliterations
   showPublicationDates: boolean;
@@ -100,7 +99,6 @@ export const defaultSearchConfig: SearchConfig = {
   preRerankLimit: 70,
   postRerankLimit: 10,
   fuzzyEnabled: true,
-  fuzzyThreshold: 0.3,
   // Books display options
   bookTitleDisplay: "transliteration",  // Default maintains current behavior
   showPublicationDates: true,
