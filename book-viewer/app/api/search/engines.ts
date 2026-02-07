@@ -16,7 +16,7 @@ import {
   keywordSearchAyahsES,
   keywordSearchHadithsES,
 } from "@/lib/search/elasticsearch-search";
-import { MIN_CHARS_FOR_SEMANTIC } from "./config";
+import { MIN_CHARS_FOR_SEMANTIC, EXCLUDED_BOOK_IDS } from "./config";
 import { hasQuotedPhrases, getDynamicSimilarityThreshold } from "./query-utils";
 import { mergeWithRRFGeneric } from "./fusion";
 import { rerank } from "./rerankers";
@@ -59,7 +59,7 @@ export async function semanticSearch(
   const queryEmbedding = precomputedEmbedding ?? await generateEmbedding(normalizedQuery, embeddingModel);
 
   const filter = bookId
-    ? { must: [{ key: "shamelaBookId", match: { value: bookId } }] }
+    ? { must: [{ key: "bookId", match: { value: bookId } }] }
     : undefined;
 
   const searchResults = await qdrant.search(collection, {
@@ -67,30 +67,31 @@ export async function semanticSearch(
     limit: limit,
     filter: filter,
     with_payload: {
-      include: ["shamelaBookId", "pageNumber", "volumeNumber", "textSnippet"],
+      include: ["bookId", "pageNumber", "volumeNumber", "textSnippet"],
     },
     score_threshold: effectiveCutoff,
   });
 
-  return searchResults.map((result, index) => {
-    const payload = result.payload as {
-      bookId?: number;
-      shamelaBookId: string;
-      pageNumber: number;
-      volumeNumber: number;
-      textSnippet: string;
-    };
+  return searchResults
+    .map((result) => {
+      const payload = result.payload as {
+        bookId: string;
+        pageNumber: number;
+        volumeNumber: number;
+        textSnippet: string;
+      };
 
-    return {
-      bookId: payload.shamelaBookId,
-      pageNumber: payload.pageNumber,
-      volumeNumber: payload.volumeNumber,
-      textSnippet: payload.textSnippet,
-      highlightedSnippet: payload.textSnippet,
-      semanticRank: index + 1,
-      semanticScore: result.score,
-    };
-  });
+      return {
+        bookId: payload.bookId,
+        pageNumber: payload.pageNumber,
+        volumeNumber: payload.volumeNumber,
+        textSnippet: payload.textSnippet,
+        highlightedSnippet: payload.textSnippet,
+        semanticScore: result.score,
+      };
+    })
+    .filter(r => !EXCLUDED_BOOK_IDS.has(r.bookId))
+    .map((r, index) => ({ ...r, semanticRank: index + 1 }));
 }
 
 /**

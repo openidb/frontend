@@ -255,7 +255,7 @@ async function ensureAuthor(
           const existing = await prisma.authorWork.findFirst({
             where: {
               authorId: author.id,
-              shamelaBookId: work.shamela_id,
+              bookId: work.shamela_id,
             },
           });
 
@@ -263,7 +263,7 @@ async function ensureAuthor(
             await prisma.authorWork.create({
               data: {
                 authorId: author.id,
-                shamelaBookId: work.shamela_id,
+                bookId: work.shamela_id,
                 title: work.title,
               },
             });
@@ -307,7 +307,7 @@ async function ensureCategory(
     data: {
       nameArabic: categoryName,
       nameEnglish: null,
-      shamelaCategoryId: categoryId || null,
+      code: categoryId || null,
     },
   });
 

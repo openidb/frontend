@@ -15,7 +15,6 @@ datasource db {
 // ============================================================================
 
 model Author {
-  // Primary key is now the Shamela author ID (string), like Book
   id        String   @id @map("id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -50,8 +49,7 @@ model Category {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Shamela Integration
-  shamelaCategoryId String? @unique @map("shamela_category_id")
+  code String? @unique @map("code")
 
   // Names
   nameArabic  String  @unique @map("name_arabic")
@@ -97,7 +95,6 @@ model Editor {
 }
 
 model Book {
-  // Primary key is now the Shamela book ID (string)
   id        String   @id @map("id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -180,14 +177,14 @@ model AuthorWork {
   createdAt DateTime @default(now()) @map("created_at")
 
   authorId       String  @map("author_id")
-  shamelaBookId  String  @map("shamela_book_id")
+  bookId         String  @map("book_id")
   title          String
   isInCatalog    Boolean @default(false) @map("is_in_catalog")
 
   author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([authorId])
-  @@index([shamelaBookId])
+  @@index([bookId])
   @@map("author_works")
 }
 

@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import type {
   RerankerType,
   RankedResult,
@@ -6,11 +5,6 @@ import type {
   HadithRankedResult,
   UnifiedRefineResult,
 } from "./types";
-
-const openrouter = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
-});
 
 /**
  * Fetch with timeout using AbortController
@@ -137,96 +131,6 @@ function parseLLMRanking<T>(content: string, results: T[], topN: number): T[] | 
 }
 
 /**
- * Rerank results using Jina's multilingual reranker
- */
-async function rerankWithJina<T>(
-  query: string,
-  results: T[],
-  getText: (item: T) => string,
-  topN: number
-): Promise<{ results: T[]; timedOut: boolean }> {
-  if (results.length === 0 || !process.env.JINA_API_KEY) {
-    return { results: results.slice(0, topN), timedOut: false };
-  }
-
-  const TIMEOUT_MS = 10000;
-  try {
-    const response = await fetchWithTimeout("https://api.jina.ai/v1/rerank", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.JINA_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "jina-reranker-v2-base-multilingual",
-        query: query,
-        top_n: Math.min(topN, results.length),
-        documents: results.map((r) => getText(r)),
-      }),
-    }, TIMEOUT_MS);
-
-    if (!response.ok) {
-      throw new Error(`Jina API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return { results: data.results.map((r: { index: number }) => results[r.index]), timedOut: false };
-  } catch (err) {
-    const timedOut = err instanceof Error && err.name === 'AbortError';
-    if (timedOut) {
-      console.warn(`[Reranker] Jina timed out after ${TIMEOUT_MS}ms, using RRF order`);
-    } else {
-      console.warn("[Reranker] Jina failed, using RRF order:", err);
-    }
-    return { results: results.slice(0, topN), timedOut };
-  }
-}
-
-/**
- * Rerank results using Qwen embedding model (cosine similarity)
- */
-async function rerankWithQwen<T>(
-  query: string,
-  results: T[],
-  getText: (item: T) => string,
-  topN: number,
-  model: "qwen/qwen3-embedding-4b" | "qwen/qwen3-embedding-8b" = "qwen/qwen3-embedding-4b"
-): Promise<T[]> {
-  if (results.length === 0 || !process.env.OPENROUTER_API_KEY) {
-    return results.slice(0, topN);
-  }
-
-  try {
-    const documents = results.map((r) => getText(r));
-    const allTexts = [query, ...documents];
-
-    const response = await openrouter.embeddings.create({
-      model: model,
-      input: allTexts,
-    });
-
-    const embeddings = response.data.map(d => d.embedding);
-    const queryEmb = embeddings[0];
-    const docEmbs = embeddings.slice(1);
-
-    const scores = docEmbs.map((docEmb, index) => {
-      const dotProduct = queryEmb.reduce((sum, a, i) => sum + a * docEmb[i], 0);
-      const magQ = Math.sqrt(queryEmb.reduce((sum, a) => sum + a * a, 0));
-      const magD = Math.sqrt(docEmb.reduce((sum, a) => sum + a * a, 0));
-      return { index, score: dotProduct / (magQ * magD) };
-    });
-
-    return scores
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topN)
-      .map((s) => results[s.index]);
-  } catch (err) {
-    console.warn("Qwen reranking failed, using RRF order:", err);
-    return results.slice(0, topN);
-  }
-}
-
-/**
  * Rerank results using LLM via OpenRouter (GPT-OSS or Gemini)
  */
 async function rerankWithLLM<T>(
@@ -307,10 +211,6 @@ export async function rerank<T>(
       return rerankWithLLM(query, results, getText, topN, "openai/gpt-oss-120b", 20000);
     case "gemini-flash":
       return rerankWithLLM(query, results, getText, topN, "google/gemini-3-flash-preview", 15000);
-    case "jina":
-      return rerankWithJina(query, results, getText, topN);
-    case "qwen4b":
-      return { results: await rerankWithQwen(query, results, getText, topN, "qwen/qwen3-embedding-4b"), timedOut: false };
     default:
       return { results: results.slice(0, topN), timedOut: false };
   }
@@ -332,7 +232,7 @@ export async function rerankUnified(
   hadiths: HadithRankedResult[];
   books: RankedResult[];
 }> {
-  if (reranker === "none" || reranker === "jina" || reranker === "qwen4b") {
+  if (reranker === "none") {
     return { ayahs, hadiths, books };
   }
 
@@ -479,7 +379,7 @@ export async function rerankUnifiedRefine(
   hadiths: HadithRankedResult[];
   timedOut: boolean;
 }> {
-  if (reranker === "none" || reranker === "jina" || reranker === "qwen4b") {
+  if (reranker === "none") {
     return {
       books: books.slice(0, limits.books),
       ayahs: ayahs.slice(0, limits.ayahs),

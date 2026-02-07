@@ -210,6 +210,7 @@ export const hadithsIndexConfig: IndicesCreateRequest = {
       collection_slug: { type: "keyword" },
       collection_name_arabic: { type: "keyword" },
       collection_name_english: { type: "keyword" },
+      is_chain_variation: { type: "boolean" },
     },
   },
 };

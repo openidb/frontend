@@ -203,12 +203,12 @@ async function getExistingPointIds(): Promise<Set<string>> {
 async function processBatch(
   pages: Array<{
     id: number;
-    bookId: string;  // Now string (shamela book ID is primary key)
+    bookId: string;
     pageNumber: number;
     volumeNumber: number;
     contentPlain: string;
     book: {
-      id: string;  // Primary key (was shamelaBookId)
+      id: string;
       titleArabic: string;
       author: { nameArabic: string };
     };
@@ -230,7 +230,6 @@ async function processBatch(
     vector: embeddings[index],
     payload: {
       bookId: page.bookId,
-      shamelaBookId: page.book.id,  // For backward compatibility with existing embeddings
       pageNumber: page.pageNumber,
       volumeNumber: page.volumeNumber,
       bookTitle: page.book.titleArabic,
@@ -885,7 +884,7 @@ async function main() {
           contentPlain: true,
           book: {
             select: {
-              id: true,  // Primary key (was shamelaBookId)
+              id: true,
               titleArabic: true,
               author: {
                 select: { nameArabic: true },

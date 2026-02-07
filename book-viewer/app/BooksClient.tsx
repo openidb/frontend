@@ -17,7 +17,7 @@ import { useAppConfig, TranslationDisplayOption } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
 
 interface Author {
-  id: string;  // shamela_author_id is now the primary key
+  id: string;
   nameArabic: string;
   nameLatin: string;
   deathDateHijri: string | null;

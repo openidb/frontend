@@ -28,7 +28,7 @@ interface Book {
 }
 
 interface AuthorMetadata {
-  id: string;  // shamela_author_id is now the primary key 'id'
+  id: string;
   name_arabic: string;
   name_latin: string;
   death_date_hijri?: string;

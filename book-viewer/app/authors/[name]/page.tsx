@@ -52,7 +52,7 @@ export default async function AuthorDetailPage({
 
   // Transform author data to match the expected format for AuthorDetailClient
   const metadata = {
-    id: author.id,  // shamela_author_id is now the primary key 'id'
+    id: author.id,
     name_arabic: author.nameArabic,
     name_latin: author.nameLatin,
     death_date_hijri: author.deathDateHijri || undefined,
@@ -66,7 +66,7 @@ export default async function AuthorDetailPage({
 
   // Transform books data to match the expected format
   const books = author.books.map((book) => ({
-    id: book.id,  // Primary key is now the shamela book ID
+    id: book.id,
     title: book.titleArabic,
     titleLatin: book.titleLatin,
     author: author.nameArabic,

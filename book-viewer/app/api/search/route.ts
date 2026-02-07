@@ -3,8 +3,8 @@
  *
  * GET /api/search?q={query}&limit={20}&mode={hybrid|semantic|keyword}&bookId={optional}
  *     &includeQuran={true}&includeHadith={true}&includeBooks={true}
- *     &reranker={qwen4b|qwen8b|jina|none}&similarityCutoff={0.6}
- *     &preRerankLimit={50}&postRerankLimit={10}
+ *     &reranker={gpt-oss-20b|gpt-oss-120b|gemini-flash|none}&similarityCutoff={0.6}
+ *     &bookLimit={10}
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -55,7 +55,7 @@ import type {
   TopResultBreakdown,
   ExpandedQueryStats,
 } from "./types";
-import { EXCLUDED_BOOK_IDS, MIN_CHARS_FOR_SEMANTIC, RRF_K, SEMANTIC_WEIGHT, KEYWORD_WEIGHT } from "./config";
+import { MIN_CHARS_FOR_SEMANTIC, RRF_K, SEMANTIC_WEIGHT, KEYWORD_WEIGHT } from "./config";
 import { hasQuotedPhrases, getSearchStrategy } from "./query-utils";
 import { calculateRRFScore, mergeWithRRF, mergeWithRRFGeneric, getMatchType, mergeAndDeduplicateBooks, mergeAndDeduplicateAyahs, mergeAndDeduplicateHadiths } from "./fusion";
 import { rerankUnifiedRefine } from "./rerankers";
@@ -83,9 +83,7 @@ export async function GET(request: NextRequest) {
     ? rerankerParam
     : "none";
   const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.6");
-  const refineSimilarityCutoff = parseFloat(searchParams.get("refineSimilarityCutoff") || "0.25");
-  const preRerankLimit = Math.min(Math.max(parseInt(searchParams.get("preRerankLimit") || "50", 10), 20), 200);
-  const postRerankLimit = Math.min(Math.max(parseInt(searchParams.get("postRerankLimit") || "10", 10), 5), 50);
+  const bookLimit = Math.min(Math.max(parseInt(searchParams.get("bookLimit") || "10", 10), 5), 50);
 
   // Fuzzy search
   const fuzzyEnabled = searchParams.get("fuzzy") !== "false";
@@ -98,6 +96,7 @@ export async function GET(request: NextRequest) {
 
   // Refine search parameters
   const refine = searchParams.get("refine") === "true";
+  const refineSimilarityCutoff = refine ? parseFloat(searchParams.get("refineSimilarityCutoff") || "0.25") : 0.25;
   const refineOriginalWeight = Math.min(Math.max(parseFloat(searchParams.get("refineOriginalWeight") || "1.0"), 0.5), 1.0);
   const refineExpandedWeight = Math.min(Math.max(parseFloat(searchParams.get("refineExpandedWeight") || "0.7"), 0.3), 1.0);
   const refineBookPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineBookPerQuery") || "30", 10), 10), 60);
@@ -141,7 +140,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const searchOptions = { reranker, preRerankLimit, postRerankLimit, similarityCutoff };
+  const searchOptions = { reranker, similarityCutoff };
   const fuzzyOptions = { fuzzyFallback: fuzzyEnabled };
 
   try {
@@ -336,7 +335,9 @@ export async function GET(request: NextRequest) {
       // ========================================================================
       const normalizedQuery = normalizeArabicText(query);
       const shouldSkipSemantic = normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(query);
-      const fetchLimit = mode === "hybrid" ? preRerankLimit : limit;
+      const fetchLimit = mode === "hybrid" ? 50 : limit;
+      const ayahLimit = Math.min(limit, 30);
+      const hadithLimit = Math.min(limit, 30);
 
       // PHASE 1: Start keyword searches AND embedding generation in parallel
       const _embStart = Date.now();
@@ -424,45 +425,45 @@ export async function GET(request: NextRequest) {
       } else {
         const merged = mergeWithRRF(semanticBooksResults, keywordBooksResults, query);
         totalAboveCutoff = merged.length;
-        rankedResults = merged.slice(0, postRerankLimit);
+        rankedResults = merged.slice(0, bookLimit);
       }
 
       // Ayahs: merge semantic + keyword
       if (bookId || !includeQuran) {
         ayahsRaw = [];
       } else if (mode === "keyword") {
-        ayahsRaw = keywordAyahsResults.slice(0, 12).map(a => ({
+        ayahsRaw = keywordAyahsResults.slice(0, ayahLimit).map(a => ({
           ...a,
           score: normalizeBM25Score(a.bm25Score ?? a.score ?? 0),
         }));
       } else if (mode === "semantic") {
-        ayahsRaw = semanticAyahsResults.slice(0, 12);
+        ayahsRaw = semanticAyahsResults.slice(0, ayahLimit);
       } else {
         ayahsRaw = mergeWithRRFGeneric(
           semanticAyahsResults,
           keywordAyahsResults,
           (a) => `${a.surahNumber}-${a.ayahNumber}`,
           query
-        ).slice(0, 12);
+        ).slice(0, ayahLimit);
       }
 
       // Hadiths: merge semantic + keyword
       if (bookId || !includeHadith) {
         hadiths = [];
       } else if (mode === "keyword") {
-        hadiths = keywordHadithsResults.slice(0, 15).map(h => ({
+        hadiths = keywordHadithsResults.slice(0, hadithLimit).map(h => ({
           ...h,
           score: normalizeBM25Score(h.bm25Score ?? h.score ?? 0),
         }));
       } else if (mode === "semantic") {
-        hadiths = semanticHadithsResults.slice(0, 15);
+        hadiths = semanticHadithsResults.slice(0, hadithLimit);
       } else {
         hadiths = mergeWithRRFGeneric(
           semanticHadithsResults,
           keywordHadithsResults,
           (h) => `${h.collectionSlug}-${h.hadithNumber}`,
           query
-        ).slice(0, 15);
+        ).slice(0, hadithLimit);
       }
 
       _timing.merge = Date.now() - _mergeStart;
@@ -682,15 +683,13 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        for (const ayah of ayahsRaw) {
+        ayahsRaw = ayahsRaw.map(ayah => {
           const ayahRef = `${ayah.surahNumber}:${ayah.ayahNumber}`;
           if (graphQuranRefs.has(ayahRef)) {
-            (ayah as AyahResult & { graphConfirmed?: boolean }).graphConfirmed = true;
-            ayah.score = Math.min(1.0, ayah.score + 0.05);
+            return { ...ayah, score: Math.min(1.0, ayah.score + 0.05), graphConfirmed: true } as AyahResult & { graphConfirmed: boolean };
           }
-        }
-
-        ayahsRaw.sort((a, b) => b.score - a.score);
+          return ayah;
+        }).sort((a, b) => b.score - a.score);
       } catch (err) {
         console.error("[GraphContext] resolution error:", err);
       }
@@ -698,9 +697,8 @@ export async function GET(request: NextRequest) {
 
     // Format results
     const bookMap = new Map(books.map((b) => [b.id, b]));
-    const filteredRankedResults = rankedResults.filter(r => !EXCLUDED_BOOK_IDS.has(r.bookId));
 
-    const results: SearchResult[] = filteredRankedResults.map((result, index) => {
+    const results: SearchResult[] = rankedResults.map((result, index) => {
       const matchType = getMatchType(result);
       const book = bookMap.get(result.bookId) || null;
       const r = result as typeof result & { fusedScore?: number };
@@ -739,7 +737,7 @@ export async function GET(request: NextRequest) {
     }> = [];
 
     for (let i = 0; i < results.length; i++) {
-      unifiedResults.push({ type: 'book', score: results[i].score, data: results[i], rankedData: filteredRankedResults[i] });
+      unifiedResults.push({ type: 'book', score: results[i].score, data: results[i], rankedData: rankedResults[i] });
     }
     for (const a of ayahs) {
       const rankedAyah = a as AyahRankedResult & { fusedScore?: number };

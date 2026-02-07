@@ -149,7 +149,7 @@ function detectContentFlags(text: string): {
  */
 async function extractPagesFromEpub(
   epubPath: string,
-  bookId: string  // Primary key is now the shamela book ID
+  bookId: string
 ): Promise<number> {
   const epubData = fs.readFileSync(epubPath);
   const zip = await JSZip.loadAsync(epubData);
@@ -242,7 +242,7 @@ async function main() {
   // Get all books from database
   const books = await prisma.book.findMany({
     select: {
-      id: true,  // Primary key (now shamela book ID)
+      id: true,
       titleArabic: true,
       filename: true,
       _count: {
@@ -283,7 +283,7 @@ async function main() {
 
       const pageCount = await extractPagesFromEpub(
         epubPath,
-        book.id  // Primary key is now the shamela book ID
+        book.id
       );
 
       console.log(`  +  ${book.titleArabic.slice(0, 40)}... (${pageCount} pages)`);
