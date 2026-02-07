@@ -42,7 +42,15 @@
     "fusion": "Fusi",
     "keyword": "Kata kunci",
     "embedding": "Embedding",
-    "ayahs": "ayat"
+    "ayahs": "ayat",
+    "voiceRecord": "Pencarian suara",
+    "voiceTranscribing": "Mentranskrip...",
+    "voiceError": "Input suara gagal. Silakan coba lagi.",
+    "knowledgePanel": "Panel Pengetahuan",
+    "mentionedInQuran": "Disebutkan dalam Al-Quran",
+    "entityRelationships": "Hubungan",
+    "sourceText": "Sumber",
+    "graphCoverage": "Grafik pengetahuan mencakup 3 surah percontohan (cakupan parsial)"
   },
   "algorithm": {
     "pipelineOverview": "Gambaran Pipeline Pencarian",

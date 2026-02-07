@@ -42,7 +42,15 @@
     "fusion": "Fusion",
     "keyword": "Keyword",
     "embedding": "Embedding",
-    "ayahs": "ayahs"
+    "ayahs": "ayahs",
+    "voiceRecord": "Voice search",
+    "voiceTranscribing": "Transcribing...",
+    "voiceError": "Voice input failed. Please try again.",
+    "knowledgePanel": "Knowledge Panel",
+    "mentionedInQuran": "Mentioned in Quran",
+    "entityRelationships": "Relationships",
+    "sourceText": "Sources",
+    "graphCoverage": "Knowledge graph covers 3 pilot surahs (partial coverage)"
   },
   "algorithm": {
     "pipelineOverview": "Search Pipeline Overview",

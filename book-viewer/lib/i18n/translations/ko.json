@@ -42,7 +42,15 @@
     "fusion": "융합",
     "keyword": "키워드",
     "embedding": "임베딩",
-    "ayahs": "아야"
+    "ayahs": "아야",
+    "voiceRecord": "음성 검색",
+    "voiceTranscribing": "변환 중...",
+    "voiceError": "음성 입력에 실패했습니다. 다시 시도해 주세요.",
+    "knowledgePanel": "지식 패널",
+    "mentionedInQuran": "꾸란에서 언급",
+    "entityRelationships": "관계",
+    "sourceText": "출처",
+    "graphCoverage": "지식 그래프는 3개 시범 수라를 포함합니다 (부분 적용)"
   },
   "algorithm": {
     "pipelineOverview": "검색 파이프라인 개요",

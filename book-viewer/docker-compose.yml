@@ -9,7 +9,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - /opt/sanad/postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sanad"]
       interval: 5s
@@ -23,10 +23,27 @@ services:
       - "6333:6333"
       - "6334:6334"
     volumes:
-      - /opt/sanad/qdrant-data:/qdrant/storage
+      - qdrant_data:/qdrant/storage
     healthcheck:
       test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/6333' || exit 1"]
       interval: 5s
+      timeout: 5s
+      retries: 10
+
+  neo4j:
+    image: neo4j:5-community
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/sanad_graph_123
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p sanad_graph_123 'RETURN 1' || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 10
 
@@ -56,20 +73,23 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://sanad:sanad123@db:5432/arabic_library
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/arabic_texts_library
       QDRANT_URL: http://qdrant:6333
       QDRANT_COLLECTION: arabic_texts_pages
       ELASTICSEARCH_URL: http://elasticsearch:9200
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
       NODE_ENV: production
     volumes:
       - ./public/books:/app/public/books:ro
     depends_on:
-      db:
-        condition: service_healthy
       qdrant:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
 
 volumes:
+  postgres_data:
+  qdrant_data:
+  neo4j_data:
   elasticsearch_data:

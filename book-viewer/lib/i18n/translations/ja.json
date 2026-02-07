@@ -42,7 +42,15 @@
     "fusion": "融合",
     "keyword": "キーワード",
     "embedding": "埋め込み",
-    "ayahs": "アーヤ"
+    "ayahs": "アーヤ",
+    "voiceRecord": "音声検索",
+    "voiceTranscribing": "文字起こし中...",
+    "voiceError": "音声入力に失敗しました。もう一度お試しください。",
+    "knowledgePanel": "ナレッジパネル",
+    "mentionedInQuran": "クルアーンでの言及",
+    "entityRelationships": "関係",
+    "sourceText": "出典",
+    "graphCoverage": "ナレッジグラフは3つのパイロット章をカバー（部分的カバレッジ）"
   },
   "algorithm": {
     "pipelineOverview": "検索パイプライン概要",

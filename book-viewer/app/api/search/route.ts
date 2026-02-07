@@ -42,6 +42,15 @@ import {
   generateSunnahComUrl,
 } from "@/lib/elasticsearch-search";
 import { getCachedExpansion, setCachedExpansion } from "@/lib/query-expansion-cache";
+import {
+  searchEntities,
+  resolveSources,
+  resolveGraphMentions,
+  type GraphSearchResult,
+  type GraphContext,
+  type GraphContextEntity,
+  type ResolvedSource,
+} from "@/lib/neo4j-search";
 
 // OpenRouter client for Qwen embeddings
 const openrouter = new OpenAI({
@@ -2385,6 +2394,9 @@ export async function GET(request: NextRequest) {
   const refineHadithRerank = Math.min(Math.max(parseInt(searchParams.get("refineHadithRerank") || "15", 10), 5), 25);
   const queryExpansionModel = searchParams.get("queryExpansionModel") || "gemini-flash";
 
+  // Graph search parameter — enables Neo4j knowledge graph augmentation
+  const includeGraph = searchParams.get("includeGraph") !== "false"; // Default true
+
   // Embedding model selection
   const embeddingModelParam = searchParams.get("embeddingModel") as EmbeddingModel | null;
   const embeddingModel: EmbeddingModel = embeddingModelParam === "bge-m3" ? "bge-m3" : "gemini";
@@ -2465,6 +2477,7 @@ export async function GET(request: NextRequest) {
       rerank: 0,
       translations: 0,
       bookMetadata: 0,
+      graph: 0,
     };
 
     // Request-scoped cache for book metadata to avoid redundant fetches
@@ -2526,6 +2539,15 @@ export async function GET(request: NextRequest) {
     if (searchStrategy === 'semantic_only') {
       console.log(`[Search] Non-Arabic query detected, using semantic-only search`);
     }
+
+    // Start graph search early (fast full-text, <20ms) — runs in both refine and standard mode
+    const _graphStart = Date.now();
+    const emptyGraphResult: GraphSearchResult = { entities: [], allSourceRefs: [], timingMs: 0 };
+    const graphPromise: Promise<GraphSearchResult> = includeGraph
+      ? searchEntities(normalizeArabicText(query))
+          .then(res => { _timing.graph = Date.now() - _graphStart; return res; })
+          .catch(() => emptyGraphResult)
+      : Promise.resolve(emptyGraphResult);
 
     // ========================================================================
     // REFINE SEARCH: Query expansion + multi-query retrieval + merge
@@ -2857,7 +2879,8 @@ export async function GET(request: NextRequest) {
     // Note: Cross-type reranking is now only done in refine mode via unified reranking
     // Standard search uses RRF fusion only (no reranking API calls)
 
-    // Wait for author search to complete
+    // Wait for graph + author search to complete (both were started before if/else)
+    const graphResult = await graphPromise;
     const _authorSearchStart = Date.now();
     const authorsRaw = await authorsPromise;
     _timing.authorSearch = Date.now() - _authorSearchStart;
@@ -3063,6 +3086,76 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // ========================================================================
+    // Graph context resolution — resolve sources + mentions from PostgreSQL
+    // ========================================================================
+    let graphContext: GraphContext | undefined;
+    if (includeGraph && graphResult.entities.length > 0) {
+      try {
+        const _graphResolveStart = Date.now();
+        // Resolve sources and mentions in parallel
+        const [resolvedSources, resolvedMentions] = await Promise.all([
+          resolveSources(graphResult.allSourceRefs),
+          resolveGraphMentions(graphResult.entities),
+        ]);
+
+        // Build fully resolved graph context
+        const contextEntities: GraphContextEntity[] = graphResult.entities.map((entity, i) => ({
+          id: entity.id,
+          type: entity.type,
+          nameArabic: entity.nameArabic,
+          nameEnglish: entity.nameEnglish,
+          descriptionArabic: entity.descriptionArabic,
+          descriptionEnglish: entity.descriptionEnglish,
+          sources: entity.sources
+            .map((s) => resolvedSources.get(`${s.type}:${s.ref}`))
+            .filter((s): s is ResolvedSource => s !== undefined),
+          relationships: entity.relationships.map((rel) => ({
+            type: rel.type,
+            targetNameArabic: rel.targetNameArabic,
+            targetNameEnglish: rel.targetNameEnglish,
+            description: rel.description,
+            sources: rel.sources
+              .map((s) => resolvedSources.get(`${s.type}:${s.ref}`))
+              .filter((s): s is ResolvedSource => s !== undefined),
+          })),
+          mentionedIn: resolvedMentions[i] || [],
+        }));
+
+        graphContext = {
+          entities: contextEntities,
+          coverage: "partial",
+          timingMs: graphResult.timingMs + (Date.now() - _graphResolveStart),
+        };
+
+        // Graph confirmation boost: ayah results whose surah:ayah also appears
+        // in entity sources get a small score boost
+        const graphQuranRefs = new Set<string>();
+        for (const entity of graphResult.entities) {
+          for (const s of entity.sources) {
+            if (s.type === "quran") graphQuranRefs.add(s.ref);
+          }
+          for (const m of entity.mentionedIn) {
+            graphQuranRefs.add(m.ayahGroupId);
+          }
+        }
+
+        for (const ayah of ayahsRaw) {
+          const ayahRef = `${ayah.surahNumber}:${ayah.ayahNumber}`;
+          if (graphQuranRefs.has(ayahRef)) {
+            (ayah as AyahResult & { graphConfirmed?: boolean }).graphConfirmed = true;
+            ayah.score = Math.min(1.0, ayah.score + 0.05);
+          }
+        }
+
+        // Re-sort ayahs after boost
+        ayahsRaw.sort((a, b) => b.score - a.score);
+      } catch (err) {
+        console.error("[GraphContext] resolution error:", err);
+        // Graceful fallback — no graph context
+      }
+    }
+
     // Create lookup map for all books (no filtering by era)
     const bookMap = new Map(books.map((b) => [b.id, b]));
 
@@ -3250,6 +3343,7 @@ export async function GET(request: NextRequest) {
         ...(_timing.rerank > 0 && { rerank: _timing.rerank }),
         translations: _timing.translations,
         bookMetadata: _timing.bookMetadata,
+        ...(_timing.graph > 0 && { graph: _timing.graph }),
       },
     };
 
@@ -3262,6 +3356,7 @@ export async function GET(request: NextRequest) {
       ayahs,
       hadiths,
       debugStats,
+      ...(graphContext && { graphContext }),
       ...(refine && {
         refined: true,
         expandedQueries,

@@ -42,7 +42,15 @@
     "fusion": "Слияние",
     "keyword": "Ключевые слова",
     "embedding": "Эмбеддинг",
-    "ayahs": "аятов"
+    "ayahs": "аятов",
+    "voiceRecord": "Голосовой поиск",
+    "voiceTranscribing": "Транскрибирование...",
+    "voiceError": "Голосовой ввод не удался. Попробуйте снова.",
+    "knowledgePanel": "Панель знаний",
+    "mentionedInQuran": "Упоминается в Коране",
+    "entityRelationships": "Связи",
+    "sourceText": "Источники",
+    "graphCoverage": "Граф знаний охватывает 3 пилотные суры (частичное покрытие)"
   },
   "algorithm": {
     "pipelineOverview": "Обзор конвейера поиска",

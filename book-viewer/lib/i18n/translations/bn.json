@@ -42,7 +42,15 @@
     "fusion": "ফিউশন",
     "keyword": "কীওয়ার্ড",
     "embedding": "এমবেডিং",
-    "ayahs": "আয়াত"
+    "ayahs": "আয়াত",
+    "voiceRecord": "ভয়েস অনুসন্ধান",
+    "voiceTranscribing": "প্রতিলিপি হচ্ছে...",
+    "voiceError": "ভয়েস ইনপুট ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+    "knowledgePanel": "জ্ঞান প্যানেল",
+    "mentionedInQuran": "কুরআনে উল্লেখিত",
+    "entityRelationships": "সম্পর্কসমূহ",
+    "sourceText": "সূত্র",
+    "graphCoverage": "জ্ঞান গ্রাফ ৩টি পাইলট সূরা কভার করে (আংশিক কভারেজ)"
   },
   "algorithm": {
     "pipelineOverview": "অনুসন্ধান পাইপলাইন সারসংক্ষেপ",

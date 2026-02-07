@@ -42,7 +42,15 @@
     "fusion": "Fusione",
     "keyword": "Parole chiave",
     "embedding": "Embedding",
-    "ayahs": "versetti"
+    "ayahs": "versetti",
+    "voiceRecord": "Ricerca vocale",
+    "voiceTranscribing": "Trascrizione...",
+    "voiceError": "Input vocale fallito. Riprova.",
+    "knowledgePanel": "Pannello di conoscenza",
+    "mentionedInQuran": "Menzionato nel Corano",
+    "entityRelationships": "Relazioni",
+    "sourceText": "Fonti",
+    "graphCoverage": "Il grafo copre 3 sure pilota (copertura parziale)"
   },
   "algorithm": {
     "pipelineOverview": "Panoramica del pipeline di ricerca",

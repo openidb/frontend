@@ -42,7 +42,15 @@
     "fusion": "Fusao",
     "keyword": "Palavras-chave",
     "embedding": "Embedding",
-    "ayahs": "versiculos"
+    "ayahs": "versiculos",
+    "voiceRecord": "Pesquisa por voz",
+    "voiceTranscribing": "Transcrevendo...",
+    "voiceError": "A entrada de voz falhou. Tente novamente.",
+    "knowledgePanel": "Painel de conhecimento",
+    "mentionedInQuran": "Mencionado no Alcorao",
+    "entityRelationships": "Relacoes",
+    "sourceText": "Fontes",
+    "graphCoverage": "O grafo cobre 3 suras piloto (cobertura parcial)"
   },
   "algorithm": {
     "pipelineOverview": "Visao geral do pipeline de busca",

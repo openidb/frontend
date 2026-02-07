@@ -42,7 +42,15 @@
     "fusion": "فیوژن",
     "keyword": "کلیدی الفاظ",
     "embedding": "ایمبیڈنگ",
-    "ayahs": "آیات"
+    "ayahs": "آیات",
+    "voiceRecord": "آواز سے تلاش",
+    "voiceTranscribing": "نقل حرفی ہو رہی ہے...",
+    "voiceError": "آواز کی ان پٹ ناکام ہوئی۔ دوبارہ کوشش کریں۔",
+    "knowledgePanel": "علمی پینل",
+    "mentionedInQuran": "قرآن میں مذکور",
+    "entityRelationships": "تعلقات",
+    "sourceText": "مصادر",
+    "graphCoverage": "علمی گراف ۳ تجرباتی سورتوں کا احاطہ کرتا ہے (جزوی کوریج)"
   },
   "algorithm": {
     "pipelineOverview": "تلاش پائپ لائن کا جائزہ",

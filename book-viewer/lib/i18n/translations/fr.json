@@ -42,7 +42,15 @@
     "fusion": "Fusion",
     "keyword": "Mots-cles",
     "embedding": "Embedding",
-    "ayahs": "versets"
+    "ayahs": "versets",
+    "voiceRecord": "Recherche vocale",
+    "voiceTranscribing": "Transcription...",
+    "voiceError": "La saisie vocale a echoue. Veuillez reessayer.",
+    "knowledgePanel": "Panneau de connaissances",
+    "mentionedInQuran": "Mentionne dans le Coran",
+    "entityRelationships": "Relations",
+    "sourceText": "Sources",
+    "graphCoverage": "Le graphe couvre 3 sourates pilotes (couverture partielle)"
   },
   "algorithm": {
     "pipelineOverview": "Apercu du pipeline de recherche",

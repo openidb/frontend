@@ -42,7 +42,15 @@
     "fusion": "Fusion",
     "keyword": "Palabras clave",
     "embedding": "Embedding",
-    "ayahs": "aleyas"
+    "ayahs": "aleyas",
+    "voiceRecord": "Busqueda por voz",
+    "voiceTranscribing": "Transcribiendo...",
+    "voiceError": "La entrada de voz fallo. Intentelo de nuevo.",
+    "knowledgePanel": "Panel de conocimiento",
+    "mentionedInQuran": "Mencionado en el Coran",
+    "entityRelationships": "Relaciones",
+    "sourceText": "Fuentes",
+    "graphCoverage": "El grafo cubre 3 suras piloto (cobertura parcial)"
   },
   "algorithm": {
     "pipelineOverview": "Vision general del pipeline de busqueda",

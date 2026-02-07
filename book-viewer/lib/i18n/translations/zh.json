@@ -42,7 +42,15 @@
     "fusion": "融合",
     "keyword": "关键词",
     "embedding": "嵌入",
-    "ayahs": "节"
+    "ayahs": "节",
+    "voiceRecord": "语音搜索",
+    "voiceTranscribing": "正在转录...",
+    "voiceError": "语音输入失败。请重试。",
+    "knowledgePanel": "知识面板",
+    "mentionedInQuran": "古兰经中提及",
+    "entityRelationships": "关系",
+    "sourceText": "来源",
+    "graphCoverage": "知识图谱覆盖3个试点章节（部分覆盖）"
   },
   "algorithm": {
     "pipelineOverview": "搜索管道概述",

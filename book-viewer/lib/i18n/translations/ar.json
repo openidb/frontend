@@ -42,7 +42,15 @@
     "fusion": "الدمج",
     "keyword": "الكلمات المفتاحية",
     "embedding": "التضمين",
-    "ayahs": "آية"
+    "ayahs": "آية",
+    "voiceRecord": "البحث الصوتي",
+    "voiceTranscribing": "جارٍ التحويل...",
+    "voiceError": "فشل الإدخال الصوتي. يرجى المحاولة مرة أخرى.",
+    "knowledgePanel": "لوحة المعرفة",
+    "mentionedInQuran": "ورد في القرآن",
+    "entityRelationships": "العلاقات",
+    "sourceText": "المصادر",
+    "graphCoverage": "تغطي شبكة المعرفة ٣ سور تجريبية (تغطية جزئية)"
   },
   "algorithm": {
     "pipelineOverview": "نظرة عامة على مسار البحث",

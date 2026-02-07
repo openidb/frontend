@@ -15,6 +15,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+# Dummy keys for build-time module initialization only (not used at runtime)
+ENV OPENROUTER_API_KEY="sk-dummy"
+ENV GROQ_API_KEY="gsk-dummy"
 RUN bunx prisma generate
 RUN bun run build
 

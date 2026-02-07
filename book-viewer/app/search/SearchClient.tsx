@@ -13,6 +13,8 @@ import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import AlgorithmDescription from "@/components/AlgorithmDescription";
 import { RefiningCarousel } from "@/components/RefiningCarousel";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import EntityPanel, { type GraphContext } from "@/components/EntityPanel";
 
 interface AuthorResultData {
   id: number;
@@ -104,6 +106,7 @@ interface DebugStats {
     rerank?: number;
     translations: number;
     bookMetadata: number;
+    graph?: number;
   };
 }
 
@@ -118,6 +121,7 @@ interface SearchResponse {
   refined?: boolean;
   expandedQueries?: ExpandedQueryData[];
   debugStats?: DebugStats;
+  graphContext?: GraphContext;
 }
 
 interface SearchClientProps {
@@ -139,8 +143,11 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const [isRefined, setIsRefined] = useState(false);
   const [expandedQueries, setExpandedQueries] = useState<ExpandedQueryData[]>([]);
   const [debugStats, setDebugStats] = useState<DebugStats | null>(null);
+  const [graphContext, setGraphContext] = useState<GraphContext | null>(null);
   const [showDebugStats, setShowDebugStats] = useState(false);
   const [showAlgorithm, setShowAlgorithm] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const restoredQueryRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -294,6 +301,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setIsRefined(data.refined || false);
       setExpandedQueries(data.expandedQueries || []);
       setDebugStats(data.debugStats || null);
+      setGraphContext(data.graphContext || null);
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
@@ -424,9 +432,17 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
     setExpandedQueries([]);
     setIsRefined(false);
     setDebugStats(null);
+    setGraphContext(null);
     setShowDebugStats(false);
     window.history.replaceState({}, "", "/search");
   };
+
+  // Handle voice transcription result
+  const handleTranscription = useCallback((text: string) => {
+    setQuery(text);
+    setVoiceError(null);
+    triggerSearch(text, searchConfig);
+  }, [triggerSearch, searchConfig]);
 
   return (
     <div className="p-4 md:p-8">
@@ -442,39 +458,52 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       <div className="max-w-2xl mx-auto mb-6 md:mb-8">
         <div className="flex gap-2" suppressHydrationWarning>
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={t("search.placeholder")}
-              className="text-base md:text-sm h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg"
-              dir="auto"
-              value={query}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
-            {query && (
-              <button
-                onClick={handleClear}
-                className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
-              >
-                <X className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
-              </button>
+            {!isRecording && (
+              <>
+                <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder={t("search.placeholder")}
+                  className="text-base md:text-sm h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg"
+                  dir="auto"
+                  value={query}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                />
+                {query && (
+                  <button
+                    onClick={handleClear}
+                    className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
+                  >
+                    <X className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                  </button>
+                )}
+              </>
             )}
+            <VoiceRecorder
+              showMic={!query && !isRecording}
+              onRecordingChange={(recording) => { setIsRecording(recording); if (recording) setVoiceError(null); }}
+              onTranscription={handleTranscription}
+              onError={(msg) => setVoiceError(msg)}
+            />
           </div>
           <Button
             onClick={handleRefineSearch}
-            disabled={query.length < 2 || isRefining}
+            disabled={query.length < 2 || isRefining || isRecording}
             className="h-10 md:h-12 px-3 md:px-6 shrink-0 border box-border hover:opacity-90 focus:outline-none focus-visible:ring-0 active:transform-none"
             style={{
-              borderColor: "#31b9c9",
-              backgroundColor: "#31b9c9",
-              color: "#ffffff"
+              borderColor: isRecording ? undefined : "#31b9c9",
+              backgroundColor: isRecording ? undefined : "#31b9c9",
+              color: isRecording ? undefined : "#ffffff"
             }}
           >
             {isRefining ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : t("search.refineSearch")}
           </Button>
           <SearchConfigDropdown config={searchConfig} onChange={handleConfigChange} />
         </div>
+        {voiceError && (
+          <p className="text-sm text-red-500 mt-2 text-center">{voiceError}</p>
+        )}
       </div>
 
       {/* Results Section */}
@@ -547,6 +576,17 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Entity Knowledge Panel */}
+        {!isLoading && !isRefining && graphContext && graphContext.entities.length > 0 && (
+          <EntityPanel
+            graphContext={graphContext}
+            onEntityClick={(nameArabic) => {
+              setQuery(nameArabic);
+              fetchResults(nameArabic, searchConfig, false);
+            }}
+          />
         )}
 
         {/* Unified Results Count and Refined indicator */}
@@ -651,6 +691,9 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                   )}
                   <div><span className="text-muted-foreground">Translations:</span> <span className="font-mono">{debugStats.timing.translations}ms</span></div>
                   <div><span className="text-muted-foreground">Book Meta:</span> <span className="font-mono">{debugStats.timing.bookMetadata}ms</span></div>
+                  {debugStats.timing.graph !== undefined && (
+                    <div><span className="text-muted-foreground">Graph:</span> <span className="font-mono">{debugStats.timing.graph}ms</span></div>
+                  )}
                 </div>
                 {/* Detailed breakdown */}
                 <div className="text-[10px] font-mono text-muted-foreground bg-muted/30 p-2 rounded">
