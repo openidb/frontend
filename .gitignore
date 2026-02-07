@@ -84,5 +84,10 @@ shamela-scraper/data/
 shamela-scraper/debug/
 shamela-scraper/test_output/
 
+# Training data, model outputs, and cache
+book-viewer/training/data/
+book-viewer/training/outputs/
+book-viewer/.cache/
+
 # Embedding server
 embedding-server/venv/
