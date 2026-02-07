@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "paths": { "@web/*": ["../web/*"] },
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "noEmit": true
+  }
+}

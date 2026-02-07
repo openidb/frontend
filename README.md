@@ -15,45 +15,36 @@ A hybrid search engine for classical Arabic Islamic texts, combining semantic (A
 - **EPUB Reader** - Built-in reader with navigation and in-book search
 - **Dark Mode & RTL** - Full Arabic support
 
-## Content Sources
+## Project Structure
 
-| Type | Source | Links To |
-|------|--------|----------|
-| Quran | Database (tafsir-enriched embeddings) | [quran.com](https://quran.com) |
-| Hadith | [sunnah.com](https://sunnah.com) | sunnah.com |
-| Books | [shamela.ws](https://shamela.ws) | Built-in reader |
-
-## Ranking Algorithm
-
-### 1. Parallel Retrieval
-- **Semantic**: Qdrant vector search with `google/gemini-embedding-001` (3072d)
-- **Keyword**: Elasticsearch BM25 (k1=1.2, b=0.75) with fuzzy matching
-
-### 2. Score Fusion
 ```
-fusedScore = semanticScore + 0.15 × (bm25Score / (bm25Score + 5))
+arabic-texts-library/
+├── web/                    # Next.js app (Sanad)
+│   ├── app/                #   App Router (pages + API routes)
+│   ├── components/         #   React components
+│   ├── lib/                #   Core libraries (db, qdrant, embeddings, search, graph)
+│   ├── prisma/             #   Schema + migrations
+│   └── public/             #   Static assets (books, fonts)
+│
+├── pipelines/              # Data pipelines (TypeScript, run with bun)
+│   ├── import/             #   Import scripts (epubs, quran, hadith, tafsir)
+│   ├── embed/              #   Embedding generation
+│   ├── index/              #   Elasticsearch index scripts
+│   ├── knowledge-graph/    #   Neo4j scripts
+│   ├── benchmark/          #   Technique benchmarks
+│   └── _archive/           #   One-time/archived scripts
+│
+├── scrapers/               # Web scrapers (Python)
+│   ├── shamela/            #   shamela.ws scraper
+│   └── openiti/            #   OpenITI EPUB converter
+│
+├── training/               # BGE-M3 fine-tuning + embedding server
+│   ├── embedding-server/   #   Python FastAPI server
+│   ├── scripts/            #   Training data generation
+│   └── *.py, *.ipynb       #   Fine-tuning code
+│
+└── docker-compose.yml      # All infrastructure (Postgres, Qdrant, ES, Neo4j, web)
 ```
-Results appearing in both get a confirmation bonus. RRF (k=60) used as tiebreaker.
-
-### 3. Reranking (Optional)
-
-| Option | Model | Speed |
-|--------|-------|-------|
-| None | RRF only | Fastest |
-| Jina | jina-reranker-v2-base-multilingual | Fast |
-| Gemini | google/gemini-2.0-flash-001 | Medium |
-| GPT-OSS | openai/gpt-oss-120b | Slower |
-
-### 4. Refine Search (Optional)
-Query expansion via `google/gemini-3-flash-preview` generates 4 alternative queries, searches in parallel, merges with weighted RRF, then reranks across all content types.
-
-## Debug Panel
-
-Click the bug icon to see:
-- **Timing breakdown** - Embedding, semantic, keyword, merge, rerank times
-- **Algorithm params** - BM25 settings, RRF k, embedding model, cutoff
-- **Score breakdown** - Each result's keyword, semantic, and final scores
-- **Refine stats** - Expanded queries, candidate counts, cache status
 
 ## Tech Stack
 
@@ -63,8 +54,26 @@ Click the bug icon to see:
 | Database | PostgreSQL 16, Prisma |
 | Vector Search | Qdrant |
 | Keyword Search | Elasticsearch 8.12 |
+| Knowledge Graph | Neo4j 5 |
 | Embeddings | google/gemini-embedding-001 (3072d) |
 | Reranking | Jina, Gemini, GPT-OSS via OpenRouter |
+
+## Setup
+
+```bash
+git clone https://github.com/abdulrahman-abdulmojeeb/islamic-texts-search.git
+cd islamic-texts-search
+
+# Start services
+docker compose up -d db elasticsearch qdrant
+
+# Install & run web app
+cd web
+bun install
+cp .env.example .env
+bunx prisma migrate deploy
+bun run dev
+```
 
 ## API
 
@@ -80,22 +89,6 @@ GET /api/search?q={query}&mode=hybrid&limit=20
 | `refine` | false | Enable query expansion |
 | `similarityCutoff` | 0.6 | Semantic threshold (0.15-0.8) |
 | `quranTranslation` | none | Language code (en, fr, ur, etc.) |
-
-## Setup
-
-```bash
-git clone https://github.com/abdulrahman-abdulmojeeb/islamic-texts-search.git
-cd islamic-texts-search/book-viewer
-
-# Start services
-docker compose up -d db elasticsearch qdrant
-
-# Install & run
-bun install
-cp .env.example .env
-bunx prisma migrate deploy
-bun run dev
-```
 
 ## License
 

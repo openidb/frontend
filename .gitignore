@@ -1,56 +1,33 @@
-# Book viewer - Node/Bun dependencies
-book-viewer/node_modules
-book-viewer/.pnp
-book-viewer/.pnp.js
-book-viewer/.yarn/install-state.gz
-book-viewer/.next/
-book-viewer/out/
-book-viewer/build
-book-viewer/.DS_Store
-book-viewer/*.pem
-book-viewer/npm-debug.log*
-book-viewer/yarn-debug.log*
-book-viewer/yarn-error.log*
-book-viewer/.env*.local
-book-viewer/.vercel
-book-viewer/*.tsbuildinfo
-book-viewer/next-env.d.ts
-book-viewer/bun.lockb
+# Web app - Node/Bun dependencies
+web/node_modules
+web/.pnp
+web/.pnp.js
+web/.yarn/install-state.gz
+web/.next/
+web/out/
+web/build
+web/.DS_Store
+web/*.pem
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/.env*.local
+web/.vercel
+web/*.tsbuildinfo
+web/next-env.d.ts
+web/bun.lockb
 
-# OpenITI Pipeline - Python
-openiti-pipeline/__pycache__/
-openiti-pipeline/*.py[cod]
-openiti-pipeline/*$py.class
-openiti-pipeline/*.so
-openiti-pipeline/.Python
-openiti-pipeline/env/
-openiti-pipeline/venv/
-openiti-pipeline/ENV/
-openiti-pipeline/build/
-openiti-pipeline/develop-eggs/
-openiti-pipeline/dist/
-openiti-pipeline/downloads/
-openiti-pipeline/eggs/
-openiti-pipeline/.eggs/
-openiti-pipeline/lib/
-openiti-pipeline/lib64/
-openiti-pipeline/parts/
-openiti-pipeline/sdist/
-openiti-pipeline/var/
-openiti-pipeline/wheels/
-openiti-pipeline/*.egg-info/
-openiti-pipeline/.installed.cfg
-openiti-pipeline/*.egg
+# Scrapers - OpenITI output and workspace
+scrapers/openiti/output/
+scrapers/openiti/workspace/
+scrapers/openiti/*.xml
+scrapers/openiti/*.html
+scrapers/openiti/*.epub
 
-# OpenITI Pipeline - Output and workspace
-openiti-pipeline/output/
-openiti-pipeline/workspace/
-openiti-pipeline/*.xml
-openiti-pipeline/*.html
-openiti-pipeline/*.epub
-
-# Kavita library
-kavita/
+# Scrapers - Shamela data and debug
+scrapers/shamela/data/
+scrapers/shamela/debug/
+scrapers/shamela/test_output/
 
 # Arabic EPUB library (if separate)
 arabic-epub-library/
@@ -79,15 +56,7 @@ Thumbs.db
 **/__pycache__/
 *.pyc
 
-# Shamela scraper data and debug
-shamela-scraper/data/
-shamela-scraper/debug/
-shamela-scraper/test_output/
-
 # Training data, model outputs, and cache
-book-viewer/training/data/
-book-viewer/training/outputs/
-book-viewer/.cache/
-
-# Embedding server
-embedding-server/venv/
+training/data/
+training/outputs/
+web/.cache/
