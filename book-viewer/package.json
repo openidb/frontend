@@ -15,9 +15,8 @@
     "db:push": "bunx prisma db push",
     "extract:pages": "bun scripts/extract-epub-pages.ts",
     "embed:generate": "bun scripts/generate-embeddings.ts",
-    "embed:authors": "bun scripts/generate-author-embeddings.ts",
-    "es:create-indices": "tsx --require dotenv/config scripts/create-elasticsearch-indices.ts",
-    "es:sync": "tsx --require dotenv/config scripts/sync-elasticsearch.ts"
+    "es:create-indices": "bun scripts/create-elasticsearch-indices.ts",
+    "es:sync": "bun scripts/sync-elasticsearch.ts"
   },
   "dependencies": {
     "@elastic/elasticsearch": "8.15.0",
@@ -28,18 +27,14 @@
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.1.1",
-    "@types/jsdom": "^27.0.0",
-    "@types/lodash": "^4.17.23",
     "better-sqlite3": "^12.6.2",
     "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "epubjs": "^0.3.93",
-    "jsdom": "^27.4.0",
     "jszip": "^3.10.1",
     "katex": "^0.16.28",
-    "lodash": "^4.17.23",
     "lucide-react": "^0.468.0",
     "neo4j-driver": "^6.0.1",
     "next": "^16.0.10",
@@ -60,10 +55,8 @@
     "eslint-config-next": "^16.0.10",
     "postcss": "^8.0.0",
     "prisma": "^7.1.0",
-    "puppeteer": "^24.36.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
-    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   }
 }
