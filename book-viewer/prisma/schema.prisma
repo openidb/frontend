@@ -74,8 +74,8 @@ model Publisher {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name     String @unique
-  location String?
+  name     String  @unique @map("name")
+  location String? @map("location")
 
   // Relationships
   books Book[]
@@ -88,7 +88,7 @@ model Editor {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name String @unique
+  name String @unique @map("name")
 
   // Relationships
   books Book[]
@@ -108,7 +108,7 @@ model Book {
 
   // Author Relationship
   authorId String @map("author_id")
-  author   Author @relation(fields: [authorId], references: [id])
+  author   Author @relation(fields: [authorId], references: [id], onDelete: Restrict)
 
   // Category Relationship
   categoryId Int?      @map("category_id")
@@ -390,6 +390,7 @@ model HadithBook {
   hadiths    Hadith[]
 
   @@unique([collectionId, bookNumber])
+  @@index([collectionId])
   @@map("hadith_books")
 }
 
