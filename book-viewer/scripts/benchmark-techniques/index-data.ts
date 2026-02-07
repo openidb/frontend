@@ -10,7 +10,7 @@
 import "dotenv/config";
 import crypto from "crypto";
 import { qdrant } from "../../lib/qdrant";
-import { generateEmbeddings } from "../../lib/embeddings-gemini";
+import { generateEmbeddings } from "../../lib/embeddings/gemini";
 import { prisma } from "../../lib/db";
 import { getTechniques, getCollectionNames } from "./registry";
 import { loadQuranAyahs, loadHadithSubset } from "./utils/data-loader";

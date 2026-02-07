@@ -7,12 +7,12 @@
  * Usage: bun run scripts/create-elasticsearch-indices.ts
  */
 
-import { elasticsearch } from "../lib/elasticsearch";
+import { elasticsearch } from "../lib/search/elasticsearch";
 import {
   pagesIndexConfig,
   hadithsIndexConfig,
   ayahsIndexConfig,
-} from "../lib/elasticsearch-indices";
+} from "../lib/search/elasticsearch-indices";
 
 async function createIndices() {
   console.log("Creating Elasticsearch indices...\n");

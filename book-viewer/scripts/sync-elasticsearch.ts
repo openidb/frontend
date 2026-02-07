@@ -14,7 +14,7 @@ import {
   ES_PAGES_INDEX,
   ES_HADITHS_INDEX,
   ES_AYAHS_INDEX,
-} from "../lib/elasticsearch";
+} from "../lib/search/elasticsearch";
 // Types are handled inline
 
 const BATCH_SIZE = 1000;

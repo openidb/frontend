@@ -1,7 +1,7 @@
 // Test the full search flow mimicking the API
 import { generateEmbedding, normalizeArabicText } from "../lib/embeddings";
 import { qdrant, QDRANT_QURAN_COLLECTION } from "../lib/qdrant";
-import { keywordSearchAyahsES } from "../lib/elasticsearch-search";
+import { keywordSearchAyahsES } from "../lib/search/elasticsearch-search";
 
 const query = "وآخر دعواهم إن الحمدلله رب العالمين";
 const MIN_CHARS_FOR_SEMANTIC = 4;

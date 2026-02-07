@@ -15,7 +15,7 @@
  *   BGE_M3_URL - Server URL (default: http://localhost:8000)
  */
 
-import { BGE_DIMENSIONS } from "./constants";
+import { BGE_DIMENSIONS } from "../constants";
 
 // Re-export for convenience
 export { BGE_DIMENSIONS };

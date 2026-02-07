@@ -7,7 +7,7 @@
  * Usage: bun run scripts/knowledge-graph/init-neo4j.ts
  */
 
-import neo4jDriver from "../../lib/neo4j";
+import neo4jDriver from "../../lib/graph/driver";
 
 async function main() {
   const session = neo4jDriver.session();

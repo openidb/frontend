@@ -1,4 +1,4 @@
-import { normalizeBM25Score } from "@/lib/bm25";
+import { normalizeBM25Score } from "@/lib/search/bm25";
 import { RRF_K, SEMANTIC_WEIGHT, KEYWORD_WEIGHT } from "./config";
 import type { RankedResult, AyahRankedResult, HadithRankedResult } from "./types";
 

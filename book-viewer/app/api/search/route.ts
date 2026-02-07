@@ -25,12 +25,12 @@ import {
   type EmbeddingModel,
 } from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
-import { normalizeBM25Score } from "@/lib/bm25";
+import { normalizeBM25Score } from "@/lib/search/bm25";
 import {
   keywordSearchES,
   keywordSearchHadithsES,
   keywordSearchAyahsES,
-} from "@/lib/elasticsearch-search";
+} from "@/lib/search/elasticsearch-search";
 import {
   searchEntities,
   resolveSources,
@@ -39,7 +39,7 @@ import {
   type GraphContext,
   type GraphContextEntity,
   type ResolvedSource,
-} from "@/lib/neo4j-search";
+} from "@/lib/graph/search";
 
 import type {
   RerankerType,

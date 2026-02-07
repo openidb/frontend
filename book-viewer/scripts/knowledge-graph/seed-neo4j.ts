@@ -10,7 +10,7 @@
  * Usage: bun run scripts/knowledge-graph/seed-neo4j.ts [--clear]
  */
 
-import neo4jDriver from "../../lib/neo4j";
+import neo4jDriver from "../../lib/graph/driver";
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 

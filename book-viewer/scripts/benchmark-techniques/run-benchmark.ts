@@ -14,7 +14,7 @@ import "dotenv/config";
 import * as fs from "fs";
 import * as path from "path";
 import { qdrant } from "../../lib/qdrant";
-import { generateEmbedding } from "../../lib/embeddings-gemini";
+import { generateEmbedding } from "../../lib/embeddings/gemini";
 import { getTechniques, getCollectionNames } from "./registry";
 import { computeQueryMetrics, calculateAggregateMetrics } from "./utils/metrics";
 import type {

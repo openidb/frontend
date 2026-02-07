@@ -11,7 +11,7 @@ import {
   ES_HADITHS_INDEX,
   ES_AYAHS_INDEX,
 } from "./elasticsearch";
-import { normalizeArabicText } from "./embeddings";
+import { normalizeArabicText } from "../embeddings";
 import type { estypes } from "@elastic/elasticsearch";
 
 type QueryDslQueryContainer = estypes.QueryDslQueryContainer;

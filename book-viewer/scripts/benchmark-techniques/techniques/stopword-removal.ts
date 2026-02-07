@@ -7,7 +7,7 @@ import type { RetrievalTechnique, QuranAyahData, HadithData } from "../types";
 import {
   normalizeArabicText,
   truncateForEmbedding,
-} from "../../../lib/embeddings-gemini";
+} from "../../../lib/embeddings/gemini";
 import { removeStopwords } from "../utils/arabic-stopwords";
 
 export const stopwordRemovalTechnique: RetrievalTechnique = {

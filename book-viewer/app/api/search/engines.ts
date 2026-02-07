@@ -11,11 +11,11 @@ import {
   type EmbeddingModel,
 } from "@/lib/embeddings";
 import { prisma } from "@/lib/db";
-import { normalizeBM25Score } from "@/lib/bm25";
+import { normalizeBM25Score } from "@/lib/search/bm25";
 import {
   keywordSearchAyahsES,
   keywordSearchHadithsES,
-} from "@/lib/elasticsearch-search";
+} from "@/lib/search/elasticsearch-search";
 import { MIN_CHARS_FOR_SEMANTIC } from "./config";
 import { hasQuotedPhrases, getDynamicSimilarityThreshold } from "./query-utils";
 import { mergeWithRRFGeneric } from "./fusion";

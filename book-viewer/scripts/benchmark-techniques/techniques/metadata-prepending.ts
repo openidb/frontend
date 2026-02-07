@@ -7,7 +7,7 @@ import type { RetrievalTechnique, QuranAyahData, HadithData } from "../types";
 import {
   normalizeArabicText,
   truncateForEmbedding,
-} from "../../../lib/embeddings-gemini";
+} from "../../../lib/embeddings/gemini";
 
 export const metadataPrependingTechnique: RetrievalTechnique = {
   id: "metadata",

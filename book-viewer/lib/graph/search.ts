@@ -6,7 +6,7 @@
  * 2. resolveSources() — batch-resolves source refs from PostgreSQL
  */
 
-import { neo4jDriver } from "@/lib/neo4j";
+import { neo4jDriver } from "./driver";
 import { prisma } from "@/lib/db";
 
 // ============================================================================

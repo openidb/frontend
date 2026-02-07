@@ -15,16 +15,16 @@ import {
   normalizeArabicText,
   truncateForEmbedding,
   GEMINI_DIMENSIONS,
-} from "./embeddings-gemini";
+} from "./gemini";
 
 import {
   generateEmbeddingBGE,
   generateEmbeddingsBGE,
   isBGEServerAvailable,
   BGE_DIMENSIONS,
-} from "./embeddings-bge";
+} from "./bge";
 
-import { EMBEDDING_DIMENSIONS } from "./constants";
+import { EMBEDDING_DIMENSIONS } from "../constants";
 
 // Re-export utilities and constants
 export {

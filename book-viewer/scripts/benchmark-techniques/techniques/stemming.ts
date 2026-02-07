@@ -7,7 +7,7 @@ import type { RetrievalTechnique, QuranAyahData, HadithData } from "../types";
 import {
   normalizeArabicText,
   truncateForEmbedding,
-} from "../../../lib/embeddings-gemini";
+} from "../../../lib/embeddings/gemini";
 import { stemText } from "../utils/arabic-stemmer";
 
 export const stemmingTechnique: RetrievalTechnique = {

@@ -12,19 +12,19 @@
  */
 
 import OpenAI from "openai";
-import { GEMINI_DIMENSIONS } from "./constants";
+import { GEMINI_DIMENSIONS } from "../constants";
 import {
   getCachedEmbedding,
   setCachedEmbedding,
   getCachedEmbeddings,
   setCachedEmbeddings,
-} from "./embedding-cache";
+} from "./cache";
 import {
   getPersistentCachedEmbedding,
   setPersistentCachedEmbedding,
   getPersistentCachedEmbeddings,
   setPersistentCachedEmbeddings,
-} from "./embedding-cache-persistent";
+} from "./cache-persistent";
 
 // Re-export dimensions
 export { GEMINI_DIMENSIONS };
