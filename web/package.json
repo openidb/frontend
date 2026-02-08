@@ -13,7 +13,6 @@
     "docker:logs": "docker compose -f ../docker-compose.yml logs -f web",
     "db:migrate": "bunx prisma migrate deploy",
     "db:push": "bunx prisma db push",
-    "extract:pages": "bun ../pipelines/import/extract-epub-pages.ts",
     "embed:generate": "bun ../pipelines/embed/generate-embeddings.ts",
     "es:create-indices": "bun ../pipelines/index/create-elasticsearch-indices.ts",
     "es:sync": "bun ../pipelines/index/sync-elasticsearch.ts"
