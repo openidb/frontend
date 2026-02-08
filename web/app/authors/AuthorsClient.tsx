@@ -72,7 +72,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
           params.set("search", debouncedSearch);
         }
 
-        const response = await fetch(`/api/authors?${params}`);
+        const response = await fetch(`/api/books/authors?${params}`);
         const data = await response.json();
 
         setAuthors(data.authors || []);

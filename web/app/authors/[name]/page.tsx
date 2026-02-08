@@ -41,7 +41,7 @@ export default async function AuthorDetailPage({
 
   let data: AuthorData;
   try {
-    data = await fetchAPI<AuthorData>(`/api/authors/${encodeURIComponent(authorLatin)}`);
+    data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorLatin)}`);
   } catch {
     notFound();
   }

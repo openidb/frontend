@@ -27,7 +27,7 @@ export default async function AuthorsPage() {
 
   try {
     const res = await fetchAPI<{ authors: Author[]; pagination: Pagination }>(
-      "/api/authors?limit=50"
+      "/api/books/authors?limit=50"
     );
     data = res;
   } catch (error) {

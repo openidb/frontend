@@ -7,7 +7,7 @@ export async function GET(
   context: { params: Promise<{ name: string }> }
 ) {
   const { name } = await context.params;
-  const res = await fetchAPIRaw(`/api/authors/${encodeURIComponent(name)}`);
+  const res = await fetchAPIRaw(`/api/books/authors/${encodeURIComponent(name)}`);
   return new Response(res.body, {
     status: res.status,
     headers: { "Content-Type": "application/json" },
