@@ -1,33 +1,35 @@
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/db";
+import { fetchAPI } from "@/lib/api-client";
 import { notFound } from "next/navigation";
 import AuthorDetailClient from "./AuthorDetailClient";
 
-const getAuthorByName = unstable_cache(
-  async (nameLatin: string) => {
-    return prisma.author.findUnique({
-      where: { nameLatin },
-      include: {
-        books: {
-          include: {
-            category: {
-              select: {
-                id: true,
-                nameArabic: true,
-                nameEnglish: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
-      },
-    });
-  },
-  ["author-detail"],
-  { revalidate: 3600 } // 1 hour
-);
+interface AuthorData {
+  author: {
+    id: string;
+    nameArabic: string;
+    nameLatin: string;
+    deathDateHijri: string | null;
+    birthDateHijri: string | null;
+    deathDateGregorian: string | null;
+    birthDateGregorian: string | null;
+    biography: string | null;
+    biographySource: string | null;
+    books: Array<{
+      id: string;
+      titleArabic: string;
+      titleLatin: string;
+      filename: string;
+      publicationYearHijri: string | null;
+      publicationYearGregorian: string | null;
+      timePeriod: string | null;
+      category: {
+        id: number;
+        nameArabic: string;
+        nameEnglish: string | null;
+      } | null;
+    }>;
+    _count: { books: number };
+  };
+}
 
 export default async function AuthorDetailPage({
   params,
@@ -37,20 +39,16 @@ export default async function AuthorDetailPage({
   const { name } = await params;
   const authorLatin = decodeURIComponent(name);
 
-  // Fetch author with all books from database
-  let author;
+  let data: AuthorData;
   try {
-    author = await getAuthorByName(authorLatin);
-  } catch (error) {
-    console.error("Failed to fetch author:", error);
+    data = await fetchAPI<AuthorData>(`/api/authors/${encodeURIComponent(authorLatin)}`);
+  } catch {
     notFound();
   }
 
-  if (!author) {
-    notFound();
-  }
+  const author = data.author;
+  if (!author) notFound();
 
-  // Transform author data to match the expected format for AuthorDetailClient
   const metadata = {
     id: author.id,
     name_arabic: author.nameArabic,
@@ -64,7 +62,6 @@ export default async function AuthorDetailPage({
     books_count: author.books.length,
   };
 
-  // Transform books data to match the expected format
   const books = author.books.map((book) => ({
     id: book.id,
     title: book.titleArabic,

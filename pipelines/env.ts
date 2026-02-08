@@ -1,4 +1,0 @@
-import { config } from "dotenv";
-import { resolve } from "path";
-
-config({ path: resolve(import.meta.dir, "../web/.env") });

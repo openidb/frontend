@@ -1,53 +1,36 @@
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/db";
+import { fetchAPI } from "@/lib/api-client";
 import BooksClient from "./BooksClient";
 
-// Use dynamic rendering since database isn't available at build time
-// unstable_cache still provides runtime caching
 export const dynamic = "force-dynamic";
 
-const getBooks = unstable_cache(
-  async () => {
-    return prisma.book.findMany({
-      select: {
-        id: true,
-        titleArabic: true,
-        titleLatin: true,
-        filename: true,
-        timePeriod: true,
-        publicationYearHijri: true,
-        publicationYearGregorian: true,
-        author: {
-          select: {
-            id: true,
-            nameArabic: true,
-            nameLatin: true,
-            deathDateHijri: true,
-            deathDateGregorian: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            nameArabic: true,
-            nameEnglish: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  },
-  ["books-home"],
-  { revalidate: 3600 } // 1 hour
-);
+interface Book {
+  id: string;
+  titleArabic: string;
+  titleLatin: string;
+  filename: string;
+  timePeriod: string | null;
+  publicationYearHijri: string | null;
+  publicationYearGregorian: string | null;
+  author: {
+    id: string;
+    nameArabic: string;
+    nameLatin: string;
+    deathDateHijri: string | null;
+    deathDateGregorian: string | null;
+  };
+  category: {
+    id: number;
+    nameArabic: string;
+    nameEnglish: string | null;
+  } | null;
+}
 
 export default async function BooksPage() {
-  let books: Awaited<ReturnType<typeof getBooks>> = [];
+  let books: Book[] = [];
 
   try {
-    books = await getBooks();
+    const data = await fetchAPI<{ books: Book[] }>("/api/books?limit=100");
+    books = data.books;
   } catch (error) {
     console.error("Failed to fetch books:", error);
   }

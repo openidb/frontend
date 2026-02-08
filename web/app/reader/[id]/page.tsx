@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { unstable_cache } from "next/cache";
+import { fetchAPI } from "@/lib/api-client";
 import { EpubReader } from "@/components/EpubReader";
-import { prisma } from "@/lib/db";
 
 interface BookMetadata {
   id: string;
@@ -15,32 +14,19 @@ interface BookMetadata {
   toc: never[];
 }
 
-// Cache book metadata (without language-specific translations)
-const getBookMetadata = unstable_cache(
-  async (id: string) => {
-    return prisma.book.findUnique({
-      where: { id },
-      include: {
-        author: true,
-      },
-    });
-  },
-  ["book-metadata"],
-  { revalidate: 86400 } // 24 hours
-);
-
-// Fetch title translation separately (not cached due to language parameter)
-async function getTitleTranslation(bookId: string, lang: string) {
-  if (!lang || lang === "none" || lang === "transliteration") {
-    return null;
-  }
-
-  const translation = await prisma.bookTitleTranslation.findFirst({
-    where: { bookId, language: lang },
-    select: { title: true },
-  });
-
-  return translation?.title || null;
+interface BookData {
+  book: {
+    id: string;
+    titleArabic: string;
+    titleLatin: string;
+    titleTranslated?: string | null;
+    filename: string;
+    publicationYearGregorian: string | null;
+    author: {
+      nameArabic: string;
+      nameLatin: string;
+    };
+  };
 }
 
 export default async function ReaderPage({
@@ -53,28 +39,22 @@ export default async function ReaderPage({
   const { id } = await params;
   const { page, pn, lang } = await searchParams;
 
-  // Fetch book metadata from cache
-  let book;
+  let bookData: BookData;
   try {
-    book = await getBookMetadata(id);
-  } catch (error) {
-    console.error("Failed to fetch book:", error);
+    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&lang=${lang}` : "";
+    bookData = await fetchAPI<BookData>(`/api/books/${id}?${langParam}`);
+  } catch {
     notFound();
   }
 
-  if (!book) {
-    notFound();
-  }
+  const book = bookData.book;
+  if (!book) notFound();
 
-  // Fetch title translation separately if needed
-  const titleTranslated = lang ? await getTitleTranslation(id, lang) : null;
-
-  // Transform to expected format
   const bookMetadata: BookMetadata = {
     id: book.id,
     title: book.titleArabic,
     titleLatin: book.titleLatin,
-    titleTranslated,
+    titleTranslated: book.titleTranslated || null,
     author: book.author.nameArabic,
     authorLatin: book.author.nameLatin,
     datePublished: book.publicationYearGregorian || "",

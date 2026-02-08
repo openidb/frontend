@@ -1,13 +1,13 @@
-import { prisma } from "@/lib/db";
+import { fetchAPI } from "@/lib/api-client";
 import SearchClient from "./SearchClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function SearchPage() {
-  // Get total book count for display (with fallback)
   let bookCount = 0;
   try {
-    bookCount = await prisma.book.count();
+    const stats = await fetchAPI<{ bookCount: number }>("/api/stats");
+    bookCount = stats.bookCount;
   } catch (error) {
     console.error("Failed to get book count:", error);
   }

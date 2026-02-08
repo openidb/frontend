@@ -1,56 +1,35 @@
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/db";
+import { fetchAPI } from "@/lib/api-client";
 import AuthorsClient from "./AuthorsClient";
 
-// Use dynamic rendering since database isn't available at build time
 export const dynamic = "force-dynamic";
 
-const getAuthors = unstable_cache(
-  async () => {
-    const [authors, total] = await Promise.all([
-      prisma.author.findMany({
-        select: {
-          id: true,
-          nameArabic: true,
-          nameLatin: true,
-          deathDateHijri: true,
-          deathDateGregorian: true,
-          _count: {
-            select: {
-              books: true,
-            },
-          },
-        },
-        orderBy: {
-          nameArabic: "asc",
-        },
-        take: 50,
-      }),
-      prisma.author.count(),
-    ]);
+interface Author {
+  id: string;
+  nameArabic: string;
+  nameLatin: string;
+  deathDateHijri: string | null;
+  deathDateGregorian: string | null;
+  _count: { books: number };
+}
 
-    return {
-      authors,
-      pagination: {
-        page: 1,
-        limit: 50,
-        total,
-        totalPages: Math.ceil(total / 50),
-      },
-    };
-  },
-  ["authors-list"],
-  { revalidate: 3600 } // 1 hour
-);
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
 export default async function AuthorsPage() {
   let data = {
-    authors: [] as Awaited<ReturnType<typeof getAuthors>>["authors"],
-    pagination: { page: 1, limit: 50, total: 0, totalPages: 0 },
+    authors: [] as Author[],
+    pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } as Pagination,
   };
 
   try {
-    data = await getAuthors();
+    const res = await fetchAPI<{ authors: Author[]; pagination: Pagination }>(
+      "/api/authors?limit=50"
+    );
+    data = res;
   } catch (error) {
     console.error("Failed to fetch authors:", error);
   }
