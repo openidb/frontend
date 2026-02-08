@@ -1,3 +1,4 @@
+import { RERANKER_TEXT_LIMIT, UNIFIED_RERANKER_TEXT_LIMIT, UNIFIED_RERANK_TIMEOUT_MS } from "./config";
 import type {
   RerankerType,
   RankedResult,
@@ -6,11 +7,29 @@ import type {
   UnifiedRefineResult,
 } from "./types";
 
-const RERANKER_MODELS: Record<string, string> = {
-  "gpt-oss-20b": "openai/gpt-oss-20b",
-  "gpt-oss-120b": "openai/gpt-oss-120b",
-  "gemini-flash": "google/gemini-3-flash-preview",
+const RERANKER_CONFIG: Record<string, { model: string; timeoutMs: number }> = {
+  "gpt-oss-20b": { model: "openai/gpt-oss-20b", timeoutMs: 20000 },
+  "gpt-oss-120b": { model: "openai/gpt-oss-120b", timeoutMs: 20000 },
+  "gemini-flash": { model: "google/gemini-3-flash-preview", timeoutMs: 15000 },
 };
+
+/**
+ * Build a fallback result by slicing each type to its limit
+ */
+function fallbackRefineResult(
+  books: RankedResult[],
+  ayahs: AyahRankedResult[],
+  hadiths: HadithRankedResult[],
+  limits: { books: number; ayahs: number; hadiths: number },
+  timedOut = false
+) {
+  return {
+    books: books.slice(0, limits.books),
+    ayahs: ayahs.slice(0, limits.ayahs),
+    hadiths: hadiths.slice(0, limits.hadiths),
+    timedOut,
+  };
+}
 
 /**
  * Fetch with timeout using AbortController
@@ -35,7 +54,7 @@ async function fetchWithTimeout(
 export function formatAyahForReranking(ayah: AyahRankedResult): string {
   const range = ayah.ayahEnd ? `${ayah.ayahNumber}-${ayah.ayahEnd}` : String(ayah.ayahNumber);
   return `[QURAN] ${ayah.surahNameArabic} (${ayah.surahNameEnglish}), Ayah ${range}
-${ayah.text.slice(0, 800)}`;
+${ayah.text.slice(0, RERANKER_TEXT_LIMIT)}`;
 }
 
 /**
@@ -44,7 +63,7 @@ ${ayah.text.slice(0, 800)}`;
 export function formatHadithForReranking(hadith: HadithRankedResult): string {
   const chapter = hadith.chapterArabic ? ` - ${hadith.chapterArabic}` : '';
   return `[HADITH] ${hadith.collectionNameArabic} (${hadith.collectionNameEnglish}), ${hadith.bookNameArabic}${chapter}
-${hadith.text.slice(0, 800)}`;
+${hadith.text.slice(0, RERANKER_TEXT_LIMIT)}`;
 }
 
 /**
@@ -53,7 +72,7 @@ ${hadith.text.slice(0, 800)}`;
 export function formatBookForReranking(result: RankedResult, bookTitle?: string, authorName?: string): string {
   const meta = bookTitle ? `[BOOK] ${bookTitle}${authorName ? ` - ${authorName}` : ''}, p.${result.pageNumber}` : `[BOOK] Page ${result.pageNumber}`;
   return `${meta}
-${result.textSnippet.slice(0, 800)}`;
+${result.textSnippet.slice(0, RERANKER_TEXT_LIMIT)}`;
 }
 
 /** Shared reranker prompt for LLM-based rerankers */
@@ -153,7 +172,7 @@ async function rerankWithLLM<T>(
 
   try {
     const docsText = results
-      .map((d, i) => `[${i + 1}] ${getText(d).slice(0, 800)}`)
+      .map((d, i) => `[${i + 1}] ${getText(d).slice(0, RERANKER_TEXT_LIMIT)}`)
       .join("\n\n");
 
     const prompt = buildRerankerPrompt(query, docsText);
@@ -206,20 +225,12 @@ export async function rerank<T>(
   topN: number,
   reranker: RerankerType
 ): Promise<{ results: T[]; timedOut: boolean }> {
-  if (results.length === 0 || reranker === "none") {
+  const config = reranker !== "none" ? RERANKER_CONFIG[reranker] : undefined;
+  if (results.length === 0 || !config) {
     return { results: results.slice(0, topN), timedOut: false };
   }
 
-  switch (reranker) {
-    case "gpt-oss-20b":
-      return rerankWithLLM(query, results, getText, topN, "openai/gpt-oss-20b", 20000);
-    case "gpt-oss-120b":
-      return rerankWithLLM(query, results, getText, topN, "openai/gpt-oss-120b", 20000);
-    case "gemini-flash":
-      return rerankWithLLM(query, results, getText, topN, "google/gemini-3-flash-preview", 15000);
-    default:
-      return { results: results.slice(0, topN), timedOut: false };
-  }
+  return rerankWithLLM(query, results, getText, topN, config.model, config.timeoutMs);
 }
 
 /**
@@ -270,7 +281,7 @@ export async function rerankUnified(
 
   try {
     const docsText = unified
-      .map((d, i) => `[${i + 1}] ${d.text.slice(0, 600)}`)
+      .map((d, i) => `[${i + 1}] ${d.text.slice(0, UNIFIED_RERANKER_TEXT_LIMIT)}`)
       .join("\n\n");
 
     const prompt = `You are ranking a MIXED set of Arabic/Islamic documents for a search query.
@@ -296,7 +307,7 @@ RANKING PRIORITY:
 
 Return ONLY a JSON array of document numbers by relevance: [3, 1, 5, 2, 4]`;
 
-    const model = RERANKER_MODELS[reranker] ?? "google/gemini-3-flash-preview";
+    const model = RERANKER_CONFIG[reranker]?.model ?? "google/gemini-3-flash-preview";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -384,12 +395,7 @@ export async function rerankUnifiedRefine(
   timedOut: boolean;
 }> {
   if (reranker === "none") {
-    return {
-      books: books.slice(0, limits.books),
-      ayahs: ayahs.slice(0, limits.ayahs),
-      hadiths: hadiths.slice(0, limits.hadiths),
-      timedOut: false
-    };
+    return fallbackRefineResult(books, ayahs, hadiths, limits);
   }
 
   const unified: UnifiedRefineResult[] = [];
@@ -423,19 +429,14 @@ export async function rerankUnifiedRefine(
   });
 
   if (unified.length < 3) {
-    return {
-      books: books.slice(0, limits.books),
-      ayahs: ayahs.slice(0, limits.ayahs),
-      hadiths: hadiths.slice(0, limits.hadiths),
-      timedOut: false
-    };
+    return fallbackRefineResult(books, ayahs, hadiths, limits);
   }
 
-  const TIMEOUT_MS = 25000;
+  const TIMEOUT_MS = UNIFIED_RERANK_TIMEOUT_MS;
 
   try {
     const docsText = unified
-      .map((d, i) => `[${i + 1}] ${d.content.slice(0, 600)}`)
+      .map((d, i) => `[${i + 1}] ${d.content.slice(0, UNIFIED_RERANKER_TEXT_LIMIT)}`)
       .join("\n\n");
 
     const prompt = `You are ranking a MIXED set of Arabic/Islamic documents for a search query.
@@ -477,7 +478,7 @@ Return ONLY a JSON array of document numbers by relevance (best first).
 If no documents are relevant, return an empty array []:
 [3, 1, 5, 2, ...]`;
 
-    const model = RERANKER_MODELS[reranker] ?? "google/gemini-3-flash-preview";
+    const model = RERANKER_CONFIG[reranker]?.model ?? "google/gemini-3-flash-preview";
 
     const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -494,12 +495,7 @@ If no documents are relevant, return an empty array []:
 
     if (!response.ok) {
       console.warn(`[Unified Refine Rerank] API error: ${response.statusText}`);
-      return {
-        books: books.slice(0, limits.books),
-        ayahs: ayahs.slice(0, limits.ayahs),
-        hadiths: hadiths.slice(0, limits.hadiths),
-        timedOut: false
-      };
+      return fallbackRefineResult(books, ayahs, hadiths, limits);
     }
 
     const data = await response.json();
@@ -508,12 +504,7 @@ If no documents are relevant, return an empty array []:
     const match = content.match(/\[[\d,\s]*\]/);
     if (!match) {
       console.warn("[Unified Refine Rerank] Invalid format, keeping original order");
-      return {
-        books: books.slice(0, limits.books),
-        ayahs: ayahs.slice(0, limits.ayahs),
-        hadiths: hadiths.slice(0, limits.hadiths),
-        timedOut: false
-      };
+      return fallbackRefineResult(books, ayahs, hadiths, limits);
     }
 
     const ranking: number[] = JSON.parse(match[0]);
@@ -550,11 +541,6 @@ If no documents are relevant, return an empty array []:
     } else {
       console.warn("[Unified Refine Rerank] Error, keeping original order:", err);
     }
-    return {
-      books: books.slice(0, limits.books),
-      ayahs: ayahs.slice(0, limits.ayahs),
-      hadiths: hadiths.slice(0, limits.hadiths),
-      timedOut
-    };
+    return fallbackRefineResult(books, ayahs, hadiths, limits, timedOut);
   }
 }

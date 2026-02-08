@@ -9,6 +9,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { parseBoundedInt, parseBoundedFloat } from "@/lib/api-utils";
+import { startTimer } from "@/lib/timing";
 import {
   QDRANT_COLLECTION,
   QDRANT_QURAN_COLLECTION,
@@ -57,7 +59,7 @@ import type {
   ExpandedQueryStats,
 } from "./types";
 import { MIN_CHARS_FOR_SEMANTIC, RRF_K, SEMANTIC_WEIGHT, KEYWORD_WEIGHT } from "./config";
-import { hasQuotedPhrases, getSearchStrategy } from "./query-utils";
+import { hasQuotedPhrases, shouldSkipSemanticSearch, getSearchStrategy } from "./query-utils";
 import { calculateRRFScore, mergeWithRRF, mergeWithRRFGeneric, getMatchType, mergeAndDeduplicateBooks, mergeAndDeduplicateAyahs, mergeAndDeduplicateHadiths } from "./fusion";
 import { rerankUnifiedRefine } from "./rerankers";
 import { semanticSearch, searchAuthors, searchAyahsSemantic, searchAyahsHybrid, searchHadithsSemantic, searchHadithsHybrid } from "./engines";
@@ -104,8 +106,8 @@ export async function GET(request: NextRequest) {
   const reranker: RerankerType = rerankerParam && ["gpt-oss-20b", "gpt-oss-120b", "gemini-flash", "none"].includes(rerankerParam)
     ? rerankerParam
     : "none";
-  const similarityCutoff = parseFloat(searchParams.get("similarityCutoff") || "0.6");
-  const bookLimit = Math.min(Math.max(parseInt(searchParams.get("bookLimit") || "10", 10), 5), 50);
+  const similarityCutoff = parseBoundedFloat(searchParams.get("similarityCutoff"), 0.6, 0, 1);
+  const bookLimit = parseBoundedInt(searchParams.get("bookLimit"), 10, 5, 50);
 
   // Fuzzy search
   const fuzzyEnabled = searchParams.get("fuzzy") !== "false";
@@ -118,15 +120,15 @@ export async function GET(request: NextRequest) {
 
   // Refine search parameters
   const refine = searchParams.get("refine") === "true";
-  const refineSimilarityCutoff = refine ? parseFloat(searchParams.get("refineSimilarityCutoff") || "0.25") : 0.25;
-  const refineOriginalWeight = Math.min(Math.max(parseFloat(searchParams.get("refineOriginalWeight") || "1.0"), 0.5), 1.0);
-  const refineExpandedWeight = Math.min(Math.max(parseFloat(searchParams.get("refineExpandedWeight") || "0.7"), 0.3), 1.0);
-  const refineBookPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineBookPerQuery") || "30", 10), 10), 60);
-  const refineAyahPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineAyahPerQuery") || "30", 10), 10), 60);
-  const refineHadithPerQuery = Math.min(Math.max(parseInt(searchParams.get("refineHadithPerQuery") || "30", 10), 10), 60);
-  const refineBookRerank = Math.min(Math.max(parseInt(searchParams.get("refineBookRerank") || "20", 10), 5), 40);
-  const refineAyahRerank = Math.min(Math.max(parseInt(searchParams.get("refineAyahRerank") || "12", 10), 5), 25);
-  const refineHadithRerank = Math.min(Math.max(parseInt(searchParams.get("refineHadithRerank") || "15", 10), 5), 25);
+  const refineSimilarityCutoff = refine ? parseBoundedFloat(searchParams.get("refineSimilarityCutoff"), 0.25, 0, 1) : 0.25;
+  const refineOriginalWeight = parseBoundedFloat(searchParams.get("refineOriginalWeight"), 1.0, 0.5, 1.0);
+  const refineExpandedWeight = parseBoundedFloat(searchParams.get("refineExpandedWeight"), 0.7, 0.3, 1.0);
+  const refineBookPerQuery = parseBoundedInt(searchParams.get("refineBookPerQuery"), 30, 10, 60);
+  const refineAyahPerQuery = parseBoundedInt(searchParams.get("refineAyahPerQuery"), 30, 10, 60);
+  const refineHadithPerQuery = parseBoundedInt(searchParams.get("refineHadithPerQuery"), 30, 10, 60);
+  const refineBookRerank = parseBoundedInt(searchParams.get("refineBookRerank"), 20, 5, 40);
+  const refineAyahRerank = parseBoundedInt(searchParams.get("refineAyahRerank"), 12, 5, 25);
+  const refineHadithRerank = parseBoundedInt(searchParams.get("refineHadithRerank"), 15, 5, 25);
   const queryExpansionModel = searchParams.get("queryExpansionModel") || "gemini-flash";
 
   // Graph search
@@ -158,7 +160,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Parse parameters
-  const limit = Math.min(Math.max(parseInt(limitParam || "20", 10), 1), 100);
+  const limit = parseBoundedInt(limitParam, 20, 1, 100);
   const bookId = bookIdParam || null;
   const mode: SearchMode = modeParam || "hybrid";
 
@@ -223,11 +225,11 @@ export async function GET(request: NextRequest) {
     const shouldSkipKeyword = searchStrategy === 'semantic_only' || mode === "semantic";
 
     // Start graph search early
-    const _graphStart = Date.now();
+    const elapsedGraph = startTimer();
     const emptyGraphResult: GraphSearchResult = { entities: [], allSourceRefs: [], timingMs: 0 };
     const graphPromise: Promise<GraphSearchResult> = includeGraph
       ? searchEntities(normalizeArabicText(query))
-          .then(res => { _timing.graph = Date.now() - _graphStart; return res; })
+          .then(res => { _timing.graph = elapsedGraph(); return res; })
           .catch(() => emptyGraphResult)
       : Promise.resolve(emptyGraphResult);
 
@@ -235,12 +237,10 @@ export async function GET(request: NextRequest) {
     // REFINE SEARCH
     // ========================================================================
     if (refine && mode === "hybrid" && !bookId) {
-      const _refineStart = Date.now();
-
       // Step 1: Expand the query
-      const _expansionStart = Date.now();
+      const elapsedExpansion = startTimer();
       const { queries: expandedRaw, cached: expansionCached } = await expandQueryWithCacheInfo(query, queryExpansionModel);
-      _refineTiming.queryExpansion = Date.now() - _expansionStart;
+      _refineTiming.queryExpansion = elapsedExpansion();
       _refineQueryExpansionCached = expansionCached;
 
       const expanded = expandedRaw.map((exp, idx) => ({
@@ -250,17 +250,17 @@ export async function GET(request: NextRequest) {
       expandedQueries = expanded.map(e => ({ query: e.query, reason: e.reason }));
 
       // Step 2: Execute parallel searches for all expanded queries
-      const _searchesStart = Date.now();
+      const elapsedSearches = startTimer();
       const perQueryTimings: number[] = [];
 
       const querySearches = expanded.map(async (exp, queryIndex) => {
-        const _queryStart = Date.now();
+        const elapsedQuery = startTimer();
         const q = exp.query;
         const weight = exp.weight;
 
         const normalizedQ = normalizeArabicText(q);
-        const shouldSkipSemantic = normalizedQ.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(q);
-        const qEmbedding = shouldSkipSemantic ? undefined : await generateEmbedding(normalizedQ, embeddingModel);
+        const skipSemantic = shouldSkipSemanticSearch(q);
+        const qEmbedding = skipSemantic ? undefined : await generateEmbedding(normalizedQ, embeddingModel);
 
         const [bookSemantic, bookKeyword] = await Promise.all([
           semanticSearch(q, refineBookPerQuery, null, refineSimilarityCutoff, qEmbedding, pageCollection, embeddingModel).catch(() => []),
@@ -299,7 +299,7 @@ export async function GET(request: NextRequest) {
             : [];
         }
 
-        perQueryTimings[queryIndex] = Date.now() - _queryStart;
+        perQueryTimings[queryIndex] = elapsedQuery();
 
         return {
           books: { results: mergedBooks, weight },
@@ -309,7 +309,7 @@ export async function GET(request: NextRequest) {
       });
 
       const allResults = await Promise.all(querySearches);
-      _refineTiming.parallelSearches = Date.now() - _searchesStart;
+      _refineTiming.parallelSearches = elapsedSearches();
 
       refineQueryStats = expanded.map((exp, idx) => ({
         query: exp.query,
@@ -326,11 +326,11 @@ export async function GET(request: NextRequest) {
       _refineCandidates.totalBeforeMerge = refineQueryStats.reduce((sum, q) => sum + q.docsRetrieved, 0);
 
       // Step 3: Merge and deduplicate
-      const _mergeStart = Date.now();
+      const elapsedMerge = startTimer();
       const mergedBooks = includeBooks ? mergeAndDeduplicateBooks(allResults.map(r => r.books)) : [];
       const mergedAyahs = includeQuran ? mergeAndDeduplicateAyahs(allResults.map(r => r.ayahs)) : [];
       const mergedHadiths = includeHadith ? mergeAndDeduplicateHadiths(allResults.map(r => r.hadiths)) : [];
-      _refineTiming.merge = Date.now() - _mergeStart;
+      _refineTiming.merge = elapsedMerge();
 
       _refineCandidates.afterMerge = {
         books: mergedBooks.length,
@@ -339,7 +339,7 @@ export async function GET(request: NextRequest) {
       };
 
       // Step 4: Unified cross-type reranking
-      const _rerankStart = Date.now();
+      const elapsedRerank = startTimer();
       const preRerankBookIds = [...new Set(mergedBooks.slice(0, 30).map((r) => r.bookId))];
       const preRerankBookMap = await getBookMetadataForReranking(preRerankBookIds, bookMetadataCache);
 
@@ -351,7 +351,7 @@ export async function GET(request: NextRequest) {
       const unifiedResult = await rerankUnifiedRefine(
         query, mergedAyahs, mergedHadiths, mergedBooks, preRerankBookMap, rerankLimits, reranker
       );
-      _refineTiming.rerank = Date.now() - _rerankStart;
+      _refineTiming.rerank = elapsedRerank();
 
       rerankerTimedOut = unifiedResult.timedOut;
       rankedResults = unifiedResult.books;
@@ -363,63 +363,63 @@ export async function GET(request: NextRequest) {
       // STANDARD SEARCH
       // ========================================================================
       const normalizedQuery = normalizeArabicText(query);
-      const shouldSkipSemantic = normalizedQuery.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC || hasQuotedPhrases(query);
+      const shouldSkipSemantic = shouldSkipSemanticSearch(query);
       const fetchLimit = mode === "hybrid" ? 50 : limit;
       const ayahLimit = Math.min(limit, 30);
       const hadithLimit = Math.min(limit, 30);
 
       // PHASE 1: Start keyword searches AND embedding generation in parallel
-      const _embStart = Date.now();
+      const elapsedEmb = startTimer();
       const embeddingPromise = shouldSkipSemantic
         ? Promise.resolve(undefined)
         : generateEmbedding(normalizedQuery, embeddingModel);
 
-      const _kwBooksStart = Date.now();
+      const elapsedKwBooks = startTimer();
       const keywordBooksPromise = (shouldSkipKeyword || !includeBooks)
         ? Promise.resolve([] as RankedResult[])
         : keywordSearchES(query, fetchLimit, bookId, fuzzyOptions)
-            .then(res => { _timing.keyword.books = Date.now() - _kwBooksStart; return res; })
+            .then(res => { _timing.keyword.books = elapsedKwBooks(); return res; })
             .catch(() => [] as RankedResult[]);
 
-      const _kwAyahsStart = Date.now();
+      const elapsedKwAyahs = startTimer();
       const keywordAyahsPromise = (shouldSkipKeyword || bookId || !includeQuran)
         ? Promise.resolve([] as AyahRankedResult[])
         : keywordSearchAyahsES(query, fetchLimit, fuzzyOptions)
-            .then(res => { _timing.keyword.ayahs = Date.now() - _kwAyahsStart; return res; })
+            .then(res => { _timing.keyword.ayahs = elapsedKwAyahs(); return res; })
             .catch(() => [] as AyahRankedResult[]);
 
-      const _kwHadithsStart = Date.now();
+      const elapsedKwHadiths = startTimer();
       const keywordHadithsPromise = (shouldSkipKeyword || bookId || !includeHadith)
         ? Promise.resolve([] as HadithRankedResult[])
         : keywordSearchHadithsES(query, fetchLimit, fuzzyOptions)
-            .then(res => { _timing.keyword.hadiths = Date.now() - _kwHadithsStart; return res; })
+            .then(res => { _timing.keyword.hadiths = elapsedKwHadiths(); return res; })
             .catch(() => [] as HadithRankedResult[]);
 
       // Wait for embedding
       const queryEmbedding = await embeddingPromise;
-      _timing.embedding = Date.now() - _embStart;
+      _timing.embedding = elapsedEmb();
 
       // PHASE 2: Start semantic searches
-      const _semBooksStart = Date.now();
+      const elapsedSemBooks = startTimer();
       const semanticBooksPromise = (mode === "keyword" || !includeBooks)
         ? Promise.resolve([] as RankedResult[])
         : semanticSearch(query, fetchLimit, bookId, similarityCutoff, queryEmbedding, pageCollection, embeddingModel)
-            .then(res => { _timing.semantic.books = Date.now() - _semBooksStart; return res; })
+            .then(res => { _timing.semantic.books = elapsedSemBooks(); return res; })
             .catch(() => [] as RankedResult[]);
 
-      const _semAyahsStart = Date.now();
+      const elapsedSemAyahs = startTimer();
       const defaultAyahMeta: AyahSearchMeta = { collection: quranCollection, usedFallback: false, embeddingTechnique: "metadata-translation" };
       const semanticAyahsPromise = (mode === "keyword" || bookId || !includeQuran)
         ? Promise.resolve({ results: [] as AyahRankedResult[], meta: defaultAyahMeta })
         : searchAyahsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, quranCollection, embeddingModel)
-            .then(res => { _timing.semantic.ayahs = Date.now() - _semAyahsStart; return res; })
+            .then(res => { _timing.semantic.ayahs = elapsedSemAyahs(); return res; })
             .catch(() => ({ results: [] as AyahRankedResult[], meta: defaultAyahMeta }));
 
-      const _semHadithsStart = Date.now();
+      const elapsedSemHadiths = startTimer();
       const semanticHadithsPromise = (mode === "keyword" || bookId || !includeHadith)
         ? Promise.resolve([] as HadithRankedResult[])
         : searchHadithsSemantic(query, fetchLimit, similarityCutoff, queryEmbedding, hadithCollection, embeddingModel)
-            .then(res => { _timing.semantic.hadiths = Date.now() - _semHadithsStart; return res; })
+            .then(res => { _timing.semantic.hadiths = elapsedSemHadiths(); return res; })
             .catch(() => [] as HadithRankedResult[]);
 
       // PHASE 3: Wait for all searches and merge
@@ -442,7 +442,7 @@ export async function GET(request: NextRequest) {
       const semanticAyahsResults = semanticAyahsSearchResult.results;
       ayahSearchMeta = semanticAyahsSearchResult.meta;
 
-      const _mergeStart = Date.now();
+      const elapsedStdMerge = startTimer();
 
       // Books: merge semantic + keyword
       if (!includeBooks) {
@@ -472,18 +472,18 @@ export async function GET(request: NextRequest) {
         normalizeKeyword: (items) => items.map(h => ({ ...h, score: normalizeBM25Score(h.bm25Score ?? h.score ?? 0) })),
       });
 
-      _timing.merge = Date.now() - _mergeStart;
+      _timing.merge = elapsedStdMerge();
     }
 
     // Wait for graph + author search
     const graphResult = await graphPromise;
-    const _authorSearchStart = Date.now();
+    const elapsedAuthor = startTimer();
     const authorsRaw = await authorsPromise;
-    _timing.authorSearch = Date.now() - _authorSearchStart;
+    _timing.authorSearch = elapsedAuthor();
     const authors = authorsRaw;
 
     // Fetch translations in parallel
-    const _translationsStart = Date.now();
+    const elapsedTranslations = startTimer();
     const [ayahTranslations, hadithTranslationsRaw, bookContentTranslationsRaw] = await Promise.all([
       (quranTranslation && quranTranslation !== "none" && ayahsRaw.length > 0)
         ? prisma.ayahTranslation.findMany({
@@ -529,7 +529,7 @@ export async function GET(request: NextRequest) {
           })
         : Promise.resolve([]),
     ]);
-    _timing.translations = Date.now() - _translationsStart;
+    _timing.translations = elapsedTranslations();
 
     // Merge ayah translations
     let ayahs = ayahsRaw;
@@ -606,7 +606,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch book details
     const bookIds = [...new Set(rankedResults.map((r) => r.bookId))];
-    const _bookMetaStart = Date.now();
+    const elapsedBookMeta = startTimer();
     const booksRaw = await prisma.book.findMany({
       where: { id: { in: bookIds } },
       select: {
@@ -629,7 +629,7 @@ export async function GET(request: NextRequest) {
           : {}),
       },
     });
-    _timing.bookMetadata = Date.now() - _bookMetaStart;
+    _timing.bookMetadata = elapsedBookMeta();
 
     const books = booksRaw.map((book) => {
       const { titleTranslations, ...rest } = book as typeof book & {
@@ -644,7 +644,7 @@ export async function GET(request: NextRequest) {
     let graphContext: GraphContext | undefined;
     if (includeGraph && graphResult.entities.length > 0) {
       try {
-        const _graphResolveStart = Date.now();
+        const elapsedGraphResolve = startTimer();
         const [resolvedSources, resolvedMentions] = await Promise.all([
           resolveSources(graphResult.allSourceRefs),
           resolveGraphMentions(graphResult.entities),
@@ -675,7 +675,7 @@ export async function GET(request: NextRequest) {
         graphContext = {
           entities: contextEntities,
           coverage: "partial",
-          timingMs: graphResult.timingMs + (Date.now() - _graphResolveStart),
+          timingMs: graphResult.timingMs + elapsedGraphResolve(),
         };
 
         // Graph confirmation boost for ayahs

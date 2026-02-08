@@ -24,6 +24,24 @@ export function parsePagination(
 }
 
 /**
+ * Parse a bounded integer from a query parameter
+ * Returns defaultVal if the value is missing or NaN, clamped to [min, max]
+ */
+export function parseBoundedInt(value: string | undefined | null, defaultVal: number, min: number, max: number): number {
+  const parsed = parseInt(value || String(defaultVal), 10);
+  return Math.min(Math.max(isNaN(parsed) ? defaultVal : parsed, min), max);
+}
+
+/**
+ * Parse a bounded float from a query parameter
+ * Returns defaultVal if the value is missing or NaN, clamped to [min, max]
+ */
+export function parseBoundedFloat(value: string | undefined | null, defaultVal: number, min: number, max: number): number {
+  const parsed = parseFloat(value || String(defaultVal));
+  return Math.min(Math.max(isNaN(parsed) ? defaultVal : parsed, min), max);
+}
+
+/**
  * Create pagination response object
  */
 export function createPaginationResponse(page: number, limit: number, total: number) {

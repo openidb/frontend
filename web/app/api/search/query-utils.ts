@@ -1,4 +1,5 @@
 import { normalizeArabicText } from "@/lib/embeddings";
+import { MIN_CHARS_FOR_SEMANTIC } from "./config";
 import type { ParsedQuery, SearchStrategy } from "./types";
 
 /**
@@ -123,6 +124,16 @@ const THRESHOLD_RULES: Array<{ maxChars: number; threshold: number }> = [
   { maxChars: 6, threshold: 0.40 },
   { maxChars: 12, threshold: 0.30 },
 ];
+
+/**
+ * Check whether semantic search should be skipped for this query
+ * (quoted phrases → exact match only; very short normalized text → too noisy)
+ */
+export function shouldSkipSemanticSearch(query: string): boolean {
+  if (hasQuotedPhrases(query)) return true;
+  const normalized = normalizeArabicText(query);
+  return normalized.replace(/\s/g, '').length < MIN_CHARS_FOR_SEMANTIC;
+}
 
 export function getDynamicSimilarityThreshold(query: string, baseThreshold: number): number {
   const normalized = normalizeArabicText(query).trim();

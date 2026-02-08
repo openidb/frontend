@@ -15,18 +15,20 @@ export function getQueryExpansionModelId(model: string): string {
 }
 
 /**
- * Expand a search query into multiple alternative queries using LLM
- * Returns original query (weight=1.0) plus expanded queries (weight=0.7)
- * Results are cached to avoid redundant LLM calls
+ * Expand a search query into multiple alternative queries using LLM.
+ * Returns original query (weight=1.0) plus expanded queries (weight=0.7).
+ * Results are cached; also returns whether the result came from cache.
  */
-export async function expandQuery(query: string, model: string = "gemini-flash"): Promise<ExpandedQuery[]> {
+export async function expandQueryWithCacheInfo(query: string, model: string = "gemini-flash"): Promise<{ queries: ExpandedQuery[]; cached: boolean }> {
   const cached = getCachedExpansion(query);
   if (cached) {
-    return cached;
+    return { queries: cached, cached: true };
   }
 
+  const fallback: ExpandedQuery[] = [{ query, weight: 1.0, reason: "Original query" }];
+
   if (!process.env.OPENROUTER_API_KEY) {
-    return [{ query, weight: 1.0, reason: "Original query" }];
+    return { queries: fallback, cached: false };
   }
 
   try {
@@ -84,7 +86,7 @@ IMPORTANT:
 
     if (!response.ok) {
       console.warn(`Query expansion failed: ${response.statusText}`);
-      return [{ query, weight: 1.0, reason: "Original query" }];
+      return { queries: fallback, cached: false };
     }
 
     const data = await response.json();
@@ -93,7 +95,7 @@ IMPORTANT:
     const match = content.match(/\[[\s\S]*\]/);
     if (!match) {
       console.warn("Query expansion returned invalid format");
-      return [{ query, weight: 1.0, reason: "Original query" }];
+      return { queries: fallback, cached: false };
     }
 
     const expanded: string[] = JSON.parse(match[0]);
@@ -114,21 +116,9 @@ IMPORTANT:
     }
 
     setCachedExpansion(query, results);
-    return results;
+    return { queries: results, cached: false };
   } catch (err) {
     console.warn("Query expansion error:", err);
-    return [{ query, weight: 1.0, reason: "Original query" }];
+    return { queries: fallback, cached: false };
   }
-}
-
-/**
- * Wrapper for expandQuery that also returns cache status
- */
-export async function expandQueryWithCacheInfo(query: string, model: string = "gemini-flash"): Promise<{ queries: ExpandedQuery[]; cached: boolean }> {
-  const cached = getCachedExpansion(query);
-  if (cached) {
-    return { queries: cached, cached: true };
-  }
-  const queries = await expandQuery(query, model);
-  return { queries, cached: false };
 }
