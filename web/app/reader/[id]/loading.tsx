@@ -12,11 +12,11 @@ export default function ReaderLoading() {
 
       {/* Content skeleton */}
       <div className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full space-y-4">
-        {Array.from({ length: 12 }).map((_, i) => (
+        {[85, 92, 78, 95, 70, 88, 74, 97, 82, 90, 76, 93].map((w, i) => (
           <div
             key={i}
             className="h-4 bg-muted rounded animate-pulse"
-            style={{ width: `${70 + Math.random() * 30}%` }}
+            style={{ width: `${w}%` }}
           />
         ))}
       </div>
