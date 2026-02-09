@@ -40,11 +40,11 @@ export async function generateMetadata({
     const data = await fetchAPI<BookData>(`/api/books/${id}`);
     const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
     return {
-      title: `${title} - Sanad`,
+      title: `${title} - Sabeel`,
       description: `Read ${title} by ${data.book?.author?.nameArabic || ""}`,
     };
   } catch {
-    return { title: "Reader - Sanad" };
+    return { title: "Reader - Sabeel" };
   }
 }
 

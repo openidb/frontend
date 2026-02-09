@@ -13,7 +13,7 @@ export function DesktopNavigation() {
       {/* Logo */}
       <PrefetchLink href="/search" className="block mb-4 ps-9">
         <span
-          className="text-4xl text-brand"
+          className="text-4xl text-foreground"
           style={{ fontFamily: "'Aref Ruqaa', serif" }}
         >
           سَبِيل

@@ -44,11 +44,11 @@ export async function generateMetadata({
     const title = data.author?.nameArabic || data.author?.nameLatin || authorId;
     const latin = data.author?.nameLatin || "";
     return {
-      title: `${title} - Sanad`,
+      title: `${title} - Sabeel`,
       description: `Books by ${title}${latin ? ` (${latin})` : ""}`,
     };
   } catch {
-    return { title: `Author - Sanad` };
+    return { title: `Author - Sabeel` };
   }
 }
 

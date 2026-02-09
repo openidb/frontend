@@ -12,12 +12,12 @@ export async function generateMetadata({
   const { q } = await searchParams;
   if (q) {
     return {
-      title: `${q} - Sanad Search`,
+      title: `${q} - Sabeel Search`,
       description: `Search results for "${q}" across Quran, Hadith, and Islamic texts`,
     };
   }
   return {
-    title: "Search - Sanad",
+    title: "Search - Sabeel",
     description: "Search across Quran, Hadith, and Islamic texts",
   };
 }

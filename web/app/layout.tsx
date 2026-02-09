@@ -26,11 +26,11 @@ const themeLocaleScript = `
 })();
 `;
 
-const SITE_URL = process.env.SITE_URL || "https://sanad.openislamicdb.com";
+const SITE_URL = process.env.SITE_URL || "https://sabeel.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Sanad",
+  title: "Sabeel",
   description: "Search across Quran, Hadith, and Islamic texts",
   icons: {
     icon: [
@@ -40,17 +40,17 @@ export const metadata: Metadata = {
     apple: "/favicon-128.png",
   },
   openGraph: {
-    title: "Sanad",
+    title: "Sabeel",
     description: "Search across Quran, Hadith, and Islamic texts",
     url: SITE_URL,
-    siteName: "Sanad",
+    siteName: "Sabeel",
     type: "website",
     locale: "en_US",
-    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Sanad" }],
+    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Sabeel" }],
   },
   twitter: {
     card: "summary",
-    title: "Sanad",
+    title: "Sabeel",
     description: "Search across Quran, Hadith, and Islamic texts",
     images: ["/icon.png"],
   },

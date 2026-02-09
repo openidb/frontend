@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.SITE_URL || "https://sanad.openislamicdb.com";
+const SITE_URL = process.env.SITE_URL || "https://sabeel.dev";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
