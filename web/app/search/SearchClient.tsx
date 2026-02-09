@@ -263,8 +263,12 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Search failed");
+        const errorData = await response.json().catch(() => null);
+        const message =
+          typeof errorData?.error === "string"
+            ? errorData.error
+            : errorData?.error?.message || "Search failed";
+        throw new Error(message);
       }
 
       const data: SearchResponse = await response.json();
