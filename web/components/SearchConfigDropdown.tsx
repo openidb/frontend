@@ -176,6 +176,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
           variant="outline"
           size="icon"
           className="h-10 w-10 md:h-12 md:w-12 border-border hover:bg-muted shrink-0"
+          aria-label={t("searchConfig.contentTypes")}
         >
           <Settings2 className="h-4 w-4 md:h-5 md:w-5" />
         </Button>

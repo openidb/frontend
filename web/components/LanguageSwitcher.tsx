@@ -45,6 +45,7 @@ export function LanguageSwitcher() {
           size="sm"
           className="w-full justify-start gap-2 px-3 py-2 text-sm font-medium hover:bg-muted"
           style={{ color: "#31b9c9" }}
+          aria-label={t("language.selector")}
         >
           <Globe className="h-4 w-4" />
           <span>{currentLocale.nativeName}</span>
@@ -91,7 +92,7 @@ export function LanguageSwitcherCompact() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Language">
           <Globe className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

@@ -18,6 +18,7 @@
     "noResults": "\"{query}\"에 대한 결과가 없습니다",
     "minChars": "검색하려면 입력하세요...",
     "error": "다시 시도해 주세요.",
+    "tryAgain": "다시 시도",
     "authorsSection": "저자",
     "debugStats": "디버그 통계",
     "showDebugStats": "디버그",
@@ -46,6 +47,9 @@
     "voiceRecord": "음성 검색",
     "voiceTranscribing": "변환 중...",
     "voiceError": "음성 입력에 실패했습니다. 다시 시도해 주세요.",
+    "voiceDenied": "마이크 권한이 거부되었습니다.",
+    "voiceNotFound": "마이크를 찾을 수 없습니다.",
+    "voiceNoSpeech": "음성이 감지되지 않았습니다. 다시 시도해 주세요.",
     "knowledgePanel": "지식 패널",
     "mentionedInQuran": "꾸란에서 언급",
     "entityRelationships": "관계",
@@ -332,6 +336,9 @@
     "volume": "권",
     "book": "책",
     "ayahs": "절",
+    "ayahSingle": "아야",
+    "ayahRange": "아야",
+    "hadithNumber": "하디스",
     "chapters": "장",
     "noChapters": "장이 없습니다"
   },
@@ -360,6 +367,11 @@
     "ayah": "절",
     "ayahs": "절",
     "ayahRange": "{start}-{end}절"
+  },
+  "error": {
+    "title": "문제가 발생했습니다",
+    "description": "예기치 않은 오류가 발생했습니다. 다시 시도해 주세요.",
+    "tryAgain": "다시 시도"
   },
   "language": {
     "selector": "언어",

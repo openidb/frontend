@@ -18,6 +18,7 @@
     "noResults": "Результаты для \"{query}\" не найдены",
     "minChars": "Начните вводить для поиска...",
     "error": "Пожалуйста, попробуйте еще раз.",
+    "tryAgain": "Попробовать снова",
     "authorsSection": "Авторы",
     "debugStats": "Статистика отладки",
     "showDebugStats": "Отладка",
@@ -46,6 +47,9 @@
     "voiceRecord": "Голосовой поиск",
     "voiceTranscribing": "Транскрибирование...",
     "voiceError": "Голосовой ввод не удался. Попробуйте снова.",
+    "voiceDenied": "Доступ к микрофону запрещён.",
+    "voiceNotFound": "Микрофон не найден.",
+    "voiceNoSpeech": "Речь не распознана. Попробуйте ещё раз.",
     "knowledgePanel": "Панель знаний",
     "mentionedInQuran": "Упоминается в Коране",
     "entityRelationships": "Связи",
@@ -332,6 +336,9 @@
     "volume": "Том",
     "book": "Книга",
     "ayahs": "аятов",
+    "ayahSingle": "Аят",
+    "ayahRange": "Аяты",
+    "hadithNumber": "Хадис",
     "chapters": "Главы",
     "noChapters": "Главы недоступны"
   },
@@ -360,6 +367,11 @@
     "ayah": "аят",
     "ayahs": "аятов",
     "ayahRange": "аяты {start}-{end}"
+  },
+  "error": {
+    "title": "Что-то пошло не так",
+    "description": "Произошла непредвиденная ошибка. Пожалуйста, попробуйте ещё раз.",
+    "tryAgain": "Попробовать снова"
   },
   "language": {
     "selector": "Язык",

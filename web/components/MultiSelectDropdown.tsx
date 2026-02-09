@@ -59,7 +59,7 @@ export function MultiSelectDropdown({
         className="border-border hover:bg-accent"
       >
         {displayTitle}
-        <ChevronDown className="ml-2 h-4 w-4" />
+        <ChevronDown className="ms-2 h-4 w-4" />
       </Button>
     )
   }
@@ -72,7 +72,7 @@ export function MultiSelectDropdown({
           className="border-border hover:bg-accent"
         >
           {displayTitle}
-          <ChevronDown className="ml-2 h-4 w-4" />
+          <ChevronDown className="ms-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-popover border border-border" align="start">
@@ -96,7 +96,7 @@ export function MultiSelectDropdown({
                   </span>
                 )}
               </div>
-              <span className="text-sm text-muted-foreground ml-2">
+              <span className="text-sm text-muted-foreground ms-2">
                 {option.count}
               </span>
             </div>

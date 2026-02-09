@@ -18,6 +18,7 @@
     "noResults": "\"{query}\" کے لیے کوئی نتیجہ نہیں ملا",
     "minChars": "تلاش کے لیے ٹائپ کرنا شروع کریں...",
     "error": "براہ کرم دوبارہ کوشش کریں۔",
+    "tryAgain": "دوبارہ کوشش کریں",
     "authorsSection": "مصنفین",
     "debugStats": "ڈیبگ اعداد و شمار",
     "showDebugStats": "ڈیبگ",
@@ -46,6 +47,9 @@
     "voiceRecord": "آواز سے تلاش",
     "voiceTranscribing": "نقل حرفی ہو رہی ہے...",
     "voiceError": "آواز کی ان پٹ ناکام ہوئی۔ دوبارہ کوشش کریں۔",
+    "voiceDenied": "مائیکروفون کی اجازت مسترد ہوگئی۔",
+    "voiceNotFound": "مائیکروفون نہیں ملا۔",
+    "voiceNoSpeech": "آواز نہیں ملی۔ دوبارہ کوشش کریں۔",
     "knowledgePanel": "علمی پینل",
     "mentionedInQuran": "قرآن میں مذکور",
     "entityRelationships": "تعلقات",
@@ -332,6 +336,9 @@
     "volume": "جلد",
     "book": "کتاب",
     "ayahs": "آیات",
+    "ayahSingle": "آیت",
+    "ayahRange": "آیات",
+    "hadithNumber": "حدیث",
     "chapters": "ابواب",
     "noChapters": "کوئی باب دستیاب نہیں"
   },
@@ -360,6 +367,11 @@
     "ayah": "آیت",
     "ayahs": "آیات",
     "ayahRange": "آیات {start}-{end}"
+  },
+  "error": {
+    "title": "کچھ غلط ہو گیا",
+    "description": "ایک غیر متوقع خرابی واقع ہوئی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "tryAgain": "دوبارہ کوشش کریں"
   },
   "language": {
     "selector": "زبان",

@@ -18,6 +18,7 @@
     "noResults": "未找到 \"{query}\" 的结果",
     "minChars": "开始输入以搜索...",
     "error": "请重试。",
+    "tryAgain": "重试",
     "authorsSection": "作者",
     "debugStats": "调试统计",
     "showDebugStats": "调试",
@@ -46,6 +47,9 @@
     "voiceRecord": "语音搜索",
     "voiceTranscribing": "正在转录...",
     "voiceError": "语音输入失败。请重试。",
+    "voiceDenied": "麦克风权限被拒绝。",
+    "voiceNotFound": "未找到麦克风。",
+    "voiceNoSpeech": "未检测到语音，请重试。",
     "knowledgePanel": "知识面板",
     "mentionedInQuran": "古兰经中提及",
     "entityRelationships": "关系",
@@ -332,6 +336,9 @@
     "volume": "册",
     "book": "书",
     "ayahs": "节",
+    "ayahSingle": "节",
+    "ayahRange": "节",
+    "hadithNumber": "圣训",
     "chapters": "章节",
     "noChapters": "没有可用的章节"
   },
@@ -360,6 +367,11 @@
     "ayah": "节",
     "ayahs": "节",
     "ayahRange": "第 {start}-{end} 节"
+  },
+  "error": {
+    "title": "出现了问题",
+    "description": "发生了意外错误。请重试。",
+    "tryAgain": "重试"
   },
   "language": {
     "selector": "语言",

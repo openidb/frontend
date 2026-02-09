@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchAPI } from "@/lib/api-client";
 import { EpubReader } from "@/components/EpubReader";
@@ -27,6 +28,24 @@ interface BookData {
       nameLatin: string;
     };
   };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const data = await fetchAPI<BookData>(`/api/books/${id}`);
+    const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
+    return {
+      title: `${title} - Sanad`,
+      description: `Read ${title} by ${data.book?.author?.nameArabic || ""}`,
+    };
+  } catch {
+    return { title: "Reader - Sanad" };
+  }
 }
 
 export default async function ReaderPage({

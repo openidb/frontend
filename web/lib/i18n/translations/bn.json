@@ -18,6 +18,7 @@
     "noResults": "\"{query}\" এর জন্য কোনো ফলাফল পাওয়া যায়নি",
     "minChars": "অনুসন্ধান করতে টাইপ করুন...",
     "error": "অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "tryAgain": "আবার চেষ্টা করুন",
     "authorsSection": "লেখক",
     "debugStats": "ডিবাগ পরিসংখ্যান",
     "showDebugStats": "ডিবাগ",
@@ -46,6 +47,9 @@
     "voiceRecord": "ভয়েস অনুসন্ধান",
     "voiceTranscribing": "প্রতিলিপি হচ্ছে...",
     "voiceError": "ভয়েস ইনপুট ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+    "voiceDenied": "মাইক্রোফোনের অনুমতি প্রত্যাখ্যান।",
+    "voiceNotFound": "কোনো মাইক্রোফোন পাওয়া যায়নি।",
+    "voiceNoSpeech": "কোনো কথা শনাক্ত হয়নি। আবার চেষ্টা করুন।",
     "knowledgePanel": "জ্ঞান প্যানেল",
     "mentionedInQuran": "কুরআনে উল্লেখিত",
     "entityRelationships": "সম্পর্কসমূহ",
@@ -332,6 +336,9 @@
     "volume": "খণ্ড",
     "book": "কিতাব",
     "ayahs": "আয়াত",
+    "ayahSingle": "আয়াত",
+    "ayahRange": "আয়াত",
+    "hadithNumber": "হাদিস",
     "chapters": "অধ্যায়",
     "noChapters": "কোনো অধ্যায় নেই"
   },
@@ -360,6 +367,11 @@
     "ayah": "আয়াত",
     "ayahs": "আয়াত",
     "ayahRange": "{start}-{end} আয়াত"
+  },
+  "error": {
+    "title": "কিছু ভুল হয়েছে",
+    "description": "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "tryAgain": "আবার চেষ্টা করুন"
   },
   "language": {
     "selector": "ভাষা",

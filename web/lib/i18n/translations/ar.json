@@ -18,6 +18,7 @@
     "noResults": "لم يتم العثور على نتائج لـ \"{query}\"",
     "minChars": "ابدأ الكتابة للبحث...",
     "error": "يرجى المحاولة مرة أخرى.",
+    "tryAgain": "حاول مرة أخرى",
     "authorsSection": "المؤلفون",
     "debugStats": "إحصائيات التصحيح",
     "showDebugStats": "تصحيح",
@@ -46,6 +47,9 @@
     "voiceRecord": "البحث الصوتي",
     "voiceTranscribing": "جارٍ التحويل...",
     "voiceError": "فشل الإدخال الصوتي. يرجى المحاولة مرة أخرى.",
+    "voiceDenied": "تم رفض إذن الميكروفون.",
+    "voiceNotFound": "لم يتم العثور على ميكروفون.",
+    "voiceNoSpeech": "لم يتم اكتشاف كلام. حاول مرة أخرى.",
     "knowledgePanel": "لوحة المعرفة",
     "mentionedInQuran": "ورد في القرآن",
     "entityRelationships": "العلاقات",
@@ -332,6 +336,9 @@
     "volume": "المجلد",
     "book": "الكتاب",
     "ayahs": "آيات",
+    "ayahSingle": "آية",
+    "ayahRange": "آيات",
+    "hadithNumber": "حديث",
     "chapters": "الفصول",
     "noChapters": "لا توجد فصول متاحة"
   },
@@ -360,6 +367,11 @@
     "ayah": "آية",
     "ayahs": "آيات",
     "ayahRange": "آيات {start}-{end}"
+  },
+  "error": {
+    "title": "حدث خطأ ما",
+    "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+    "tryAgain": "حاول مرة أخرى"
   },
   "language": {
     "selector": "اللغة",

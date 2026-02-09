@@ -18,6 +18,7 @@
     "noResults": "Nessun risultato per \"{query}\"",
     "minChars": "Inizia a digitare per cercare...",
     "error": "Per favore riprova.",
+    "tryAgain": "Riprova",
     "authorsSection": "Autori",
     "debugStats": "Statistiche di debug",
     "showDebugStats": "Debug",
@@ -46,6 +47,9 @@
     "voiceRecord": "Ricerca vocale",
     "voiceTranscribing": "Trascrizione...",
     "voiceError": "Input vocale fallito. Riprova.",
+    "voiceDenied": "Autorizzazione microfono negata.",
+    "voiceNotFound": "Nessun microfono trovato.",
+    "voiceNoSpeech": "Nessun discorso rilevato. Riprova.",
     "knowledgePanel": "Pannello di conoscenza",
     "mentionedInQuran": "Menzionato nel Corano",
     "entityRelationships": "Relazioni",
@@ -332,6 +336,9 @@
     "volume": "Vol.",
     "book": "Libro",
     "ayahs": "versetti",
+    "ayahSingle": "Ayah",
+    "ayahRange": "Ayat",
+    "hadithNumber": "Hadith",
     "chapters": "Capitoli",
     "noChapters": "Nessun capitolo disponibile"
   },
@@ -360,6 +367,11 @@
     "ayah": "versetto",
     "ayahs": "versetti",
     "ayahRange": "versetti {start}-{end}"
+  },
+  "error": {
+    "title": "Qualcosa è andato storto",
+    "description": "Si è verificato un errore imprevisto. Per favore riprova.",
+    "tryAgain": "Riprova"
   },
   "language": {
     "selector": "Lingua",

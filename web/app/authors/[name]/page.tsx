@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { fetchAPI } from "@/lib/api-client";
 import { notFound } from "next/navigation";
 import AuthorDetailClient from "./AuthorDetailClient";
@@ -29,6 +30,25 @@ interface AuthorData {
     }>;
     _count: { books: number };
   };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}): Promise<Metadata> {
+  const { name } = await params;
+  const authorLatin = decodeURIComponent(name);
+  try {
+    const data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorLatin)}`);
+    const title = data.author?.nameArabic || authorLatin;
+    return {
+      title: `${title} - Sanad`,
+      description: `Books by ${title} (${authorLatin})`,
+    };
+  } catch {
+    return { title: `${authorLatin} - Sanad` };
+  }
 }
 
 export default async function AuthorDetailPage({

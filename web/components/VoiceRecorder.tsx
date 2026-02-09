@@ -86,6 +86,10 @@ export function VoiceRecorder({
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
+    // Read brand color from CSS custom property (theme-aware)
+    const brandVar = getComputedStyle(canvas).getPropertyValue("--brand").trim();
+    const barColor = brandVar ? `hsl(${brandVar})` : "#31b9c9";
+
     const draw = () => {
       animFrameRef.current = requestAnimationFrame(draw);
       analyser.getByteFrequencyData(dataArray);
@@ -112,7 +116,7 @@ export function VoiceRecorder({
         const radius = barWidth / 2;
 
         ctx.globalAlpha = 0.5 + value * 0.5;
-        ctx.fillStyle = "#31b9c9";
+        ctx.fillStyle = barColor;
 
         // Top half — rounded rect
         ctx.beginPath();
@@ -179,11 +183,11 @@ export function VoiceRecorder({
         error.name === "NotAllowedError" ||
         error.name === "PermissionDeniedError"
       ) {
-        onError(t("search.voiceError") || "Microphone permission denied");
+        onError(t("search.voiceDenied"));
       } else if (error.name === "NotFoundError") {
-        onError(t("search.voiceError") || "No microphone found");
+        onError(t("search.voiceNotFound"));
       } else {
-        onError(t("search.voiceError") || "Could not access microphone");
+        onError(t("search.voiceError"));
       }
       stopStream();
     }
@@ -244,13 +248,13 @@ export function VoiceRecorder({
       const text = (data.text || "").trim();
 
       if (!text) {
-        onError(t("search.voiceError") || "No speech detected");
+        onError(t("search.voiceNoSpeech"));
       } else {
         onTranscription(text);
       }
     } catch (err) {
       console.error("Transcription error:", err);
-      onError(t("search.voiceError") || "Transcription failed");
+      onError(t("search.voiceError"));
     } finally {
       stopStream();
       setVoiceState("idle");
@@ -278,7 +282,7 @@ export function VoiceRecorder({
 
   // Recording / Transcribing mode — full-width container
   return (
-    <div className="flex items-center gap-1.5 h-10 md:h-12 border rounded-lg bg-background px-1.5 w-full">
+    <div className="flex items-center gap-1.5 h-11 md:h-12 border rounded-lg bg-background px-1.5 w-full">
       {/* Cancel button */}
       <button
         onClick={cancelRecording}
@@ -310,8 +314,7 @@ export function VoiceRecorder({
       <button
         onClick={confirmRecording}
         disabled={voiceState === "transcribing"}
-        className="shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors disabled:opacity-50"
-        style={{ backgroundColor: "rgba(49, 185, 201, 0.15)", color: "#31b9c9" }}
+        className="shrink-0 h-7 w-7 flex items-center justify-center rounded-md transition-colors disabled:opacity-50 bg-brand/15 text-brand"
         aria-label={t("common.confirm")}
         type="button"
       >

@@ -18,6 +18,7 @@
     "noResults": "「{query}」の結果が見つかりませんでした",
     "minChars": "入力して検索...",
     "error": "もう一度お試しください。",
+    "tryAgain": "再試行",
     "authorsSection": "著者",
     "debugStats": "デバッグ統計",
     "showDebugStats": "デバッグ",
@@ -46,6 +47,9 @@
     "voiceRecord": "音声検索",
     "voiceTranscribing": "文字起こし中...",
     "voiceError": "音声入力に失敗しました。もう一度お試しください。",
+    "voiceDenied": "マイクの許可が拒否されました。",
+    "voiceNotFound": "マイクが見つかりません。",
+    "voiceNoSpeech": "音声が検出されませんでした。もう一度お試しください。",
     "knowledgePanel": "ナレッジパネル",
     "mentionedInQuran": "クルアーンでの言及",
     "entityRelationships": "関係",
@@ -332,6 +336,9 @@
     "volume": "巻",
     "book": "書",
     "ayahs": "節",
+    "ayahSingle": "アーヤ",
+    "ayahRange": "アーヤ",
+    "hadithNumber": "ハディース",
     "chapters": "章",
     "noChapters": "章がありません"
   },
@@ -360,6 +367,11 @@
     "ayah": "節",
     "ayahs": "節",
     "ayahRange": "第{start}-{end}節"
+  },
+  "error": {
+    "title": "エラーが発生しました",
+    "description": "予期しないエラーが発生しました。もう一度お試しください。",
+    "tryAgain": "再試行"
   },
   "language": {
     "selector": "言語",

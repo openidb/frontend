@@ -18,6 +18,7 @@
     "noResults": "Aucun resultat pour \"{query}\"",
     "minChars": "Commencez a taper pour rechercher...",
     "error": "Veuillez reessayer.",
+    "tryAgain": "Réessayer",
     "authorsSection": "Auteurs",
     "debugStats": "Statistiques de debug",
     "showDebugStats": "Debug",
@@ -46,6 +47,9 @@
     "voiceRecord": "Recherche vocale",
     "voiceTranscribing": "Transcription...",
     "voiceError": "La saisie vocale a echoue. Veuillez reessayer.",
+    "voiceDenied": "Autorisation du microphone refusée.",
+    "voiceNotFound": "Aucun microphone trouvé.",
+    "voiceNoSpeech": "Aucune parole détectée. Veuillez réessayer.",
     "knowledgePanel": "Panneau de connaissances",
     "mentionedInQuran": "Mentionne dans le Coran",
     "entityRelationships": "Relations",
@@ -332,6 +336,9 @@
     "volume": "Vol.",
     "book": "Livre",
     "ayahs": "versets",
+    "ayahSingle": "Ayah",
+    "ayahRange": "Ayahs",
+    "hadithNumber": "Hadith",
     "chapters": "Chapitres",
     "noChapters": "Aucun chapitre disponible"
   },
@@ -360,6 +367,11 @@
     "ayah": "verset",
     "ayahs": "versets",
     "ayahRange": "versets {start}-{end}"
+  },
+  "error": {
+    "title": "Une erreur s'est produite",
+    "description": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+    "tryAgain": "Réessayer"
   },
   "language": {
     "selector": "Langue",

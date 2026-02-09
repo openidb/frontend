@@ -18,6 +18,7 @@
     "noResults": "No results found for \"{query}\"",
     "minChars": "Start typing to search...",
     "error": "Please try again.",
+    "tryAgain": "Try again",
     "authorsSection": "Authors",
     "debugStats": "Debug Statistics",
     "showDebugStats": "Debug",
@@ -46,6 +47,9 @@
     "voiceRecord": "Voice search",
     "voiceTranscribing": "Transcribing...",
     "voiceError": "Voice input failed. Please try again.",
+    "voiceDenied": "Microphone permission denied.",
+    "voiceNotFound": "No microphone found.",
+    "voiceNoSpeech": "No speech detected. Please try again.",
     "knowledgePanel": "Knowledge Panel",
     "mentionedInQuran": "Mentioned in Quran",
     "entityRelationships": "Relationships",
@@ -332,6 +336,9 @@
     "volume": "Vol.",
     "book": "Book",
     "ayahs": "ayahs",
+    "ayahSingle": "Ayah",
+    "ayahRange": "Ayahs",
+    "hadithNumber": "Hadith",
     "chapters": "Chapters",
     "noChapters": "No chapters available"
   },
@@ -360,6 +367,11 @@
     "ayah": "ayah",
     "ayahs": "ayahs",
     "ayahRange": "ayahs {start}-{end}"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "tryAgain": "Try again"
   },
   "language": {
     "selector": "Language",

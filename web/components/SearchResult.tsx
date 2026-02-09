@@ -1,8 +1,10 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { BookOpen, FileText, ExternalLink } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/components/SearchConfigDropdown";
 
 // Type definitions for result data
@@ -79,7 +81,7 @@ interface SearchResultProps {
   bookTitleDisplay?: TranslationDisplayOption;
 }
 
-export default function SearchResult({ result, bookTitleDisplay = "transliteration" }: SearchResultProps) {
+function SearchResultInner({ result, bookTitleDisplay = "transliteration" }: SearchResultProps) {
   const { t } = useTranslation();
 
   if (!result.book) return null;
@@ -146,7 +148,7 @@ export default function SearchResult({ result, bookTitleDisplay = "transliterati
       <div
         className="text-sm line-clamp-3 text-foreground"
         dir="rtl"
-        dangerouslySetInnerHTML={{ __html: highlightedSnippet }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHighlight(highlightedSnippet) }}
       />
 
       {/* Content Translation - from database cache */}
@@ -171,6 +173,9 @@ export default function SearchResult({ result, bookTitleDisplay = "transliterati
   );
 }
 
+const SearchResult = React.memo(SearchResultInner);
+export default SearchResult;
+
 // Separate component for Quran ayah results
 interface AyahResultProps {
   ayah: {
@@ -193,13 +198,13 @@ interface AyahResultProps {
   };
 }
 
-export function AyahResult({ ayah }: AyahResultProps) {
+function AyahResultInner({ ayah }: AyahResultProps) {
   const { t } = useTranslation();
 
   // Determine the ayah label (single ayah or range)
   const ayahLabel = ayah.ayahEnd && ayah.ayahEnd !== ayah.ayahNumber
-    ? `آيات ${ayah.ayahNumber}-${ayah.ayahEnd}`
-    : `آية ${ayah.ayahNumber}`;
+    ? `${t("results.ayahRange")} ${ayah.ayahNumber}-${ayah.ayahEnd}`
+    : `${t("results.ayahSingle")} ${ayah.ayahNumber}`;
 
   // Hide text for full surah results (chunks starting from ayah 1)
   const isFullSurah = ayah.isChunk && ayah.ayahNumber === 1;
@@ -271,6 +276,8 @@ export function AyahResult({ ayah }: AyahResultProps) {
   );
 }
 
+export const AyahResult = React.memo(AyahResultInner);
+
 // Component for Hadith results
 interface HadithResultProps {
   hadith: {
@@ -292,7 +299,7 @@ interface HadithResultProps {
   };
 }
 
-export function HadithResult({ hadith }: HadithResultProps) {
+function HadithResultInner({ hadith }: HadithResultProps) {
   const { t } = useTranslation();
 
   return (
@@ -334,7 +341,7 @@ export function HadithResult({ hadith }: HadithResultProps) {
       {/* Hadith/Book Info */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded" dir="rtl">
-          حديث {hadith.hadithNumber.replace(/[A-Z]+$/, '')}
+          {t("results.hadithNumber")} {hadith.hadithNumber.replace(/[A-Z]+$/, '')}
         </span>
         <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
           <FileText className="h-3 w-3" />
@@ -362,6 +369,8 @@ export function HadithResult({ hadith }: HadithResultProps) {
     </a>
   );
 }
+
+export const HadithResult = React.memo(HadithResultInner);
 
 // Unified result component that renders the appropriate card based on type
 interface UnifiedSearchResultProps {

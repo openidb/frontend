@@ -144,7 +144,7 @@ FINAL RESULTS`}
         {expandedSection === "normalization" && (
           <div className="mt-3 space-y-2 text-muted-foreground">
             <p>{t("algorithm.normalizationDesc")}</p>
-            <ul className="list-disc list-inside space-y-1 mr-4">
+            <ul className="list-disc list-inside space-y-1 me-4">
               <li>{t("algorithm.removeDiacritics")}</li>
               <li>{t("algorithm.normalizeAlef")}</li>
               <li>{t("algorithm.normalizeTeh")}</li>
@@ -209,7 +209,7 @@ FINAL RESULTS`}
               <p className="font-medium text-foreground">Arabic Text Analysis</p>
               <div className="bg-muted/50 p-2 rounded text-[10px] space-y-1">
                 <p>Custom Elasticsearch analyzer with:</p>
-                <ul className="list-disc list-inside mr-4">
+                <ul className="list-disc list-inside me-4">
                   <li>Diacritics removal (tashkeel)</li>
                   <li>Alef normalization (آأإٱ → ا)</li>
                   <li>Teh marbuta normalization (ة → ه)</li>
@@ -255,7 +255,7 @@ FINAL RESULTS`}
 
             <div className="space-y-1">
               <p className="font-medium text-foreground">{t("algorithm.dynamicThresholds")}</p>
-              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
+              <ul className="list-disc list-inside text-[10px] space-y-1 me-4">
                 <li>{t("algorithm.threshold1to3")}</li>
                 <li>{t("algorithm.threshold4to6")}</li>
                 <li>{t("algorithm.threshold7to12")}</li>
@@ -411,7 +411,7 @@ FINAL RESULTS`}
             <div className="space-y-2">
               <p className="font-medium text-foreground">Document Formatting for Reranker</p>
               <p className="text-[10px]">Each document is prefixed with its type for context:</p>
-              <ul className="list-disc list-inside text-[10px] space-y-1 mr-4">
+              <ul className="list-disc list-inside text-[10px] space-y-1 me-4">
                 <li><strong>[BOOK]</strong> {t("algorithm.rerankBookFormat")}</li>
                 <li><strong>[QURAN]</strong> {t("algorithm.rerankQuranFormat")}</li>
                 <li><strong>[HADITH]</strong> {t("algorithm.rerankHadithFormat")}</li>
@@ -420,7 +420,7 @@ FINAL RESULTS`}
 
             <div className="space-y-2">
               <p className="font-medium text-foreground">Ranking Priority</p>
-              <ol className="list-decimal list-inside text-[10px] space-y-1 mr-4">
+              <ol className="list-decimal list-inside text-[10px] space-y-1 me-4">
                 <li><strong>Source lookup:</strong> When searching for a named verse or hadith, the actual source ranks highest</li>
                 <li><strong>Questions:</strong> Documents that directly answer the question rank highest</li>
                 <li><strong>Topic search:</strong> Primary sources and detailed discussions rank by relevance</li>

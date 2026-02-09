@@ -4,6 +4,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme";
 import { AppConfigProvider } from "@/lib/config";
 import { DesktopNavigation, MobileNavigation } from "@/components/Navigation";
+import { Toaster } from "@/components/ui/toaster";
 import { generateCsrfToken } from "@/lib/csrf";
 
 // Inline script to apply theme/locale before React hydration to prevent flash
@@ -25,7 +26,10 @@ const themeLocaleScript = `
 })();
 `;
 
+const SITE_URL = process.env.SITE_URL || "https://sanad.openislamicdb.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Sanad",
   description: "Search across Quran, Hadith, and Islamic texts",
   icons: {
@@ -34,6 +38,21 @@ export const metadata: Metadata = {
       { url: "/favicon-64.png", type: "image/png", sizes: "64x64" },
     ],
     apple: "/favicon-128.png",
+  },
+  openGraph: {
+    title: "Sanad",
+    description: "Search across Quran, Hadith, and Islamic texts",
+    url: SITE_URL,
+    siteName: "Sanad",
+    type: "website",
+    locale: "en_US",
+    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Sanad" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "Sanad",
+    description: "Search across Quran, Hadith, and Islamic texts",
+    images: ["/icon.png"],
   },
 };
 
@@ -49,7 +68,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeLocaleScript }} />
         <meta name="csrf-token" content={csrfToken} />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet" />
@@ -72,6 +91,7 @@ export default function RootLayout({
                 {/* Mobile Bottom Navigation - visible only on mobile */}
                 <MobileNavigation />
               </div>
+              <Toaster />
             </AppConfigProvider>
           </I18nProvider>
         </ThemeProvider>

@@ -18,6 +18,7 @@
     "noResults": "Tidak ada hasil untuk \"{query}\"",
     "minChars": "Mulai ketik untuk mencari...",
     "error": "Silakan coba lagi.",
+    "tryAgain": "Coba lagi",
     "authorsSection": "Penulis",
     "debugStats": "Statistik Debug",
     "showDebugStats": "Debug",
@@ -46,6 +47,9 @@
     "voiceRecord": "Pencarian suara",
     "voiceTranscribing": "Mentranskrip...",
     "voiceError": "Input suara gagal. Silakan coba lagi.",
+    "voiceDenied": "Izin mikrofon ditolak.",
+    "voiceNotFound": "Mikrofon tidak ditemukan.",
+    "voiceNoSpeech": "Tidak ada suara terdeteksi. Silakan coba lagi.",
     "knowledgePanel": "Panel Pengetahuan",
     "mentionedInQuran": "Disebutkan dalam Al-Quran",
     "entityRelationships": "Hubungan",
@@ -332,6 +336,9 @@
     "volume": "Jilid",
     "book": "Kitab",
     "ayahs": "ayat",
+    "ayahSingle": "Ayat",
+    "ayahRange": "Ayat",
+    "hadithNumber": "Hadis",
     "chapters": "Bab",
     "noChapters": "Tidak ada bab tersedia"
   },
@@ -360,6 +367,11 @@
     "ayah": "ayat",
     "ayahs": "ayat",
     "ayahRange": "ayat {start}-{end}"
+  },
+  "error": {
+    "title": "Terjadi kesalahan",
+    "description": "Terjadi kesalahan yang tidak terduga. Silakan coba lagi.",
+    "tryAgain": "Coba lagi"
   },
   "language": {
     "selector": "Bahasa",
