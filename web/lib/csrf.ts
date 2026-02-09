@@ -3,6 +3,10 @@ import crypto from "crypto";
 const SECRET =
   process.env.CSRF_SECRET || crypto.randomUUID();
 
+if (!process.env.CSRF_SECRET) {
+  console.warn("[csrf] CSRF_SECRET is not set — using a random secret. Tokens will not survive server restarts.");
+}
+
 const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export function generateCsrfToken(): string {

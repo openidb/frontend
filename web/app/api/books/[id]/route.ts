@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { id } = await context.params;
     const { searchParams } = new URL(request.url);
-    const res = await fetchAPIRaw(`/api/books/${id}?${searchParams}`);
+    const res = await fetchAPIRaw(`/api/books/${encodeURIComponent(id)}?${searchParams}`);
     return new Response(res.body, {
       status: res.status,
       headers: { "Content-Type": "application/json" },

@@ -6,10 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Strips all HTML tags except <mark> and </mark> from a string.
+ * Strips all HTML tags except bare <mark> and </mark> from a string.
  * Used to sanitize Elasticsearch highlight snippets before rendering
- * via dangerouslySetInnerHTML.
+ * via dangerouslySetInnerHTML. Rejects <mark> with attributes to prevent XSS.
  */
 export function sanitizeHighlight(html: string): string {
-  return html.replace(/<\/?(?!mark\b)[^>]*>/gi, "")
+  return html.replace(/<(?!\/?mark\s*>)[^>]*>/gi, "")
 }

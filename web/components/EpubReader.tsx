@@ -172,7 +172,7 @@ export function EpubReader({ bookMetadata, initialPage, initialPageNumber }: Epu
         height: height,
         spread: "none",
         flow: "scrolled-doc",
-        allowScriptedContent: true,
+        allowScriptedContent: false,
       });
 
       renditionRef.current = renditionInstance;
