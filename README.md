@@ -1,95 +1,107 @@
-# Islamic Texts Search
+# sabeel
 
-A hybrid search engine for classical Arabic Islamic texts, combining semantic (AI embeddings) and keyword (Elasticsearch BM25) search across Quran, Hadith, and classical books.
+Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and browse Quran, Hadith, and classical Arabic books.
 
-**Live:** [sanad.marlin.im](https://sanad.marlin.im)
+**Live:** [sabeel.dev](https://sabeel.dev)
 
 ## Features
 
-- **Hybrid Search** - Semantic + keyword search with Reciprocal Rank Fusion (RRF)
-- **Three Content Types** - Quran (6,236 ayahs), Hadith (7 collections), Classical Books
-- **12 Quran Translations** - English, French, Indonesian, Urdu, Spanish, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
-- **Reranking Options** - Jina neural reranker, Gemini Flash, GPT-OSS LLMs
-- **Query Expansion** - AI-powered query reformulation for better recall
-- **Famous Source Lookup** - Fuzzy matching for "Ayat al-Kursi", "حديث جبريل", etc.
-- **EPUB Reader** - Built-in reader with navigation and in-book search
-- **Dark Mode & RTL** - Full Arabic support
+- **Hybrid Search** — Semantic + keyword search with debug panel and timing breakdown
+- **13 Languages** — English, Arabic, French, Indonesian, Urdu, Spanish, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
+- **RTL Support** — Full right-to-left layout for Arabic and Urdu with dedicated fonts (Amiri, Scheherazade New)
+- **Voice Search** — Audio transcription via Groq Whisper
+- **EPUB Reader** — Built-in reader with navigation, table of contents, in-book translation, and word definitions
+- **Knowledge Graph** — Entity panel showing related concepts from Neo4j
+- **Dark Mode** — Light, dark, and system themes with no flash of unstyled content
+- **Search Configuration** — Reranker selection, similarity cutoffs, content type filters, query expansion
+- **Accessibility** — aria-labels on all icon buttons, loading skeletons, keyboard navigation, pinch-to-zoom
+
+## Tech Stack
+
+| | |
+|---|---|
+| Framework | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS, shadcn/ui, Radix UI |
+| Book Reader | EPUB.js |
+| Math | KaTeX |
+| Icons | Lucide React |
+
+No backend dependencies — all data comes from the [openidb](https://github.com/openidb/openidb) API via proxy routes.
+
+## Architecture
+
+sabeel is a pure frontend. Server pages fetch data with `fetchAPI<T>()`, and client-side requests go through Next.js API routes that proxy to openidb using `fetchAPIRaw()`. This keeps the backend URL private and allows centralized error handling (all proxy routes return 503 on backend failure).
+
+```
+Browser → sabeel (Next.js) → /api/* proxy routes → openidb API (port 4000)
+```
 
 ## Project Structure
 
 ```
-arabic-texts-library/
-├── web/                    # Next.js app (Sanad)
-│   ├── app/                #   App Router (pages + API routes)
-│   ├── components/         #   React components
-│   ├── lib/                #   Core libraries (db, qdrant, embeddings, search, graph)
-│   ├── prisma/             #   Schema + migrations
-│   └── public/             #   Static assets (books, fonts)
-│
-├── pipelines/              # Data pipelines (TypeScript, run with bun)
-│   ├── import/             #   Import scripts (epubs, quran, hadith, tafsir)
-│   ├── embed/              #   Embedding generation
-│   ├── index/              #   Elasticsearch index scripts
-│   ├── knowledge-graph/    #   Neo4j scripts
-│   ├── benchmark/          #   Technique benchmarks
-│   └── _archive/           #   One-time/archived scripts
-│
-├── scrapers/               # Web scrapers (Python)
-│   ├── shamela/            #   shamela.ws scraper
-│   └── openiti/            #   OpenITI EPUB converter
-│
-├── training/               # BGE-M3 fine-tuning + embedding server
-│   ├── embedding-server/   #   Python FastAPI server
-│   ├── scripts/            #   Training data generation
-│   └── *.py, *.ipynb       #   Fine-tuning code
-│
-└── docker-compose.yml      # All infrastructure (Postgres, Qdrant, ES, Neo4j, web)
+web/
+├── app/
+│   ├── layout.tsx              # Root layout, providers, CSRF, metadata
+│   ├── page.tsx                # Home (book listing)
+│   ├── search/
+│   │   ├── page.tsx            # Search page (server)
+│   │   ├── SearchClient.tsx    # Search orchestrator (client)
+│   │   ├── SearchDebugPanel.tsx
+│   │   └── SearchErrorState.tsx
+│   ├── reader/[id]/page.tsx    # Book reader
+│   ├── authors/                # Author listing + detail
+│   ├── config/page.tsx         # Settings
+│   └── api/                    # Proxy routes to openidb
+│       ├── search/route.ts
+│       ├── transcribe/route.ts
+│       ├── books/route.ts
+│       ├── authors/route.ts
+│       ├── ayah/route.ts
+│       ├── categories/route.ts
+│       └── pages/[bookId]/[pageNumber]/translate/route.ts
+├── components/
+│   ├── Navigation.tsx          # Desktop + mobile nav
+│   ├── VoiceRecorder.tsx       # Audio recording + transcription
+│   ├── EpubReader.tsx          # EPUB.js book reader
+│   ├── EntityPanel.tsx         # Knowledge graph context
+│   ├── SearchResult.tsx        # Individual result card
+│   ├── SearchConfigDropdown.tsx
+│   ├── LanguageSwitcher.tsx
+│   ├── RefiningCarousel.tsx
+│   ├── WordDefinitionPopover.tsx
+│   └── ui/                     # shadcn/ui primitives
+├── lib/
+│   ├── api-client.ts           # fetchAPI / fetchAPIRaw
+│   ├── i18n/                   # I18nProvider + 13 translation files
+│   ├── theme/                  # ThemeProvider (light/dark/system)
+│   ├── config/                 # AppConfigProvider (search settings)
+│   ├── csrf.ts                 # CSRF token generation
+│   └── utils.ts
+└── public/
+    ├── books/                  # EPUB files
+    └── fonts/                  # Arabic fonts (Amiri, Scheherazade New)
 ```
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| Frontend | Next.js 16, React 19, TypeScript, TailwindCSS |
-| Database | PostgreSQL 16, Prisma |
-| Vector Search | Qdrant |
-| Keyword Search | Elasticsearch 8.12 |
-| Knowledge Graph | Neo4j 5 |
-| Embeddings | google/gemini-embedding-001 (3072d) |
-| Reranking | Jina, Gemini, GPT-OSS via OpenRouter |
 
 ## Setup
 
 ```bash
-git clone https://github.com/abdulrahman-abdulmojeeb/islamic-texts-search.git
-cd islamic-texts-search
-
-# Start services
-docker compose up -d db elasticsearch qdrant
-
-# Install & run web app
-cd web
+cd sabeel/web
 bun install
-cp .env.example .env
-bunx prisma migrate deploy
-bun run dev
+cp .env.example .env    # set OPENIDB_URL
+bun run dev             # → http://localhost:3000
 ```
 
-## API
+Requires the [openidb](https://github.com/openidb/openidb) API running on port 4000.
 
-```
-GET /api/search?q={query}&mode=hybrid&limit=20
-```
+## Environment Variables
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `mode` | hybrid | `hybrid`, `semantic`, `keyword` |
-| `includeQuran/Hadith/Books` | true | Filter content types |
-| `reranker` | none | `none`, `jina`, `gemini-flash`, `gpt-oss-120b` |
-| `refine` | false | Enable query expansion |
-| `similarityCutoff` | 0.6 | Semantic threshold (0.15-0.8) |
-| `quranTranslation` | none | Language code (en, fr, ur, etc.) |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENIDB_URL` | `http://localhost:4000` | Backend API URL |
+| `SITE_URL` | `https://sabeel.dev` | Public URL (sitemap, OpenGraph) |
 
-## License
+## Part of [OpenIDB](https://github.com/openidb)
 
-MIT
+This is the frontend. See also:
+- [openidb](https://github.com/openidb/openidb) — API server (Hono, PostgreSQL, Qdrant, Elasticsearch, Neo4j)
+- [scrapers](https://github.com/openidb/scrapers) — Data acquisition (Python)
