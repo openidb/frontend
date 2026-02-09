@@ -11,12 +11,12 @@ export function DesktopNavigation() {
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
       {/* Logo */}
-      <PrefetchLink href="/search" className="block mb-4 ps-6">
+      <PrefetchLink href="/search" className="block mb-4 ps-9">
         <span
-          className="text-3xl font-bold text-foreground"
-          style={{ fontFamily: "'Noto Nastaliq Urdu', serif" }}
+          className="text-4xl text-brand"
+          style={{ fontFamily: "'Aref Ruqaa', serif" }}
         >
-          سَنَدٌ
+          سَبِيل
         </span>
       </PrefetchLink>
 
