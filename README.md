@@ -98,6 +98,7 @@ Requires the [openidb](https://github.com/openidb/openidb) API running on port 4
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OPENIDB_URL` | `http://localhost:4000` | Backend API URL |
+| `INTERNAL_API_SECRET` | — | Shared secret for internal API calls (must match openidb) |
 | `SITE_URL` | `https://sabeel.dev` | Public URL (sitemap, OpenGraph) |
 
 ## Part of [OpenIDB](https://github.com/openidb)
