@@ -64,21 +64,28 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
     const fetchAuthors = async () => {
       setLoading(true);
       try {
+        const offset = (pagination.page - 1) * pagination.limit;
         const params = new URLSearchParams({
-          page: pagination.page.toString(),
+          offset: offset.toString(),
           limit: pagination.limit.toString(),
         });
         if (debouncedSearch) {
           params.set("search", debouncedSearch);
         }
 
-        const response = await fetch(`/api/books/authors?${params}`);
+        const response = await fetch(`/api/authors?${params}`);
         const data = await response.json();
 
         setAuthors(data.authors || []);
-        if (data.pagination) {
-          setPagination(data.pagination);
-        }
+        const resTotal = data.total || 0;
+        const resLimit = data.limit || pagination.limit;
+        const resOffset = data.offset || 0;
+        setPagination({
+          page: Math.floor(resOffset / resLimit) + 1,
+          limit: resLimit,
+          total: resTotal,
+          totalPages: Math.ceil(resTotal / resLimit),
+        });
       } catch (error) {
         console.error("Error fetching authors:", error);
       } finally {
@@ -176,7 +183,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
                 <TableRow key={author.id}>
                   <TableCell>
                     <Link
-                      href={`/authors/${encodeURIComponent(author.nameLatin)}`}
+                      href={`/authors/${author.id}`}
                       className="font-medium hover:underline"
                     >
                       <div>{author.nameArabic}</div>

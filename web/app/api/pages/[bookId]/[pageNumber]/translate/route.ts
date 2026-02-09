@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET || "";
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ bookId: string; pageNumber: string }> }
@@ -12,7 +14,10 @@ export async function POST(
     const body = await request.text();
     const res = await fetchAPIRaw(`/api/books/${bookId}/pages/${pageNumber}/translate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Secret": INTERNAL_API_SECRET,
+      },
       body,
     });
     return new Response(res.body, {

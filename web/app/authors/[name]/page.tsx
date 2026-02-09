@@ -38,16 +38,17 @@ export async function generateMetadata({
   params: Promise<{ name: string }>;
 }): Promise<Metadata> {
   const { name } = await params;
-  const authorLatin = decodeURIComponent(name);
+  const authorId = decodeURIComponent(name);
   try {
-    const data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorLatin)}`);
-    const title = data.author?.nameArabic || authorLatin;
+    const data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`);
+    const title = data.author?.nameArabic || data.author?.nameLatin || authorId;
+    const latin = data.author?.nameLatin || "";
     return {
       title: `${title} - Sanad`,
-      description: `Books by ${title} (${authorLatin})`,
+      description: `Books by ${title}${latin ? ` (${latin})` : ""}`,
     };
   } catch {
-    return { title: `${authorLatin} - Sanad` };
+    return { title: `Author - Sanad` };
   }
 }
 
@@ -57,11 +58,11 @@ export default async function AuthorDetailPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
-  const authorLatin = decodeURIComponent(name);
+  const authorId = decodeURIComponent(name);
 
   let data: AuthorData;
   try {
-    data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorLatin)}`);
+    data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`);
   } catch {
     notFound();
   }

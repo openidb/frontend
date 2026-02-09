@@ -19,25 +19,34 @@ interface Pagination {
   totalPages: number;
 }
 
+interface APIResponse {
+  authors: Author[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export default async function AuthorsPage() {
-  let data = {
-    authors: [] as Author[],
-    pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } as Pagination,
-  };
+  let authors: Author[] = [];
+  let pagination: Pagination = { page: 1, limit: 50, total: 0, totalPages: 0 };
 
   try {
-    const res = await fetchAPI<{ authors: Author[]; pagination: Pagination }>(
-      "/api/books/authors?limit=50"
-    );
-    data = res;
+    const res = await fetchAPI<APIResponse>("/api/books/authors?limit=50");
+    authors = res.authors;
+    pagination = {
+      page: Math.floor((res.offset || 0) / (res.limit || 50)) + 1,
+      limit: res.limit || 50,
+      total: res.total || 0,
+      totalPages: Math.ceil((res.total || 0) / (res.limit || 50)),
+    };
   } catch (error) {
     console.error("Failed to fetch authors:", error);
   }
 
   return (
     <AuthorsClient
-      initialAuthors={data.authors}
-      initialPagination={data.pagination}
+      initialAuthors={authors}
+      initialPagination={pagination}
     />
   );
 }
