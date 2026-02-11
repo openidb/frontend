@@ -148,6 +148,9 @@
     },
     "noBooks": "کوئی کتاب نہیں ملی",
     "showing": "{total} میں سے {count} کتابیں دکھائی جا رہی ہیں",
+    "pagination": "(صفحہ {page} از {totalPages})",
+    "previous": "پچھلا",
+    "next": "اگلا",
     "publication": "(اشاعت)"
   },
   "authors": {

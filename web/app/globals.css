@@ -69,10 +69,13 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Montserrat", sans-serif;
+    font-family: "Montserrat", "Noto Naskh Arabic", sans-serif;
     font-optical-sizing: auto;
   }
 }
+
+/* Noto Naskh Arabic as body fallback — covers Arabic text including honorific ligatures (ﷺ ﷻ).
+   Montserrat has no Arabic glyphs, so the browser falls through to Noto Naskh Arabic. */
 
 /* RTL Support */
 html[dir="rtl"] {

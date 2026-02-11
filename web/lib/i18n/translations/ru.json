@@ -148,6 +148,9 @@
     },
     "noBooks": "Книги не найдены",
     "showing": "Показано {count} из {total} книг",
+    "pagination": "(страница {page} из {totalPages})",
+    "previous": "Назад",
+    "next": "Далее",
     "publication": "(изд.)"
   },
   "authors": {

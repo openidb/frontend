@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,9 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
-import { formatBookYear, getBookCentury, getCenturyLabel, type DateCalendar } from "@/lib/dates";
-import { useAppConfig, TranslationDisplayOption } from "@/lib/config";
+import { formatBookYear, type DateCalendar } from "@/lib/dates";
+import { useAppConfig } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
 
 interface Author {
@@ -44,7 +44,13 @@ interface Book {
 }
 
 interface BooksClientProps {
-  books: Book[];
+  initialBooks: Book[];
+  initialPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // Get year display for a book using centralized utility
@@ -55,16 +61,14 @@ function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCa
   return result.isPublicationYear ? `${result.year} (pub.)` : result.year;
 }
 
-// Cache key for translated books
-const BOOKS_CACHE_KEY = "booksCache";
-
-export default function BooksClient({ books: initialBooks }: BooksClientProps) {
-  const { t, locale } = useTranslation();
+export default function BooksClient({ initialBooks, initialPagination }: BooksClientProps) {
+  const { t } = useTranslation();
   const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [pagination, setPagination] = useState(initialPagination);
+  const [loading, setLoading] = useState(false);
 
   // Extract config values
   const { showPublicationDates, bookTitleDisplay, autoTranslation, dateCalendar } = config;
@@ -77,184 +81,89 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
     return bookTitleDisplay;
   }, [autoTranslation, bookTitleDisplay]);
 
-  // Fetch books with translations when display setting changes to a language
+  // Debounce search query
   useEffect(() => {
-    if (!isLoaded) return;
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-    const fetchBooksWithTranslations = async () => {
-      if (effectiveBookTitleDisplay === "none" || effectiveBookTitleDisplay === "transliteration") {
-        setBooks(initialBooks);
-        return;
-      }
+  // Fetch books from API when search or pagination changes
+  useEffect(() => {
+    // Skip initial render with no search
+    if (debouncedSearch === "" && pagination.page === 1) {
+      return;
+    }
 
-      // Check sessionStorage cache first
-      const cacheKey = `${BOOKS_CACHE_KEY}_${effectiveBookTitleDisplay}`;
+    const fetchBooks = async () => {
+      setLoading(true);
       try {
-        const cached = sessionStorage.getItem(cacheKey);
-        if (cached) {
-          const cachedBooks = JSON.parse(cached);
-          setBooks(cachedBooks);
-          return;
+        const offset = (pagination.page - 1) * pagination.limit;
+        const params = new URLSearchParams({
+          offset: offset.toString(),
+          limit: pagination.limit.toString(),
+        });
+        if (debouncedSearch) {
+          params.set("search", debouncedSearch);
         }
-      } catch {
-        // Cache read failed, continue to fetch
-      }
 
-      try {
-        const response = await fetch(`/api/books?bookTitleLang=${effectiveBookTitleDisplay}&limit=1000`);
-        if (response.ok) {
-          const data = await response.json();
-          setBooks(data.books);
-          // Cache the result
-          try {
-            sessionStorage.setItem(cacheKey, JSON.stringify(data.books));
-          } catch {
-            // Cache write failed, ignore
-          }
-        }
+        const response = await fetch(`/api/books?${params}`);
+        const data = await response.json();
+
+        setBooks(data.books || []);
+        const resTotal = data.total || 0;
+        const resLimit = data.limit || pagination.limit;
+        const resOffset = data.offset || 0;
+        setPagination({
+          page: Math.floor(resOffset / resLimit) + 1,
+          limit: resLimit,
+          total: resTotal,
+          totalPages: Math.ceil(resTotal / resLimit),
+        });
       } catch (error) {
-        console.error("Failed to fetch book translations:", error);
+        console.error("Error fetching books:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchBooksWithTranslations();
-  }, [effectiveBookTitleDisplay, initialBooks, isLoaded]);
+    fetchBooks();
+  }, [pagination.page, pagination.limit, debouncedSearch]);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    if (debouncedSearch !== "") {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }
+  }, [debouncedSearch]);
+
+  const handlePrevPage = () => {
+    if (pagination.page > 1) {
+      setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.page < pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
+    }
+  };
 
   // Helper to get secondary title based on display setting
   const getSecondaryTitle = (book: Book): string | null => {
-    if (effectiveBookTitleDisplay === "none") {
-      return null;
-    }
-    if (effectiveBookTitleDisplay === "transliteration") {
-      return book.titleLatin;
-    }
-    // For language translations, use titleTranslated or fall back to titleLatin
+    if (effectiveBookTitleDisplay === "none") return null;
+    if (effectiveBookTitleDisplay === "transliteration") return book.titleLatin;
     return book.titleTranslated || book.titleLatin;
   };
 
   // Helper to get secondary author name based on display setting
   const getSecondaryAuthorName = (author: Author): string | null => {
-    if (effectiveBookTitleDisplay === "none") {
-      return null;
-    }
-    // For now, always show Latin transliteration for author (no author translations yet)
+    if (effectiveBookTitleDisplay === "none") return null;
     return author.nameLatin;
   };
 
-  // Get all unique categories (for stable option list)
-  const allCategories = useMemo(() => {
-    const categories = new Set<string>();
-    books.forEach((book) => {
-      if (book.category) {
-        categories.add(book.category.nameArabic);
-      }
-    });
-    return Array.from(categories).sort();
-  }, [books]);
-
-  // Get all unique centuries (for stable option list)
-  const allCenturies = useMemo(() => {
-    const centuries = new Set<number>();
-    books.forEach((book) => {
-      const century = getBookCentury(book);
-      if (century) {
-        centuries.add(century);
-      }
-    });
-    return Array.from(centuries).sort((a, b) => a - b);
-  }, [books]);
-
-  // Category options with counts filtered by selected centuries
-  const categoryOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-
-    // Initialize all categories with 0
-    allCategories.forEach((cat) => {
-      counts[cat] = 0;
-    });
-
-    // Count books matching selected centuries (or all if none selected)
-    books.forEach((book) => {
-      if (!book.category) return;
-
-      const bookCentury = getBookCentury(book);
-      const matchesCentury =
-        selectedCenturies.length === 0 ||
-        (bookCentury && selectedCenturies.includes(bookCentury.toString()));
-
-      if (matchesCentury) {
-        counts[book.category.nameArabic] = (counts[book.category.nameArabic] || 0) + 1;
-      }
-    });
-
-    return allCategories.map((category) => ({
-      value: category,
-      label: category,
-      count: counts[category],
-      disabled: counts[category] === 0,
-    }));
-  }, [books, allCategories, selectedCenturies]);
-
-  // Century options with counts filtered by selected categories
-  const centuryOptions = useMemo(() => {
-    const counts: Record<number, number> = {};
-
-    // Initialize all centuries with 0
-    allCenturies.forEach((century) => {
-      counts[century] = 0;
-    });
-
-    // Count books matching selected categories (or all if none selected)
-    books.forEach((book) => {
-      const century = getBookCentury(book);
-      if (!century) return;
-
-      const matchesCategory =
-        selectedCategories.length === 0 ||
-        (book.category && selectedCategories.includes(book.category.nameArabic));
-
-      if (matchesCategory) {
-        counts[century] = (counts[century] || 0) + 1;
-      }
-    });
-
-    return allCenturies.map((century) => {
-      const labels = getCenturyLabel(century);
-      return {
-        value: labels.value,
-        label: labels.label,
-        labelArabic: labels.labelArabic,
-        count: counts[century],
-        disabled: counts[century] === 0,
-        sortKey: century,
-      };
-    });
-  }, [books, allCenturies, selectedCategories]);
-
-  const filteredBooks = useMemo(() => {
-    return books.filter((book) => {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch =
-        book.titleArabic.toLowerCase().includes(query) ||
-        book.titleLatin.toLowerCase().includes(query) ||
-        book.author.nameArabic.toLowerCase().includes(query) ||
-        book.author.nameLatin.toLowerCase().includes(query);
-
-      const matchesCategory =
-        selectedCategories.length === 0 ||
-        (book.category &&
-          selectedCategories.includes(book.category.nameArabic));
-
-      const bookCentury = getBookCentury(book);
-      const matchesCentury =
-        selectedCenturies.length === 0 ||
-        (bookCentury && selectedCenturies.includes(bookCentury.toString()));
-
-      return matchesSearch && matchesCategory && matchesCentury;
-    });
-  }, [books, searchQuery, selectedCategories, selectedCenturies]);
-
-  // Show loading skeleton until config is loaded to prevent flicker
+  // Show loading skeleton until config is loaded
   if (!isLoaded) {
     return (
       <div className="p-4 md:p-8">
@@ -281,20 +190,6 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
       <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("books.title")}</h1>
         <div className="flex items-center gap-2 md:gap-3" suppressHydrationWarning>
-          <div className="hidden min-[896px]:flex items-center gap-3">
-            <MultiSelectDropdown
-              title={t("books.category")}
-              options={categoryOptions}
-              selected={selectedCategories}
-              onChange={setSelectedCategories}
-            />
-            <MultiSelectDropdown
-              title={t("books.century")}
-              options={centuryOptions}
-              selected={selectedCenturies}
-              onChange={setSelectedCenturies}
-            />
-          </div>
           <Input
             type="text"
             placeholder={t("books.searchPlaceholder")}
@@ -315,7 +210,22 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredBooks.length === 0 ? (
+            {loading ? (
+              [...Array(10)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <div className="h-4 w-48 bg-muted animate-pulse rounded mb-2" />
+                    <div className="h-3 w-32 bg-muted animate-pulse rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : books.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={3}
@@ -325,7 +235,7 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredBooks.map((book) => {
+              books.map((book) => {
                 const secondaryTitle = getSecondaryTitle(book);
                 const secondaryAuthor = getSecondaryAuthorName(book.author);
                 return (
@@ -362,8 +272,33 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
         </Table>
       </div>
 
-      <div className="mt-4 text-sm text-muted-foreground">
-        {t("books.showing", { count: filteredBooks.length, total: books.length })}
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          {t("books.showing", { count: books.length, total: pagination.total })}
+          {pagination.totalPages > 1 && (
+            <span> {t("books.pagination", { page: pagination.page, totalPages: pagination.totalPages })}</span>
+          )}
+        </div>
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevPage}
+              disabled={pagination.page === 1}
+            >
+              {t("books.previous")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              {t("books.next")}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

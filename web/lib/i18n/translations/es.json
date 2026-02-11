@@ -148,6 +148,9 @@
     },
     "noBooks": "No se encontraron libros",
     "showing": "Mostrando {count} de {total} libros",
+    "pagination": "(página {page} de {totalPages})",
+    "previous": "Anterior",
+    "next": "Siguiente",
     "publication": "(pub.)"
   },
   "authors": {

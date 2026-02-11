@@ -148,6 +148,9 @@
     },
     "noBooks": "未找到书籍",
     "showing": "显示 {total} 本书籍中的 {count} 本",
+    "pagination": "(第 {page} 页，共 {totalPages} 页)",
+    "previous": "上一页",
+    "next": "下一页",
     "publication": "(出版)"
   },
   "authors": {

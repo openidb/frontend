@@ -148,6 +148,9 @@
     },
     "noBooks": "Tidak ada buku ditemukan",
     "showing": "Menampilkan {count} dari {total} buku",
+    "pagination": "(halaman {page} dari {totalPages})",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
     "publication": "(terbit)"
   },
   "authors": {

@@ -145,14 +145,18 @@ function formatContentHtml(html: string): string {
       // Page links (e.g. TOC entries) → clickable items
       formatted.push(`<p style="margin:0.4em 0">${withMarkers}</p>`);
     } else if (trimmed.includes("data-type")) {
-      // Title spans → styled headings (no border)
-      // Pull any content before or after the span into the heading
+      // Title spans → styled headings; text after </span> is body, not heading
       const styled = withMarkers
         .replace(
           /^(.*?)<span\s+data-type=['"]title['"][^>]*(?:id=['"][^'"]*['"])?\s*>/gi,
           '<h3 style="font-size:1.3em;font-weight:bold;margin:1.2em 0 0.6em;color:inherit">$1'
         )
-        .replace(/<\/span>(.*)$/i, '$1</h3>');
+        .replace(/<\/span>(.*)$/i, (_, after) => {
+          const rest = after.trim();
+          return rest
+            ? `</h3>\n<p style="margin:0.4em 0">${rest}</p>`
+            : '</h3>';
+        });
       formatted.push(styled);
     } else {
       formatted.push(`<p style="margin:0.4em 0">${withMarkers}</p>`);

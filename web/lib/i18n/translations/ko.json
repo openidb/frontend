@@ -148,6 +148,9 @@
     },
     "noBooks": "책을 찾을 수 없습니다",
     "showing": "{total}권 중 {count}권 표시",
+    "pagination": "({totalPages}페이지 중 {page}페이지)",
+    "previous": "이전",
+    "next": "다음",
     "publication": "(출판)"
   },
   "authors": {

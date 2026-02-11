@@ -148,6 +148,9 @@
     },
     "noBooks": "কোনো বই পাওয়া যায়নি",
     "showing": "{total}টির মধ্যে {count}টি বই দেখানো হচ্ছে",
+    "pagination": "(পৃষ্ঠা {page} / {totalPages})",
+    "previous": "পূর্ববর্তী",
+    "next": "পরবর্তী",
     "publication": "(প্রকাশিত)"
   },
   "authors": {

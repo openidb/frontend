@@ -148,6 +148,9 @@
     },
     "noBooks": "لم يتم العثور على كتب",
     "showing": "عرض {count} من {total} كتاب",
+    "pagination": "(صفحة {page} من {totalPages})",
+    "previous": "السابق",
+    "next": "التالي",
     "publication": "(نشر)"
   },
   "authors": {

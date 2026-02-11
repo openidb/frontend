@@ -148,6 +148,9 @@
     },
     "noBooks": "書籍が見つかりません",
     "showing": "{total}冊中{count}冊を表示",
+    "pagination": "({totalPages}ページ中{page}ページ)",
+    "previous": "前へ",
+    "next": "次へ",
     "publication": "(出版)"
   },
   "authors": {
