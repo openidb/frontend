@@ -365,6 +365,7 @@
     "volume": "খণ্ড",
     "author": "লেখক",
     "openPdf": "পিডিএফ খুলুন",
+    "pdfNotAvailable": "পিডিএফ উপলব্ধ নেই",
     "fontSize": "ফন্টের আকার"
   },
   "common": {

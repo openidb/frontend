@@ -365,6 +365,7 @@
     "volume": "جلد",
     "author": "مصنف",
     "openPdf": "PDF کھولیں",
+    "pdfNotAvailable": "PDF دستیاب نہیں",
     "fontSize": "خط کا سائز"
   },
   "common": {

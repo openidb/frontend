@@ -365,6 +365,7 @@
     "volume": "Vol.",
     "author": "Autor",
     "openPdf": "Abrir PDF",
+    "pdfNotAvailable": "PDF indisponivel",
     "fontSize": "Tamanho da fonte"
   },
   "common": {

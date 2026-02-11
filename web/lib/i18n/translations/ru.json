@@ -365,6 +365,7 @@
     "volume": "Том",
     "author": "Автор",
     "openPdf": "Открыть PDF",
+    "pdfNotAvailable": "PDF недоступен",
     "fontSize": "Размер шрифта"
   },
   "common": {

@@ -365,6 +365,7 @@
     "volume": "ج.",
     "author": "المؤلف",
     "openPdf": "فتح PDF",
+    "pdfNotAvailable": "PDF غير متوفر",
     "fontSize": "حجم الخط"
   },
   "common": {

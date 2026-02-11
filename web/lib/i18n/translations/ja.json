@@ -365,6 +365,7 @@
     "volume": "巻",
     "author": "著者",
     "openPdf": "PDFを開く",
+    "pdfNotAvailable": "PDFは利用できません",
     "fontSize": "文字サイズ"
   },
   "common": {

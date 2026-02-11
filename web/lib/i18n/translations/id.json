@@ -365,6 +365,7 @@
     "volume": "Jil.",
     "author": "Penulis",
     "openPdf": "Buka PDF",
+    "pdfNotAvailable": "PDF tidak tersedia",
     "fontSize": "Ukuran font"
   },
   "common": {

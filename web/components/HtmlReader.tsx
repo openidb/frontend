@@ -53,9 +53,23 @@ interface HtmlReaderProps {
  * <span data-type="title"> tags for headings. Footnotes appear after
  * a "___" separator line with markers like (^١).
  */
-// Unicode 16.0 (Sept 2024) Islamic honorific ligatures — too new for most fonts.
-// Expand to full Arabic text so they render on all devices.
+// Arabic honorific ligatures that many fonts don't render.
+// Expand to full Arabic text so they display on all devices.
 const HONORIFIC_MAP: Record<string, string> = {
+  // Arabic Presentation Forms-A (older, but Naskh/UthmanTN1 may lack glyphs)
+  "\uFDFA": "صلى الله عليه وسلم",
+  "\uFDFB": "جل جلاله",
+  "\uFDF0": "صلعم",
+  "\uFDF1": "قلے",
+  "\uFDF2": "الله",
+  "\uFDF3": "أكبر",
+  "\uFDF4": "محمد",
+  "\uFDF5": "صلعم",
+  "\uFDF6": "رسول",
+  "\uFDF7": "عليه",
+  "\uFDF8": "وسلم",
+  "\uFDF9": "صلى",
+  // Unicode 16.0 (Sept 2024) Islamic honorific ligatures
   "\uFD40": "رحمه الله",
   "\uFD41": "رحمها الله",
   "\uFD42": "رحمهما الله",
@@ -74,9 +88,14 @@ const HONORIFIC_MAP: Record<string, string> = {
 };
 const HONORIFIC_RE = new RegExp(`[${Object.keys(HONORIFIC_MAP).join("")}]`, "g");
 
+/** Expand honorific ligatures in any text (titles, content, etc.) */
+function expandHonorifics(text: string): string {
+  return text.replace(HONORIFIC_RE, (ch) => HONORIFIC_MAP[ch] ?? ch);
+}
+
 function formatContentHtml(html: string): string {
-  // Expand Unicode 16.0 honorific ligatures into readable Arabic text
-  html = html.replace(HONORIFIC_RE, (ch) => HONORIFIC_MAP[ch] ?? ch);
+  // Expand honorific ligatures into readable Arabic text
+  html = expandHonorifics(html);
 
   // Join multi-line title spans into single lines so the line-by-line
   // processor can match the opening and closing tags together.
@@ -345,7 +364,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
         </Button>
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-semibold text-sm md:text-base">
-            {bookMetadata.title}
+            {expandHonorifics(bookMetadata.title)}
           </h1>
           <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
             {bookMetadata.titleLatin}
@@ -434,21 +453,28 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             onClick={() => setShowSidebar(false)}
           >
             <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>{t("reader.author")}: {bookMetadata.author}</span>
+            <span>{t("reader.author")}: {expandHonorifics(bookMetadata.author)}</span>
           </Link>
-          <button
-            onClick={() => {
-              handleOpenPdf();
-              setShowSidebar(false);
-            }}
-            disabled={pdfLoading}
-            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-          >
-            {pdfLoading
-              ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-              : <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />}
-            <span>{t("reader.openPdf")}</span>
-          </button>
+          {pageData?.pdfUrl ? (
+            <button
+              onClick={() => {
+                handleOpenPdf();
+                setShowSidebar(false);
+              }}
+              disabled={pdfLoading}
+              className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            >
+              {pdfLoading
+                ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                : <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              <span>{t("reader.openPdf")}</span>
+            </button>
+          ) : (
+            <div className="w-full px-3 py-2 text-sm flex items-center gap-2 text-muted-foreground">
+              <FileText className="h-4 w-4 shrink-0" />
+              <span>{t("reader.pdfNotAvailable")}</span>
+            </div>
+          )}
 
           {/* Font size */}
           <div className="w-full px-3 py-2 text-sm flex items-center justify-between">
@@ -532,7 +558,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             className="max-w-3xl mx-auto px-4 md:px-8 py-6 md:py-10"
             style={{
               fontFamily:
-                '"Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
+                '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
               lineHeight: 2.0,
               fontSize: `${fontSize}rem`,
               color: isDark ? "#fafaf9" : "#0a0a0a",

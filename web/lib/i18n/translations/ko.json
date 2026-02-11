@@ -365,6 +365,7 @@
     "volume": "권",
     "author": "저자",
     "openPdf": "PDF 열기",
+    "pdfNotAvailable": "PDF를 사용할 수 없음",
     "fontSize": "글꼴 크기"
   },
   "common": {

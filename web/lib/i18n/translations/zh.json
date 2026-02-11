@@ -365,6 +365,7 @@
     "volume": "卷",
     "author": "作者",
     "openPdf": "打开PDF",
+    "pdfNotAvailable": "PDF不可用",
     "fontSize": "字体大小"
   },
   "common": {
