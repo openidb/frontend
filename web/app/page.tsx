@@ -43,22 +43,50 @@ interface APIResponse {
   offset: number;
 }
 
+interface CategoryItem {
+  id: number;
+  nameArabic: string;
+  nameEnglish: string | null;
+  booksCount: number;
+}
+
+interface CenturyItem {
+  century: number;
+  booksCount: number;
+}
+
 export default async function BooksPage() {
   let books: Book[] = [];
   let pagination: Pagination = { page: 1, limit: 50, total: 0, totalPages: 0 };
+  let categories: CategoryItem[] = [];
+  let centuries: CenturyItem[] = [];
 
   try {
-    const data = await fetchAPI<APIResponse>("/api/books?limit=50");
-    books = data.books;
+    const [booksData, categoriesData, centuriesData] = await Promise.all([
+      fetchAPI<APIResponse>("/api/books?limit=50"),
+      fetchAPI<{ categories: CategoryItem[] }>("/api/books/categories?flat=true").catch(() => ({ categories: [] })),
+      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries").catch(() => ({ centuries: [] })),
+    ]);
+
+    books = booksData.books;
     pagination = {
-      page: Math.floor((data.offset || 0) / (data.limit || 50)) + 1,
-      limit: data.limit || 50,
-      total: data.total || 0,
-      totalPages: Math.ceil((data.total || 0) / (data.limit || 50)),
+      page: Math.floor((booksData.offset || 0) / (booksData.limit || 50)) + 1,
+      limit: booksData.limit || 50,
+      total: booksData.total || 0,
+      totalPages: Math.ceil((booksData.total || 0) / (booksData.limit || 50)),
     };
+    categories = categoriesData.categories;
+    centuries = centuriesData.centuries;
   } catch (error) {
     console.error("Failed to fetch books:", error);
   }
 
-  return <BooksClient initialBooks={books} initialPagination={pagination} />;
+  return (
+    <BooksClient
+      initialBooks={books}
+      initialPagination={pagination}
+      initialCategories={categories}
+      initialCenturies={centuries}
+    />
+  );
 }

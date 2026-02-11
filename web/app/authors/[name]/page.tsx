@@ -72,15 +72,15 @@ export default async function AuthorDetailPage({
 
   const metadata = {
     id: author.id,
-    name_arabic: author.nameArabic,
-    name_latin: author.nameLatin,
-    death_date_hijri: author.deathDateHijri || undefined,
-    birth_date_hijri: author.birthDateHijri || undefined,
-    death_date_gregorian: author.deathDateGregorian || undefined,
-    birth_date_gregorian: author.birthDateGregorian || undefined,
+    nameArabic: author.nameArabic,
+    nameLatin: author.nameLatin,
+    deathDateHijri: author.deathDateHijri || undefined,
+    birthDateHijri: author.birthDateHijri || undefined,
+    deathDateGregorian: author.deathDateGregorian || undefined,
+    birthDateGregorian: author.birthDateGregorian || undefined,
     biography: author.biography || undefined,
-    biography_source: author.biographySource || undefined,
-    books_count: author.books.length,
+    biographySource: author.biographySource || undefined,
+    booksCount: author.books.length,
   };
 
   const books = author.books.map((book) => ({

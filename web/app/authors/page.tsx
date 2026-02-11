@@ -26,19 +26,30 @@ interface APIResponse {
   offset: number;
 }
 
+interface CenturyItem {
+  century: number;
+  authorsCount: number;
+}
+
 export default async function AuthorsPage() {
   let authors: Author[] = [];
   let pagination: Pagination = { page: 1, limit: 50, total: 0, totalPages: 0 };
+  let centuries: CenturyItem[] = [];
 
   try {
-    const res = await fetchAPI<APIResponse>("/api/books/authors?limit=50");
-    authors = res.authors;
+    const [authorsData, centuriesData] = await Promise.all([
+      fetchAPI<APIResponse>("/api/books/authors?limit=50"),
+      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries/authors").catch(() => ({ centuries: [] })),
+    ]);
+
+    authors = authorsData.authors;
     pagination = {
-      page: Math.floor((res.offset || 0) / (res.limit || 50)) + 1,
-      limit: res.limit || 50,
-      total: res.total || 0,
-      totalPages: Math.ceil((res.total || 0) / (res.limit || 50)),
+      page: Math.floor((authorsData.offset || 0) / (authorsData.limit || 50)) + 1,
+      limit: authorsData.limit || 50,
+      total: authorsData.total || 0,
+      totalPages: Math.ceil((authorsData.total || 0) / (authorsData.limit || 50)),
     };
+    centuries = centuriesData.centuries;
   } catch (error) {
     console.error("Failed to fetch authors:", error);
   }
@@ -47,6 +58,7 @@ export default async function AuthorsPage() {
     <AuthorsClient
       initialAuthors={authors}
       initialPagination={pagination}
+      initialCenturies={centuries}
     />
   );
 }

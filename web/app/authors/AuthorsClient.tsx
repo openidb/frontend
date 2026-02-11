@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatYear } from "@/lib/dates";
+import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
+import { formatYear, getCenturyLabel } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
 
@@ -27,6 +28,11 @@ interface Author {
   };
 }
 
+interface CenturyItem {
+  century: number;
+  authorsCount: number;
+}
+
 interface AuthorsClientProps {
   initialAuthors: Author[];
   initialPagination: {
@@ -35,9 +41,10 @@ interface AuthorsClientProps {
     total: number;
     totalPages: number;
   };
+  initialCenturies: CenturyItem[];
 }
 
-export default function AuthorsClient({ initialAuthors, initialPagination }: AuthorsClientProps) {
+export default function AuthorsClient({ initialAuthors, initialPagination, initialCenturies }: AuthorsClientProps) {
   const { t } = useTranslation();
   const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,6 +52,21 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
   const [authors, setAuthors] = useState<Author[]>(initialAuthors);
   const [pagination, setPagination] = useState(initialPagination);
   const [loading, setLoading] = useState(false);
+  const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
+
+  // Build century options for MultiSelectDropdown
+  const centuryOptions = useMemo(() =>
+    initialCenturies.map((c) => {
+      const lbl = getCenturyLabel(c.century);
+      return {
+        value: lbl.value,
+        label: lbl.label,
+        labelArabic: lbl.labelArabic,
+        count: c.authorsCount,
+      };
+    }),
+    [initialCenturies]
+  );
 
   // Debounce search query
   useEffect(() => {
@@ -54,10 +76,10 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch authors from API when search or pagination changes
+  // Fetch authors from API when search, filters, or pagination changes
   useEffect(() => {
-    // Skip if this is the initial render with no search
-    if (debouncedSearch === "" && pagination.page === 1) {
+    // Skip if this is the initial render with no search and no filters
+    if (debouncedSearch === "" && pagination.page === 1 && selectedCenturies.length === 0) {
       return;
     }
 
@@ -71,6 +93,9 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
         });
         if (debouncedSearch) {
           params.set("search", debouncedSearch);
+        }
+        if (selectedCenturies.length > 0) {
+          params.set("century", selectedCenturies.join(","));
         }
 
         const response = await fetch(`/api/authors?${params}`);
@@ -94,14 +119,14 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
     };
 
     fetchAuthors();
-  }, [pagination.page, pagination.limit, debouncedSearch]);
+  }, [pagination.page, pagination.limit, debouncedSearch, selectedCenturies]);
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search or filters change
   useEffect(() => {
-    if (debouncedSearch !== "") {
+    if (debouncedSearch !== "" || selectedCenturies.length > 0) {
       setPagination((prev) => ({ ...prev, page: 1 }));
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, selectedCenturies]);
 
   const handlePrevPage = () => {
     if (pagination.page > 1) {
@@ -140,7 +165,15 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
     <div className="p-4 md:p-8" suppressHydrationWarning>
       <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("authors.title")}</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3" suppressHydrationWarning>
+          {centuryOptions.length > 0 && (
+            <MultiSelectDropdown
+              title={t("books.century")}
+              options={centuryOptions}
+              selected={selectedCenturies}
+              onChange={setSelectedCenturies}
+            />
+          )}
           <Input
             type="text"
             placeholder={t("authors.searchPlaceholder")}
@@ -152,17 +185,21 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
       </div>
 
       <div className="rounded-md border overflow-x-auto">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">ID</TableHead>
               <TableHead>{t("authors.tableHeaders.name")}</TableHead>
-              <TableHead>{t("authors.tableHeaders.deathYear")}</TableHead>
+              <TableHead className="w-40">{t("authors.tableHeaders.deathYear")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               [...Array(10)].map((_, i) => (
                 <TableRow key={i}>
+                  <TableCell>
+                    <div className="h-4 w-10 bg-muted animate-pulse rounded" />
+                  </TableCell>
                   <TableCell>
                     <div className="h-4 w-48 bg-muted animate-pulse rounded mb-2" />
                     <div className="h-3 w-32 bg-muted animate-pulse rounded" />
@@ -174,20 +211,23 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
               ))
             ) : authors.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground">
+                <TableCell colSpan={3} className="text-center text-muted-foreground">
                   {t("authors.noAuthors")}
                 </TableCell>
               </TableRow>
             ) : (
               authors.map((author) => (
                 <TableRow key={author.id}>
-                  <TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {author.id}
+                  </TableCell>
+                  <TableCell className="overflow-hidden">
                     <Link
                       href={`/authors/${author.id}`}
                       className="font-medium hover:underline"
                     >
-                      <div>{author.nameArabic}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="truncate">{author.nameArabic}</div>
+                      <div className="truncate text-sm text-muted-foreground">
                         {author.nameLatin}
                       </div>
                     </Link>

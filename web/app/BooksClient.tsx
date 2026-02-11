@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatBookYear, type DateCalendar } from "@/lib/dates";
+import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
+import { formatBookYear, getCenturyLabel, type DateCalendar } from "@/lib/dates";
 import { useAppConfig } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
 
@@ -43,6 +44,18 @@ interface Book {
   category: Category | null;
 }
 
+interface CategoryItem {
+  id: number;
+  nameArabic: string;
+  nameEnglish: string | null;
+  booksCount: number;
+}
+
+interface CenturyItem {
+  century: number;
+  booksCount: number;
+}
+
 interface BooksClientProps {
   initialBooks: Book[];
   initialPagination: {
@@ -51,6 +64,8 @@ interface BooksClientProps {
     total: number;
     totalPages: number;
   };
+  initialCategories: CategoryItem[];
+  initialCenturies: CenturyItem[];
 }
 
 // Get year display for a book using centralized utility
@@ -61,7 +76,12 @@ function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCa
   return result.isPublicationYear ? `${result.year} (pub.)` : result.year;
 }
 
-export default function BooksClient({ initialBooks, initialPagination }: BooksClientProps) {
+export default function BooksClient({
+  initialBooks,
+  initialPagination,
+  initialCategories,
+  initialCenturies,
+}: BooksClientProps) {
   const { t } = useTranslation();
   const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,6 +89,8 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [pagination, setPagination] = useState(initialPagination);
   const [loading, setLoading] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
 
   // Extract config values
   const { showPublicationDates, bookTitleDisplay, autoTranslation, dateCalendar } = config;
@@ -81,6 +103,33 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
     return bookTitleDisplay;
   }, [autoTranslation, bookTitleDisplay]);
 
+  // Build category options for MultiSelectDropdown
+  const categoryOptions = useMemo(() =>
+    initialCategories
+      .filter((c) => c.booksCount > 0)
+      .map((c) => ({
+        value: c.id.toString(),
+        label: c.nameEnglish || c.nameArabic,
+        labelArabic: c.nameEnglish ? c.nameArabic : undefined,
+        count: c.booksCount,
+      })),
+    [initialCategories]
+  );
+
+  // Build century options for MultiSelectDropdown
+  const centuryOptions = useMemo(() =>
+    initialCenturies.map((c) => {
+      const lbl = getCenturyLabel(c.century);
+      return {
+        value: lbl.value,
+        label: lbl.label,
+        labelArabic: lbl.labelArabic,
+        count: c.booksCount,
+      };
+    }),
+    [initialCenturies]
+  );
+
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -89,10 +138,10 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch books from API when search or pagination changes
+  // Fetch books from API when search, filters, or pagination changes
   useEffect(() => {
-    // Skip initial render with no search
-    if (debouncedSearch === "" && pagination.page === 1) {
+    // Skip initial render with no search and no filters
+    if (debouncedSearch === "" && pagination.page === 1 && selectedCategories.length === 0 && selectedCenturies.length === 0) {
       return;
     }
 
@@ -106,6 +155,12 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
         });
         if (debouncedSearch) {
           params.set("search", debouncedSearch);
+        }
+        if (selectedCategories.length > 0) {
+          params.set("categoryId", selectedCategories.join(","));
+        }
+        if (selectedCenturies.length > 0) {
+          params.set("century", selectedCenturies.join(","));
         }
 
         const response = await fetch(`/api/books?${params}`);
@@ -129,14 +184,14 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
     };
 
     fetchBooks();
-  }, [pagination.page, pagination.limit, debouncedSearch]);
+  }, [pagination.page, pagination.limit, debouncedSearch, selectedCategories, selectedCenturies]);
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search or filters change
   useEffect(() => {
-    if (debouncedSearch !== "") {
+    if (debouncedSearch !== "" || selectedCategories.length > 0 || selectedCenturies.length > 0) {
       setPagination((prev) => ({ ...prev, page: 1 }));
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, selectedCategories, selectedCenturies]);
 
   const handlePrevPage = () => {
     if (pagination.page > 1) {
@@ -189,7 +244,23 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
     <div className="p-4 md:p-8">
       <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("books.title")}</h1>
-        <div className="flex items-center gap-2 md:gap-3" suppressHydrationWarning>
+        <div className="flex flex-wrap items-center gap-2 md:gap-3" suppressHydrationWarning>
+          {categoryOptions.length > 0 && (
+            <MultiSelectDropdown
+              title={t("books.category")}
+              options={categoryOptions}
+              selected={selectedCategories}
+              onChange={setSelectedCategories}
+            />
+          )}
+          {centuryOptions.length > 0 && (
+            <MultiSelectDropdown
+              title={t("books.century")}
+              options={centuryOptions}
+              selected={selectedCenturies}
+              onChange={setSelectedCenturies}
+            />
+          )}
           <Input
             type="text"
             placeholder={t("books.searchPlaceholder")}
@@ -201,18 +272,22 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
       </div>
 
       <div className="rounded-md border overflow-x-auto">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">ID</TableHead>
               <TableHead>{t("books.tableHeaders.name")}</TableHead>
-              <TableHead>{t("books.tableHeaders.author")}</TableHead>
-              <TableHead>{t("books.tableHeaders.year")}</TableHead>
+              <TableHead className="w-1/4">{t("books.tableHeaders.author")}</TableHead>
+              <TableHead className="w-40">{t("books.tableHeaders.year")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               [...Array(10)].map((_, i) => (
                 <TableRow key={i}>
+                  <TableCell>
+                    <div className="h-4 w-10 bg-muted animate-pulse rounded" />
+                  </TableCell>
                   <TableCell>
                     <div className="h-4 w-48 bg-muted animate-pulse rounded mb-2" />
                     <div className="h-3 w-32 bg-muted animate-pulse rounded" />
@@ -228,7 +303,7 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
             ) : books.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={3}
+                  colSpan={4}
                   className="text-center text-muted-foreground"
                 >
                   {t("books.noBooks")}
@@ -240,23 +315,26 @@ export default function BooksClient({ initialBooks, initialPagination }: BooksCl
                 const secondaryAuthor = getSecondaryAuthorName(book.author);
                 return (
                   <TableRow key={book.id}>
-                    <TableCell>
+                    <TableCell className="text-muted-foreground tabular-nums">
+                      {book.id}
+                    </TableCell>
+                    <TableCell className="overflow-hidden">
                       <Link
                         href={`/reader/${book.id}`}
                         className="font-medium hover:underline"
                       >
-                        <div>{book.titleArabic}</div>
+                        <div className="truncate">{book.titleArabic}</div>
                         {secondaryTitle && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="truncate text-sm text-muted-foreground">
                             {secondaryTitle}
                           </div>
                         )}
                       </Link>
                     </TableCell>
-                    <TableCell>
-                      <div>{book.author.nameArabic}</div>
+                    <TableCell className="overflow-hidden">
+                      <div className="truncate">{book.author.nameArabic}</div>
                       {secondaryAuthor && (
-                        <div className="text-sm text-muted-foreground">
+                        <div className="truncate text-sm text-muted-foreground">
                           {secondaryAuthor}
                         </div>
                       )}

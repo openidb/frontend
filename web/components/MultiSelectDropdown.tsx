@@ -75,7 +75,7 @@ export function MultiSelectDropdown({
           <ChevronDown className="ms-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-popover border border-border" align="start">
+      <DropdownMenuContent className="w-56 max-h-80 overflow-y-auto bg-popover border border-border" align="start">
         <DropdownMenuLabel>{title}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {options.map((option) => (

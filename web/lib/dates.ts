@@ -60,8 +60,12 @@ export function formatAuthorDates(
 
   const parts: string[] = [];
 
-  // Build Hijri part
-  if (calendar !== "gregorian" && (birthHijri || deathHijri)) {
+  const hasHijri = !!(birthHijri || deathHijri);
+  const hasGregorian = !!(birthGregorian || deathGregorian);
+
+  // Build Hijri part (show if preferred, or as fallback when no Gregorian dates exist)
+  const showHijri = calendar === "hijri" || calendar === "both" || (calendar === "gregorian" && !hasGregorian);
+  if (showHijri && hasHijri) {
     let hijriPart = "";
     if (birthHijri && deathHijri) {
       hijriPart = `${birthHijri}-${deathHijri} AH`;
@@ -73,8 +77,9 @@ export function formatAuthorDates(
     if (hijriPart) parts.push(hijriPart);
   }
 
-  // Build Gregorian part
-  if (calendar !== "hijri" && (birthGregorian || deathGregorian)) {
+  // Build Gregorian part (show if preferred, or as fallback when no Hijri dates exist)
+  const showGregorian = calendar === "gregorian" || calendar === "both" || (calendar === "hijri" && !hasHijri);
+  if (showGregorian && hasGregorian) {
     let gregorianPart = "";
     if (birthGregorian && deathGregorian) {
       gregorianPart = `${birthGregorian}-${deathGregorian} CE`;
@@ -105,10 +110,10 @@ export function formatYear(
   const g = arabicToWestern(gregorian);
 
   if (calendar === "hijri") {
-    return h ? `${h} AH` : "";
+    return h ? `${h} AH` : g ? `${g} CE` : "";
   }
   if (calendar === "gregorian") {
-    return g ? `${g} CE` : "";
+    return g ? `${g} CE` : h ? `${h} AH` : "";
   }
   // "both"
   if (h && g) {

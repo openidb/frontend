@@ -30,15 +30,15 @@ interface Book {
 
 interface AuthorMetadata {
   id: string;
-  name_arabic: string;
-  name_latin: string;
-  death_date_hijri?: string;
-  birth_date_hijri?: string;
-  death_date_gregorian?: string;
-  birth_date_gregorian?: string;
+  nameArabic: string;
+  nameLatin: string;
+  deathDateHijri?: string;
+  birthDateHijri?: string;
+  deathDateGregorian?: string;
+  birthDateGregorian?: string;
   biography?: string;
-  biography_source?: string;
-  books_count?: number;
+  biographySource?: string;
+  booksCount?: number;
 }
 
 interface AuthorDetailClientProps {
@@ -60,16 +60,16 @@ export default function AuthorDetailClient({
 
   // Format author death year using centralized utility
   const authorDeathYearDisplay = metadata
-    ? formatYear(metadata.death_date_hijri, metadata.death_date_gregorian, dateCalendar)
+    ? formatYear(metadata.deathDateHijri, metadata.deathDateGregorian, dateCalendar)
     : "";
 
   // Format full author date range for display
   const authorDatesDisplay = metadata
     ? formatAuthorDates({
-        birthDateHijri: metadata.birth_date_hijri,
-        deathDateHijri: metadata.death_date_hijri,
-        birthDateGregorian: metadata.birth_date_gregorian,
-        deathDateGregorian: metadata.death_date_gregorian,
+        birthDateHijri: metadata.birthDateHijri,
+        deathDateHijri: metadata.deathDateHijri,
+        birthDateGregorian: metadata.birthDateGregorian,
+        deathDateGregorian: metadata.deathDateGregorian,
       }, { calendar: dateCalendar })
     : "";
   if (books.length === 0) {
