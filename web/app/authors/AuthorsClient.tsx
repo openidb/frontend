@@ -39,7 +39,7 @@ interface AuthorsClientProps {
 
 export default function AuthorsClient({ initialAuthors, initialPagination }: AuthorsClientProps) {
   const { t } = useTranslation();
-  const { isLoaded } = useAppConfig();
+  const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [authors, setAuthors] = useState<Author[]>(initialAuthors);
@@ -195,7 +195,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination }: Aut
                   <TableCell>
                     {author.deathDateHijri || author.deathDateGregorian ? (
                       <span>
-                        {formatYear(author.deathDateHijri, author.deathDateGregorian)}
+                        {formatYear(author.deathDateHijri, author.deathDateGregorian, config.dateCalendar)}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">—</span>

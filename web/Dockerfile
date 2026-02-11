@@ -1,5 +1,5 @@
 # Stage 1: Dependencies
-FROM oven/bun:1.1.42-debian AS deps
+FROM oven/bun:1.3.5-debian AS deps
 WORKDIR /app
 
 # Install Python and build tools for native modules
@@ -9,7 +9,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 # Stage 2: Build
-FROM oven/bun:1.1.42-debian AS builder
+FROM oven/bun:1.3.5-debian AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

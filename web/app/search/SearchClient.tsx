@@ -569,7 +569,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
                       {(author.deathDateHijri || author.deathDateGregorian) && (
                         <>
                           <span className="text-border">|</span>
-                          <span>{formatYear(author.deathDateHijri, author.deathDateGregorian)}</span>
+                          <span>{formatYear(author.deathDateHijri, author.deathDateGregorian, searchConfig.dateCalendar)}</span>
                         </>
                       )}
                       <span className="text-border">|</span>

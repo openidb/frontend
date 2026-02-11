@@ -38,7 +38,7 @@ export async function generateMetadata({
   params: Promise<{ name: string }>;
 }): Promise<Metadata> {
   const { name } = await params;
-  const authorId = decodeURIComponent(name);
+  const authorId = name;
   try {
     const data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`);
     const title = data.author?.nameArabic || data.author?.nameLatin || authorId;
@@ -58,7 +58,7 @@ export default async function AuthorDetailPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
-  const authorId = decodeURIComponent(name);
+  const authorId = name;
 
   let data: AuthorData;
   try {

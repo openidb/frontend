@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { SearchConfig, defaultSearchConfig, TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import { SearchConfig, defaultSearchConfig, TranslationDisplayOption, DateCalendarType } from "@/components/SearchConfigDropdown";
 
 interface AppConfigContextType {
   config: SearchConfig;
@@ -127,5 +127,5 @@ export function useAppConfig() {
 }
 
 // Re-export types for convenience
-export type { SearchConfig, TranslationDisplayOption };
+export type { SearchConfig, TranslationDisplayOption, DateCalendarType };
 export { defaultSearchConfig };

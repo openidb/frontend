@@ -19,6 +19,7 @@ import {
   type EmbeddingModelType,
   type QueryExpansionModelType,
   type PageTranslationModelType,
+  type DateCalendarType,
 } from "@/components/SearchConfigDropdown";
 import { useAppConfig } from "@/lib/config";
 import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
@@ -400,6 +401,24 @@ export default function ConfigPage() {
         {/* Books Display - moved up */}
         <div className="space-y-4">
           <SectionHeader>{t("config.sections.booksDisplay")}</SectionHeader>
+          <SelectSetting
+            label={t("config.display.dateCalendar")}
+            info={t("config.display.dateCalendarInfo")}
+          >
+            <Select
+              value={config.dateCalendar}
+              onValueChange={(value: DateCalendarType) => updateConfig({ dateCalendar: value })}
+            >
+              <SelectTrigger className="bg-background border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border">
+                <SelectItem value="both">{t("config.display.dateCalendarOptions.both")}</SelectItem>
+                <SelectItem value="hijri">{t("config.display.dateCalendarOptions.hijri")}</SelectItem>
+                <SelectItem value="gregorian">{t("config.display.dateCalendarOptions.gregorian")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </SelectSetting>
           <ToggleSetting
             label={t("config.display.showPublicationDates")}
             checked={config.showPublicationDates}

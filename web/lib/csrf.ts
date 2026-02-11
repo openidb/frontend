@@ -1,10 +1,18 @@
 import crypto from "crypto";
 
-const SECRET =
-  process.env.CSRF_SECRET || crypto.randomUUID();
+let _secret: string | undefined;
 
-if (!process.env.CSRF_SECRET) {
-  console.warn("[csrf] CSRF_SECRET is not set — using a random secret. Tokens will not survive server restarts.");
+function getSecret(): string {
+  if (_secret) return _secret;
+  const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+  if (!process.env.CSRF_SECRET && process.env.NODE_ENV === "production" && !isBuild) {
+    throw new Error("[csrf] CSRF_SECRET must be set in production.");
+  }
+  if (!process.env.CSRF_SECRET) {
+    console.warn("[csrf] CSRF_SECRET is not set — using a random secret. Tokens will not survive server restarts.");
+  }
+  _secret = process.env.CSRF_SECRET || crypto.randomUUID();
+  return _secret;
 }
 
 const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -12,7 +20,7 @@ const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 export function generateCsrfToken(): string {
   const timestamp = Date.now().toString(36);
   const hmac = crypto
-    .createHmac("sha256", SECRET)
+    .createHmac("sha256", getSecret())
     .update(timestamp)
     .digest("hex");
   return `${timestamp}.${hmac}`;
@@ -33,7 +41,7 @@ export function validateCsrfToken(token: string | null): boolean {
 
   // Recompute HMAC
   const expectedHmac = crypto
-    .createHmac("sha256", SECRET)
+    .createHmac("sha256", getSecret())
     .update(timestamp)
     .digest("hex");
 

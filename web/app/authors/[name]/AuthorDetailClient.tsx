@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, Calendar } from "lucide-react";
 import { formatAuthorDates, formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
+import { useAppConfig } from "@/lib/config";
 
 interface Book {
   id: string;
@@ -54,10 +55,12 @@ export default function AuthorDetailClient({
   metadata,
 }: AuthorDetailClientProps) {
   const { t } = useTranslation();
+  const { config } = useAppConfig();
+  const { dateCalendar } = config;
 
   // Format author death year using centralized utility
   const authorDeathYearDisplay = metadata
-    ? formatYear(metadata.death_date_hijri, metadata.death_date_gregorian)
+    ? formatYear(metadata.death_date_hijri, metadata.death_date_gregorian, dateCalendar)
     : "";
 
   // Format full author date range for display
@@ -67,7 +70,7 @@ export default function AuthorDetailClient({
         deathDateHijri: metadata.death_date_hijri,
         birthDateGregorian: metadata.birth_date_gregorian,
         deathDateGregorian: metadata.death_date_gregorian,
-      })
+      }, { calendar: dateCalendar })
     : "";
   if (books.length === 0) {
     return (

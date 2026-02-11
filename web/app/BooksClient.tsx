@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
-import { formatBookYear, getBookCentury, getCenturyLabel } from "@/lib/dates";
+import { formatBookYear, getBookCentury, getCenturyLabel, type DateCalendar } from "@/lib/dates";
 import { useAppConfig, TranslationDisplayOption } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
 
@@ -48,8 +48,8 @@ interface BooksClientProps {
 }
 
 // Get year display for a book using centralized utility
-function getBookYear(book: Book, showPublicationDates: boolean): string {
-  const result = formatBookYear(book);
+function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCalendar = "both"): string {
+  const result = formatBookYear(book, calendar);
   if (!result.year) return "—";
   if (result.isPublicationYear && !showPublicationDates) return "—";
   return result.isPublicationYear ? `${result.year} (pub.)` : result.year;
@@ -67,7 +67,7 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
   const [books, setBooks] = useState<Book[]>(initialBooks);
 
   // Extract config values
-  const { showPublicationDates, bookTitleDisplay, autoTranslation } = config;
+  const { showPublicationDates, bookTitleDisplay, autoTranslation, dateCalendar } = config;
 
   // Get effective book title display setting (auto defaults to transliteration)
   const effectiveBookTitleDisplay = useMemo(() => {
@@ -352,7 +352,7 @@ export default function BooksClient({ books: initialBooks }: BooksClientProps) {
                       )}
                     </TableCell>
                     <TableCell>
-                      {getBookYear(book, showPublicationDates)}
+                      {getBookYear(book, showPublicationDates, dateCalendar)}
                     </TableCell>
                   </TableRow>
                 );

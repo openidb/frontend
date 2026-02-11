@@ -20,6 +20,8 @@ export type QueryExpansionModelType = "gpt-oss-120b" | "gemini-flash";
 
 export type PageTranslationModelType = "gemini-flash" | "gpt-oss-120b";
 
+export type DateCalendarType = "hijri" | "gregorian" | "both";
+
 // Shared type for translation display options
 export type TranslationDisplayOption =
   | "none" | "transliteration"
@@ -62,6 +64,7 @@ export interface SearchConfig {
   postRerankLimit: number;
   fuzzyEnabled: boolean;
   // Books display options
+  dateCalendar: DateCalendarType; // "hijri", "gregorian", or "both"
   bookTitleDisplay: TranslationDisplayOption;  // Replaces showTransliterations
   showPublicationDates: boolean;
   // Translation settings
@@ -100,6 +103,7 @@ export const defaultSearchConfig: SearchConfig = {
   postRerankLimit: 10,
   fuzzyEnabled: true,
   // Books display options
+  dateCalendar: "both",
   bookTitleDisplay: "transliteration",  // Default maintains current behavior
   showPublicationDates: true,
   // Translation settings - auto uses UI language, quranTranslation is override

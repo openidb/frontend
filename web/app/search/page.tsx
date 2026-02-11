@@ -11,9 +11,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { q } = await searchParams;
   if (q) {
+    const safeQ = q.slice(0, 100);
     return {
-      title: `${q} - Sabeel Search`,
-      description: `Search results for "${q}" across Quran, Hadith, and Islamic texts`,
+      title: `${safeQ} - Sabeel Search`,
+      description: `Search results for "${safeQ}" across Quran, Hadith, and Islamic texts`,
     };
   }
   return {
