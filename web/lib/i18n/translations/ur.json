@@ -306,7 +306,14 @@
       "showTransliterations": "نقل حرفی دکھائیں",
       "showTransliterationsInfo": "عربی عنوانات اور مصنفین کے ناموں کی لاطینی نقل حرفی دکھائیں۔",
       "showPublicationDates": "اشاعت کی تاریخیں دکھائیں",
-      "showPublicationDatesInfo": "جب وفات کی تاریخ دستیاب نہ ہو تو اشاعت کا سال دکھائیں۔"
+      "showPublicationDatesInfo": "جب وفات کی تاریخ دستیاب نہ ہو تو اشاعت کا سال دکھائیں۔",
+      "dateCalendar": "تاریخ کا کیلنڈر",
+      "dateCalendarInfo": "تاریخوں کے لیے کیلنڈر کا نظام منتخب کریں",
+      "dateCalendarOptions": {
+        "hijri": "ہجری",
+        "gregorian": "عیسوی",
+        "both": "دونوں (ہجری / عیسوی)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "اگلا",
     "prev": "پچھلا",
     "translate": "ترجمہ",
-    "hideTranslation": "ترجمہ چھپائیں"
+    "hideTranslation": "ترجمہ چھپائیں",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "لوڈ ہو رہا ہے...",

@@ -306,7 +306,14 @@
       "showTransliterations": "عرض التحويل الصوتي",
       "showTransliterationsInfo": "عرض النقل الحرفي اللاتيني للعناوين العربية وأسماء المؤلفين.",
       "showPublicationDates": "عرض تواريخ النشر",
-      "showPublicationDatesInfo": "عرض سنة النشر عندما تكون سنة وفاة المؤلف غير متاحة."
+      "showPublicationDatesInfo": "عرض سنة النشر عندما تكون سنة وفاة المؤلف غير متاحة.",
+      "dateCalendar": "نظام التقويم",
+      "dateCalendarInfo": "اختر نظام التقويم المستخدم لعرض التواريخ",
+      "dateCalendarOptions": {
+        "hijri": "هجري",
+        "gregorian": "ميلادي",
+        "both": "كلاهما (هجري / ميلادي)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "التالي",
     "prev": "السابق",
     "translate": "ترجمة",
-    "hideTranslation": "إخفاء الترجمة"
+    "hideTranslation": "إخفاء الترجمة",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "جارٍ التحميل...",

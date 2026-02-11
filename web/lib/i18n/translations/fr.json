@@ -306,7 +306,14 @@
       "showTransliterations": "Afficher les translitterations",
       "showTransliterationsInfo": "Afficher les translitterations latines des titres arabes et noms d'auteurs.",
       "showPublicationDates": "Afficher les dates de publication",
-      "showPublicationDatesInfo": "Afficher l'annee de publication quand la date de deces n'est pas disponible."
+      "showPublicationDatesInfo": "Afficher l'annee de publication quand la date de deces n'est pas disponible.",
+      "dateCalendar": "Calendrier des dates",
+      "dateCalendarInfo": "Choisir le système de calendrier pour l'affichage des dates",
+      "dateCalendarOptions": {
+        "hijri": "Hégirien (AH)",
+        "gregorian": "Grégorien (CE)",
+        "both": "Les deux (AH / CE)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "Suiv",
     "prev": "Prec",
     "translate": "Traduire",
-    "hideTranslation": "Masquer la traduction"
+    "hideTranslation": "Masquer la traduction",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "Chargement...",

@@ -306,7 +306,14 @@
       "showTransliterations": "Tampilkan transliterasi",
       "showTransliterationsInfo": "Tampilkan transliterasi Latin dari judul dan nama penulis Arab.",
       "showPublicationDates": "Tampilkan tanggal publikasi",
-      "showPublicationDatesInfo": "Tampilkan tahun publikasi saat tahun wafat tidak tersedia."
+      "showPublicationDatesInfo": "Tampilkan tahun publikasi saat tahun wafat tidak tersedia.",
+      "dateCalendar": "Kalender tanggal",
+      "dateCalendarInfo": "Pilih sistem kalender untuk menampilkan tanggal",
+      "dateCalendarOptions": {
+        "hijri": "Hijriah (H)",
+        "gregorian": "Masehi (M)",
+        "both": "Keduanya (H / M)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "Lanjut",
     "prev": "Kembali",
     "translate": "Terjemahkan",
-    "hideTranslation": "Sembunyikan terjemahan"
+    "hideTranslation": "Sembunyikan terjemahan",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "Memuat...",

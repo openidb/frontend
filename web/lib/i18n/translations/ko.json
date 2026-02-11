@@ -306,7 +306,14 @@
       "showTransliterations": "음역 표시",
       "showTransliterationsInfo": "아랍어 제목과 저자명의 라틴 음역을 표시합니다.",
       "showPublicationDates": "출판일 표시",
-      "showPublicationDatesInfo": "사망 연도를 알 수 없을 때 출판 연도를 표시합니다."
+      "showPublicationDatesInfo": "사망 연도를 알 수 없을 때 출판 연도를 표시합니다.",
+      "dateCalendar": "날짜 달력",
+      "dateCalendarInfo": "날짜 표시에 사용할 달력 시스템 선택",
+      "dateCalendarOptions": {
+        "hijri": "히즈라력 (AH)",
+        "gregorian": "그레고리력 (CE)",
+        "both": "모두 (AH / CE)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "다음",
     "prev": "이전",
     "translate": "번역",
-    "hideTranslation": "번역 숨기기"
+    "hideTranslation": "번역 숨기기",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "로딩 중...",

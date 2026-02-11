@@ -306,7 +306,14 @@
       "showTransliterations": "Mostra traslitterazioni",
       "showTransliterationsInfo": "Mostra traslitterazioni latine di titoli arabi e nomi degli autori.",
       "showPublicationDates": "Mostra date di pubblicazione",
-      "showPublicationDatesInfo": "Mostra anno di pubblicazione quando la data di morte non e disponibile."
+      "showPublicationDatesInfo": "Mostra anno di pubblicazione quando la data di morte non e disponibile.",
+      "dateCalendar": "Calendario delle date",
+      "dateCalendarInfo": "Scegli il sistema di calendario per visualizzare le date",
+      "dateCalendarOptions": {
+        "hijri": "Egira (AH)",
+        "gregorian": "Gregoriano (CE)",
+        "both": "Entrambi (AH / CE)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "Avanti",
     "prev": "Indietro",
     "translate": "Traduci",
-    "hideTranslation": "Nascondi traduzione"
+    "hideTranslation": "Nascondi traduzione",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "Caricamento...",

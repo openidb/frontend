@@ -306,7 +306,14 @@
       "showTransliterations": "翻字を表示",
       "showTransliterationsInfo": "アラビア語タイトルと著者名のラテン文字翻字を表示します。",
       "showPublicationDates": "出版日を表示",
-      "showPublicationDatesInfo": "没年が不明な場合に出版年を表示します。"
+      "showPublicationDatesInfo": "没年が不明な場合に出版年を表示します。",
+      "dateCalendar": "日付カレンダー",
+      "dateCalendarInfo": "日付表示に使用するカレンダーシステムを選択",
+      "dateCalendarOptions": {
+        "hijri": "ヒジュラ暦 (AH)",
+        "gregorian": "グレゴリオ暦 (CE)",
+        "both": "両方 (AH / CE)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "次へ",
     "prev": "前へ",
     "translate": "翻訳",
-    "hideTranslation": "翻訳を非表示"
+    "hideTranslation": "翻訳を非表示",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "読み込み中...",

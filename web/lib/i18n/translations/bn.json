@@ -306,7 +306,14 @@
       "showTransliterations": "প্রতিবর্ণীকরণ দেখান",
       "showTransliterationsInfo": "আরবি শিরোনাম এবং লেখকের নামের ল্যাটিন প্রতিবর্ণীকরণ দেখান।",
       "showPublicationDates": "প্রকাশনার তারিখ দেখান",
-      "showPublicationDatesInfo": "মৃত্যুর তারিখ না থাকলে প্রকাশনার বছর দেখান।"
+      "showPublicationDatesInfo": "মৃত্যুর তারিখ না থাকলে প্রকাশনার বছর দেখান।",
+      "dateCalendar": "তারিখ ক্যালেন্ডার",
+      "dateCalendarInfo": "তারিখ প্রদর্শনের জন্য ক্যালেন্ডার সিস্টেম নির্বাচন করুন",
+      "dateCalendarOptions": {
+        "hijri": "হিজরি (AH)",
+        "gregorian": "গ্রেগরিয়ান (CE)",
+        "both": "উভয় (AH / CE)"
+      }
     },
     "rerankerOptions": {
       "gptOss120b": "GPT-OSS 120B",
@@ -353,7 +360,8 @@
     "next": "পরবর্তী",
     "prev": "পূর্ববর্তী",
     "translate": "অনুবাদ",
-    "hideTranslation": "অনুবাদ লুকান"
+    "hideTranslation": "অনুবাদ লুকান",
+    "pdf": "PDF"
   },
   "common": {
     "loading": "লোড হচ্ছে...",
