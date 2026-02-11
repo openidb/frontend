@@ -41,3 +41,6 @@ bun.lockb
 
 # embedding cache
 /.cache/
+
+# symlinked book data
+/public/books
