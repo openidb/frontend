@@ -361,7 +361,8 @@
     "prev": "이전",
     "translate": "번역",
     "hideTranslation": "번역 숨기기",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "권"
   },
   "common": {
     "loading": "로딩 중...",

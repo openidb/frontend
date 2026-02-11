@@ -361,7 +361,8 @@
     "prev": "Prec",
     "translate": "Traduire",
     "hideTranslation": "Masquer la traduction",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "Vol."
   },
   "common": {
     "loading": "Chargement...",

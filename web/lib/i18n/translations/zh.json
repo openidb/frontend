@@ -361,7 +361,8 @@
     "prev": "上页",
     "translate": "翻译",
     "hideTranslation": "隐藏翻译",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "卷"
   },
   "common": {
     "loading": "加载中...",

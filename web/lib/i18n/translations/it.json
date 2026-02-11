@@ -361,7 +361,8 @@
     "prev": "Indietro",
     "translate": "Traduci",
     "hideTranslation": "Nascondi traduzione",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "Vol."
   },
   "common": {
     "loading": "Caricamento...",

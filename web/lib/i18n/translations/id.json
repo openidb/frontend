@@ -361,7 +361,8 @@
     "prev": "Kembali",
     "translate": "Terjemahkan",
     "hideTranslation": "Sembunyikan terjemahan",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "Jil."
   },
   "common": {
     "loading": "Memuat...",

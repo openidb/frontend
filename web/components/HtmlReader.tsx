@@ -41,6 +41,7 @@ interface HtmlReaderProps {
   bookMetadata: BookMetadata;
   initialPageNumber?: string;
   totalPages: number;
+  maxPrintedPage: number;
   toc?: TocEntry[];
 }
 
@@ -51,6 +52,13 @@ interface HtmlReaderProps {
  * a "___" separator line with markers like (^١).
  */
 function formatContentHtml(html: string): string {
+  // Join multi-line title spans into single lines so the line-by-line
+  // processor can match the opening and closing tags together.
+  html = html.replace(
+    /<span\s+data-type=['"]title['"][^>]*>[\s\S]*?<\/span>/g,
+    (match) => match.replace(/\n/g, ' ')
+  );
+
   const lines = html.split(/\n/);
   const formatted: string[] = [];
   let inFootnotes = false;
@@ -71,8 +79,7 @@ function formatContentHtml(html: string): string {
     if (/^_{3,}$/.test(trimmed)) {
       inFootnotes = true;
       formatted.push(
-        '<div style="margin-top:2em;padding-top:1.5em;border-top:1px solid currentColor;opacity:0.65">' +
-        '<p style="font-weight:bold;font-size:0.95em;margin-bottom:0.8em">الهوامش</p>'
+        '<div style="margin-top:2em;padding-top:1.5em;border-top:1px solid currentColor;opacity:0.65">'
       );
       continue;
     }
@@ -115,7 +122,15 @@ function formatContentHtml(html: string): string {
   return formatted.join('\n');
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, toc = [] }: HtmlReaderProps) {
+const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+
+/** Display label for a page: printed number if available, Roman numeral for front matter */
+function displayPageNumber(page: PageData | null, internalPage: number): string {
+  if (page?.printedPageNumber != null) return page.printedPageNumber.toString();
+  return ROMAN[internalPage] ?? internalPage.toString();
+}
+
+export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPrintedPage, toc = [] }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir } = useTranslation();
   const { resolvedTheme } = useTheme();
@@ -203,9 +218,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, toc = 
     const url = new URL(window.location.href);
     url.searchParams.set("pn", currentPage.toString());
     window.history.replaceState({}, "", url.toString());
-    setPageInputValue(
-      pageData?.urlPageIndex || pageData?.printedPageNumber?.toString() || currentPage.toString()
-    );
+    setPageInputValue(displayPageNumber(pageData, currentPage));
   }, [currentPage, pageData]);
 
   // Scroll to top on page change
@@ -271,10 +284,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, toc = 
     if (!isNaN(num) && num >= 0 && num < totalPages) {
       setCurrentPage(num);
     } else {
-      // Reset to current
-      setPageInputValue(
-        pageData?.printedPageNumber?.toString() || currentPage.toString()
-      );
+      setPageInputValue(displayPageNumber(pageData, currentPage));
     }
   };
 
@@ -315,11 +325,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, toc = 
           </p>
         </div>
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
-          {/* Page info */}
-          {pageData && (
-            <span className="text-xs text-muted-foreground hidden md:inline">
-              {pageData.volumeNumber > 1 && `vol. ${pageData.volumeNumber} · `}
-              {pageData.printedPageNumber != null && `p. ${pageData.printedPageNumber}`}
+          {pageData && pageData.volumeNumber > 1 && (
+            <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">
+              {t("reader.volume")} {pageData.volumeNumber}
             </span>
           )}
 
@@ -336,7 +344,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, toc = 
               className="w-10 md:w-12 text-xs md:text-sm text-muted-foreground text-center bg-transparent border-b border-border focus:border-primary focus:outline-none"
             />
             <span className="text-xs md:text-sm text-muted-foreground hidden md:inline">
-              {t("reader.of")} {totalPages}
+              {t("reader.of")} {maxPrintedPage}
             </span>
           </form>
 

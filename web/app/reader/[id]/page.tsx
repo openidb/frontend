@@ -29,6 +29,7 @@ interface BookData {
     titleTranslated?: string | null;
     filename: string;
     totalPages: number | null;
+    maxPrintedPage: number | null;
     tableOfContents?: TocEntry[] | null;
     publicationYearGregorian: string | null;
     author: {
@@ -94,6 +95,7 @@ export default async function ReaderPage({
       bookMetadata={bookMetadata}
       initialPageNumber={pn}
       totalPages={book.totalPages || 0}
+      maxPrintedPage={book.maxPrintedPage ?? book.totalPages ?? 0}
       toc={book.tableOfContents || []}
     />
   );

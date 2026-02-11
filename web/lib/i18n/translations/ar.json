@@ -361,7 +361,8 @@
     "prev": "السابق",
     "translate": "ترجمة",
     "hideTranslation": "إخفاء الترجمة",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "ج."
   },
   "common": {
     "loading": "جارٍ التحميل...",

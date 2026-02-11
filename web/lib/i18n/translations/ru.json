@@ -361,7 +361,8 @@
     "prev": "Назад",
     "translate": "Перевести",
     "hideTranslation": "Скрыть перевод",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "Том"
   },
   "common": {
     "loading": "Загрузка...",

@@ -361,7 +361,8 @@
     "prev": "পূর্ববর্তী",
     "translate": "অনুবাদ",
     "hideTranslation": "অনুবাদ লুকান",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "খণ্ড"
   },
   "common": {
     "loading": "লোড হচ্ছে...",

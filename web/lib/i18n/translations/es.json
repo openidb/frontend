@@ -361,7 +361,8 @@
     "prev": "Ant",
     "translate": "Traducir",
     "hideTranslation": "Ocultar traduccion",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "Vol."
   },
   "common": {
     "loading": "Cargando...",

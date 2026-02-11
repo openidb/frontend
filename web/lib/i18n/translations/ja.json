@@ -361,7 +361,8 @@
     "prev": "前へ",
     "translate": "翻訳",
     "hideTranslation": "翻訳を非表示",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "volume": "巻"
   },
   "common": {
     "loading": "読み込み中...",
