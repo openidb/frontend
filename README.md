@@ -62,7 +62,7 @@ web/
 ├── components/
 │   ├── Navigation.tsx          # Desktop + mobile nav
 │   ├── VoiceRecorder.tsx       # Audio recording + transcription
-│   ├── EpubReader.tsx          # EPUB.js book reader
+│   ├── HtmlReader.tsx          # HTML book reader
 │   ├── EntityPanel.tsx         # Knowledge graph context
 │   ├── SearchResult.tsx        # Individual result card
 │   ├── SearchConfigDropdown.tsx

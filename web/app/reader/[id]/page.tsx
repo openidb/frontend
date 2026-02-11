@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchAPI } from "@/lib/api-client";
-import { EpubReader } from "@/components/EpubReader";
+import { HtmlReader } from "@/components/HtmlReader";
 
 interface BookMetadata {
   id: string;
@@ -15,6 +15,12 @@ interface BookMetadata {
   toc: never[];
 }
 
+interface TocEntry {
+  title: string;
+  level: number;
+  page: number;
+}
+
 interface BookData {
   book: {
     id: string;
@@ -22,6 +28,8 @@ interface BookData {
     titleLatin: string;
     titleTranslated?: string | null;
     filename: string;
+    totalPages: number | null;
+    tableOfContents?: TocEntry[] | null;
     publicationYearGregorian: string | null;
     author: {
       nameArabic: string;
@@ -37,7 +45,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const data = await fetchAPI<BookData>(`/api/books/${id}`);
+    const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`);
     const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
     return {
       title: `${title} - Sabeel`,
@@ -53,15 +61,15 @@ export default async function ReaderPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string; pn?: string; lang?: string }>;
+  searchParams: Promise<{ pn?: string; lang?: string }>;
 }) {
   const { id } = await params;
-  const { page, pn, lang } = await searchParams;
+  const { pn, lang } = await searchParams;
 
   let bookData: BookData;
   try {
-    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&lang=${lang}` : "";
-    bookData = await fetchAPI<BookData>(`/api/books/${id}?${langParam}`);
+    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&lang=${encodeURIComponent(lang)}` : "";
+    bookData = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}?${langParam}`);
   } catch {
     notFound();
   }
@@ -81,5 +89,12 @@ export default async function ReaderPage({
     toc: [],
   };
 
-  return <EpubReader bookMetadata={bookMetadata} initialPage={page} initialPageNumber={pn} />;
+  return (
+    <HtmlReader
+      bookMetadata={bookMetadata}
+      initialPageNumber={pn}
+      totalPages={book.totalPages || 0}
+      toc={book.tableOfContents || []}
+    />
+  );
 }

@@ -6,9 +6,11 @@
  * - Display: AH first format (e.g., "728 AH / 1328 CE")
  */
 
+export type DateCalendar = "hijri" | "gregorian" | "both";
+
 /**
  * Convert Arabic numerals (٠-٩) to Western numerals (0-9)
- * Used for normalizing data from Shamela backup
+ * Used for normalizing data from Turath imports
  */
 function arabicToWestern(str: string | null | undefined): string {
   if (!str) return "";
@@ -42,9 +44,9 @@ interface AuthorDates {
  */
 export function formatAuthorDates(
   author: AuthorDates,
-  options: { includeDeathPrefix?: boolean } = {}
+  options: { includeDeathPrefix?: boolean; calendar?: DateCalendar } = {}
 ): string {
-  const { includeDeathPrefix = false } = options;
+  const { includeDeathPrefix = false, calendar = "both" } = options;
 
   const birthHijri = arabicToWestern(author.birthDateHijri);
   const deathHijri = arabicToWestern(author.deathDateHijri);
@@ -59,7 +61,7 @@ export function formatAuthorDates(
   const parts: string[] = [];
 
   // Build Hijri part
-  if (birthHijri || deathHijri) {
+  if (calendar !== "gregorian" && (birthHijri || deathHijri)) {
     let hijriPart = "";
     if (birthHijri && deathHijri) {
       hijriPart = `${birthHijri}-${deathHijri} AH`;
@@ -72,7 +74,7 @@ export function formatAuthorDates(
   }
 
   // Build Gregorian part
-  if (birthGregorian || deathGregorian) {
+  if (calendar !== "hijri" && (birthGregorian || deathGregorian)) {
     let gregorianPart = "";
     if (birthGregorian && deathGregorian) {
       gregorianPart = `${birthGregorian}-${deathGregorian} CE`;
@@ -96,11 +98,19 @@ export function formatAuthorDates(
  */
 export function formatYear(
   hijri?: string | null,
-  gregorian?: string | null
+  gregorian?: string | null,
+  calendar: DateCalendar = "both"
 ): string {
   const h = arabicToWestern(hijri);
   const g = arabicToWestern(gregorian);
 
+  if (calendar === "hijri") {
+    return h ? `${h} AH` : "";
+  }
+  if (calendar === "gregorian") {
+    return g ? `${g} CE` : "";
+  }
+  // "both"
   if (h && g) {
     return `${h} AH / ${g} CE`;
   }
@@ -130,11 +140,11 @@ export function formatBookYear(book: {
   } | null;
   publicationYearHijri?: string | null;
   publicationYearGregorian?: string | null;
-}): BookYearResult {
+}, calendar: DateCalendar = "both"): BookYearResult {
   // Primary: Use author's death year
   if (book.author?.deathDateHijri || book.author?.deathDateGregorian) {
     return {
-      year: formatYear(book.author.deathDateHijri, book.author.deathDateGregorian),
+      year: formatYear(book.author.deathDateHijri, book.author.deathDateGregorian, calendar),
       isPublicationYear: false,
     };
   }
@@ -142,7 +152,7 @@ export function formatBookYear(book: {
   // Fallback: Use publication year
   if (book.publicationYearHijri || book.publicationYearGregorian) {
     return {
-      year: formatYear(book.publicationYearHijri, book.publicationYearGregorian),
+      year: formatYear(book.publicationYearHijri, book.publicationYearGregorian, calendar),
       isPublicationYear: true,
     };
   }
