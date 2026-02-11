@@ -362,7 +362,10 @@
     "translate": "번역",
     "hideTranslation": "번역 숨기기",
     "pdf": "PDF",
-    "volume": "권"
+    "volume": "권",
+    "author": "저자",
+    "openPdf": "PDF 열기",
+    "fontSize": "글꼴 크기"
   },
   "common": {
     "loading": "로딩 중...",

@@ -362,7 +362,10 @@
     "translate": "ترجمہ",
     "hideTranslation": "ترجمہ چھپائیں",
     "pdf": "PDF",
-    "volume": "جلد"
+    "volume": "جلد",
+    "author": "مصنف",
+    "openPdf": "PDF کھولیں",
+    "fontSize": "خط کا سائز"
   },
   "common": {
     "loading": "لوڈ ہو رہا ہے...",

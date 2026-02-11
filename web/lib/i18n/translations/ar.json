@@ -362,7 +362,10 @@
     "translate": "ترجمة",
     "hideTranslation": "إخفاء الترجمة",
     "pdf": "PDF",
-    "volume": "ج."
+    "volume": "ج.",
+    "author": "المؤلف",
+    "openPdf": "فتح PDF",
+    "fontSize": "حجم الخط"
   },
   "common": {
     "loading": "جارٍ التحميل...",

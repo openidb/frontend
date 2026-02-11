@@ -10,6 +10,7 @@ interface BookMetadata {
   titleTranslated?: string | null;
   author: string;
   authorLatin: string;
+  authorId: string;
   datePublished: string;
   filename: string;
   toc: never[];
@@ -33,6 +34,7 @@ interface BookData {
     tableOfContents?: TocEntry[] | null;
     publicationYearGregorian: string | null;
     author: {
+      id: string;
       nameArabic: string;
       nameLatin: string;
     };
@@ -85,6 +87,7 @@ export default async function ReaderPage({
     titleTranslated: book.titleTranslated || null,
     author: book.author.nameArabic,
     authorLatin: book.author.nameLatin,
+    authorId: book.author.id,
     datePublished: book.publicationYearGregorian || "",
     filename: book.filename,
     toc: [],

@@ -362,7 +362,10 @@
     "translate": "Перевести",
     "hideTranslation": "Скрыть перевод",
     "pdf": "PDF",
-    "volume": "Том"
+    "volume": "Том",
+    "author": "Автор",
+    "openPdf": "Открыть PDF",
+    "fontSize": "Размер шрифта"
   },
   "common": {
     "loading": "Загрузка...",

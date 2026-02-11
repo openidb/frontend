@@ -362,7 +362,10 @@
     "translate": "Traduci",
     "hideTranslation": "Nascondi traduzione",
     "pdf": "PDF",
-    "volume": "Vol."
+    "volume": "Vol.",
+    "author": "Autore",
+    "openPdf": "Apri PDF",
+    "fontSize": "Dimensione testo"
   },
   "common": {
     "loading": "Caricamento...",

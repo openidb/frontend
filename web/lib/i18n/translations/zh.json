@@ -362,7 +362,10 @@
     "translate": "翻译",
     "hideTranslation": "隐藏翻译",
     "pdf": "PDF",
-    "volume": "卷"
+    "volume": "卷",
+    "author": "作者",
+    "openPdf": "打开PDF",
+    "fontSize": "字体大小"
   },
   "common": {
     "loading": "加载中...",

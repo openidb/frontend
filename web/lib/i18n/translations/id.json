@@ -362,7 +362,10 @@
     "translate": "Terjemahkan",
     "hideTranslation": "Sembunyikan terjemahan",
     "pdf": "PDF",
-    "volume": "Jil."
+    "volume": "Jil.",
+    "author": "Penulis",
+    "openPdf": "Buka PDF",
+    "fontSize": "Ukuran font"
   },
   "common": {
     "loading": "Memuat...",

@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Menu, FileText } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus } from "lucide-react";
+import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 
@@ -14,6 +15,7 @@ interface BookMetadata {
   titleTranslated?: string | null;
   author: string;
   authorLatin: string;
+  authorId: string;
   datePublished: string;
   filename: string;
 }
@@ -51,7 +53,31 @@ interface HtmlReaderProps {
  * <span data-type="title"> tags for headings. Footnotes appear after
  * a "___" separator line with markers like (^١).
  */
+// Unicode 16.0 (Sept 2024) Islamic honorific ligatures — too new for most fonts.
+// Expand to full Arabic text so they render on all devices.
+const HONORIFIC_MAP: Record<string, string> = {
+  "\uFD40": "رحمه الله",
+  "\uFD41": "رحمها الله",
+  "\uFD42": "رحمهما الله",
+  "\uFD43": "رحمهم الله",
+  "\uFD44": "حفظه الله",
+  "\uFD45": "حفظها الله",
+  "\uFD46": "حفظهما الله",
+  "\uFD47": "رضي الله عنه",
+  "\uFD48": "رضي الله عنها",
+  "\uFD49": "رضي الله عنهما",
+  "\uFD4A": "رضي الله عنهم",
+  "\uFD4B": "غفر الله له",
+  "\uFD4C": "غفر الله لها",
+  "\uFD4D": "عليه السلام",
+  "\uFD4E": "عليها السلام",
+};
+const HONORIFIC_RE = new RegExp(`[${Object.keys(HONORIFIC_MAP).join("")}]`, "g");
+
 function formatContentHtml(html: string): string {
+  // Expand Unicode 16.0 honorific ligatures into readable Arabic text
+  html = html.replace(HONORIFIC_RE, (ch) => HONORIFIC_MAP[ch] ?? ch);
+
   // Join multi-line title spans into single lines so the line-by-line
   // processor can match the opening and closing tags together.
   html = html.replace(
@@ -136,6 +162,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   const { resolvedTheme } = useTheme();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [fontSize, setFontSize] = useState(1.1);
 
   const [currentPage, setCurrentPage] = useState<number>(
     initialPageNumber ? parseInt(initialPageNumber, 10) : 0
@@ -291,7 +318,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const handleOpenPdf = useCallback(async () => {
-    if (!pageData?.pdfUrl || pdfLoading) return;
+    if (pdfLoading) return;
     setPdfLoading(true);
     try {
       const res = await fetch(`/api/books/${bookMetadata.id}/pages/${currentPage}/pdf`);
@@ -305,7 +332,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
     } finally {
       setPdfLoading(false);
     }
-  }, [bookMetadata.id, currentPage, pageData?.pdfUrl, pdfLoading]);
+  }, [bookMetadata.id, currentPage, pdfLoading]);
 
   const isDark = resolvedTheme === "dark";
 
@@ -369,31 +396,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               <span className="text-xs md:text-sm">{t("reader.prev")}</span>
               <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-            {pageData?.pdfUrl && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleOpenPdf}
-                disabled={pdfLoading}
-                title={t("reader.pdf")}
-                className="transition-transform active:scale-95 h-8 w-8 md:h-9 md:w-9"
-              >
-                {pdfLoading
-                  ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
-                  : <FileText className="h-4 w-4 md:h-5 md:w-5" />}
-              </Button>
-            )}
-            {toc.length > 0 && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowSidebar(!showSidebar)}
-                title={t("reader.chapters")}
-                className="transition-transform active:scale-95 h-8 w-8 md:h-9 md:w-9"
-              >
-                <Menu className="h-4 w-4 md:h-5 md:w-5" />
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowSidebar(!showSidebar)}
+              title={t("reader.chapters")}
+              className="transition-transform active:scale-95 h-8 w-8 md:h-9 md:w-9"
+            >
+              <EllipsisVertical className="h-4 w-4 md:h-5 md:w-5" />
+            </Button>
           </div>
         </div>
       </div>
@@ -406,7 +417,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
         />
       )}
 
-      {/* Chapters sidebar */}
+      {/* Options panel */}
       <div
         dir="rtl"
         className={`absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-72 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-background rounded-lg border shadow-xl z-30 flex flex-col transition-all duration-200 ${
@@ -415,40 +426,85 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="p-3 border-b">
-          <h2 className="font-semibold">{t("reader.chapters")}</h2>
-        </div>
+        {/* Links section */}
+        <div className="p-3 space-y-1">
+          <Link
+            href={`/authors/${bookMetadata.authorId}`}
+            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            onClick={() => setShowSidebar(false)}
+          >
+            <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>{t("reader.author")}: {bookMetadata.author}</span>
+          </Link>
+          <button
+            onClick={() => {
+              handleOpenPdf();
+              setShowSidebar(false);
+            }}
+            disabled={pdfLoading}
+            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+          >
+            {pdfLoading
+              ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              : <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />}
+            <span>{t("reader.openPdf")}</span>
+          </button>
 
-        <div className="flex-1 overflow-auto p-3">
-          {toc.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t("reader.noChapters")}
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {toc.map((entry, index) => {
-                const depth = entry.level;
-                const bullets = ["●", "○", "▪", "◦", "▸"];
-                const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCurrentPage(entry.page);
-                      setShowSidebar(false);
-                    }}
-                    className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-                    style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
-                  >
-                    {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
-                    <span>{entry.title}</span>
-                  </button>
-                );
-              })}
+          {/* Font size */}
+          <div className="w-full px-3 py-2 text-sm flex items-center justify-between">
+            <span>{t("reader.fontSize")}</span>
+            <div className="flex items-center gap-2" dir="ltr">
+              <button
+                onClick={() => setFontSize((s) => Math.max(0.8, +(s - 0.1).toFixed(1)))}
+                className="h-7 w-7 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <span className="w-10 text-center text-muted-foreground">{Math.round(fontSize * 100)}%</span>
+              <button
+                onClick={() => setFontSize((s) => Math.min(2.0, +(s + 0.1).toFixed(1)))}
+                className="h-7 w-7 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Table of Contents section */}
+        {toc.length > 0 && (
+          <>
+            <div className="px-3 pb-1">
+              <div className="border-t" />
+              <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
+            </div>
+
+            <div className="flex-1 overflow-auto p-3 pt-0">
+              <div className="space-y-1">
+                {toc.map((entry, index) => {
+                  const depth = entry.level;
+                  const bullets = ["●", "○", "▪", "◦", "▸"];
+                  const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setCurrentPage(entry.page);
+                        setShowSidebar(false);
+                      }}
+                      className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+                      style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+                    >
+                      {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
+                      <span>{entry.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Content area */}
@@ -478,7 +534,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               fontFamily:
                 '"Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
               lineHeight: 2.0,
-              fontSize: "1.1rem",
+              fontSize: `${fontSize}rem`,
               color: isDark ? "#fafaf9" : "#0a0a0a",
             }}
             dangerouslySetInnerHTML={{ __html: formatContentHtml(pageData.contentHtml) }}

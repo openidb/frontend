@@ -362,7 +362,10 @@
     "translate": "অনুবাদ",
     "hideTranslation": "অনুবাদ লুকান",
     "pdf": "PDF",
-    "volume": "খণ্ড"
+    "volume": "খণ্ড",
+    "author": "লেখক",
+    "openPdf": "পিডিএফ খুলুন",
+    "fontSize": "ফন্টের আকার"
   },
   "common": {
     "loading": "লোড হচ্ছে...",
