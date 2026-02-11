@@ -10,7 +10,7 @@ Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and 
 - **13 Languages** — English, Arabic, French, Indonesian, Urdu, Spanish, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
 - **RTL Support** — Full right-to-left layout for Arabic and Urdu with dedicated fonts (Amiri, Scheherazade New)
 - **Voice Search** — Audio transcription via Groq Whisper
-- **EPUB Reader** — Built-in reader with navigation, table of contents, in-book translation, and word definitions
+- **Book Reader** — Built-in HTML reader with navigation, table of contents, in-book translation, and word definitions
 - **Knowledge Graph** — Entity panel showing related concepts from Neo4j
 - **Dark Mode** — Light, dark, and system themes with no flash of unstyled content
 - **Search Configuration** — Reranker selection, similarity cutoffs, content type filters, query expansion
@@ -22,7 +22,7 @@ Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and 
 |---|---|
 | Framework | Next.js 16, React 19, TypeScript |
 | Styling | Tailwind CSS, shadcn/ui, Radix UI |
-| Book Reader | EPUB.js |
+| Book Reader | HtmlReader (custom) |
 | Math | KaTeX |
 | Icons | Lucide React |
 
@@ -78,7 +78,7 @@ web/
 │   ├── csrf.ts                 # CSRF token generation
 │   └── utils.ts
 └── public/
-    ├── books/                  # EPUB files
+    ├── books/                  # Static assets
     └── fonts/                  # Arabic fonts (Amiri, Scheherazade New)
 ```
 
@@ -105,4 +105,4 @@ Requires the [openidb](https://github.com/openidb/openidb) API running on port 4
 
 This is the frontend. See also:
 - [openidb](https://github.com/openidb/openidb) — API server (Hono, PostgreSQL, Qdrant, Elasticsearch, Neo4j)
-- [scrapers](https://github.com/openidb/scrapers) — Data acquisition (Python)
+- [scrapers](https://github.com/openidb/scrapers) — Data acquisition

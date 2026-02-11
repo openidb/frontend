@@ -9,7 +9,7 @@ Built with Next.js 16 (App Router), Tailwind CSS, and shadcn/ui.
 - **Hybrid search** across Quran, Hadith, and Books with configurable search modes
 - **Quran reader** with translations and tafsirs
 - **Hadith browser** with collection/book navigation
-- **Book reader** with EPUB rendering and page translation
+- **Book reader** with HTML rendering and page translation
 - **Voice search** via audio transcription
 - **13 languages** — English, Arabic, French, Spanish, Indonesian, Urdu, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
 
