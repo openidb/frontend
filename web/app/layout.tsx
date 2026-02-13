@@ -18,6 +18,10 @@ const themeLocaleScript = `
     if (isDark) document.documentElement.classList.add('dark');
 
     var locale = localStorage.getItem('locale');
+    if (!locale) {
+      var m = document.cookie.match(/(?:^|;\s*)detected-locale=([^;]*)/);
+      if (m) locale = m[1];
+    }
     if (locale) {
       document.documentElement.lang = locale;
       document.documentElement.dir = (locale === 'ar' || locale === 'ur') ? 'rtl' : 'ltr';

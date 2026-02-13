@@ -103,6 +103,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (saved && LOCALES.some((l) => l.code === saved)) {
       setLocaleState(saved as Locale);
+    } else {
+      const match = document.cookie.match(/(?:^|;\s*)detected-locale=([^;]*)/);
+      const detected = match?.[1];
+      if (detected && LOCALES.some((l) => l.code === detected)) {
+        setLocaleState(detected as Locale);
+      }
     }
   }, []);
 
