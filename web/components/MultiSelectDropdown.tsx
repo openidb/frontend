@@ -82,7 +82,7 @@ export function MultiSelectDropdown({
           <DropdownMenuCheckboxItem
             key={option.value}
             checked={selected.includes(option.value)}
-            onCheckedChange={() => !option.disabled && handleToggle(option.value)}
+            onCheckedChange={() => (!option.disabled || selected.includes(option.value)) && handleToggle(option.value)}
             onSelect={(e) => e.preventDefault()}
             disabled={option.disabled}
             className={option.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-accent"}

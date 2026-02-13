@@ -1,9 +1,10 @@
 import { fetchAPIRaw } from "@/lib/api-client";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const res = await fetchAPIRaw("/api/books/centuries");
+    const { searchParams } = new URL(request.url);
+    const res = await fetchAPIRaw(`/api/books/centuries?${searchParams}`);
     return new Response(res.body, {
       status: res.status,
       headers: { "Content-Type": "application/json" },

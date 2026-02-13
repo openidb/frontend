@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
-import { formatBookYear, getCenturyLabel, type DateCalendar } from "@/lib/dates";
+import { formatBookYear, type DateCalendar } from "@/lib/dates";
 import { useAppConfig } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
 
@@ -69,11 +69,11 @@ interface BooksClientProps {
 }
 
 // Get year display for a book using centralized utility
-function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCalendar = "both"): string {
+function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCalendar = "both", pubLabel = "(pub.)"): string {
   const result = formatBookYear(book, calendar);
   if (!result.year) return "—";
   if (result.isPublicationYear && !showPublicationDates) return "—";
-  return result.isPublicationYear ? `${result.year} (pub.)` : result.year;
+  return result.isPublicationYear ? `${result.year} ${pubLabel}` : result.year;
 }
 
 export default function BooksClient({
@@ -82,7 +82,7 @@ export default function BooksClient({
   initialCategories,
   initialCenturies,
 }: BooksClientProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -91,6 +91,8 @@ export default function BooksClient({
   const [loading, setLoading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+  const [centuries, setCenturies] = useState<CenturyItem[]>(initialCenturies);
 
   // Extract config values
   const { showPublicationDates, bookTitleDisplay, autoTranslation, dateCalendar } = config;
@@ -103,31 +105,62 @@ export default function BooksClient({
     return bookTitleDisplay;
   }, [autoTranslation, bookTitleDisplay]);
 
-  // Build category options for MultiSelectDropdown
+  // Re-fetch facet counts when filters change (interdependent filters)
+  useEffect(() => {
+    if (selectedCategories.length === 0 && selectedCenturies.length === 0) {
+      setCategories(initialCategories);
+      setCenturies(initialCenturies);
+      return;
+    }
+
+    const fetchFacets = async () => {
+      const [catRes, cenRes] = await Promise.all([
+        // Fetch categories filtered by selected centuries
+        selectedCenturies.length > 0
+          ? fetch(`/api/categories?flat=true&century=${selectedCenturies.join(",")}`).then((r) => r.json())
+          : null,
+        // Fetch centuries filtered by selected categories
+        selectedCategories.length > 0
+          ? fetch(`/api/centuries?categoryId=${selectedCategories.join(",")}`).then((r) => r.json())
+          : null,
+      ]);
+
+      if (catRes?.categories) {
+        setCategories(catRes.categories);
+      } else {
+        setCategories(initialCategories);
+      }
+
+      if (cenRes?.centuries) {
+        setCenturies(cenRes.centuries);
+      } else {
+        setCenturies(initialCenturies);
+      }
+    };
+
+    fetchFacets().catch(console.error);
+  }, [selectedCategories, selectedCenturies, initialCategories, initialCenturies]);
+
+  // Build category options for MultiSelectDropdown (locale-aware via i18n)
   const categoryOptions = useMemo(() =>
-    initialCategories
-      .filter((c) => c.booksCount > 0)
-      .map((c) => ({
-        value: c.id.toString(),
-        label: c.nameEnglish || c.nameArabic,
-        labelArabic: c.nameEnglish ? c.nameArabic : undefined,
-        count: c.booksCount,
-      })),
-    [initialCategories]
+    categories.map((c) => ({
+      value: c.id.toString(),
+      label: t(`categories.${c.id}`),
+      count: c.booksCount,
+      disabled: c.booksCount === 0,
+    })),
+    [categories, t]
   );
 
-  // Build century options for MultiSelectDropdown
+  // Build century options for MultiSelectDropdown (locale-aware via i18n)
   const centuryOptions = useMemo(() =>
-    initialCenturies.map((c) => {
-      const lbl = getCenturyLabel(c.century);
-      return {
-        value: lbl.value,
-        label: lbl.label,
-        labelArabic: lbl.labelArabic,
-        count: c.booksCount,
-      };
-    }),
-    [initialCenturies]
+    centuries.map((c) => ({
+      value: c.century.toString(),
+      label: t(`centuries.${c.century}`),
+      count: c.booksCount,
+      disabled: c.booksCount === 0,
+    })),
+    [centuries, t]
   );
 
   // Debounce search query
@@ -140,8 +173,10 @@ export default function BooksClient({
 
   // Fetch books from API when search, filters, or pagination changes
   useEffect(() => {
-    // Skip initial render with no search and no filters
-    if (debouncedSearch === "" && pagination.page === 1 && selectedCategories.length === 0 && selectedCenturies.length === 0) {
+    // No active filters — reset to server-provided initial data
+    if (debouncedSearch === "" && selectedCategories.length === 0 && selectedCenturies.length === 0) {
+      setBooks(initialBooks);
+      setPagination(initialPagination);
       return;
     }
 
@@ -340,7 +375,7 @@ export default function BooksClient({
                       )}
                     </TableCell>
                     <TableCell>
-                      {getBookYear(book, showPublicationDates, dateCalendar)}
+                      {getBookYear(book, showPublicationDates, dateCalendar, t("books.publication"))}
                     </TableCell>
                   </TableRow>
                 );

@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
-import { formatYear, getCenturyLabel } from "@/lib/dates";
+import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
 
@@ -45,7 +45,7 @@ interface AuthorsClientProps {
 }
 
 export default function AuthorsClient({ initialAuthors, initialPagination, initialCenturies }: AuthorsClientProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { config, isLoaded } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -54,18 +54,14 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
   const [loading, setLoading] = useState(false);
   const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
 
-  // Build century options for MultiSelectDropdown
+  // Build century options for MultiSelectDropdown (locale-aware via i18n)
   const centuryOptions = useMemo(() =>
-    initialCenturies.map((c) => {
-      const lbl = getCenturyLabel(c.century);
-      return {
-        value: lbl.value,
-        label: lbl.label,
-        labelArabic: lbl.labelArabic,
-        count: c.authorsCount,
-      };
-    }),
-    [initialCenturies]
+    initialCenturies.map((c) => ({
+      value: c.century.toString(),
+      label: t(`centuries.${c.century}`),
+      count: c.authorsCount,
+    })),
+    [initialCenturies, t]
   );
 
   // Debounce search query
@@ -78,8 +74,10 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
 
   // Fetch authors from API when search, filters, or pagination changes
   useEffect(() => {
-    // Skip if this is the initial render with no search and no filters
-    if (debouncedSearch === "" && pagination.page === 1 && selectedCenturies.length === 0) {
+    // No active filters — reset to server-provided initial data
+    if (debouncedSearch === "" && selectedCenturies.length === 0) {
+      setAuthors(initialAuthors);
+      setPagination(initialPagination);
       return;
     }
 
