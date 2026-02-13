@@ -10,7 +10,8 @@ Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and 
 - **13 Languages** — English, Arabic, French, Indonesian, Urdu, Spanish, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
 - **RTL Support** — Full right-to-left layout for Arabic and Urdu with dedicated fonts (Amiri, Scheherazade New)
 - **Voice Search** — Audio transcription via Groq Whisper
-- **Book Reader** — Built-in HTML reader with navigation, table of contents, in-book translation, and word definitions
+- **Book Reader** — Built-in HTML reader with navigation, table of contents, and in-book translation
+- **Word Definitions** — Tap any Arabic word to see dictionary definitions from 43 classical sources with root derivation
 - **Knowledge Graph** — Entity panel showing related concepts from Neo4j
 - **Dark Mode** — Light, dark, and system themes with no flash of unstyled content
 - **Search Configuration** — Reranker selection, similarity cutoffs, content type filters, query expansion
@@ -50,6 +51,7 @@ web/
 │   │   └── SearchErrorState.tsx
 │   ├── reader/[id]/page.tsx    # Book reader
 │   ├── authors/                # Author listing + detail
+│   ├── root/[root]/page.tsx    # Root word family page
 │   ├── config/page.tsx         # Settings
 │   └── api/                    # Proxy routes to openidb
 │       ├── search/route.ts
@@ -58,6 +60,10 @@ web/
 │       ├── authors/route.ts
 │       ├── ayah/route.ts
 │       ├── categories/route.ts
+│       ├── centuries/route.ts
+│       ├── dictionary/[word]/route.ts
+│       ├── dictionary/root/[root]/route.ts
+│       ├── dictionary/resolve/[word]/route.ts
 │       └── pages/[bookId]/[pageNumber]/translate/route.ts
 ├── components/
 │   ├── Navigation.tsx          # Desktop + mobile nav
