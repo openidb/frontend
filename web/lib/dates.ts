@@ -187,7 +187,7 @@ function getHijriCentury(year: number): number {
 }
 
 /**
- * Format century with ordinal suffix
+ * Format century with ordinal suffix (English)
  * 1 -> "1st", 2 -> "2nd", 3 -> "3rd", 4 -> "4th", etc.
  */
 function formatOrdinal(n: number): string {
@@ -198,35 +198,16 @@ function formatOrdinal(n: number): string {
 
 /**
  * Get century label for display
- * Returns: { value: "3", label: "3rd century AH", labelArabic: "القرن الثالث" }
+ * Returns: { value: "3", label: "3rd century AH" }
+ * Use i18n key "centuries.<n>" for localized labels instead.
  */
 export function getCenturyLabel(century: number): {
   value: string;
   label: string;
-  labelArabic: string;
 } {
-  const arabicOrdinals: Record<number, string> = {
-    1: "الأول",
-    2: "الثاني",
-    3: "الثالث",
-    4: "الرابع",
-    5: "الخامس",
-    6: "السادس",
-    7: "السابع",
-    8: "الثامن",
-    9: "التاسع",
-    10: "العاشر",
-    11: "الحادي عشر",
-    12: "الثاني عشر",
-    13: "الثالث عشر",
-    14: "الرابع عشر",
-    15: "الخامس عشر",
-  };
-
   return {
     value: century.toString(),
     label: `${formatOrdinal(century)} century AH`,
-    labelArabic: `القرن ${arabicOrdinals[century] || century}`,
   };
 }
 

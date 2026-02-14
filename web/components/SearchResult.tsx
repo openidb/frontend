@@ -6,6 +6,7 @@ import { BookOpen, FileText, ExternalLink } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import { trackClick } from "@/lib/analytics";
 
 // Type definitions for result data
 export interface BookResultData {
@@ -79,9 +80,10 @@ export type UnifiedResult =
 interface SearchResultProps {
   result: BookResultData;
   bookTitleDisplay?: TranslationDisplayOption;
+  searchEventId?: string | null;
 }
 
-function SearchResultInner({ result, bookTitleDisplay = "transliteration" }: SearchResultProps) {
+function SearchResultInner({ result, bookTitleDisplay = "transliteration", searchEventId }: SearchResultProps) {
   const { t } = useTranslation();
 
   if (!result.book) return null;
@@ -114,6 +116,11 @@ function SearchResultInner({ result, bookTitleDisplay = "transliteration" }: Sea
     <Link
       href={readerUrl}
       className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
+      onClick={() => {
+        if (searchEventId) {
+          trackClick(searchEventId, `${book.id}:${pageNumber}`, "book", result.rank ?? 0);
+        }
+      }}
     >
       {/* Header: Book Title */}
       <div className="mb-2">
@@ -196,9 +203,10 @@ interface AyahResultProps {
     isChunk?: boolean;
     wordCount?: number;
   };
+  searchEventId?: string | null;
 }
 
-function AyahResultInner({ ayah }: AyahResultProps) {
+function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
   const { t } = useTranslation();
 
   // Determine the ayah label (single ayah or range)
@@ -215,6 +223,11 @@ function AyahResultInner({ ayah }: AyahResultProps) {
       target="_blank"
       rel="noopener noreferrer"
       className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
+      onClick={() => {
+        if (searchEventId) {
+          trackClick(searchEventId, `${ayah.surahNumber}:${ayah.ayahNumber}`, "quran", ayah.rank ?? 0);
+        }
+      }}
     >
       {/* Type Tag */}
       <div className="flex items-center gap-2 mb-2">
@@ -295,11 +308,12 @@ interface HadithResultProps {
     chapterArabic: string | null;
     chapterEnglish: string | null;
     sunnahComUrl: string;
-    translation?: string;  // English translation (when requested)
+    translation?: string;
   };
+  searchEventId?: string | null;
 }
 
-function HadithResultInner({ hadith }: HadithResultProps) {
+function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
   const { t } = useTranslation();
 
   return (
@@ -308,6 +322,11 @@ function HadithResultInner({ hadith }: HadithResultProps) {
       target="_blank"
       rel="noopener noreferrer"
       className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
+      onClick={() => {
+        if (searchEventId) {
+          trackClick(searchEventId, `${hadith.collectionSlug}:${hadith.hadithNumber}`, "hadith", hadith.rank ?? 0);
+        }
+      }}
     >
       {/* Type Tag */}
       <div className="flex items-center gap-2 mb-2">
@@ -376,16 +395,17 @@ export const HadithResult = React.memo(HadithResultInner);
 interface UnifiedSearchResultProps {
   result: UnifiedResult;
   bookTitleDisplay?: TranslationDisplayOption;
+  searchEventId?: string | null;
 }
 
-export function UnifiedSearchResult({ result, bookTitleDisplay }: UnifiedSearchResultProps) {
+export function UnifiedSearchResult({ result, bookTitleDisplay, searchEventId }: UnifiedSearchResultProps) {
   switch (result.type) {
     case "quran":
-      return <AyahResult ayah={result.data} />;
+      return <AyahResult ayah={result.data} searchEventId={searchEventId} />;
     case "hadith":
-      return <HadithResult hadith={result.data} />;
+      return <HadithResult hadith={result.data} searchEventId={searchEventId} />;
     case "book":
-      return <SearchResult result={result.data} bookTitleDisplay={bookTitleDisplay} />;
+      return <SearchResult result={result.data} bookTitleDisplay={bookTitleDisplay} searchEventId={searchEventId} />;
     default:
       return null;
   }

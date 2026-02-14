@@ -14,7 +14,7 @@ import { useTranslation } from "@/lib/i18n";
 
 export type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "jina" | "qwen4b" | "none";
 
-export type EmbeddingModelType = "gemini" | "bge-m3";
+export type EmbeddingModelType = "gemini" | "jina";
 
 export type QueryExpansionModelType = "gpt-oss-120b" | "gemini-flash";
 
@@ -72,7 +72,7 @@ export interface SearchConfig {
   quranTranslation: string; // Language code ("en", "ur", "fr", etc.) or "none"
   hadithTranslation: "none" | "en"; // Hadith translation (English only for now)
   // Embedding model selection
-  embeddingModel: EmbeddingModelType; // "gemini" (cloud) or "bge-m3" (local)
+  embeddingModel: EmbeddingModelType; // "gemini" (cloud) or "jina" (Jina v3)
   // Query expansion model selection
   queryExpansionModel: QueryExpansionModelType; // Model for expanding search queries
   // Page translation model selection
@@ -133,7 +133,7 @@ export const defaultSearchConfig: SearchConfig = {
 
 export const embeddingModelOptions: { value: EmbeddingModelType; labelKey: string; descKey: string }[] = [
   { value: "gemini", labelKey: "gemini", descKey: "geminiDesc" },
-  { value: "bge-m3", labelKey: "bgeM3", descKey: "bgeM3Desc" },
+  { value: "jina", labelKey: "jina", descKey: "jinaDesc" },
 ];
 
 export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [

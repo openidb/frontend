@@ -276,8 +276,8 @@
       "modelInfo": "Modele IA pour recherche semantique. Modeles cloud stables; modeles locaux personnalisables.",
       "gemini": "Gemini",
       "geminiDesc": "Stable, haute qualité",
-      "bgeM3": "BGE-M3 (En Développement)",
-      "bgeM3Desc": "Modèle local, optimisé pour les textes islamiques arabes"
+      "jina": "Jina v3",
+      "jinaDesc": "Modèle de récupération multilingue (1024d)"
     },
     "reranker": {
       "model": "Modèle",
@@ -369,7 +369,14 @@
     "author": "Auteur",
     "openPdf": "Ouvrir le PDF",
     "pdfNotAvailable": "PDF non disponible",
-    "fontSize": "Taille du texte"
+    "fontSize": "Taille du texte",
+    "copyWord": "Copier",
+    "wordTap": "Toucher un mot",
+    "dictionary": {
+      "notFound": "Aucune définition trouvée",
+      "rootMatch": "Trouvé par correspondance de racine",
+      "viewFull": "Voir l'entrée complète"
+    }
   },
   "common": {
     "loading": "Chargement...",
@@ -404,5 +411,49 @@
     "ko": "한국어",
     "it": "Italiano",
     "bn": "বাংলা"
+  },
+  "categories": {
+    "45": "Général",
+    "46": "Jurisprudence générale",
+    "47": "Croyance et théologie",
+    "48": "Biographies et classes",
+    "49": "Commentaires du hadith",
+    "50": "Histoire",
+    "51": "Hadiths et traditions",
+    "52": "Sciences coraniques",
+    "53": "Jurisprudence hanbalite",
+    "54": "Sciences du hadith",
+    "55": "Littérature et rhétorique",
+    "56": "Jurisprudence hanafite",
+    "57": "Culture islamique",
+    "58": "Exégèse coranique",
+    "59": "Langue arabe",
+    "60": "Jurisprudence chaféite",
+    "61": "Prédication",
+    "62": "Biographie prophétique",
+    "63": "Éducation et enseignement",
+    "64": "Rhétorique",
+    "65": "Bonnes manières et éthique",
+    "66": "Généalogie",
+    "67": "Jurisprudence malikite",
+    "68": "Fondements de la jurisprudence",
+    "69": "Spiritualité et ascétisme"
+  },
+  "centuries": {
+    "1": "1er siècle de l'hégire",
+    "2": "2e siècle de l'hégire",
+    "3": "3e siècle de l'hégire",
+    "4": "4e siècle de l'hégire",
+    "5": "5e siècle de l'hégire",
+    "6": "6e siècle de l'hégire",
+    "7": "7e siècle de l'hégire",
+    "8": "8e siècle de l'hégire",
+    "9": "9e siècle de l'hégire",
+    "10": "10e siècle de l'hégire",
+    "11": "11e siècle de l'hégire",
+    "12": "12e siècle de l'hégire",
+    "13": "13e siècle de l'hégire",
+    "14": "14e siècle de l'hégire",
+    "15": "15e siècle de l'hégire"
   }
 }

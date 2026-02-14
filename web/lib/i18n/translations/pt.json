@@ -276,8 +276,8 @@
       "modelInfo": "Modelo de IA para busca semantica. Modelos em nuvem estaveis; modelos locais personalizaveis.",
       "gemini": "Gemini",
       "geminiDesc": "Estável, alta qualidade",
-      "bgeM3": "BGE-M3 (Em Desenvolvimento)",
-      "bgeM3Desc": "Modelo local, otimizado para textos islâmicos árabes"
+      "jina": "Jina v3",
+      "jinaDesc": "Modelo de recuperação multilíngue (1024d)"
     },
     "reranker": {
       "model": "Modelo",
@@ -369,7 +369,14 @@
     "author": "Autor",
     "openPdf": "Abrir PDF",
     "pdfNotAvailable": "PDF indisponivel",
-    "fontSize": "Tamanho da fonte"
+    "fontSize": "Tamanho da fonte",
+    "copyWord": "Copiar",
+    "wordTap": "Tocar palavra",
+    "dictionary": {
+      "notFound": "Nenhuma definição encontrada",
+      "rootMatch": "Encontrado por correspondência de raiz",
+      "viewFull": "Ver entrada completa"
+    }
   },
   "common": {
     "loading": "Carregando...",
@@ -404,5 +411,49 @@
     "ko": "한국어",
     "it": "Italiano",
     "bn": "বাংলা"
+  },
+  "categories": {
+    "45": "Geral",
+    "46": "Jurisprudência geral",
+    "47": "Credo e teologia",
+    "48": "Biografias e classes",
+    "49": "Comentários do hadith",
+    "50": "História",
+    "51": "Hadiths e tradições",
+    "52": "Ciências corânicas",
+    "53": "Jurisprudência hanbalita",
+    "54": "Ciências do hadith",
+    "55": "Literatura e retórica",
+    "56": "Jurisprudência hanafita",
+    "57": "Cultura islâmica",
+    "58": "Exegese corânica",
+    "59": "Língua árabe",
+    "60": "Jurisprudência shafiíta",
+    "61": "Pregação",
+    "62": "Biografia profética",
+    "63": "Educação e ensino",
+    "64": "Retórica",
+    "65": "Boas maneiras e ética",
+    "66": "Genealogia",
+    "67": "Jurisprudência malikita",
+    "68": "Fundamentos da jurisprudência",
+    "69": "Espiritualidade e ascetismo"
+  },
+  "centuries": {
+    "1": "Século I da Hégira",
+    "2": "Século II da Hégira",
+    "3": "Século III da Hégira",
+    "4": "Século IV da Hégira",
+    "5": "Século V da Hégira",
+    "6": "Século VI da Hégira",
+    "7": "Século VII da Hégira",
+    "8": "Século VIII da Hégira",
+    "9": "Século IX da Hégira",
+    "10": "Século X da Hégira",
+    "11": "Século XI da Hégira",
+    "12": "Século XII da Hégira",
+    "13": "Século XIII da Hégira",
+    "14": "Século XIV da Hégira",
+    "15": "Século XV da Hégira"
   }
 }

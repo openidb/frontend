@@ -30,9 +30,9 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           }
           // Clean up removed tocDisplay field
           delete parsed.tocDisplay;
-          // Clamp similarityCutoff to valid range (0.5-0.75)
+          // Clamp similarityCutoff to valid range (0.1-0.8)
           if (typeof parsed.similarityCutoff === "number") {
-            parsed.similarityCutoff = Math.max(0.5, Math.min(0.75, parsed.similarityCutoff));
+            parsed.similarityCutoff = Math.max(0.1, Math.min(0.8, parsed.similarityCutoff));
           }
           // Clamp refineSimilarityCutoff to valid range (0.15-0.65)
           if (typeof parsed.refineSimilarityCutoff === "number") {
@@ -66,7 +66,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
             parsed.refineHadithRerank = Math.max(5, Math.min(25, parsed.refineHadithRerank));
           }
           // Validate embedding model (default to gemini if invalid)
-          if (parsed.embeddingModel !== "gemini" && parsed.embeddingModel !== "bge-m3") {
+          if (parsed.embeddingModel !== "gemini" && parsed.embeddingModel !== "jina") {
             parsed.embeddingModel = "gemini";
           }
           setConfigState({ ...defaultSearchConfig, ...parsed });

@@ -276,8 +276,8 @@
       "modelInfo": "Model AI untuk pencarian semantik. Model cloud stabil; model lokal dapat disesuaikan.",
       "gemini": "Gemini",
       "geminiDesc": "Stabil, kualitas tinggi",
-      "bgeM3": "BGE-M3 (Dalam Pengembangan)",
-      "bgeM3Desc": "Model lokal, dioptimalkan untuk teks Islam Arab"
+      "jina": "Jina v3",
+      "jinaDesc": "Model pencarian multibahasa (1024d)"
     },
     "reranker": {
       "model": "Model",
@@ -369,7 +369,14 @@
     "author": "Penulis",
     "openPdf": "Buka PDF",
     "pdfNotAvailable": "PDF tidak tersedia",
-    "fontSize": "Ukuran font"
+    "fontSize": "Ukuran font",
+    "copyWord": "Salin",
+    "wordTap": "Ketuk kata",
+    "dictionary": {
+      "notFound": "Definisi tidak ditemukan",
+      "rootMatch": "Ditemukan melalui akar kata",
+      "viewFull": "Lihat entri lengkap"
+    }
   },
   "common": {
     "loading": "Memuat...",
@@ -404,5 +411,49 @@
     "ko": "한국어",
     "it": "Italiano",
     "bn": "বাংলা"
+  },
+  "categories": {
+    "45": "Umum",
+    "46": "Fikih umum",
+    "47": "Akidah dan teologi",
+    "48": "Biografi dan tabaqat",
+    "49": "Syarah hadis",
+    "50": "Sejarah",
+    "51": "Hadis dan atsar",
+    "52": "Ilmu Al-Qur'an",
+    "53": "Fikih Hanbali",
+    "54": "Ilmu hadis",
+    "55": "Sastra dan retorika",
+    "56": "Fikih Hanafi",
+    "57": "Budaya Islam",
+    "58": "Tafsir Al-Qur'an",
+    "59": "Bahasa Arab",
+    "60": "Fikih Syafi'i",
+    "61": "Dakwah",
+    "62": "Sirah Nabawiyah",
+    "63": "Pendidikan dan pengajaran",
+    "64": "Retorika",
+    "65": "Adab dan akhlak",
+    "66": "Nasab dan silsilah",
+    "67": "Fikih Maliki",
+    "68": "Usul fikih",
+    "69": "Kerohanian dan zuhud"
+  },
+  "centuries": {
+    "1": "Abad ke-1 Hijriah",
+    "2": "Abad ke-2 Hijriah",
+    "3": "Abad ke-3 Hijriah",
+    "4": "Abad ke-4 Hijriah",
+    "5": "Abad ke-5 Hijriah",
+    "6": "Abad ke-6 Hijriah",
+    "7": "Abad ke-7 Hijriah",
+    "8": "Abad ke-8 Hijriah",
+    "9": "Abad ke-9 Hijriah",
+    "10": "Abad ke-10 Hijriah",
+    "11": "Abad ke-11 Hijriah",
+    "12": "Abad ke-12 Hijriah",
+    "13": "Abad ke-13 Hijriah",
+    "14": "Abad ke-14 Hijriah",
+    "15": "Abad ke-15 Hijriah"
   }
 }

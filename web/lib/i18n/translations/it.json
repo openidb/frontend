@@ -276,8 +276,8 @@
       "modelInfo": "Modello AI per ricerca semantica. Modelli cloud stabili; modelli locali personalizzabili.",
       "gemini": "Gemini",
       "geminiDesc": "Stabile, alta qualità",
-      "bgeM3": "BGE-M3 (In Sviluppo)",
-      "bgeM3Desc": "Modello locale, ottimizzato per testi islamici arabi"
+      "jina": "Jina v3",
+      "jinaDesc": "Modello di recupero multilingue (1024d)"
     },
     "reranker": {
       "model": "Modello",
@@ -369,7 +369,14 @@
     "author": "Autore",
     "openPdf": "Apri PDF",
     "pdfNotAvailable": "PDF non disponibile",
-    "fontSize": "Dimensione testo"
+    "fontSize": "Dimensione testo",
+    "copyWord": "Copia",
+    "wordTap": "Tocca parola",
+    "dictionary": {
+      "notFound": "Nessuna definizione trovata",
+      "rootMatch": "Trovato per corrispondenza di radice",
+      "viewFull": "Vedi voce completa"
+    }
   },
   "common": {
     "loading": "Caricamento...",
@@ -404,5 +411,49 @@
     "ko": "한국어",
     "it": "Italiano",
     "bn": "বাংলা"
+  },
+  "categories": {
+    "45": "Generale",
+    "46": "Giurisprudenza generale",
+    "47": "Credo e teologia",
+    "48": "Biografie e classi",
+    "49": "Commenti agli hadith",
+    "50": "Storia",
+    "51": "Hadith e tradizioni",
+    "52": "Scienze coraniche",
+    "53": "Giurisprudenza hanbalita",
+    "54": "Scienze dell'hadith",
+    "55": "Letteratura e retorica",
+    "56": "Giurisprudenza hanafita",
+    "57": "Cultura islamica",
+    "58": "Esegesi coranica",
+    "59": "Lingua araba",
+    "60": "Giurisprudenza sciafeita",
+    "61": "Predicazione",
+    "62": "Biografia profetica",
+    "63": "Educazione e insegnamento",
+    "64": "Retorica",
+    "65": "Buone maniere ed etica",
+    "66": "Genealogia",
+    "67": "Giurisprudenza malikita",
+    "68": "Fondamenti della giurisprudenza",
+    "69": "Spiritualità e ascetismo"
+  },
+  "centuries": {
+    "1": "I secolo dell'Egira",
+    "2": "II secolo dell'Egira",
+    "3": "III secolo dell'Egira",
+    "4": "IV secolo dell'Egira",
+    "5": "V secolo dell'Egira",
+    "6": "VI secolo dell'Egira",
+    "7": "VII secolo dell'Egira",
+    "8": "VIII secolo dell'Egira",
+    "9": "IX secolo dell'Egira",
+    "10": "X secolo dell'Egira",
+    "11": "XI secolo dell'Egira",
+    "12": "XII secolo dell'Egira",
+    "13": "XIII secolo dell'Egira",
+    "14": "XIV secolo dell'Egira",
+    "15": "XV secolo dell'Egira"
   }
 }

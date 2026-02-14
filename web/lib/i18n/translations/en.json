@@ -273,11 +273,11 @@
     },
     "embedding": {
       "model": "Embedding Model",
-      "modelInfo": "AI model for semantic search. Cloud models are stable; local models can be fine-tuned.",
+      "modelInfo": "AI model for semantic search. Gemini is the default; Jina v3 is optimized for multilingual retrieval.",
       "gemini": "Gemini",
-      "geminiDesc": "Stable, high quality",
-      "bgeM3": "BGE-M3 (In Development)",
-      "bgeM3Desc": "Local model, fine-tuned for Arabic Islamic texts"
+      "geminiDesc": "Stable, high quality (3072d)",
+      "jina": "Jina v3",
+      "jinaDesc": "Multilingual retrieval model (1024d)"
     },
     "reranker": {
       "model": "Reranker Model",
@@ -369,7 +369,14 @@
     "author": "Author",
     "openPdf": "Open PDF",
     "pdfNotAvailable": "PDF not available",
-    "fontSize": "Font size"
+    "fontSize": "Font size",
+    "copyWord": "Copy",
+    "wordTap": "Word tap",
+    "dictionary": {
+      "notFound": "No definition found",
+      "rootMatch": "Found by root match",
+      "viewFull": "View full entry"
+    }
   },
   "common": {
     "loading": "Loading...",
@@ -404,5 +411,49 @@
     "ko": "한국어",
     "it": "Italiano",
     "bn": "বাংলা"
+  },
+  "categories": {
+    "45": "General",
+    "46": "General Jurisprudence",
+    "47": "Creed & Theology",
+    "48": "Biographies & Classes",
+    "49": "Hadith Commentaries",
+    "50": "History",
+    "51": "Hadiths & Traditions",
+    "52": "Quranic Sciences",
+    "53": "Hanbali Jurisprudence",
+    "54": "Hadith Sciences",
+    "55": "Literature & Rhetoric",
+    "56": "Hanafi Jurisprudence",
+    "57": "Islamic Culture",
+    "58": "Quranic Exegesis",
+    "59": "Arabic Language",
+    "60": "Shafi'i Jurisprudence",
+    "61": "Da'wah & Preaching",
+    "62": "Prophetic Biography",
+    "63": "Education & Teaching",
+    "64": "Rhetoric",
+    "65": "Manners & Ethics",
+    "66": "Genealogy",
+    "67": "Maliki Jurisprudence",
+    "68": "Principles of Jurisprudence",
+    "69": "Spirituality & Asceticism"
+  },
+  "centuries": {
+    "1": "1st century AH",
+    "2": "2nd century AH",
+    "3": "3rd century AH",
+    "4": "4th century AH",
+    "5": "5th century AH",
+    "6": "6th century AH",
+    "7": "7th century AH",
+    "8": "8th century AH",
+    "9": "9th century AH",
+    "10": "10th century AH",
+    "11": "11th century AH",
+    "12": "12th century AH",
+    "13": "13th century AH",
+    "14": "14th century AH",
+    "15": "15th century AH"
   }
 }

@@ -276,8 +276,8 @@
       "modelInfo": "Modelo de IA para busqueda semantica. Modelos en nube estables; modelos locales personalizables.",
       "gemini": "Gemini",
       "geminiDesc": "Estable, alta calidad",
-      "bgeM3": "BGE-M3 (En Desarrollo)",
-      "bgeM3Desc": "Modelo local, optimizado para textos islámicos árabes"
+      "jina": "Jina v3",
+      "jinaDesc": "Modelo de recuperación multilingüe (1024d)"
     },
     "reranker": {
       "model": "Modelo",
@@ -369,7 +369,14 @@
     "author": "Autor",
     "openPdf": "Abrir PDF",
     "pdfNotAvailable": "PDF no disponible",
-    "fontSize": "Tamaño de fuente"
+    "fontSize": "Tamaño de fuente",
+    "copyWord": "Copiar",
+    "wordTap": "Tocar palabra",
+    "dictionary": {
+      "notFound": "No se encontró definición",
+      "rootMatch": "Encontrado por coincidencia de raíz",
+      "viewFull": "Ver entrada completa"
+    }
   },
   "common": {
     "loading": "Cargando...",
@@ -404,5 +411,49 @@
     "ko": "한국어",
     "it": "Italiano",
     "bn": "বাংলা"
+  },
+  "categories": {
+    "45": "General",
+    "46": "Jurisprudencia general",
+    "47": "Credo y teología",
+    "48": "Biografías y clases",
+    "49": "Comentarios del hadiz",
+    "50": "Historia",
+    "51": "Hadices y tradiciones",
+    "52": "Ciencias coránicas",
+    "53": "Jurisprudencia hanbalí",
+    "54": "Ciencias del hadiz",
+    "55": "Literatura y retórica",
+    "56": "Jurisprudencia hanafí",
+    "57": "Cultura islámica",
+    "58": "Exégesis coránica",
+    "59": "Lengua árabe",
+    "60": "Jurisprudencia shafi'í",
+    "61": "Predicación",
+    "62": "Biografía profética",
+    "63": "Educación y enseñanza",
+    "64": "Retórica",
+    "65": "Modales y ética",
+    "66": "Genealogía",
+    "67": "Jurisprudencia malikí",
+    "68": "Fundamentos de la jurisprudencia",
+    "69": "Espiritualidad y ascetismo"
+  },
+  "centuries": {
+    "1": "Siglo I de la Hégira",
+    "2": "Siglo II de la Hégira",
+    "3": "Siglo III de la Hégira",
+    "4": "Siglo IV de la Hégira",
+    "5": "Siglo V de la Hégira",
+    "6": "Siglo VI de la Hégira",
+    "7": "Siglo VII de la Hégira",
+    "8": "Siglo VIII de la Hégira",
+    "9": "Siglo IX de la Hégira",
+    "10": "Siglo X de la Hégira",
+    "11": "Siglo XI de la Hégira",
+    "12": "Siglo XII de la Hégira",
+    "13": "Siglo XIII de la Hégira",
+    "14": "Siglo XIV de la Hégira",
+    "15": "Siglo XV de la Hégira"
   }
 }

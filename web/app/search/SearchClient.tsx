@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, HadithResultData } from "@/components/SearchResult";
-import { SearchConfigDropdown, type TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import { SearchConfigDropdown, QURAN_TRANSLATIONS, type TranslationDisplayOption } from "@/components/SearchConfigDropdown";
 import { useAppConfig, type SearchConfig } from "@/lib/config";
 import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
@@ -17,6 +17,7 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import EntityPanel, { type GraphContext } from "@/components/EntityPanel";
 import { SearchDebugPanel } from "./SearchDebugPanel";
 import { SearchErrorState } from "./SearchErrorState";
+import { getSessionId } from "@/lib/analytics";
 
 interface AuthorResultData {
   id: number;
@@ -148,6 +149,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
   const [graphContext, setGraphContext] = useState<GraphContext | null>(null);
   const [showDebugStats, setShowDebugStats] = useState(false);
   const [showAlgorithm, setShowAlgorithm] = useState(false);
+  const [searchEventId, setSearchEventId] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const restoredQueryRef = useRef<string | null>(null);
@@ -235,7 +237,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         fuzzy: String(config.fuzzyEnabled),
         embeddingModel: config.embeddingModel || "gemini",
         quranTranslation: config.autoTranslation
-          ? (locale === "ar" ? "en" : locale)
+          ? (QURAN_TRANSLATIONS.find(t => t.code === (locale === "ar" ? "en" : locale))?.edition || "eng-mustafakhattaba")
           : (config.quranTranslation || "none"),
         hadithTranslation: config.autoTranslation
           ? "en"  // Only English available for hadiths
@@ -258,8 +260,13 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
         }),
       });
 
+      const eventId = crypto.randomUUID();
       const response = await fetch(`/api/search?${params.toString()}`, {
         signal: controller.signal,
+        headers: {
+          "x-search-event-id": eventId,
+          "x-session-id": getSessionId(),
+        },
       });
 
       if (!response.ok) {
@@ -308,6 +315,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
       setExpandedQueries(data.expandedQueries || []);
       setDebugStats(data.debugStats || null);
       setGraphContext(data.graphContext || null);
+      setSearchEventId(eventId);
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
@@ -647,7 +655,7 @@ export default function SearchClient({ bookCount }: SearchClientProps) {
               const effectiveBookTitleDisplay: TranslationDisplayOption = searchConfig.autoTranslation
                 ? "transliteration"
                 : searchConfig.bookTitleDisplay;
-              return <UnifiedSearchResult key={key} result={result} bookTitleDisplay={effectiveBookTitleDisplay} />;
+              return <UnifiedSearchResult key={key} result={result} bookTitleDisplay={effectiveBookTitleDisplay} searchEventId={searchEventId} />;
             })}
           </div>
         )}

@@ -3,10 +3,13 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, Languages } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
+import { useAppConfig } from "@/lib/config";
+import { WordDefinitionPopover } from "./WordDefinitionPopover";
+import { trackBookEvent } from "@/lib/analytics";
 
 interface BookMetadata {
   id: string;
@@ -93,7 +96,15 @@ function expandHonorifics(text: string): string {
   return text.replace(HONORIFIC_RE, (ch) => HONORIFIC_MAP[ch] ?? ch);
 }
 
-function formatContentHtml(html: string): string {
+function formatContentHtml(
+  html: string,
+  enableWordWrap = true,
+  translations?: { index: number; translation: string }[],
+  translationStyle?: string,
+): string {
+  // Build translation lookup by line index
+  const tlMap = translations ? new Map(translations.map(t => [t.index, t.translation])) : undefined;
+
   // Expand honorific ligatures into readable Arabic text
   html = expandHonorifics(html);
 
@@ -107,8 +118,12 @@ function formatContentHtml(html: string): string {
   const lines = html.split(/\n/);
   const formatted: string[] = [];
   let inFootnotes = false;
+  let lineIndex = 0;
 
   for (const line of lines) {
+    const currentLineIndex = lineIndex;
+    lineIndex++;
+
     const trimmed = line.trim();
     if (!trimmed) continue;
 
@@ -161,6 +176,11 @@ function formatContentHtml(html: string): string {
     } else {
       formatted.push(`<p style="margin:0.4em 0">${withMarkers}</p>`);
     }
+
+    // Insert translation placeholder after the corresponding line
+    if (tlMap?.has(currentLineIndex)) {
+      formatted.push(`%%TL_${currentLineIndex}%%`);
+    }
   }
 
   // Close footnotes div if opened
@@ -168,7 +188,32 @@ function formatContentHtml(html: string): string {
     formatted.push('</div>');
   }
 
-  return formatted.join('\n');
+  let result = formatted.join('\n');
+  if (enableWordWrap) result = wrapWords(result);
+
+  // Replace translation placeholders with actual HTML (after wrapWords to avoid wrapping translation text)
+  if (tlMap && translationStyle) {
+    result = result.replace(/%%TL_(\d+)%%/g, (_, idx) => {
+      const text = tlMap.get(parseInt(idx));
+      return text
+        ? `<p dir="auto" style="${translationStyle}">${text}</p>`
+        : '';
+    });
+  }
+
+  return result;
+}
+
+/** Wrap Arabic word tokens in clickable spans (operates on text nodes only). */
+function wrapWords(html: string): string {
+  return html.replace(
+    /(>[^<]*)/g,
+    (_, textNode: string) =>
+      textNode.replace(
+        /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]+/g,
+        (word: string) => `<span class="word" data-word="${word}">${word}</span>`
+      )
+  );
 }
 
 const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
@@ -181,11 +226,13 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
 
 export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPrintedPage, toc = [] }: HtmlReaderProps) {
   const router = useRouter();
-  const { t, dir } = useTranslation();
+  const { t, dir, locale } = useTranslation();
   const { resolvedTheme } = useTheme();
+  const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [fontSize, setFontSize] = useState(1.1);
+  const [wordTapEnabled, setWordTapEnabled] = useState(true);
 
   const [currentPage, setCurrentPage] = useState<number>(
     initialPageNumber ? parseInt(initialPageNumber, 10) : 0
@@ -196,6 +243,60 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   const [pageInputValue, setPageInputValue] = useState(
     initialPageNumber || "0"
   );
+  const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
+  const [translation, setTranslation] = useState<{ index: number; translation: string }[] | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
+
+  // Analytics: page view duration tracking
+  const pageViewStartRef = useRef<number>(Date.now());
+  const currentPageRef = useRef<number>(currentPage);
+
+  // Track "open" once on mount
+  useEffect(() => {
+    trackBookEvent(bookMetadata.id, "open", currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Track "page_view" duration when page changes
+  useEffect(() => {
+    const prevPage = currentPageRef.current;
+    const duration = Date.now() - pageViewStartRef.current;
+    if (prevPage !== currentPage && duration > 500) {
+      trackBookEvent(bookMetadata.id, "page_view", prevPage, duration);
+    }
+    currentPageRef.current = currentPage;
+    pageViewStartRef.current = Date.now();
+  }, [currentPage, bookMetadata.id]);
+
+  // Track final page_view on unload / visibility change / unmount
+  useEffect(() => {
+    const sendFinalDuration = () => {
+      const duration = Date.now() - pageViewStartRef.current;
+      if (duration > 500) {
+        trackBookEvent(bookMetadata.id, "page_view", currentPageRef.current, duration);
+      }
+      pageViewStartRef.current = Date.now();
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        sendFinalDuration();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      sendFinalDuration();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      sendFinalDuration();
+    };
+  }, [bookMetadata.id]);
 
   // Page cache
   const cacheRef = useRef<Map<number, PageData>>(new Map());
@@ -276,6 +377,13 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
     contentRef.current?.scrollTo(0, 0);
   }, [pageData]);
 
+  // Close word popover and reset translation on page change
+  useEffect(() => {
+    setSelectedWord(null);
+    setTranslation(null);
+    setShowTranslation(false);
+  }, [currentPage]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -316,17 +424,36 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
     router.back();
   };
 
-  // Handle clicks on [data-page] links in content (e.g. TOC entries on overview page)
+  // Handle clicks on [data-page] links and word taps in content
   const handleContentClick = useCallback((e: React.MouseEvent) => {
-    const target = (e.target as HTMLElement).closest("[data-page]") as HTMLElement | null;
-    if (target) {
+    // Handle [data-page] navigation links (e.g. TOC entries on overview page)
+    const pageTarget = (e.target as HTMLElement).closest("[data-page]") as HTMLElement | null;
+    if (pageTarget) {
       e.preventDefault();
-      const page = parseInt(target.dataset.page || "", 10);
+      const page = parseInt(pageTarget.dataset.page || "", 10);
       if (!isNaN(page) && page >= 0 && page < totalPages) {
         setCurrentPage(page);
       }
+      return;
     }
-  }, [totalPages]);
+
+    // Handle word taps
+    const wordTarget = (e.target as HTMLElement).closest(".word") as HTMLElement | null;
+    if (wordTarget?.dataset.word) {
+      const rect = wordTarget.getBoundingClientRect();
+      setSelectedWord({
+        word: wordTarget.dataset.word,
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        wordBottom: rect.bottom,
+      });
+      trackBookEvent(bookMetadata.id, "word_lookup", currentPage, undefined, wordTarget.dataset.word);
+      return;
+    }
+
+    // Click on empty area → close popover
+    setSelectedWord(null);
+  }, [totalPages, bookMetadata.id, currentPage]);
 
   const handlePageInputSubmit = (e: React.FormEvent | React.FocusEvent) => {
     e.preventDefault();
@@ -349,6 +476,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
       const data = await res.json();
       if (data.url) {
         window.open(data.url, "_blank", "noopener");
+        trackBookEvent(bookMetadata.id, "pdf_open", currentPage);
       }
     } catch {
       // Silent failure — button just stops loading
@@ -357,10 +485,42 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
     }
   }, [bookMetadata.id, currentPage, pdfLoading]);
 
+  const handleTranslate = useCallback(async () => {
+    if (translation && translation.length > 0) {
+      setShowTranslation((v) => !v);
+      return;
+    }
+    setIsTranslating(true);
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+      const lang = locale === "ar" ? "en" : locale;
+      const res = await fetch(`/api/pages/${bookMetadata.id}/${currentPage}/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+        body: JSON.stringify({ lang, model: config.pageTranslationModel }),
+      });
+      if (!res.ok) throw new Error("Translation failed");
+      const data = await res.json();
+      if (!data.paragraphs || data.paragraphs.length === 0) {
+        throw new Error("No translatable content");
+      }
+      setTranslation(data.paragraphs);
+      setShowTranslation(true);
+    } catch {
+      // Reset so user can retry
+      setTranslation(null);
+      setShowTranslation(false);
+    } finally {
+      setIsTranslating(false);
+    }
+  }, [translation, locale, bookMetadata.id, currentPage, config.pageTranslationModel]);
+
   const isDark = resolvedTheme === "dark";
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
+      {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
+      {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
       {/* Header */}
       <div className="flex items-center gap-2 md:gap-3 border-b bg-background px-2 md:px-4 py-2 md:py-3 shrink-0">
         <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0">
@@ -499,6 +659,39 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               </button>
             </div>
           </div>
+
+          {/* Word tap toggle */}
+          <button
+            onClick={() => {
+              setWordTapEnabled((v) => !v);
+              setSelectedWord(null);
+            }}
+            className="w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
+          >
+            <span>{t("reader.wordTap")}</span>
+            <div
+              className={`w-9 h-5 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"}`}
+            >
+              <div
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${wordTapEnabled ? "right-0.5" : "right-[calc(100%-1.125rem)]"}`}
+              />
+            </div>
+          </button>
+
+          {/* Translate */}
+          <button
+            onClick={() => {
+              handleTranslate();
+              if (translation && translation.length > 0) setShowSidebar(false);
+            }}
+            disabled={isTranslating}
+            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+          >
+            {isTranslating
+              ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              : <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />}
+            <span>{showTranslation ? t("reader.hideTranslation") : t("reader.translate")}</span>
+          </button>
         </div>
 
         {/* Table of Contents section */}
@@ -567,10 +760,25 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               fontSize: `${fontSize}rem`,
               color: isDark ? "#fafaf9" : "#0a0a0a",
             }}
-            dangerouslySetInnerHTML={{ __html: formatContentHtml(pageData.contentHtml) }}
+            dangerouslySetInnerHTML={{
+              __html: formatContentHtml(
+                pageData.contentHtml,
+                wordTapEnabled,
+                showTranslation && translation && translation.length > 0 ? translation : undefined,
+                `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
+              ),
+            }}
           />
         )}
       </div>
+
+      {selectedWord && (
+        <WordDefinitionPopover
+          word={selectedWord.word}
+          position={{ x: selectedWord.x, y: selectedWord.y, wordBottom: selectedWord.wordBottom }}
+          onClose={() => setSelectedWord(null)}
+        />
+      )}
     </div>
   );
 }
