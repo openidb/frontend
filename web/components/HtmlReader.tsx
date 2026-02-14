@@ -246,7 +246,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
   const [translation, setTranslation] = useState<{ index: number; translation: string }[] | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
-  const [showTranslation, setShowTranslation] = useState(false);
+  const [autoTranslate, setAutoTranslate] = useState(false);
+  const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
 
   // Analytics: page view duration tracking
   const pageViewStartRef = useRef<number>(Date.now());
@@ -381,7 +382,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   useEffect(() => {
     setSelectedWord(null);
     setTranslation(null);
-    setShowTranslation(false);
   }, [currentPage]);
 
   // Keyboard navigation
@@ -485,35 +485,58 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
     }
   }, [bookMetadata.id, currentPage, pdfLoading]);
 
-  const handleTranslate = useCallback(async () => {
-    if (translation && translation.length > 0) {
-      setShowTranslation((v) => !v);
+  // Auto-translate effect: fetches translation when toggle is on, with 1s debounce
+  useEffect(() => {
+    if (!autoTranslate || !pageData) return;
+
+    const page = currentPage;
+
+    // Check cache first
+    const cached = translationCacheRef.current.get(page);
+    if (cached) {
+      setTranslation(cached);
       return;
     }
+
+    let cancelled = false;
     setIsTranslating(true);
-    try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
-      const lang = locale === "ar" ? "en" : locale;
-      const res = await fetch(`/api/pages/${bookMetadata.id}/${currentPage}/translate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-        body: JSON.stringify({ lang, model: config.pageTranslationModel }),
-      });
-      if (!res.ok) throw new Error("Translation failed");
-      const data = await res.json();
-      if (!data.paragraphs || data.paragraphs.length === 0) {
-        throw new Error("No translatable content");
+
+    const timer = setTimeout(async () => {
+      try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+        const lang = locale === "ar" ? "en" : locale;
+        const res = await fetch(`/api/pages/${bookMetadata.id}/${page}/translate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+          body: JSON.stringify({ lang, model: config.pageTranslationModel }),
+        });
+        if (!res.ok) throw new Error("Translation failed");
+        const data = await res.json();
+        if (!data.paragraphs || data.paragraphs.length === 0) {
+          throw new Error("No translatable content");
+        }
+        // Always cache, even if user navigated away
+        translationCacheRef.current.set(page, data.paragraphs);
+        if (!cancelled) {
+          setTranslation(data.paragraphs);
+        }
+      } catch {
+        if (!cancelled) {
+          setTranslation(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsTranslating(false);
+        }
       }
-      setTranslation(data.paragraphs);
-      setShowTranslation(true);
-    } catch {
-      // Reset so user can retry
-      setTranslation(null);
-      setShowTranslation(false);
-    } finally {
+    }, 1000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
       setIsTranslating(false);
-    }
-  }, [translation, locale, bookMetadata.id, currentPage, config.pageTranslationModel]);
+    };
+  }, [currentPage, autoTranslate, pageData, locale, bookMetadata.id, config.pageTranslationModel]);
 
   const isDark = resolvedTheme === "dark";
 
@@ -535,6 +558,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
           </p>
         </div>
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
+          {isTranslating && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full animate-in fade-in">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span className="hidden sm:inline">{t("reader.translate")}…</span>
+            </span>
+          )}
           {pageData && pageData.volumeNumber > 1 && (
             <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">
               {t("reader.volume")} {pageData.volumeNumber}
@@ -678,19 +707,24 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             </div>
           </button>
 
-          {/* Translate */}
+          {/* Auto-translate toggle */}
           <button
-            onClick={() => {
-              handleTranslate();
-              if (translation && translation.length > 0) setShowSidebar(false);
-            }}
-            disabled={isTranslating}
-            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            onClick={() => setAutoTranslate((v) => !v)}
+            className="w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
           >
-            {isTranslating
-              ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-              : <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />}
-            <span>{showTranslation ? t("reader.hideTranslation") : t("reader.translate")}</span>
+            <span className="flex items-center gap-2">
+              {isTranslating
+                ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                : <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              {t("reader.translate")}
+            </span>
+            <div
+              className={`w-9 h-5 rounded-full transition-colors relative ${autoTranslate ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"}`}
+            >
+              <div
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${autoTranslate ? "right-0.5" : "right-[calc(100%-1.125rem)]"}`}
+              />
+            </div>
           </button>
         </div>
 
@@ -764,7 +798,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               __html: formatContentHtml(
                 pageData.contentHtml,
                 wordTapEnabled,
-                showTranslation && translation && translation.length > 0 ? translation : undefined,
+                autoTranslate && translation && translation.length > 0 ? translation : undefined,
                 `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
               ),
             }}
