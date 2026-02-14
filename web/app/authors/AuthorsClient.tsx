@@ -74,8 +74,8 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
 
   // Fetch authors from API when search, filters, or pagination changes
   useEffect(() => {
-    // No active filters — reset to server-provided initial data
-    if (debouncedSearch === "" && selectedCenturies.length === 0) {
+    // No active filters and on page 1 — reset to server-provided initial data
+    if (debouncedSearch === "" && selectedCenturies.length === 0 && pagination.page === 1) {
       setAuthors(initialAuthors);
       setPagination(initialPagination);
       return;

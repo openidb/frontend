@@ -171,10 +171,16 @@ export default function BooksClient({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch books from API when search, filters, or pagination changes
+  // Compute the bookTitleLang param to pass to API (language code or undefined)
+  const bookTitleLang = useMemo(() => {
+    if (effectiveBookTitleDisplay === "none" || effectiveBookTitleDisplay === "transliteration") return undefined;
+    return effectiveBookTitleDisplay;
+  }, [effectiveBookTitleDisplay]);
+
+  // Fetch books from API when search, filters, pagination, or title language changes
   useEffect(() => {
-    // No active filters — reset to server-provided initial data
-    if (debouncedSearch === "" && selectedCategories.length === 0 && selectedCenturies.length === 0) {
+    // No active filters, no translation needed, and on page 1 — use server-provided initial data
+    if (debouncedSearch === "" && selectedCategories.length === 0 && selectedCenturies.length === 0 && !bookTitleLang && pagination.page === 1) {
       setBooks(initialBooks);
       setPagination(initialPagination);
       return;
@@ -196,6 +202,9 @@ export default function BooksClient({
         }
         if (selectedCenturies.length > 0) {
           params.set("century", selectedCenturies.join(","));
+        }
+        if (bookTitleLang) {
+          params.set("bookTitleLang", bookTitleLang);
         }
 
         const response = await fetch(`/api/books?${params}`);
@@ -219,14 +228,14 @@ export default function BooksClient({
     };
 
     fetchBooks();
-  }, [pagination.page, pagination.limit, debouncedSearch, selectedCategories, selectedCenturies]);
+  }, [pagination.page, pagination.limit, debouncedSearch, selectedCategories, selectedCenturies, bookTitleLang]);
 
-  // Reset to page 1 when search or filters change
+  // Reset to page 1 when search, filters, or title language change
   useEffect(() => {
-    if (debouncedSearch !== "" || selectedCategories.length > 0 || selectedCenturies.length > 0) {
+    if (debouncedSearch !== "" || selectedCategories.length > 0 || selectedCenturies.length > 0 || bookTitleLang) {
       setPagination((prev) => ({ ...prev, page: 1 }));
     }
-  }, [debouncedSearch, selectedCategories, selectedCenturies]);
+  }, [debouncedSearch, selectedCategories, selectedCenturies, bookTitleLang]);
 
   const handlePrevPage = () => {
     if (pagination.page > 1) {
