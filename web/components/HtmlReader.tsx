@@ -10,6 +10,8 @@ import { useTheme } from "@/lib/theme";
 import { useAppConfig } from "@/lib/config";
 import { WordDefinitionPopover } from "./WordDefinitionPopover";
 import { trackBookEvent } from "@/lib/analytics";
+import { motion, AnimatePresence } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 interface BookMetadata {
   id: string;
@@ -46,6 +48,7 @@ interface HtmlReaderProps {
   bookMetadata: BookMetadata;
   initialPageNumber?: string;
   totalPages: number;
+  totalVolumes: number;
   maxPrintedPage: number;
   toc?: TocEntry[];
 }
@@ -101,6 +104,7 @@ function formatContentHtml(
   enableWordWrap = true,
   translations?: { index: number; translation: string }[],
   translationStyle?: string,
+  translationBanner?: string,
 ): string {
   // Build translation lookup by line index
   const tlMap = translations ? new Map(translations.map(t => [t.index, t.translation])) : undefined;
@@ -130,7 +134,7 @@ function formatContentHtml(
     // Section separator: * * * * *
     if (/^[\s*]+$/.test(trimmed) && trimmed.includes('*')) {
       formatted.push(
-        '<p style="text-align:center;margin:1.2em 0;letter-spacing:0.5em;opacity:0.5">* * * * *</p>'
+        '<p style="text-align:center;margin:1.5em 0;letter-spacing:0.4em;opacity:0.35;font-size:0.9em">* * * * *</p>'
       );
       continue;
     }
@@ -139,7 +143,7 @@ function formatContentHtml(
     if (/^_{3,}$/.test(trimmed)) {
       inFootnotes = true;
       formatted.push(
-        '<div style="margin-top:2em;padding-top:1.5em;border-top:1px solid currentColor;opacity:0.65">'
+        '<div style="margin-top:2em;padding-top:1.5em;text-align:center"><span style="display:inline-block;width:3em;border-top:1px solid currentColor;opacity:0.4"></span></div><div style="opacity:0.85">'
       );
       continue;
     }
@@ -164,7 +168,7 @@ function formatContentHtml(
       const styled = withMarkers
         .replace(
           /^(.*?)<span\s+data-type=['"]title['"][^>]*(?:id=['"][^'"]*['"])?\s*>/gi,
-          '<h3 style="font-size:1.3em;font-weight:bold;margin:1.2em 0 0.6em;color:inherit">$1'
+          '<h3 style="font-size:1.3em;font-weight:bold;margin:1.5em 0 0.8em;padding-bottom:0.4em;border-bottom:2px solid currentColor;opacity:1;color:inherit">$1'
         )
         .replace(/<\/span>(.*)$/i, (_, after) => {
           const rest = after.trim();
@@ -174,7 +178,7 @@ function formatContentHtml(
         });
       formatted.push(styled);
     } else {
-      formatted.push(`<p style="margin:0.4em 0">${withMarkers}</p>`);
+      formatted.push(`<p style="margin:0.5em 0 0.6em">${withMarkers}</p>`);
     }
 
     // Insert translation placeholder after the corresponding line
@@ -193,11 +197,14 @@ function formatContentHtml(
 
   // Replace translation placeholders with actual HTML (after wrapWords to avoid wrapping translation text)
   if (tlMap && translationStyle) {
+    // Prepend banner before all content
+    if (translationBanner) {
+      result = `${translationBanner}${result}`;
+    }
     result = result.replace(/%%TL_(\d+)%%/g, (_, idx) => {
       const text = tlMap.get(parseInt(idx));
-      return text
-        ? `<p dir="auto" style="${translationStyle}">${text}</p>`
-        : '';
+      if (!text) return '';
+      return `<p dir="auto" style="${translationStyle}">${text}</p>`;
     });
   }
 
@@ -224,7 +231,7 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPrintedPage, toc = [] }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, toc = [] }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { resolvedTheme } = useTheme();
@@ -249,6 +256,24 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   const [autoTranslate, setAutoTranslate] = useState(false);
   const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
+
+  // Hydrate reader preferences from localStorage after mount
+  const prefsHydrated = useRef(false);
+  useEffect(() => {
+    try {
+      const v = JSON.parse(localStorage.getItem("readerPrefs") || "{}");
+      if (v.fontSize != null) setFontSize(v.fontSize);
+      if (v.wordTapEnabled != null) setWordTapEnabled(v.wordTapEnabled);
+      if (v.autoTranslate != null) setAutoTranslate(v.autoTranslate);
+    } catch {}
+    prefsHydrated.current = true;
+  }, []);
+
+  // Persist reader preferences to localStorage on change
+  useEffect(() => {
+    if (!prefsHydrated.current) return;
+    try { localStorage.setItem("readerPrefs", JSON.stringify({ fontSize, wordTapEnabled, autoTranslate })); } catch {}
+  }, [fontSize, wordTapEnabled, autoTranslate]);
 
   // Analytics: page view duration tracking
   const pageViewStartRef = useRef<number>(Date.now());
@@ -552,13 +577,25 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   }, [currentPage, autoTranslate, pageData, locale, bookMetadata.id]);
 
   const isDark = resolvedTheme === "dark";
+  const prefersReducedMotion = useReducedMotion();
+
+  const pageVariants = prefersReducedMotion
+    ? undefined
+    : {
+        initial: { opacity: 0, y: 12 },
+        animate: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
+        exit: { opacity: 0, transition: { duration: 0.1 } },
+      };
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
       {/* Header */}
-      <div className="flex items-center gap-2 md:gap-3 border-b bg-background px-2 md:px-4 py-2 md:py-3 shrink-0">
+      <div
+        className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 md:px-4 py-2 md:py-3 shrink-0"
+        style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
+      >
         <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0">
           <ArrowLeft className="h-5 w-5 rtl:scale-x-[-1]" />
         </Button>
@@ -581,61 +618,75 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               <span className="hidden sm:inline">{t("reader.translate")}…</span>
             </span>
           )}
-          {pageData && pageData.volumeNumber > 1 && (
-            <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">
-              {t("reader.volume")} {pageData.volumeNumber}
-            </span>
-          )}
 
-          <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
-            <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">
-              {t("reader.page")}
-            </span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={pageInputValue}
-              onChange={(e) => setPageInputValue(e.target.value)}
-              onBlur={handlePageInputSubmit}
-              className="w-10 md:w-12 text-xs md:text-sm text-muted-foreground text-center bg-transparent border-b border-border focus:border-primary focus:outline-none"
-            />
-            <span className="text-xs md:text-sm text-muted-foreground hidden md:inline">
-              {t("reader.of")} {maxPrintedPage}
-            </span>
-          </form>
+          <div className="flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
+            <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={goToNextPage}
+                disabled={currentPage >= totalPages - 1}
+                title={t("reader.nextPage")}
+                className="h-7 w-7"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </motion.div>
+            <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
+              {pageData && totalVolumes > 1 && pageData.volumeNumber > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {t("reader.volume")} {pageData.volumeNumber} ·
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {t("reader.page")}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={pageInputValue}
+                onChange={(e) => setPageInputValue(e.target.value)}
+                onBlur={handlePageInputSubmit}
+                className="w-10 text-xs text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
+              />
+              <span className="text-xs text-muted-foreground hidden md:inline">
+                / {maxPrintedPage}
+              </span>
+            </form>
+            <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={goToPrevPage}
+                disabled={currentPage <= 0}
+                title={t("reader.prevPage")}
+                className="h-7 w-7"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          </div>
 
-          <div className="flex items-center gap-1 md:gap-2 ml-1 md:ml-3" dir="ltr">
+          <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
             <Button
-              variant="outline"
-              onClick={goToNextPage}
-              disabled={currentPage >= totalPages - 1}
-              title={t("reader.nextPage")}
-              className="transition-transform active:scale-95 h-8 px-2 md:h-9 md:px-3"
-            >
-              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-xs md:text-sm">{t("reader.next")}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={goToPrevPage}
-              disabled={currentPage <= 0}
-              title={t("reader.prevPage")}
-              className="transition-transform active:scale-95 h-8 px-2 md:h-9 md:px-3"
-            >
-              <span className="text-xs md:text-sm">{t("reader.prev")}</span>
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
-            </Button>
-            <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={() => setShowSidebar(!showSidebar)}
               title={t("reader.chapters")}
-              className="transition-transform active:scale-95 h-8 w-8 md:h-9 md:w-9"
+              className="h-8 w-8 md:h-9 md:w-9"
             >
               <EllipsisVertical className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-          </div>
+          </motion.div>
         </div>
+      </div>
+
+      {/* Reading progress */}
+      <div className="h-0.5 bg-muted shrink-0">
+        <div
+          className="h-full bg-brand transition-all duration-300 ease-out"
+          style={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
+        />
       </div>
 
       {/* Sidebar overlay */}
@@ -647,13 +698,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
       )}
 
       {/* Options panel */}
-      <div
+      <AnimatePresence>
+      {showSidebar && (
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
         dir="rtl"
-        className={`absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-72 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-background rounded-lg border shadow-xl z-30 flex flex-col transition-all duration-200 ${
-          showSidebar
-            ? 'opacity-100 pointer-events-auto'
-            : 'opacity-0 pointer-events-none'
-        }`}
+        className="absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-72 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-[hsl(var(--reader-bg))] rounded-lg border shadow-xl z-30 flex flex-col"
       >
         {/* Links section */}
         <div className="p-3 space-y-1">
@@ -716,7 +769,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
           >
             <span>{t("reader.wordDefinitions")}</span>
             <div
-              className={`w-9 h-5 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"}`}
+              className={`w-9 h-5 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-muted-foreground/20"}`}
             >
               <div
                 className={`absolute top-0.5 h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${wordTapEnabled ? "right-0.5" : "right-[calc(100%-1.125rem)]"}`}
@@ -736,7 +789,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
               {t("reader.translate")}
             </span>
             <div
-              className={`w-9 h-5 rounded-full transition-colors relative ${autoTranslate ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"}`}
+              className={`w-9 h-5 rounded-full transition-colors relative ${autoTranslate ? "bg-primary" : "bg-muted-foreground/20"}`}
             >
               <div
                 className={`absolute top-0.5 h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${autoTranslate ? "right-0.5" : "right-[calc(100%-1.125rem)]"}`}
@@ -759,6 +812,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
                   const depth = entry.level;
                   const bullets = ["●", "○", "▪", "◦", "▸"];
                   const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
+                  const isActive = entry.page <= currentPage &&
+                    (index === toc.length - 1 || toc[index + 1].page > currentPage);
 
                   return (
                     <button
@@ -767,7 +822,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
                         setCurrentPage(entry.page);
                         setShowSidebar(false);
                       }}
-                      className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+                      className={`w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
                       style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
                     >
                       {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
@@ -779,7 +834,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             </div>
           </>
         )}
-      </div>
+      </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* Content area */}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
@@ -788,39 +845,67 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
         className="flex-1 overflow-y-auto"
         dir="rtl"
         onClick={handleContentClick}
+        style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
       >
-        {isLoading && (
-          <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {isLoading && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex items-center justify-center h-full"
+            >
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </motion.div>
+          )}
 
-        {error && !isLoading && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">{error}</p>
-          </div>
-        )}
+          {error && !isLoading && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center justify-center h-full"
+            >
+              <p className="text-muted-foreground">{error}</p>
+            </motion.div>
+          )}
 
-        {pageData && !isLoading && (
-          <div
-            className="max-w-3xl mx-auto px-4 md:px-8 py-6 md:py-10"
-            style={{
-              fontFamily:
-                '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
-              lineHeight: 2.0,
-              fontSize: `${fontSize}rem`,
-              color: isDark ? "#fafaf9" : "#0a0a0a",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: formatContentHtml(
-                pageData.contentHtml,
-                wordTapEnabled,
-                autoTranslate && translation && translation.length > 0 ? translation : undefined,
-                `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
-              ),
-            }}
-          />
-        )}
+          {pageData && !isLoading && (
+            <motion.div
+              key={currentPage}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="max-w-3xl mx-auto px-4 md:px-12 py-6 md:py-10"
+              style={{
+                fontFamily:
+                  '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
+                lineHeight: 2.0,
+                fontSize: `${fontSize}rem`,
+                color: 'hsl(var(--reader-fg))',
+              }}
+            >
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: formatContentHtml(
+                    pageData.contentHtml,
+                    wordTapEnabled,
+                    autoTranslate && translation && translation.length > 0 ? translation : undefined,
+                    `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
+                    autoTranslate && translation && translation.length > 0
+                      ? `<p dir="auto" style="font-family:system-ui,-apple-system,sans-serif;font-size:0.8rem;color:#e67e22;line-height:1.5;margin:0 0 0.75em;padding:0.5em 0.75em;border-radius:4px;background:rgba(230,126,34,0.08)"><strong>${t('reader.llmTranslationLabel')}</strong> ${t('reader.llmTranslationWarning')}</p>`
+                      : undefined,
+                  ),
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {selectedWord && (

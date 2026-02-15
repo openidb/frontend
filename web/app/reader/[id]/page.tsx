@@ -29,6 +29,7 @@ interface BookData {
     titleLatin: string;
     titleTranslated?: string | null;
     filename: string;
+    totalVolumes: number;
     totalPages: number | null;
     maxPrintedPage: number | null;
     tableOfContents?: TocEntry[] | null;
@@ -51,11 +52,11 @@ export async function generateMetadata({
     const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`);
     const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
     return {
-      title: `${title} - Sabeel`,
+      title: `${title} - OpenIDB`,
       description: `Read ${title} by ${data.book?.author?.nameArabic || ""}`,
     };
   } catch {
-    return { title: "Reader - Sabeel" };
+    return { title: "Reader - OpenIDB" };
   }
 }
 
@@ -98,6 +99,7 @@ export default async function ReaderPage({
       bookMetadata={bookMetadata}
       initialPageNumber={pn}
       totalPages={book.totalPages || 0}
+      totalVolumes={book.totalVolumes || 1}
       maxPrintedPage={book.maxPrintedPage ?? book.totalPages ?? 0}
       toc={book.tableOfContents || []}
     />
