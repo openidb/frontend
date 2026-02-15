@@ -107,6 +107,14 @@ Requires the [api](https://github.com/openidb/api) server running on port 4000.
 | `INTERNAL_API_SECRET` | — | Shared secret for internal API calls (must match openidb) |
 | `SITE_URL` | `https://openidb.org` | Public URL (sitemap, OpenGraph) |
 
+## Attribution
+
+All data is served by the [api](https://github.com/openidb/api) server. See the [root README](https://github.com/openidb/openidb#attribution) for full attribution of all data sources, including:
+
+- **Quran** — [Al Quran Cloud](https://alquran.cloud/), [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api), [spa5k/tafsir_api](https://github.com/spa5k/tafsir_api), [EveryAyah.com](https://everyayah.com/)
+- **Hadith** — [sunnah.com](https://sunnah.com/) (17 collections), [hadithunlocked.com](https://hadithunlocked.com/) (7 collections)
+- **Books & Dictionaries** — [Turath.io](https://turath.io/), [Arramooz](https://github.com/linuxscout/arramooz)
+
 ## Part of [OpenIDB](https://github.com/openidb)
 
 This is the frontend. See also:
