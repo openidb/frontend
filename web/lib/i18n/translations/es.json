@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Buscar en el Corán y Hadiz",
+    "subtitle": "Explora el Corán y el Hadiz",
+    "disclaimer": "El Corán y el hadiz deben estudiarse bajo la guía de eruditos cualificados, ya que las normas religiosas dependen de un contexto más amplio. Las traducciones pueden no captar completamente el significado del árabe original y no deben tomarse de forma aislada.",
     "placeholder": "Buscar textos arabes...",
     "refineSearch": "Refinar",
     "refining": "Refinando...",
@@ -314,6 +315,8 @@
     "prev": "Ant",
     "translate": "Traducir",
     "hideTranslation": "Ocultar traduccion",
+    "llmTranslationLabel": "[Traducción IA]",
+    "llmTranslationWarning": "Esta traducción se genera automáticamente y puede no reflejar con precisión el significado previsto por el autor.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Autor",

@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Buscar no Alcorão e Hadith",
+    "subtitle": "Explore o Alcorão e o Hadith",
+    "disclaimer": "O Alcorão e o hadith devem ser estudados sob orientação de estudiosos qualificados, pois as normas religiosas dependem de um contexto mais amplo. As traduções podem não captar plenamente o significado do árabe original e não devem ser usadas isoladamente.",
     "placeholder": "Buscar textos arabes...",
     "refineSearch": "Refinar",
     "refining": "Refinando...",
@@ -314,6 +315,8 @@
     "prev": "Ant",
     "translate": "Traduzir",
     "hideTranslation": "Ocultar traducao",
+    "llmTranslationLabel": "[Tradução IA]",
+    "llmTranslationWarning": "Esta tradução é gerada automaticamente e pode não refletir com precisão o significado pretendido pelo autor.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Autor",

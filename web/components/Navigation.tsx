@@ -9,18 +9,39 @@ import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/search", icon: Search, labelKey: "nav.search" as const },
-  { href: "/", icon: BookOpen, labelKey: "nav.books" as const },
-  { href: "/authors", icon: Users, labelKey: "nav.authors" as const },
-  { href: "/config", icon: Settings2, labelKey: "nav.config" as const },
-];
+const iconAnimations = {
+  // Magnifying glass tilts like it's scanning
+  search: {
+    rest: { rotate: 0 },
+    hover: { rotate: -15 },
+    tap: { rotate: -15 },
+  },
+  // Book tilts like a cover opening
+  books: {
+    rest: { rotate: 0, y: 0 },
+    hover: { rotate: -12, y: -1 },
+    tap: { rotate: -12, y: -1 },
+  },
+  // People bounce up
+  authors: {
+    rest: { y: 0 },
+    hover: { y: -2 },
+    tap: { y: -2 },
+  },
+  // Gear rotates
+  config: {
+    rest: { rotate: 0 },
+    hover: { rotate: 90 },
+    tap: { rotate: 90 },
+  },
+} as const;
 
-const iconVariants = {
-  rest: { scale: 1 },
-  hover: { scale: 1.08 },
-  tap: { scale: 0.95 },
-};
+const navItems = [
+  { href: "/search", icon: Search, labelKey: "nav.search" as const, animation: "search" as const },
+  { href: "/", icon: BookOpen, labelKey: "nav.books" as const, animation: "books" as const },
+  { href: "/authors", icon: Users, labelKey: "nav.authors" as const, animation: "authors" as const },
+  { href: "/config", icon: Settings2, labelKey: "nav.config" as const, animation: "config" as const },
+];
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -53,7 +74,7 @@ export function DesktopNavigation() {
       </PrefetchLink>
 
       <nav className="space-y-2 flex-1">
-        {navItems.map(({ href, icon: Icon, labelKey }) => {
+        {navItems.map(({ href, icon: Icon, labelKey, animation }) => {
           const active = isActive(pathname, href);
           return (
             <motion.div
@@ -75,8 +96,8 @@ export function DesktopNavigation() {
                 )}
                 <motion.span
                   className="relative inline-flex"
-                  variants={prefersReducedMotion ? undefined : iconVariants}
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  variants={prefersReducedMotion ? undefined : iconAnimations[animation]}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
                   <Icon className="h-4 w-4" />
                 </motion.span>
@@ -102,7 +123,7 @@ export function MobileNavigation() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 z-50">
-      {navItems.map(({ href, icon: Icon, labelKey }) => {
+      {navItems.map(({ href, icon: Icon, labelKey, animation }) => {
         const active = isActive(pathname, href);
         return (
           <motion.div
@@ -124,8 +145,8 @@ export function MobileNavigation() {
               )}
               <motion.span
                 className="relative inline-flex"
-                variants={prefersReducedMotion ? undefined : iconVariants}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                variants={prefersReducedMotion ? undefined : iconAnimations[animation]}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
                 <Icon className="h-5 w-5" />
               </motion.span>

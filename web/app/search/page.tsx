@@ -12,12 +12,12 @@ export async function generateMetadata({
   if (q) {
     const safeQ = q.slice(0, 100);
     return {
-      title: `${safeQ} - Sabeel Search`,
+      title: `${safeQ} - OpenIDB`,
       description: `Search results for "${safeQ}" across Quran and Hadith`,
     };
   }
   return {
-    title: "Search - Sabeel",
+    title: "Search - OpenIDB",
     description: "Search across Quran and Hadith",
   };
 }

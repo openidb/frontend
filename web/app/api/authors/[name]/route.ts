@@ -9,7 +9,9 @@ export async function GET(
 ) {
   try {
     const { name } = await context.params;
-    const res = await fetchAPIRaw(`/api/books/authors/${encodeURIComponent(name)}`);
+    const { searchParams } = new URL(request.url);
+    const qs = searchParams.toString();
+    const res = await fetchAPIRaw(`/api/books/authors/${encodeURIComponent(name)}${qs ? `?${qs}` : ""}`);
     return new Response(res.body, {
       status: res.status,
       headers: { "Content-Type": "application/json" },

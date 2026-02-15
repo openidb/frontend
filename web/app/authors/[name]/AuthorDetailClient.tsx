@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useMemo } from "react";
 import { PrefetchLink } from "@/components/PrefetchLink";
 import {
   Table,
@@ -54,9 +55,49 @@ export default function AuthorDetailClient({
   books,
   metadata,
 }: AuthorDetailClientProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { config } = useAppConfig();
-  const { dateCalendar } = config;
+  const { dateCalendar, bookTitleDisplay } = config;
+
+  // Track translated titles keyed by book ID
+  const [translatedTitles, setTranslatedTitles] = useState<Record<string, string>>({});
+
+  // Compute the bookTitleLang param to pass to API
+  const bookTitleLang = useMemo(() => {
+    if (bookTitleDisplay === "none" || bookTitleDisplay === "transliteration") return undefined;
+    return locale === "ar" ? "en" : locale;
+  }, [bookTitleDisplay, locale]);
+
+  // Fetch translated titles when bookTitleDisplay is "translation"
+  useEffect(() => {
+    if (!bookTitleLang || !metadata?.id) return;
+
+    const fetchTranslations = async () => {
+      try {
+        const res = await fetch(`/api/authors/${encodeURIComponent(metadata.id)}?bookTitleLang=${encodeURIComponent(bookTitleLang)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const titles: Record<string, string> = {};
+        for (const book of data.author?.books ?? []) {
+          if (book.titleTranslated) {
+            titles[book.id] = book.titleTranslated;
+          }
+        }
+        setTranslatedTitles(titles);
+      } catch {
+        // Silently fail — will fall back to titleLatin
+      }
+    };
+
+    fetchTranslations();
+  }, [bookTitleLang, metadata?.id]);
+
+  // Helper to get secondary title based on display setting
+  const getSecondaryTitle = (book: Book): string | null => {
+    if (bookTitleDisplay === "none") return null;
+    if (bookTitleDisplay === "transliteration") return book.titleLatin;
+    return translatedTitles[book.id] || book.titleLatin;
+  };
 
   // Format author death year using centralized utility
   const authorDeathYearDisplay = metadata
@@ -74,10 +115,10 @@ export default function AuthorDetailClient({
     : "";
   if (books.length === 0) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <PrefetchLink
           href="/authors"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 rtl:scale-x-[-1]" />
           {t("authors.backToAuthors")}
@@ -89,10 +130,10 @@ export default function AuthorDetailClient({
 
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <PrefetchLink
         href="/authors"
-        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4 rtl:scale-x-[-1]" />
         {t("authors.backToAuthors")}
@@ -107,7 +148,7 @@ export default function AuthorDetailClient({
 
       {/* Author Biographical Information */}
       {metadata && (
-        <div className="mb-8 rounded-lg border bg-card p-6 text-card-foreground">
+        <div className="mb-8 rounded-2xl bg-muted/25 p-6">
           {/* Dates and Stats */}
           <div className="mb-4 flex flex-wrap gap-6 text-sm" dir="rtl">
             {authorDatesDisplay && (
@@ -131,7 +172,11 @@ export default function AuthorDetailClient({
         </div>
       )}
 
-      <div className="rounded-md border">
+      <div className="mb-2 text-xs uppercase tracking-wider font-medium text-muted-foreground">
+        {t("authors.showingBooks", { count: books.length })}
+      </div>
+
+      <div className="overflow-x-auto rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
@@ -147,40 +192,42 @@ export default function AuthorDetailClient({
                 </TableCell>
               </TableRow>
             ) : (
-              books.map((book) => (
-                <TableRow key={book.id}>
-                  <TableCell>
-                    <PrefetchLink
-                      href={`/reader/${book.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      <div>{book.title}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {book.titleLatin}
-                      </div>
-                    </PrefetchLink>
-                  </TableCell>
-                  <TableCell>
-                    {authorDeathYearDisplay ? (
-                      authorDeathYearDisplay
-                    ) : book.datePublished && book.datePublished !== "TEST" ? (
-                      `${book.datePublished} (pub.)`
-                    ) : book.yearAH && book.yearAH > 0 ? (
-                      `${book.yearAH} AH (pub.)`
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
+              books.map((book) => {
+                const secondaryTitle = getSecondaryTitle(book);
+                return (
+                  <TableRow key={book.id}>
+                    <TableCell>
+                      <PrefetchLink
+                        href={`/reader/${book.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        <div>{book.title}</div>
+                        {secondaryTitle && (
+                          <div className="text-sm text-muted-foreground">
+                            {secondaryTitle}
+                          </div>
+                        )}
+                      </PrefetchLink>
+                    </TableCell>
+                    <TableCell>
+                      {authorDeathYearDisplay ? (
+                        authorDeathYearDisplay
+                      ) : book.datePublished && book.datePublished !== "TEST" ? (
+                        `${book.datePublished} (pub.)`
+                      ) : book.yearAH && book.yearAH > 0 ? (
+                        `${book.yearAH} AH (pub.)`
+                      ) : (
+                        "\u2014"
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
 
-      <div className="mt-4 text-sm text-muted-foreground">
-        {t("authors.showingBooks", { count: books.length })}
-      </div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ interface FamousAyah {
   surahNameEnglish: string;
   text: string;
   translation?: string;
+  translationName?: string;
 }
 
 interface RefiningCarouselProps {
@@ -183,6 +184,9 @@ export function RefiningCarousel({ quranTranslation }: RefiningCarouselProps) {
           {/* Translation */}
           {currentAyah.translation && (
             <p className="text-sm md:text-base text-muted-foreground">
+              {currentAyah.translationName && (
+                <span className="font-medium text-xs">[{currentAyah.translationName}]</span>
+              )}{" "}
               {currentAyah.translation}
             </p>
           )}

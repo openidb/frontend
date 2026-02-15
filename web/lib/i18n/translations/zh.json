@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "搜索",
-    "subtitle": "搜索古兰经和圣训",
+    "subtitle": "探索古兰经和圣训",
+    "disclaimer": "古兰经和圣训应在合格学者的指导下学习，因为教法裁决取决于超出单一文本的更广泛语境。翻译可能无法完全传达阿拉伯语原文的含义，不应孤立依赖翻译。",
     "placeholder": "搜索阿拉伯文本...",
     "refineSearch": "优化",
     "refining": "正在优化...",
@@ -314,6 +315,8 @@
     "prev": "上页",
     "translate": "翻译",
     "hideTranslation": "隐藏翻译",
+    "llmTranslationLabel": "[AI 翻译]",
+    "llmTranslationWarning": "此翻译由AI自动生成，可能无法准确反映作者的原意。",
     "pdf": "PDF",
     "volume": "卷",
     "author": "作者",

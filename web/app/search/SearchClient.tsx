@@ -629,7 +629,7 @@ export default function SearchClient() {
 
         {/* Disclaimer — shown only in hero state, inside the centered flex container */}
         {isHeroState && (
-          <p className="max-w-md mx-auto text-[0.65rem] text-muted-foreground/40 text-center leading-relaxed mt-8">
+          <p className="max-w-md mx-auto text-[0.65rem] text-muted-foreground/75 text-center leading-relaxed mt-8">
             {t("search.disclaimer")}
           </p>
         )}

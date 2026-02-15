@@ -64,12 +64,14 @@ function ToggleSetting({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         dir="ltr"
-        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-          checked ? "bg-primary" : "bg-muted"
+        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          checked ? "bg-neutral-700 dark:bg-neutral-300" : "bg-stone-300 dark:bg-neutral-600"
         }`}
       >
         <span
-          className={`pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+          className={`pointer-events-none block h-4 w-4 rounded-full shadow-md ring-0 transition-all duration-200 ${
+            checked ? "bg-white dark:bg-neutral-700" : "bg-neutral-100 dark:bg-neutral-300"
+          } ${
             checked ? "translate-x-4" : "translate-x-0"
           }`}
         />
@@ -119,7 +121,7 @@ function SegmentedControl<T extends string>({
       className="relative flex w-fit rounded-full bg-muted p-0.5"
     >
       <motion.div
-        className="absolute top-0.5 bottom-0.5 rounded-full bg-primary shadow-sm"
+        className="absolute top-0.5 bottom-0.5 rounded-full bg-neutral-700 dark:bg-neutral-300 shadow-sm"
         initial={false}
         animate={{ left: indicator.left, width: indicator.width }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -131,7 +133,7 @@ function SegmentedControl<T extends string>({
           onClick={() => onChange(option)}
           className={`relative z-10 px-2.5 py-1 text-[11px] font-medium rounded-full whitespace-nowrap transition-colors ${
             value === option
-              ? "text-primary-foreground"
+              ? "text-white dark:text-neutral-900"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >

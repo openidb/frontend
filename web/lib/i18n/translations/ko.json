@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "검색",
-    "subtitle": "꾸란 및 하디스 검색",
+    "subtitle": "꾸란과 하디스 탐색",
+    "disclaimer": "꾸란과 하디스는 자격을 갖춘 학자의 지도 아래 학습해야 하며, 종교적 판단은 개별 구절을 넘어선 더 넓은 맥락에 달려 있습니다. 번역은 아랍어 원문의 의미를 완전히 전달하지 못할 수 있으며 단독으로 의존해서는 안 됩니다.",
     "placeholder": "아랍어 텍스트 검색...",
     "refineSearch": "정제",
     "refining": "정제 중...",
@@ -314,6 +315,8 @@
     "prev": "이전",
     "translate": "번역",
     "hideTranslation": "번역 숨기기",
+    "llmTranslationLabel": "[AI 번역]",
+    "llmTranslationWarning": "이 번역은 자동으로 생성되었으며 저자의 의도를 정확히 반영하지 못할 수 있습니다.",
     "pdf": "PDF",
     "volume": "권",
     "author": "저자",

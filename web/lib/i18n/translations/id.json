@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "Cari",
-    "subtitle": "Cari di Al-Quran dan Hadis",
+    "subtitle": "Jelajahi Al-Qur'an dan Hadis",
+    "disclaimer": "Al-Qur\u2019an dan hadis harus dipelajari di bawah bimbingan ulama yang berkompeten, karena hukum agama bergantung pada konteks yang lebih luas. Terjemahan mungkin tidak sepenuhnya menangkap makna teks Arab asli dan tidak boleh dijadikan satu-satunya rujukan.",
     "placeholder": "Cari teks Arab...",
     "refineSearch": "Perbaiki",
     "refining": "Memperbaiki...",
@@ -314,6 +315,8 @@
     "prev": "Kembali",
     "translate": "Terjemahkan",
     "hideTranslation": "Sembunyikan terjemahan",
+    "llmTranslationLabel": "[Terjemahan AI]",
+    "llmTranslationWarning": "Terjemahan ini dibuat secara otomatis dan mungkin tidak mencerminkan makna yang dimaksud penulis.",
     "pdf": "PDF",
     "volume": "Jil.",
     "author": "Penulis",

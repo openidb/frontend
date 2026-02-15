@@ -414,19 +414,8 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
         </div>
       )}
 
-      {/* Translation — LLM translations get distinct styling */}
-      {hadith.translation && hadith.translationSource === "llm" && (
-        <div
-          className="text-sm text-muted-foreground mt-2 line-clamp-3 italic border-t border-amber-200 pt-2"
-          dir="auto"
-        >
-          <span className="not-italic font-medium text-xs text-amber-600">[AI Translation]</span>{" "}
-          {hadith.translation}
-        </div>
-      )}
-
-      {/* Translation — non-LLM (sunnah.com, hadithunlocked.com) */}
-      {hadith.translation && hadith.translationSource !== "llm" && (
+      {/* Translation */}
+      {hadith.translation && (
         <div
           className="text-sm text-muted-foreground mt-2 line-clamp-3 italic border-t border-border/50 pt-2"
           dir="auto"

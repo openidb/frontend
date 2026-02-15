@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings2 } from "lucide-react";
+import { Settings2, Check } from "lucide-react";
+import { motion } from "framer-motion";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
 import type { SearchConfig } from "@/lib/config/search-defaults";
 
@@ -29,6 +31,11 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
   const updateConfig = (updates: Partial<SearchConfig>) => {
     onChange({ ...config, ...updates });
   };
+
+  const items = [
+    { key: "includeQuran" as const, label: t("searchConfig.quranVerses") },
+    { key: "includeHadith" as const, label: t("searchConfig.hadiths") },
+  ];
 
   // Render a placeholder button during SSR to avoid hydration mismatch
   if (!mounted) {
@@ -56,26 +63,48 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-48 bg-popover border border-border"
+        className="min-w-[12rem] rounded-xl border bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-lg shadow-black/5 p-1"
         align="end"
       >
-        <DropdownMenuLabel>{t("searchConfig.contentTypes")}</DropdownMenuLabel>
-        <DropdownMenuCheckboxItem
-          checked={config.includeQuran}
-          onCheckedChange={(checked) => updateConfig({ includeQuran: checked })}
-          onSelect={(e) => e.preventDefault()}
-          className="hover:bg-accent"
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
         >
-          {t("searchConfig.quranVerses")}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={config.includeHadith}
-          onCheckedChange={(checked) => updateConfig({ includeHadith: checked })}
-          onSelect={(e) => e.preventDefault()}
-          className="hover:bg-accent"
-        >
-          {t("searchConfig.hadiths")}
-        </DropdownMenuCheckboxItem>
+          <DropdownMenuLabel className="py-1.5 px-2 text-sm font-semibold">
+            {t("searchConfig.contentTypes")}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {items.map((item) => {
+            const isChecked = config[item.key];
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  updateConfig({ [item.key]: !isChecked });
+                }}
+                className={cn(
+                  "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                  {isChecked && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    >
+                      <Check className="h-4 w-4" />
+                    </motion.div>
+                  )}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+        </motion.div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

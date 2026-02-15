@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "Recherche",
-    "subtitle": "Rechercher dans le Coran et les Hadiths",
+    "subtitle": "Explorez le Coran et le Hadith",
+    "disclaimer": "Le Coran et le hadith doivent être étudiés sous la direction de savants qualifiés, car les avis juridiques dépendent d\u2019un contexte plus large. Les traductions peuvent ne pas restituer pleinement le sens de l\u2019arabe original et ne doivent pas être utilisées isolément.",
     "placeholder": "Rechercher des textes arabes...",
     "refineSearch": "Affiner",
     "refining": "Affinage...",
@@ -314,6 +315,8 @@
     "prev": "Prec",
     "translate": "Traduire",
     "hideTranslation": "Masquer la traduction",
+    "llmTranslationLabel": "[Traduction IA]",
+    "llmTranslationWarning": "Cette traduction est générée automatiquement et peut ne pas refléter fidèlement la pensée de l\u2019auteur.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Auteur",

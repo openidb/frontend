@@ -146,10 +146,10 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
           <div className="h-8 w-32 bg-muted animate-shimmer rounded" />
           <div className="h-10 w-64 bg-muted animate-shimmer rounded" />
         </div>
-        <div className="rounded-md border">
-          <div className="h-12 bg-muted/50 border-b" />
+        <div className="space-y-1">
+          <div className="h-10 rounded-lg" />
           {[...Array(10)].map((_, i) => (
-            <div key={i} className="h-16 border-b flex items-center gap-4 px-4">
+            <div key={i} className="h-14 bg-muted/25 rounded-lg flex items-center gap-4 px-4">
               <div className="h-4 w-48 bg-muted animate-shimmer rounded" />
               <div className="h-4 w-24 bg-muted animate-shimmer rounded" />
             </div>
@@ -161,9 +161,18 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
 
   return (
     <div className="p-4 md:p-8" suppressHydrationWarning>
-      <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("authors.title")}</h1>
-        <div className="flex flex-wrap items-center gap-2 md:gap-3" suppressHydrationWarning>
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-muted/60 p-1.5" suppressHydrationWarning>
+          <div className="relative flex-1 min-w-[16rem] rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
+            <Input
+              type="text"
+              placeholder={t("authors.searchPlaceholder")}
+              className="text-base sm:text-sm h-10 rounded-lg border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           {centuryOptions.length > 0 && (
             <MultiSelectDropdown
               title={t("books.century")}
@@ -172,17 +181,10 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
               onChange={setSelectedCenturies}
             />
           )}
-          <Input
-            type="text"
-            placeholder={t("authors.searchPlaceholder")}
-            className="w-full sm:w-64 text-base sm:text-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </div>
       </div>
 
-      <div className="rounded-md border overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg">
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
@@ -265,6 +267,9 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
             >
               {t("authors.previous")}
             </Button>
+            <span className="text-sm tabular-nums text-muted-foreground px-2">
+              {pagination.page} / {pagination.totalPages}
+            </span>
             <Button
               variant="outline"
               size="sm"

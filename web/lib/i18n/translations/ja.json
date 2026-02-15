@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "検索",
-    "subtitle": "クルアーンとハディースを検索",
+    "subtitle": "クルアーンとハディースを探索",
+    "disclaimer": "クルアーンとハディースは資格のある学者の指導のもとで学ぶべきであり、宗教的判断は個々の文章を超えた広い文脈に依拠します。翻訳はアラビア語原文の意味を完全に捉えていない場合があり、単独で依拠すべきではありません。",
     "placeholder": "アラビア語テキストを検索...",
     "refineSearch": "絞り込み",
     "refining": "絞り込み中...",
@@ -314,6 +315,8 @@
     "prev": "前へ",
     "translate": "翻訳",
     "hideTranslation": "翻訳を非表示",
+    "llmTranslationLabel": "[AI翻訳]",
+    "llmTranslationWarning": "この翻訳はAIにより自動生成されたものであり、著者の意図を正確に反映していない場合があります。",
     "pdf": "PDF",
     "volume": "巻",
     "author": "著者",
