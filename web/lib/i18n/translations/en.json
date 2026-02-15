@@ -7,7 +7,8 @@
   },
   "search": {
     "title": "Search",
-    "subtitle": "Explore the Quran, Hadith, and classical Islamic texts",
+    "subtitle": "Explore the Quran and Hadith",
+    "disclaimer": "Quran and hadith should be studied under qualified scholarly guidance, as religious rulings depend on broader context beyond individual passages. Translations may not fully capture the meaning of the original Arabic and should not be relied upon in isolation.",
     "placeholder": "Search texts...",
     "refineSearch": "Refine",
     "refining": "Refining...",
@@ -314,6 +315,8 @@
     "prev": "Prev",
     "translate": "Translate",
     "hideTranslation": "Hide Translation",
+    "llmTranslationLabel": "[AI Translation]",
+    "llmTranslationWarning": "This translation is automatically generated and may not accurately reflect the author\u2019s intended meaning.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Author",

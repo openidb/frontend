@@ -2,11 +2,22 @@
 
 import React from "react";
 import { PrefetchLink } from "./PrefetchLink";
-import { BookOpen, FileText, ExternalLink } from "lucide-react";
+import { BookOpen, FileText, ExternalLink, Loader2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/lib/config/search-defaults";
 import { trackClick } from "@/lib/analytics";
+
+// Format translation source/model names for display
+const SOURCE_LABELS: Record<string, string> = {
+  "sunnah.com": "Sunnah.com",
+  "hadithunlocked.com": "HadithUnlocked.com",
+  "llm": "AI",
+};
+
+function formatSourceLabel(source: string): string {
+  return SOURCE_LABELS[source] || source;
+}
 
 // Type definitions for result data
 export interface BookResultData {
@@ -21,6 +32,7 @@ export interface BookResultData {
   matchType: "semantic" | "keyword" | "both";
   urlPageIndex?: string;
   contentTranslation?: string | null;  // Cached translation of the matched paragraph
+  contentTranslationModel?: string | null;
   book: {
     id: string;
     titleArabic: string;
@@ -46,6 +58,9 @@ export interface AyahResultData {
   surahNameEnglish: string;
   text: string;
   translation?: string;       // Translation text in user's preferred language
+  translationEditionId?: string;
+  translationName?: string;
+  translationSource?: string;
   juzNumber: number;
   pageNumber: number;
   quranComUrl: string;
@@ -57,6 +72,7 @@ export interface HadithResultData {
   score: number;
   semanticScore?: number;
   rank?: number;
+  bookId?: number;
   collectionSlug: string;
   collectionNameArabic: string;
   collectionNameEnglish: string;
@@ -70,6 +86,8 @@ export interface HadithResultData {
   chapterEnglish: string | null;
   sourceUrl: string;
   translation?: string;  // English translation (when requested)
+  translationSource?: string;
+  translationPending?: boolean;
 }
 
 // Unified result type that wraps all content types
@@ -84,7 +102,7 @@ interface SearchResultProps {
   searchEventId?: string | null;
 }
 
-function SearchResultInner({ result, bookTitleDisplay = "transliteration", showAuthorTransliteration = true, searchEventId }: SearchResultProps) {
+function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransliteration = true, searchEventId }: SearchResultProps) {
   const { t } = useTranslation();
 
   if (!result.book) return null;
@@ -165,6 +183,7 @@ function SearchResultInner({ result, bookTitleDisplay = "transliteration", showA
           className="text-sm text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/50 pt-2"
           dir="auto"
         >
+          {result.contentTranslationModel && "[AI Translation] "}
           {result.contentTranslation}
         </div>
       )}
@@ -198,6 +217,9 @@ interface AyahResultProps {
     surahNameEnglish: string;
     text: string;
     translation?: string;
+    translationEditionId?: string;
+    translationName?: string;
+    translationSource?: string;
     juzNumber: number;
     pageNumber: number;
     quranComUrl: string;
@@ -283,6 +305,9 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
           className="text-sm text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/50 pt-2"
           dir="auto"
         >
+          {ayah.translationName && (
+            <span className="not-italic font-medium text-xs">[{ayah.translationName} Translation]</span>
+          )}{" "}
           {ayah.translation}
         </div>
       )}
@@ -298,6 +323,7 @@ interface HadithResultProps {
     score: number;
     semanticScore?: number;
     rank?: number;
+    bookId?: number;
     collectionSlug: string;
     collectionNameArabic: string;
     collectionNameEnglish: string;
@@ -311,6 +337,8 @@ interface HadithResultProps {
     chapterEnglish: string | null;
     sourceUrl: string;
     translation?: string;
+    translationSource?: string;
+    translationPending?: boolean;
   };
   searchEventId?: string | null;
 }
@@ -378,12 +406,34 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
         {hadith.text}
       </div>
 
-      {/* Translation */}
-      {hadith.translation && (
+      {/* Pending Translation Indicator */}
+      {hadith.translationPending && !hadith.translation && (
+        <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5 italic">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Translating...
+        </div>
+      )}
+
+      {/* Translation — LLM translations get distinct styling */}
+      {hadith.translation && hadith.translationSource === "llm" && (
+        <div
+          className="text-sm text-muted-foreground mt-2 line-clamp-3 italic border-t border-amber-200 pt-2"
+          dir="auto"
+        >
+          <span className="not-italic font-medium text-xs text-amber-600">[AI Translation]</span>{" "}
+          {hadith.translation}
+        </div>
+      )}
+
+      {/* Translation — non-LLM (sunnah.com, hadithunlocked.com) */}
+      {hadith.translation && hadith.translationSource !== "llm" && (
         <div
           className="text-sm text-muted-foreground mt-2 line-clamp-3 italic border-t border-border/50 pt-2"
           dir="auto"
         >
+          {hadith.translationSource && (
+            <span className="not-italic font-medium text-xs">[{formatSourceLabel(hadith.translationSource)} Translation]</span>
+          )}{" "}
           {hadith.translation}
         </div>
       )}

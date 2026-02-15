@@ -318,6 +318,7 @@ export default function SearchClient() {
         result.data.rank = index + 1;
       });
 
+      translationTriggeredRef.current = null;
       setUnifiedResults(limitedUnified);
       setAuthors(data.authors || []);
       setIsRefined(data.refined || false);
@@ -449,6 +450,84 @@ export default function SearchClient() {
     }
   }, [searchParams, hasSearched, fetchResults, searchConfig]);
 
+  // Background translation for hadiths without translations
+  const translationTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!unifiedResults.length || isLoading || isRefining) return;
+
+    const pendingHadiths = unifiedResults
+      .filter(
+        (r): r is UnifiedResult & { type: "hadith" } =>
+          r.type === "hadith" && !!(r.data as HadithResultData).translationPending && !(r.data as HadithResultData).translation
+      )
+      .map((r) => r.data as HadithResultData);
+
+    if (pendingHadiths.length === 0) return;
+
+    // Prevent re-triggering for the same set of results
+    const fingerprint = pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`).join(",");
+    if (translationTriggeredRef.current === fingerprint) return;
+    translationTriggeredRef.current = fingerprint;
+
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+        const res = await fetch("/api/search/translate-hadiths", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(csrfToken && { "X-CSRF-Token": csrfToken }),
+          },
+          body: JSON.stringify({
+            hadiths: pendingHadiths.slice(0, 10).map((h) => ({
+              bookId: h.bookId,
+              hadithNumber: h.hadithNumber,
+              collectionSlug: h.collectionSlug,
+              text: h.text,
+            })),
+            language: searchConfig.hadithTranslation || "en",
+          }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.translations?.length) return;
+
+        const translationMap = new Map<string, string>(
+          data.translations.map((t: { bookId: number; hadithNumber: string; translation: string }) => [
+            `${t.bookId}-${t.hadithNumber}`,
+            t.translation,
+          ])
+        );
+
+        setUnifiedResults((prev) =>
+          prev.map((r) => {
+            if (r.type !== "hadith") return r;
+            const hd = r.data as HadithResultData;
+            const translation = translationMap.get(`${hd.bookId}-${hd.hadithNumber}`);
+            if (!translation) return r;
+            return {
+              ...r,
+              data: {
+                ...hd,
+                translation,
+                translationSource: "llm",
+                translationPending: false,
+              },
+            };
+          })
+        );
+      } catch {
+        // Silently fail — translations are nice-to-have
+      }
+    })();
+
+    return () => controller.abort();
+  }, [unifiedResults, isLoading, isRefining, searchConfig.hadithTranslation]);
+
   // Cleanup debounce timeout on unmount
   useEffect(() => {
     return () => {
@@ -469,6 +548,7 @@ export default function SearchClient() {
     setDebugStats(null);
     setGraphContext(null);
     setShowDebugStats(false);
+    translationTriggeredRef.current = null;
     window.history.replaceState({}, "", "/search");
   };
 
@@ -501,7 +581,7 @@ export default function SearchClient() {
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-6 md:mb-8">
-          <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/30" suppressHydrationWarning>
+          <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/60" suppressHydrationWarning>
             <div className="relative flex-1 min-w-0 rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
               {!isRecording && (
                 <>
@@ -545,13 +625,14 @@ export default function SearchClient() {
           {voiceError && (
             <p className="text-sm text-red-500 mt-2 text-center">{voiceError}</p>
           )}
-          {/* Hint text in hero state */}
-          {isHeroState && (
-            <p className="text-sm text-muted-foreground/60 text-center mt-4">
-              {t("search.minChars")}
-            </p>
-          )}
         </div>
+
+        {/* Disclaimer — shown only in hero state, inside the centered flex container */}
+        {isHeroState && (
+          <p className="max-w-md mx-auto text-[0.65rem] text-muted-foreground/40 text-center leading-relaxed mt-8">
+            {t("search.disclaimer")}
+          </p>
+        )}
       </div>
 
       {/* Results Section */}
@@ -561,7 +642,6 @@ export default function SearchClient() {
           {isLoading && !isRefining && (
             <motion.div
               key="loading-skeletons"
-              layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -585,7 +665,6 @@ export default function SearchClient() {
           {isRefining && (
             <motion.div
               key="refining"
-              layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -601,7 +680,6 @@ export default function SearchClient() {
           {error && !isLoading && !isRefining && (
             <motion.div
               key="error"
-              layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -642,7 +720,6 @@ export default function SearchClient() {
           {!isLoading && !isRefining && !error && (unifiedResults.length > 0 || authors.length > 0) && (
             <motion.div
               key={`results-${unifiedResults.length}-${unifiedResults[0]?.data?.score ?? 0}`}
-              layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -724,13 +801,24 @@ export default function SearchClient() {
               )}
 
               {/* Debug Stats Panel */}
-              {showDebugStats && debugStats && (
-                <SearchDebugPanel
-                  debugStats={debugStats}
-                  showAlgorithm={showAlgorithm}
-                  onToggleAlgorithm={() => setShowAlgorithm(!showAlgorithm)}
-                />
-              )}
+              <AnimatePresence initial={false}>
+                {showDebugStats && debugStats && (
+                  <motion.div
+                    key="debug-panel"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <SearchDebugPanel
+                      debugStats={debugStats}
+                      showAlgorithm={showAlgorithm}
+                      onToggleAlgorithm={() => setShowAlgorithm(!showAlgorithm)}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Unified Results List — staggered entrance */}
               {unifiedResults.length > 0 && (
