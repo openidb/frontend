@@ -11,13 +11,21 @@ export function DesktopNavigation() {
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
       {/* Logo */}
-      <PrefetchLink href="/search" className="block mb-4 ps-9">
+      <PrefetchLink href="/search" className="flex items-center justify-center gap-1.5 mb-4">
         <span
-          className="text-4xl text-foreground"
-          style={{ fontFamily: "'Aref Ruqaa', serif" }}
+          className="text-[2.6rem] font-bold leading-[1] text-foreground self-center"
+          style={{ fontFamily: "'Google Sans', sans-serif" }}
         >
-          سَبِيل
+          OI
         </span>
+        <div
+          className="flex flex-col text-[0.6rem] font-semibold uppercase leading-tight tracking-wide text-muted-foreground -mt-1"
+          style={{ fontFamily: "'Montserrat', sans-serif" }}
+        >
+          <span>Open</span>
+          <span>Islamic</span>
+          <span>Database</span>
+        </div>
       </PrefetchLink>
 
       <nav className="space-y-2 flex-1">
