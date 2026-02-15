@@ -17,6 +17,7 @@ interface TopResultBreakdown {
 interface ExpandedQueryStats {
   query: string;
   weight: number;
+  reason?: string;
   docsRetrieved: number;
   books: number;
   ayahs: number;
@@ -334,6 +335,13 @@ export function SearchDebugPanel({ debugStats, showAlgorithm, onToggleAlgorithm 
             <div className="space-y-1 font-mono text-xs">
               {debugStats.refineStats.expandedQueries.map((eq, i) => (
                 <div key={i} className="flex gap-2 bg-background rounded px-2 py-1 items-center">
+                  {eq.reason && (
+                    <span className={`text-[10px] px-1 rounded shrink-0 ${
+                      eq.reason === "Original query" ? "bg-gray-500/20 text-gray-600" :
+                      eq.reason === "Enhanced Arabic" ? "bg-blue-500/20 text-blue-600" :
+                      "bg-green-500/20 text-green-600"
+                    }`}>{eq.reason === "Original query" ? "original" : eq.reason === "Enhanced Arabic" ? "arabic" : "answer"}</span>
+                  )}
                   <span className="text-muted-foreground shrink-0">w={eq.weight.toFixed(1)}</span>
                   <span dir="auto" className="truncate flex-1">{eq.query}</span>
                   <span className="text-muted-foreground shrink-0 text-[10px]">
