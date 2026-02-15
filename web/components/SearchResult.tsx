@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { PrefetchLink } from "./PrefetchLink";
 import { BookOpen, FileText, ExternalLink } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
-import type { TranslationDisplayOption } from "@/components/SearchConfigDropdown";
+import type { TranslationDisplayOption } from "@/lib/config/search-defaults";
 import { trackClick } from "@/lib/analytics";
 
 // Type definitions for result data
@@ -64,26 +64,27 @@ export interface HadithResultData {
   bookNameArabic: string;
   bookNameEnglish: string;
   hadithNumber: string;
+  numberInCollection?: string | null;
   text: string;
   chapterArabic: string | null;
   chapterEnglish: string | null;
-  sunnahComUrl: string;
+  sourceUrl: string;
   translation?: string;  // English translation (when requested)
 }
 
 // Unified result type that wraps all content types
 export type UnifiedResult =
   | { type: "quran"; data: AyahResultData; score: number }
-  | { type: "hadith"; data: HadithResultData; score: number }
-  | { type: "book"; data: BookResultData; score: number };
+  | { type: "hadith"; data: HadithResultData; score: number };
 
 interface SearchResultProps {
   result: BookResultData;
   bookTitleDisplay?: TranslationDisplayOption;
+  showAuthorTransliteration?: boolean;
   searchEventId?: string | null;
 }
 
-function SearchResultInner({ result, bookTitleDisplay = "transliteration", searchEventId }: SearchResultProps) {
+function SearchResultInner({ result, bookTitleDisplay = "transliteration", showAuthorTransliteration = true, searchEventId }: SearchResultProps) {
   const { t } = useTranslation();
 
   if (!result.book) return null;
@@ -102,18 +103,14 @@ function SearchResultInner({ result, bookTitleDisplay = "transliteration", searc
     if (bookTitleDisplay === "transliteration") {
       return book.titleLatin;
     }
-    // For language codes, use translated title if available
-    if (book.titleTranslated) {
-      return book.titleTranslated;
-    }
-    // Fallback to transliteration if no translation
-    return book.titleLatin;
+    // "translation" — use translated title if available, fallback to transliteration
+    return book.titleTranslated || book.titleLatin;
   };
 
   const secondaryTitle = getSecondaryTitle();
 
   return (
-    <Link
+    <PrefetchLink
       href={readerUrl}
       className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
       onClick={() => {
@@ -138,8 +135,12 @@ function SearchResultInner({ result, bookTitleDisplay = "transliteration", searc
       <div className="flex items-center gap-1 text-sm mb-3 text-muted-foreground">
         <BookOpen className="h-3.5 w-3.5" />
         <span dir="rtl">{book.author.nameArabic}</span>
-        <span className="text-border">|</span>
-        <span>{book.author.nameLatin}</span>
+        {showAuthorTransliteration && (
+          <>
+            <span className="text-border">|</span>
+            <span>{book.author.nameLatin}</span>
+          </>
+        )}
       </div>
 
       {/* Page/Volume Info */}
@@ -176,7 +177,7 @@ function SearchResultInner({ result, bookTitleDisplay = "transliteration", searc
           border-radius: 2px;
         }
       `}</style>
-    </Link>
+    </PrefetchLink>
   );
 }
 
@@ -304,10 +305,11 @@ interface HadithResultProps {
     bookNameArabic: string;
     bookNameEnglish: string;
     hadithNumber: string;
+    numberInCollection?: string | null;
     text: string;
     chapterArabic: string | null;
     chapterEnglish: string | null;
-    sunnahComUrl: string;
+    sourceUrl: string;
     translation?: string;
   };
   searchEventId?: string | null;
@@ -318,7 +320,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
 
   return (
     <a
-      href={hadith.sunnahComUrl}
+      href={hadith.sourceUrl || "#"}
       target="_blank"
       rel="noopener noreferrer"
       className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
@@ -335,7 +337,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
         </span>
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <ExternalLink className="h-3 w-3" />
-          sunnah.com
+          {hadith.sourceUrl?.includes("hadithunlocked.com") ? "hadithunlocked.com" : "sunnah.com"}
         </span>
       </div>
 
@@ -360,7 +362,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {/* Hadith/Book Info */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded" dir="rtl">
-          {t("results.hadithNumber")} {hadith.hadithNumber.replace(/[A-Z]+$/, '')}
+          {t("results.hadithNumber")} {(hadith.numberInCollection || hadith.hadithNumber).replace(/[A-Z]+$/, '')}
         </span>
         <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
           <FileText className="h-3 w-3" />
@@ -394,18 +396,15 @@ export const HadithResult = React.memo(HadithResultInner);
 // Unified result component that renders the appropriate card based on type
 interface UnifiedSearchResultProps {
   result: UnifiedResult;
-  bookTitleDisplay?: TranslationDisplayOption;
   searchEventId?: string | null;
 }
 
-export function UnifiedSearchResult({ result, bookTitleDisplay, searchEventId }: UnifiedSearchResultProps) {
+export function UnifiedSearchResult({ result, searchEventId }: UnifiedSearchResultProps) {
   switch (result.type) {
     case "quran":
       return <AyahResult ayah={result.data} searchEventId={searchEventId} />;
     case "hadith":
       return <HadithResult hadith={result.data} searchEventId={searchEventId} />;
-    case "book":
-      return <SearchResult result={result.data} bookTitleDisplay={bookTitleDisplay} searchEventId={searchEventId} />;
     default:
       return null;
   }
