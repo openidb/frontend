@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "Cari",
-    "subtitle": "Cari di Al-Quran, Hadis, dan teks Islam klasik",
+    "subtitle": "Cari di Al-Quran dan Hadis",
     "placeholder": "Cari teks Arab...",
     "refineSearch": "Perbaiki",
     "refining": "Memperbaiki...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "Tampilkan kueri yang diperluas",
     "results": "Ditemukan {count} hasil",
     "noResults": "Tidak ada hasil untuk \"{query}\"",
+    "noResultsHint": "Coba kata kunci lain atau periksa ejaan Anda",
     "minChars": "Mulai ketik untuk mencari...",
     "error": "Silakan coba lagi.",
     "tryAgain": "Coba lagi",
@@ -178,7 +179,7 @@
       "language": "Bahasa",
       "appearance": "Tampilan",
       "translations": "Terjemahan",
-      "booksDisplay": "Tampilan Buku",
+      "booksDisplay": "Tanggal & Kalender",
       "advanced": "Pengaturan Lanjutan",
       "similarity": "Kemiripan",
       "fuzzySearch": "Pencarian Fuzzy",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "Otomatis",
-      "automaticInfo": "Pilih terjemahan secara otomatis berdasarkan bahasa antarmuka yang dipilih.",
       "quranTranslation": "Terjemahan Al-Quran",
       "quranTranslationInfo": "Tampilkan terjemahan di samping teks Arab dalam hasil pencarian Al-Quran.",
-      "bookTitleDisplay": "Judul Buku",
-      "bookTitleDisplayInfo": "Tampilkan judul buku yang diterjemahkan di samping Arab.",
-      "hadithTranslation": "Terjemahan Hadits",
-      "hadithTranslationInfo": "Tampilkan terjemahan bahasa Inggris di samping teks Arab dalam hasil pencarian hadits.",
-      "hadithOptions": {
-        "none": "Tidak ada",
-        "en": "Inggris (sunnah.com)"
-      },
-      "pageTranslationModel": "Model Terjemahan Halaman",
-      "pageTranslationModelInfo": "Model AI untuk menerjemahkan halaman. GPT lebih cepat, Gemini kualitas lebih tinggi.",
-      "geminiFlashDesc": "Kualitas tertinggi, lebih lambat",
-      "gptOss120bDesc": "Cepat, kualitas bagus",
-      "bookContentTranslation": "Terjemahan Konten Buku",
-      "bookContentTranslationInfo": "Tampilkan terjemahan yang tersimpan di hasil pencarian buku.",
-      "bookContentOptions": {
-        "none": "Tidak ada",
-        "en": "Inggris (jika tersedia)",
-        "fr": "Prancis (jika tersedia)",
-        "id": "Indonesia (jika tersedia)",
-        "ur": "Urdu (jika tersedia)",
-        "es": "Spanyol (jika tersedia)",
-        "zh": "Mandarin (jika tersedia)",
-        "pt": "Portugis (jika tersedia)",
-        "ru": "Rusia (jika tersedia)",
-        "ja": "Jepang (jika tersedia)",
-        "ko": "Korea (jika tersedia)",
-        "it": "Italia (jika tersedia)",
-        "bn": "Bengali (jika tersedia)"
-      },
-      "options": {
-        "none": "Tidak ada",
-        "en": "Inggris - Dr. Mustafa Khattab",
-        "fr": "Prancis - Muhammad Hamidullah",
-        "id": "Indonesia - Kementerian Agama",
-        "ur": "Urdu - Fateh Muhammad Jalandhry",
-        "es": "Spanyol - Isa Garcia",
-        "zh": "Tionghoa - Ma Jian",
-        "pt": "Portugis - Samir El-Hayek",
-        "ru": "Rusia - Elmir Kuliev",
-        "ja": "Jepang - Ryoichi Mita",
-        "ko": "Korea - Hamid Choi",
-        "it": "Italia - Hamza Roberto Piccardo",
-        "bn": "Bengali - Muhiuddin Khan"
-      }
+      "bookTitleDisplay": "Terjemahan Judul",
+      "bookTitleDisplayInfo": "Tampilkan judul buku yang diterjemahkan atau ditransliterasi.",
+      "authorTransliteration": "Transliterasi Penulis",
+      "authorTransliterationInfo": "Tampilkan nama penulis yang ditransliterasi di samping Arab.",
+      "hadithTranslation": "Terjemahan Hadis",
+      "hadithTranslationInfo": "Tampilkan terjemahan bahasa Inggris di samping teks Arab dalam hasil pencarian hadits. Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "Arab saja",
+        "none": "Tidak",
         "transliteration": "Transliterasi",
-        "en": "Inggris",
-        "fr": "Prancis",
-        "id": "Indonesia",
-        "ur": "Urdu",
-        "es": "Spanyol",
-        "zh": "Tionghoa",
-        "pt": "Portugis",
-        "ru": "Rusia",
-        "ja": "Jepang",
-        "ko": "Korea",
-        "it": "Italia",
-        "bn": "Bengali"
+        "translation": "Terjemahan"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "Batas",
       "cutoffInfo": "Skor kemiripan minimum. Nilai lebih tinggi menghasilkan lebih sedikit tapi lebih relevan.",
       "refineCutoff": "Batas Perbaikan",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "Model Embedding",
-      "modelInfo": "Model AI untuk pencarian semantik. Model cloud stabil; model lokal dapat disesuaikan.",
+      "modelInfo": "Model AI untuk pencarian semantik. Keduanya multibahasa. Gemini adalah model cloud default; Jina v3 adalah alternatif open weight.",
       "gemini": "Gemini",
       "geminiDesc": "Stabil, kualitas tinggi",
       "jina": "Jina v3",
-      "jinaDesc": "Model pencarian multibahasa (1024d)"
+      "jinaDesc": "Open weight, model retrieval lebih kecil (1024d)"
     },
     "reranker": {
       "model": "Model",
@@ -313,9 +263,9 @@
       "dateCalendar": "Kalender tanggal",
       "dateCalendarInfo": "Pilih sistem kalender untuk menampilkan tanggal",
       "dateCalendarOptions": {
-        "hijri": "Hijriah (H)",
-        "gregorian": "Masehi (M)",
-        "both": "Keduanya (H / M)"
+        "hijri": "Hijriah",
+        "gregorian": "Masehi",
+        "both": "Keduanya"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF tidak tersedia",
     "fontSize": "Ukuran font",
     "copyWord": "Salin",
-    "wordTap": "Ketuk kata",
+    "wordDefinitions": "Definisi kata",
     "dictionary": {
       "notFound": "Definisi tidak ditemukan",
       "rootMatch": "Ditemukan melalui akar kata",

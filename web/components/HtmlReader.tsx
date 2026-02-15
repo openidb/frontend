@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, Languages } from "lucide-react";
-import Link from "next/link";
+import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useAppConfig } from "@/lib/config";
@@ -248,10 +248,23 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
   const [isTranslating, setIsTranslating] = useState(false);
   const [autoTranslate, setAutoTranslate] = useState(false);
   const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
   // Analytics: page view duration tracking
   const pageViewStartRef = useRef<number>(Date.now());
   const currentPageRef = useRef<number>(currentPage);
+
+  // Fetch translated title when config requires it and we don't have one
+  useEffect(() => {
+    if (config.bookTitleDisplay !== "translation" || translatedTitle) return;
+    const lang = locale === "ar" ? "en" : locale;
+    fetch(`/api/books/${encodeURIComponent(bookMetadata.id)}?bookTitleLang=${lang}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.book?.titleTranslated) setTranslatedTitle(data.book.titleTranslated);
+      })
+      .catch(() => {});
+  }, [config.bookTitleDisplay, bookMetadata.id, locale, translatedTitle]);
 
   // Track "open" once on mount
   useEffect(() => {
@@ -508,7 +521,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
         const res = await fetch(`/api/pages/${bookMetadata.id}/${page}/translate`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-          body: JSON.stringify({ lang, model: config.pageTranslationModel }),
+          body: JSON.stringify({ lang, model: "gemini-flash" }),
         });
         if (!res.ok) throw new Error("Translation failed");
         const data = await res.json();
@@ -536,7 +549,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
       clearTimeout(timer);
       setIsTranslating(false);
     };
-  }, [currentPage, autoTranslate, pageData, locale, bookMetadata.id, config.pageTranslationModel]);
+  }, [currentPage, autoTranslate, pageData, locale, bookMetadata.id]);
 
   const isDark = resolvedTheme === "dark";
 
@@ -553,9 +566,13 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
           <h1 className="truncate font-semibold text-sm md:text-base">
             {expandHonorifics(bookMetadata.title)}
           </h1>
-          <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
-            {bookMetadata.titleLatin}
-          </p>
+          {config.bookTitleDisplay !== "none" && (
+            <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
+              {config.bookTitleDisplay === "translation"
+                ? (translatedTitle || bookMetadata.titleLatin)
+                : bookMetadata.titleLatin}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
           {isTranslating && (
@@ -640,14 +657,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
       >
         {/* Links section */}
         <div className="p-3 space-y-1">
-          <Link
+          <PrefetchLink
             href={`/authors/${bookMetadata.authorId}`}
             className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
             onClick={() => setShowSidebar(false)}
           >
             <User className="h-4 w-4 shrink-0 text-muted-foreground" />
             <span>{t("reader.author")}: {expandHonorifics(bookMetadata.author)}</span>
-          </Link>
+          </PrefetchLink>
           {pageData?.pdfUrl ? (
             <button
               onClick={() => {
@@ -689,7 +706,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             </div>
           </div>
 
-          {/* Word tap toggle */}
+          {/* Word definitions toggle */}
           <button
             onClick={() => {
               setWordTapEnabled((v) => !v);
@@ -697,7 +714,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, maxPri
             }}
             className="w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
           >
-            <span>{t("reader.wordTap")}</span>
+            <span>{t("reader.wordDefinitions")}</span>
             <div
               className={`w-9 h-5 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"}`}
             >

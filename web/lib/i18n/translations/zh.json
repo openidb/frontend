@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "搜索",
-    "subtitle": "搜索古兰经、圣训和经典伊斯兰文献",
+    "subtitle": "搜索古兰经和圣训",
     "placeholder": "搜索阿拉伯文本...",
     "refineSearch": "优化",
     "refining": "正在优化...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "显示扩展查询",
     "results": "找到 {count} 个结果",
     "noResults": "未找到 \"{query}\" 的结果",
+    "noResultsHint": "尝试不同的关键词或检查拼写",
     "minChars": "开始输入以搜索...",
     "error": "请重试。",
     "tryAgain": "重试",
@@ -178,7 +179,7 @@
       "language": "语言",
       "appearance": "外观",
       "translations": "翻译",
-      "booksDisplay": "书籍显示",
+      "booksDisplay": "日期与历法",
       "advanced": "高级设置",
       "similarity": "相似度",
       "fuzzySearch": "模糊搜索",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "自动",
-      "automaticInfo": "根据所选界面语言自动选择翻译。",
       "quranTranslation": "古兰经翻译",
       "quranTranslationInfo": "在古兰经搜索结果中显示阿拉伯文旁边的翻译。",
-      "bookTitleDisplay": "书名",
-      "bookTitleDisplayInfo": "在阿拉伯语旁边显示翻译后的书名。",
+      "bookTitleDisplay": "标题翻译",
+      "bookTitleDisplayInfo": "在阿拉伯语旁显示翻译或音译书名。",
+      "authorTransliteration": "作者音译",
+      "authorTransliterationInfo": "在阿拉伯语旁边显示作者的音译名称。",
       "hadithTranslation": "圣训翻译",
-      "hadithTranslationInfo": "在圣训搜索结果中显示阿拉伯文旁边的英文翻译。",
-      "hadithOptions": {
-        "none": "无",
-        "en": "英语 (sunnah.com)"
-      },
-      "pageTranslationModel": "页面翻译模型",
-      "pageTranslationModelInfo": "用于翻译页面的AI模型。GPT更快，Gemini质量更高。",
-      "geminiFlashDesc": "最高质量，较慢",
-      "gptOss120bDesc": "快速，质量好",
-      "bookContentTranslation": "书籍内容翻译",
-      "bookContentTranslationInfo": "在搜索结果中显示缓存的翻译内容。",
-      "bookContentOptions": {
-        "none": "无",
-        "en": "英语（如有）",
-        "fr": "法语（如有）",
-        "id": "印尼语（如有）",
-        "ur": "乌尔都语（如有）",
-        "es": "西班牙语（如有）",
-        "zh": "中文（如有）",
-        "pt": "葡萄牙语（如有）",
-        "ru": "俄语（如有）",
-        "ja": "日语（如有）",
-        "ko": "韩语（如有）",
-        "it": "意大利语（如有）",
-        "bn": "孟加拉语（如有）"
-      },
-      "options": {
-        "none": "无",
-        "en": "英语 - 穆斯塔法·哈塔卜博士",
-        "fr": "法语 - 穆罕默德·哈米杜拉",
-        "id": "印尼语 - 伊斯兰事务部",
-        "ur": "乌尔都语 - 法特赫·穆罕默德",
-        "es": "西班牙语 - 伊萨·加西亚",
-        "zh": "中文 - 马坚",
-        "pt": "葡萄牙语 - 萨米尔·埃尔海耶克",
-        "ru": "俄语 - 埃尔米尔·库利耶夫",
-        "ja": "日语 - 三田了一",
-        "ko": "韩语 - 哈米德·崔",
-        "it": "意大利语 - 哈姆扎·罗伯托·皮卡多",
-        "bn": "孟加拉语 - 穆希乌丁·汗"
-      }
+      "hadithTranslationInfo": "在圣训搜索结果中显示阿拉伯文旁边的英文翻译。 Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "仅阿拉伯语",
+        "none": "无",
         "transliteration": "音译",
-        "en": "英语",
-        "fr": "法语",
-        "id": "印尼语",
-        "ur": "乌尔都语",
-        "es": "西班牙语",
-        "zh": "中文",
-        "pt": "葡萄牙语",
-        "ru": "俄语",
-        "ja": "日语",
-        "ko": "韩语",
-        "it": "意大利语",
-        "bn": "孟加拉语"
+        "translation": "翻译"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "阈值",
       "cutoffInfo": "结果的最低相似度分数。较高的值返回更少但更相关的结果。",
       "refineCutoff": "优化阈值",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "嵌入模型",
-      "modelInfo": "语义搜索的AI模型。云端模型稳定；本地模型可微调。",
+      "modelInfo": "用于语义搜索的AI模型。两者均支持多语言。Gemini是默认云模型；Jina v3是开放权重替代方案。",
       "gemini": "Gemini",
       "geminiDesc": "稳定、高质量",
       "jina": "Jina v3",
-      "jinaDesc": "多语言检索模型（1024维）"
+      "jinaDesc": "开放权重，较小的检索模型（1024维）"
     },
     "reranker": {
       "model": "模型",
@@ -313,9 +263,9 @@
       "dateCalendar": "日期历法",
       "dateCalendarInfo": "选择日期显示的历法系统",
       "dateCalendarOptions": {
-        "hijri": "伊斯兰历 (AH)",
-        "gregorian": "公历 (CE)",
-        "both": "两者 (AH / CE)"
+        "hijri": "伊斯兰历",
+        "gregorian": "公历",
+        "both": "两者"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF不可用",
     "fontSize": "字体大小",
     "copyWord": "复制",
-    "wordTap": "点击单词",
+    "wordDefinitions": "词语释义",
     "dictionary": {
       "notFound": "未找到定义",
       "rootMatch": "通过词根匹配找到",

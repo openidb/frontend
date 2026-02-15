@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Montserrat, Noto_Naskh_Arabic, Noto_Nastaliq_Urdu, Aref_Ruqaa } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme";
@@ -6,6 +7,34 @@ import { AppConfigProvider } from "@/lib/config";
 import { DesktopNavigation, MobileNavigation } from "@/components/Navigation";
 import { Toaster } from "@/components/ui/toaster";
 import { generateCsrfToken } from "@/lib/csrf";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-montserrat",
+});
+
+const notoNaskhArabic = Noto_Naskh_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-noto-naskh",
+});
+
+const notoNastaliqUrdu = Noto_Nastaliq_Urdu({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-noto-nastaliq",
+});
+
+const arefRuqaa = Aref_Ruqaa({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-aref-ruqaa",
+});
 
 // Inline script to apply theme/locale before React hydration to prevent flash
 const themeLocaleScript = `
@@ -34,8 +63,8 @@ const SITE_URL = process.env.SITE_URL || "https://openidb.org";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Open Islamic Database",
-  description: "Search across Quran, Hadith, and Islamic texts",
+  title: "OpenIDB",
+  description: "Search across Quran and Hadith",
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "32x32" },
@@ -44,18 +73,18 @@ export const metadata: Metadata = {
     apple: "/favicon-128.png",
   },
   openGraph: {
-    title: "Open Islamic Database",
-    description: "Search across Quran, Hadith, and Islamic texts",
+    title: "OpenIDB",
+    description: "Search across Quran and Hadith",
     url: SITE_URL,
-    siteName: "Open Islamic Database",
+    siteName: "OpenIDB",
     type: "website",
     locale: "en_US",
-    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Open Islamic Database" }],
+    images: [{ url: "/icon.png", width: 512, height: 512, alt: "OpenIDB" }],
   },
   twitter: {
     card: "summary",
-    title: "Open Islamic Database",
-    description: "Search across Quran, Hadith, and Islamic texts",
+    title: "OpenIDB",
+    description: "Search across Quran and Hadith",
     images: ["/icon.png"],
   },
 };
@@ -68,16 +97,11 @@ export default function RootLayout({
   const csrfToken = generateCsrfToken();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${montserrat.variable} ${notoNaskhArabic.variable} ${notoNastaliqUrdu.variable} ${arefRuqaa.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeLocaleScript }} />
         <meta name="csrf-token" content={csrfToken} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa&family=Montserrat:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
       </head>
       <body className="antialiased">
         <ThemeProvider>

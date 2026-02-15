@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "Recherche",
-    "subtitle": "Rechercher dans le Coran, les Hadiths et les textes islamiques classiques",
+    "subtitle": "Rechercher dans le Coran et les Hadiths",
     "placeholder": "Rechercher des textes arabes...",
     "refineSearch": "Affiner",
     "refining": "Affinage...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "Afficher les requetes etendues",
     "results": "{count} resultats trouves",
     "noResults": "Aucun resultat pour \"{query}\"",
+    "noResultsHint": "Essayez d'autres mots-cles ou verifiez l'orthographe",
     "minChars": "Commencez a taper pour rechercher...",
     "error": "Veuillez reessayer.",
     "tryAgain": "Réessayer",
@@ -178,7 +179,7 @@
       "language": "Langue",
       "appearance": "Apparence",
       "translations": "Traductions",
-      "booksDisplay": "Affichage des livres",
+      "booksDisplay": "Dates et calendrier",
       "advanced": "Parametres avances",
       "similarity": "Similarite",
       "fuzzySearch": "Recherche approximative",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "Automatique",
-      "automaticInfo": "Selectionner automatiquement les traductions en fonction de la langue d'interface choisie.",
       "quranTranslation": "Traduction du Coran",
       "quranTranslationInfo": "Afficher la traduction a cote du texte arabe dans les resultats de recherche du Coran.",
-      "bookTitleDisplay": "Titres des livres",
-      "bookTitleDisplayInfo": "Afficher les titres traduits des livres a cote de l'arabe.",
+      "bookTitleDisplay": "Traduction du titre",
+      "bookTitleDisplayInfo": "Afficher les titres traduits ou translittérés à côté de l'arabe.",
+      "authorTransliteration": "Translitteration des auteurs",
+      "authorTransliterationInfo": "Afficher les noms translitteres des auteurs a cote de l'arabe.",
       "hadithTranslation": "Traduction du Hadith",
-      "hadithTranslationInfo": "Afficher la traduction anglaise a cote du texte arabe dans les resultats de recherche du hadith.",
-      "hadithOptions": {
-        "none": "Aucune",
-        "en": "Anglais (sunnah.com)"
-      },
-      "pageTranslationModel": "Modele de traduction",
-      "pageTranslationModelInfo": "Modele IA pour traduire les pages. GPT est plus rapide, Gemini est de meilleure qualite.",
-      "geminiFlashDesc": "Meilleure qualite, plus lent",
-      "gptOss120bDesc": "Rapide, bonne qualite",
-      "bookContentTranslation": "Traduction du contenu",
-      "bookContentTranslationInfo": "Afficher les traductions en cache dans les resultats de recherche de livres.",
-      "bookContentOptions": {
-        "none": "Aucune",
-        "en": "Anglais (si disponible)",
-        "fr": "Francais (si disponible)",
-        "id": "Indonesien (si disponible)",
-        "ur": "Ourdou (si disponible)",
-        "es": "Espagnol (si disponible)",
-        "zh": "Chinois (si disponible)",
-        "pt": "Portugais (si disponible)",
-        "ru": "Russe (si disponible)",
-        "ja": "Japonais (si disponible)",
-        "ko": "Coreen (si disponible)",
-        "it": "Italien (si disponible)",
-        "bn": "Bengali (si disponible)"
-      },
-      "options": {
-        "none": "Aucune",
-        "en": "Anglais - Dr. Mustafa Khattab",
-        "fr": "Francais - Muhammad Hamidullah",
-        "id": "Indonesien - Ministere des Affaires islamiques",
-        "ur": "Ourdou - Fateh Muhammad Jalandhry",
-        "es": "Espagnol - Isa Garcia",
-        "zh": "Chinois - Ma Jian",
-        "pt": "Portugais - Samir El-Hayek",
-        "ru": "Russe - Elmir Kuliev",
-        "ja": "Japonais - Ryoichi Mita",
-        "ko": "Coreen - Hamid Choi",
-        "it": "Italien - Hamza Roberto Piccardo",
-        "bn": "Bengali - Muhiuddin Khan"
-      }
+      "hadithTranslationInfo": "Afficher la traduction anglaise a cote du texte arabe dans les resultats de recherche du hadith. Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "Arabe uniquement",
+        "none": "Aucune",
         "transliteration": "Translitteration",
-        "en": "Anglais",
-        "fr": "Francais",
-        "id": "Indonesien",
-        "ur": "Ourdou",
-        "es": "Espagnol",
-        "zh": "Chinois",
-        "pt": "Portugais",
-        "ru": "Russe",
-        "ja": "Japonais",
-        "ko": "Coreen",
-        "it": "Italien",
-        "bn": "Bengali"
+        "translation": "Traduction"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "Seuil",
       "cutoffInfo": "Score de similarite minimum. Des valeurs plus elevees renvoient moins de resultats mais plus pertinents.",
       "refineCutoff": "Seuil d'affinage",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "Modele d'embedding",
-      "modelInfo": "Modele IA pour recherche semantique. Modeles cloud stables; modeles locaux personnalisables.",
+      "modelInfo": "Modèle IA pour la recherche sémantique. Les deux sont multilingues. Gemini est le modèle cloud par défaut ; Jina v3 est une alternative open weight.",
       "gemini": "Gemini",
       "geminiDesc": "Stable, haute qualité",
       "jina": "Jina v3",
-      "jinaDesc": "Modèle de récupération multilingue (1024d)"
+      "jinaDesc": "Open weight, modèle de récupération plus petit (1024d)"
     },
     "reranker": {
       "model": "Modèle",
@@ -313,9 +263,9 @@
       "dateCalendar": "Calendrier des dates",
       "dateCalendarInfo": "Choisir le système de calendrier pour l'affichage des dates",
       "dateCalendarOptions": {
-        "hijri": "Hégirien (AH)",
-        "gregorian": "Grégorien (CE)",
-        "both": "Les deux (AH / CE)"
+        "hijri": "Hégirien",
+        "gregorian": "Grégorien",
+        "both": "Les deux"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF non disponible",
     "fontSize": "Taille du texte",
     "copyWord": "Copier",
-    "wordTap": "Toucher un mot",
+    "wordDefinitions": "Définitions des mots",
     "dictionary": {
       "notFound": "Aucune définition trouvée",
       "rootMatch": "Trouvé par correspondance de racine",

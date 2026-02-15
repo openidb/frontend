@@ -12,7 +12,10 @@ export async function GET(
     const res = await fetchAPIRaw(`/api/dictionary/lookup/${encodeURIComponent(word)}`);
     return new Response(res.body, {
       status: res.status,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=600",
+      },
     });
   } catch {
     return NextResponse.json({ error: "Backend unavailable" }, { status: 503 });

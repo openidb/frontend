@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react
 import { createPortal } from "react-dom";
 import { Copy, Loader2, BookOpen } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
-import Link from "next/link";
+import { PrefetchLink } from "./PrefetchLink";
 import type { LookupResult } from "@/lib/types/dictionary";
 
 interface WordDefinitionPopoverProps {
@@ -197,14 +197,14 @@ export function WordDefinitionPopover({
                   {def.definition}
                 </p>
                 {def.bookId && def.startPage != null && (
-                  <Link
+                  <PrefetchLink
                     href={`/reader/${def.bookId}?pn=${def.startPage}`}
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                     onClick={onClose}
                   >
                     <BookOpen className="h-3 w-3" />
                     {t("reader.dictionary.viewFull")}
-                  </Link>
+                  </PrefetchLink>
                 )}
               </div>
             ))}

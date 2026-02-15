@@ -11,137 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
-
-export type RerankerType = "gpt-oss-20b" | "gpt-oss-120b" | "gemini-flash" | "jina" | "qwen4b" | "none";
-
-export type EmbeddingModelType = "gemini" | "jina";
-
-export type QueryExpansionModelType = "gpt-oss-120b" | "gemini-flash";
-
-export type PageTranslationModelType = "gemini-flash" | "gpt-oss-120b";
-
-export type DateCalendarType = "hijri" | "gregorian" | "both";
-
-// Shared type for translation display options
-export type TranslationDisplayOption =
-  | "none" | "transliteration"
-  | "en" | "fr" | "id" | "ur" | "es" | "zh" | "pt" | "ru" | "ja" | "ko" | "it" | "bn";
-
-// Quran translation options (12 languages, matching app UI languages except Arabic)
-export const QURAN_TRANSLATIONS: { code: string; edition: string; name: string }[] = [
-  { code: "none", edition: "", name: "None" },
-  { code: "en", edition: "eng-mustafakhattaba", name: "English - Dr. Mustafa Khattab" },
-  { code: "fr", edition: "fra-muhammadhameedu", name: "French - Muhammad Hamidullah" },
-  { code: "id", edition: "ind-indonesianislam", name: "Indonesian - Islamic Ministry" },
-  { code: "ur", edition: "urd-fatehmuhammadja", name: "Urdu - Fateh Muhammad Jalandhry" },
-  { code: "es", edition: "spa-muhammadisagarc", name: "Spanish - Isa Garcia" },
-  { code: "zh", edition: "zho-majian", name: "Chinese - Ma Jian" },
-  { code: "pt", edition: "por-samirelhayek", name: "Portuguese - Samir El-Hayek" },
-  { code: "ru", edition: "rus-elmirkuliev", name: "Russian - Elmir Kuliev" },
-  { code: "ja", edition: "jpn-ryoichimita", name: "Japanese - Ryoichi Mita" },
-  { code: "ko", edition: "kor-hamidchoi", name: "Korean - Hamid Choi" },
-  { code: "it", edition: "ita-hamzarobertopic", name: "Italian - Hamza Roberto Piccardo" },
-  { code: "bn", edition: "ben-muhiuddinkhan", name: "Bengali - Muhiuddin Khan" },
-];
-
-// Shared options array for book title and TOC display dropdowns
-export const TRANSLATION_DISPLAY_OPTIONS: { code: TranslationDisplayOption }[] = [
-  { code: "none" },
-  { code: "transliteration" },
-  { code: "en" }, { code: "fr" }, { code: "id" }, { code: "ur" },
-  { code: "es" }, { code: "zh" }, { code: "pt" }, { code: "ru" },
-  { code: "ja" }, { code: "ko" }, { code: "it" }, { code: "bn" },
-];
-
-export interface SearchConfig {
-  includeQuran: boolean;
-  includeHadith: boolean;
-  includeBooks: boolean;
-  reranker: RerankerType;
-  similarityCutoff: number;
-  refineSimilarityCutoff: number; // Similarity threshold for refine/semantic searches
-  preRerankLimit: number;
-  postRerankLimit: number;
-  fuzzyEnabled: boolean;
-  // Books display options
-  dateCalendar: DateCalendarType; // "hijri", "gregorian", or "both"
-  bookTitleDisplay: TranslationDisplayOption;  // Replaces showTransliterations
-  showPublicationDates: boolean;
-  // Translation settings
-  autoTranslation: boolean; // When true, use UI language for translations
-  quranTranslation: string; // Language code ("en", "ur", "fr", etc.) or "none"
-  hadithTranslation: "none" | "en"; // Hadith translation (English only for now)
-  // Embedding model selection
-  embeddingModel: EmbeddingModelType; // "gemini" (cloud) or "jina" (Jina v3)
-  // Query expansion model selection
-  queryExpansionModel: QueryExpansionModelType; // Model for expanding search queries
-  // Page translation model selection
-  pageTranslationModel: PageTranslationModelType; // Model for translating book pages
-  // Book content translation in search results (from cached translations only)
-  bookContentTranslation: string; // "none" | "en" | "fr" | ... (language codes)
-  // Refine search settings - Query weights (Step 1)
-  refineOriginalWeight: number;     // Weight of original query (default: 1.0)
-  refineExpandedWeight: number;     // Weight of LLM-expanded queries (default: 0.7)
-  // Refine search settings - Per-query retrieval limits (Step 2)
-  refineBookPerQuery: number;       // Books per expanded query (default: 30)
-  refineAyahPerQuery: number;       // Ayahs per expanded query (default: 30)
-  refineHadithPerQuery: number;     // Hadiths per expanded query (default: 30)
-  // Refine search settings - Reranker limits (Step 4)
-  refineBookRerank: number;         // Books to send to reranker (default: 20)
-  refineAyahRerank: number;         // Ayahs to send to reranker (default: 12)
-  refineHadithRerank: number;       // Hadiths to send to reranker (default: 15)
-}
-
-export const defaultSearchConfig: SearchConfig = {
-  includeQuran: true,
-  includeHadith: true,
-  includeBooks: true,
-  reranker: "gpt-oss-120b",
-  similarityCutoff: 0.6,
-  refineSimilarityCutoff: 0.25, // Lower threshold for refine searches (LLM filters further)
-  preRerankLimit: 70,
-  postRerankLimit: 10,
-  fuzzyEnabled: true,
-  // Books display options
-  dateCalendar: "both",
-  bookTitleDisplay: "transliteration",  // Default maintains current behavior
-  showPublicationDates: true,
-  // Translation settings - auto uses UI language, quranTranslation is override
-  autoTranslation: true,
-  quranTranslation: "en",
-  hadithTranslation: "en",  // Default to English
-  // Embedding model - default to Gemini (cloud)
-  embeddingModel: "gemini",
-  // Query expansion model - default to GPT OSS 120B
-  queryExpansionModel: "gpt-oss-120b",
-  // Page translation model - default to Gemini Flash
-  pageTranslationModel: "gemini-flash",
-  // Book content translation - default to none (only shows if cached)
-  bookContentTranslation: "none",
-  // Refine search settings - Query weights
-  refineOriginalWeight: 1.0,
-  refineExpandedWeight: 0.7,
-  // Refine search settings - Per-query retrieval limits
-  refineBookPerQuery: 30,
-  refineAyahPerQuery: 30,
-  refineHadithPerQuery: 30,
-  // Refine search settings - Reranker limits
-  refineBookRerank: 20,
-  refineAyahRerank: 12,
-  refineHadithRerank: 15,
-};
-
-export const embeddingModelOptions: { value: EmbeddingModelType; labelKey: string; descKey: string }[] = [
-  { value: "gemini", labelKey: "gemini", descKey: "geminiDesc" },
-  { value: "jina", labelKey: "jina", descKey: "jinaDesc" },
-];
-
-export const rerankerOptions: { value: RerankerType; label: string; description: string }[] = [
-  { value: "none", label: "None", description: "Fast (default)" },
-  { value: "gpt-oss-120b", label: "OpenAI/GPT-OSS 120B", description: "Highest quality, slower" },
-  { value: "gemini-flash", label: "Gemini Flash", description: "High quality reasoning" },
-  { value: "jina", label: "Jina Reranker", description: "Fast neural reranker" },
-];
+import type { SearchConfig } from "@/lib/config/search-defaults";
 
 interface SearchConfigDropdownProps {
   config: SearchConfig;
@@ -164,11 +34,11 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
   if (!mounted) {
     return (
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        className="h-10 w-10 md:h-12 md:w-12 border-border hover:bg-muted shrink-0"
+        className="group/gear h-10 w-10 md:h-12 md:w-12 rounded-lg hover:bg-muted shrink-0"
       >
-        <Settings2 className="h-4 w-4 md:h-5 md:w-5" />
+        <Settings2 className="h-4 w-4 md:h-5 md:w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
       </Button>
     );
   }
@@ -177,12 +47,12 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="h-10 w-10 md:h-12 md:w-12 border-border hover:bg-muted shrink-0"
+          className="group/gear h-10 w-10 md:h-12 md:w-12 rounded-lg hover:bg-muted shrink-0"
           aria-label={t("searchConfig.contentTypes")}
         >
-          <Settings2 className="h-4 w-4 md:h-5 md:w-5" />
+          <Settings2 className="h-4 w-4 md:h-5 md:w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -205,14 +75,6 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
           className="hover:bg-accent"
         >
           {t("searchConfig.hadiths")}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={config.includeBooks}
-          onCheckedChange={(checked) => updateConfig({ includeBooks: checked })}
-          onSelect={(e) => e.preventDefault()}
-          className="hover:bg-accent"
-        >
-          {t("searchConfig.books")}
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>

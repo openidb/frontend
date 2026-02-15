@@ -69,7 +69,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Montserrat", "Noto Naskh Arabic", sans-serif;
+    font-family: var(--font-montserrat), var(--font-noto-naskh), sans-serif;
     font-optical-sizing: auto;
   }
 }
@@ -95,5 +95,36 @@ html[dir="rtl"] .flex-row-reverse-rtl {
 /* Keep score tags LTR always */
 html[dir="rtl"] .font-mono {
   direction: ltr;
+}
+
+/* Page transition fade-in (replaces framer-motion) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(0,0,0,0.04) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.04) 50%, transparent 75%);
+  background-size: 200% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer,
+  .animate-fade-in {
+    animation: none;
+  }
 }
 

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (eventId) headers["x-search-event-id"] = eventId;
     if (sessionId) headers["x-session-id"] = sessionId;
 
-    const res = await fetchAPIRaw(`/api/search?${searchParams}`, { headers });
+    const res = await fetchAPIRaw(`/api/search?${searchParams}`, { headers, signal: request.signal });
     return new Response(res.body, {
       status: res.status,
       headers: { "Content-Type": "application/json" },

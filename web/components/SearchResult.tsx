@@ -112,7 +112,7 @@ function SearchResultInner({ result, bookTitleDisplay = "transliteration", showA
   return (
     <PrefetchLink
       href={readerUrl}
-      className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
+      className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-card"
       onClick={() => {
         if (searchEventId) {
           trackClick(searchEventId, `${book.id}:${pageNumber}`, "book", result.rank ?? 0);
@@ -223,7 +223,7 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
       href={ayah.quranComUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
+      className="block p-4 border rounded-lg border-s-4 border-s-emerald-500 hover:border-muted-foreground hover:border-s-emerald-500 hover:shadow-sm transition-all bg-card"
       onClick={() => {
         if (searchEventId) {
           trackClick(searchEventId, `${ayah.surahNumber}:${ayah.ayahNumber}`, "quran", ayah.rank ?? 0);
@@ -323,7 +323,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       href={hadith.sourceUrl || "#"}
       target="_blank"
       rel="noopener noreferrer"
-      className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all"
+      className="block p-4 border rounded-lg border-s-4 border-s-amber-500 hover:border-muted-foreground hover:border-s-amber-500 hover:shadow-sm transition-all bg-card"
       onClick={() => {
         if (searchEventId) {
           trackClick(searchEventId, `${hadith.collectionSlug}:${hadith.hadithNumber}`, "hadith", hadith.rank ?? 0);

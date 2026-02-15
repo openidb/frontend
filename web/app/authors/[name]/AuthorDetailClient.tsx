@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PrefetchLink } from "@/components/PrefetchLink";
 import {
   Table,
   TableBody,
@@ -75,13 +75,13 @@ export default function AuthorDetailClient({
   if (books.length === 0) {
     return (
       <div className="p-8">
-        <Link
+        <PrefetchLink
           href="/authors"
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 rtl:scale-x-[-1]" />
           {t("authors.backToAuthors")}
-        </Link>
+        </PrefetchLink>
         <div className="text-center text-muted-foreground">{t("authors.authorNotFound")}</div>
       </div>
     );
@@ -90,17 +90,19 @@ export default function AuthorDetailClient({
 
   return (
     <div className="p-8">
-      <Link
+      <PrefetchLink
         href="/authors"
         className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4 rtl:scale-x-[-1]" />
         {t("authors.backToAuthors")}
-      </Link>
+      </PrefetchLink>
 
       <div className="mb-6" dir="rtl">
         <h1 className="text-3xl font-bold">{authorName}</h1>
-        <p className="text-lg text-muted-foreground">{authorLatin}</p>
+        {config.showAuthorTransliteration && (
+          <p className="text-lg text-muted-foreground">{authorLatin}</p>
+        )}
       </div>
 
       {/* Author Biographical Information */}
@@ -148,7 +150,7 @@ export default function AuthorDetailClient({
               books.map((book) => (
                 <TableRow key={book.id}>
                   <TableCell>
-                    <Link
+                    <PrefetchLink
                       href={`/reader/${book.id}`}
                       className="font-medium hover:underline"
                     >
@@ -156,7 +158,7 @@ export default function AuthorDetailClient({
                       <div className="text-sm text-muted-foreground">
                         {book.titleLatin}
                       </div>
-                    </Link>
+                    </PrefetchLink>
                   </TableCell>
                   <TableCell>
                     {authorDeathYearDisplay ? (

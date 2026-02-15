@@ -64,8 +64,8 @@ export default async function BooksPage() {
   try {
     const [booksData, categoriesData, centuriesData] = await Promise.all([
       fetchAPI<APIResponse>("/api/books?limit=50"),
-      fetchAPI<{ categories: CategoryItem[] }>("/api/books/categories?flat=true").catch(() => ({ categories: [] })),
-      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries").catch(() => ({ centuries: [] })),
+      fetchAPI<{ categories: CategoryItem[] }>("/api/books/categories?flat=true", { revalidate: 3600 }).catch(() => ({ categories: [] })),
+      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries", { revalidate: 3600 }).catch(() => ({ centuries: [] })),
     ]);
 
     books = booksData.books;

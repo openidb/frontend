@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "Cerca",
-    "subtitle": "Cerca nel Corano, Hadith e testi islamici classici",
+    "subtitle": "Cerca nel Corano e Hadith",
     "placeholder": "Cerca testi arabi...",
     "refineSearch": "Affina",
     "refining": "Affinamento...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "Mostra query espanse",
     "results": "Trovati {count} risultati",
     "noResults": "Nessun risultato per \"{query}\"",
+    "noResultsHint": "Prova parole chiave diverse o controlla l'ortografia",
     "minChars": "Inizia a digitare per cercare...",
     "error": "Per favore riprova.",
     "tryAgain": "Riprova",
@@ -178,7 +179,7 @@
       "language": "Lingua",
       "appearance": "Aspetto",
       "translations": "Traduzioni",
-      "booksDisplay": "Visualizzazione libri",
+      "booksDisplay": "Date e calendario",
       "advanced": "Impostazioni avanzate",
       "similarity": "Similarita",
       "fuzzySearch": "Ricerca fuzzy",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "Automatico",
-      "automaticInfo": "Seleziona automaticamente le traduzioni in base alla lingua dell'interfaccia scelta.",
       "quranTranslation": "Traduzione del Corano",
       "quranTranslationInfo": "Mostra la traduzione accanto al testo arabo nei risultati di ricerca del Corano.",
-      "bookTitleDisplay": "Titoli dei libri",
-      "bookTitleDisplayInfo": "Mostra i titoli tradotti dei libri accanto all'arabo.",
-      "hadithTranslation": "Traduzione del Hadith",
-      "hadithTranslationInfo": "Mostra la traduzione inglese accanto al testo arabo nei risultati di ricerca del hadith.",
-      "hadithOptions": {
-        "none": "Nessuna",
-        "en": "Inglese (sunnah.com)"
-      },
-      "pageTranslationModel": "Modello di traduzione pagine",
-      "pageTranslationModelInfo": "Modello AI per tradurre le pagine. GPT e piu veloce, Gemini e di qualita superiore.",
-      "geminiFlashDesc": "Massima qualita, piu lento",
-      "gptOss120bDesc": "Veloce, buona qualita",
-      "bookContentTranslation": "Traduzione del contenuto",
-      "bookContentTranslationInfo": "Mostra le traduzioni in cache nei risultati di ricerca dei libri.",
-      "bookContentOptions": {
-        "none": "Nessuna",
-        "en": "Inglese (se disponibile)",
-        "fr": "Francese (se disponibile)",
-        "id": "Indonesiano (se disponibile)",
-        "ur": "Urdu (se disponibile)",
-        "es": "Spagnolo (se disponibile)",
-        "zh": "Cinese (se disponibile)",
-        "pt": "Portoghese (se disponibile)",
-        "ru": "Russo (se disponibile)",
-        "ja": "Giapponese (se disponibile)",
-        "ko": "Coreano (se disponibile)",
-        "it": "Italiano (se disponibile)",
-        "bn": "Bengalese (se disponibile)"
-      },
-      "options": {
-        "none": "Nessuna",
-        "en": "Inglese - Dr. Mustafa Khattab",
-        "fr": "Francese - Muhammad Hamidullah",
-        "id": "Indonesiano - Ministero degli Affari Islamici",
-        "ur": "Urdu - Fateh Muhammad Jalandhry",
-        "es": "Spagnolo - Isa Garcia",
-        "zh": "Cinese - Ma Jian",
-        "pt": "Portoghese - Samir El-Hayek",
-        "ru": "Russo - Elmir Kuliev",
-        "ja": "Giapponese - Ryoichi Mita",
-        "ko": "Coreano - Hamid Choi",
-        "it": "Italiano - Hamza Roberto Piccardo",
-        "bn": "Bengalese - Muhiuddin Khan"
-      }
+      "bookTitleDisplay": "Traduzione del titolo",
+      "bookTitleDisplayInfo": "Mostra i titoli tradotti o traslitterati accanto all'arabo.",
+      "authorTransliteration": "Traslitterazione autori",
+      "authorTransliterationInfo": "Mostra i nomi traslitterati degli autori accanto all'arabo.",
+      "hadithTranslation": "Traduzione Hadith",
+      "hadithTranslationInfo": "Mostra la traduzione inglese accanto al testo arabo nei risultati di ricerca del hadith. Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "Solo arabo",
+        "none": "Nessuna",
         "transliteration": "Traslitterazione",
-        "en": "Inglese",
-        "fr": "Francese",
-        "id": "Indonesiano",
-        "ur": "Urdu",
-        "es": "Spagnolo",
-        "zh": "Cinese",
-        "pt": "Portoghese",
-        "ru": "Russo",
-        "ja": "Giapponese",
-        "ko": "Coreano",
-        "it": "Italiano",
-        "bn": "Bengalese"
+        "translation": "Traduzione"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "Soglia",
       "cutoffInfo": "Punteggio minimo di similarita. Valori piu alti restituiscono meno risultati ma piu rilevanti.",
       "refineCutoff": "Soglia di Affinamento",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "Modello di Embedding",
-      "modelInfo": "Modello AI per ricerca semantica. Modelli cloud stabili; modelli locali personalizzabili.",
+      "modelInfo": "Modello AI per la ricerca semantica. Entrambi sono multilingue. Gemini è il modello cloud predefinito; Jina v3 è un'alternativa open weight.",
       "gemini": "Gemini",
       "geminiDesc": "Stabile, alta qualità",
       "jina": "Jina v3",
-      "jinaDesc": "Modello di recupero multilingue (1024d)"
+      "jinaDesc": "Open weight, modello di recupero più piccolo (1024d)"
     },
     "reranker": {
       "model": "Modello",
@@ -313,9 +263,9 @@
       "dateCalendar": "Calendario delle date",
       "dateCalendarInfo": "Scegli il sistema di calendario per visualizzare le date",
       "dateCalendarOptions": {
-        "hijri": "Egira (AH)",
-        "gregorian": "Gregoriano (CE)",
-        "both": "Entrambi (AH / CE)"
+        "hijri": "Egira",
+        "gregorian": "Gregoriano",
+        "both": "Entrambi"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF non disponibile",
     "fontSize": "Dimensione testo",
     "copyWord": "Copia",
-    "wordTap": "Tocca parola",
+    "wordDefinitions": "Definizioni delle parole",
     "dictionary": {
       "notFound": "Nessuna definizione trovata",
       "rootMatch": "Trovato per corrispondenza di radice",

@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Buscar en el Corán, Hadiz y textos islámicos clásicos",
+    "subtitle": "Buscar en el Corán y Hadiz",
     "placeholder": "Buscar textos arabes...",
     "refineSearch": "Refinar",
     "refining": "Refinando...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "Mostrar consultas ampliadas",
     "results": "Se encontraron {count} resultados",
     "noResults": "No se encontraron resultados para \"{query}\"",
+    "noResultsHint": "Prueba con otras palabras clave o revisa la ortografia",
     "minChars": "Empieza a escribir para buscar...",
     "error": "Por favor, intentelo de nuevo.",
     "tryAgain": "Intentar de nuevo",
@@ -178,7 +179,7 @@
       "language": "Idioma",
       "appearance": "Apariencia",
       "translations": "Traducciones",
-      "booksDisplay": "Visualizacion de libros",
+      "booksDisplay": "Fechas y calendario",
       "advanced": "Configuracion avanzada",
       "similarity": "Similitud",
       "fuzzySearch": "Busqueda difusa",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "Automatico",
-      "automaticInfo": "Seleccionar automaticamente las traducciones segun el idioma de interfaz elegido.",
       "quranTranslation": "Traduccion del Coran",
       "quranTranslationInfo": "Mostrar traduccion junto al texto arabe en los resultados de busqueda del Coran.",
-      "bookTitleDisplay": "Titulos de libros",
-      "bookTitleDisplayInfo": "Mostrar titulos de libros traducidos junto al arabe.",
-      "hadithTranslation": "Traduccion del Hadiz",
-      "hadithTranslationInfo": "Mostrar traduccion al ingles junto al texto arabe en los resultados de busqueda de hadiz.",
-      "hadithOptions": {
-        "none": "Ninguna",
-        "en": "Ingles (sunnah.com)"
-      },
-      "pageTranslationModel": "Modelo de traduccion",
-      "pageTranslationModelInfo": "Modelo de IA para traducir paginas. GPT es mas rapido, Gemini es de mayor calidad.",
-      "geminiFlashDesc": "Maxima calidad, mas lento",
-      "gptOss120bDesc": "Rapido, buena calidad",
-      "bookContentTranslation": "Traduccion de contenido",
-      "bookContentTranslationInfo": "Mostrar traducciones en cache en resultados de busqueda de libros.",
-      "bookContentOptions": {
-        "none": "Ninguna",
-        "en": "Ingles (si disponible)",
-        "fr": "Frances (si disponible)",
-        "id": "Indonesio (si disponible)",
-        "ur": "Urdu (si disponible)",
-        "es": "Espanol (si disponible)",
-        "zh": "Chino (si disponible)",
-        "pt": "Portugues (si disponible)",
-        "ru": "Ruso (si disponible)",
-        "ja": "Japones (si disponible)",
-        "ko": "Coreano (si disponible)",
-        "it": "Italiano (si disponible)",
-        "bn": "Bengali (si disponible)"
-      },
-      "options": {
-        "none": "Ninguna",
-        "en": "Ingles - Dr. Mustafa Khattab",
-        "fr": "Frances - Muhammad Hamidullah",
-        "id": "Indonesio - Ministerio de Asuntos Islamicos",
-        "ur": "Urdu - Fateh Muhammad Jalandhry",
-        "es": "Espanol - Isa Garcia",
-        "zh": "Chino - Ma Jian",
-        "pt": "Portugues - Samir El-Hayek",
-        "ru": "Ruso - Elmir Kuliev",
-        "ja": "Japones - Ryoichi Mita",
-        "ko": "Coreano - Hamid Choi",
-        "it": "Italiano - Hamza Roberto Piccardo",
-        "bn": "Bengali - Muhiuddin Khan"
-      }
+      "bookTitleDisplay": "Traducción del título",
+      "bookTitleDisplayInfo": "Mostrar títulos traducidos o transliterados junto al árabe.",
+      "authorTransliteration": "Transliteracion de autores",
+      "authorTransliterationInfo": "Mostrar nombres transliterados de autores junto al arabe.",
+      "hadithTranslation": "Traducción del Hadiz",
+      "hadithTranslationInfo": "Mostrar traduccion al ingles junto al texto arabe en los resultados de busqueda de hadiz. Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "Solo arabe",
+        "none": "Ninguna",
         "transliteration": "Transliteracion",
-        "en": "Ingles",
-        "fr": "Frances",
-        "id": "Indonesio",
-        "ur": "Urdu",
-        "es": "Espanol",
-        "zh": "Chino",
-        "pt": "Portugues",
-        "ru": "Ruso",
-        "ja": "Japones",
-        "ko": "Coreano",
-        "it": "Italiano",
-        "bn": "Bengali"
+        "translation": "Traducción"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "Umbral",
       "cutoffInfo": "Puntuacion minima de similitud. Valores mas altos devuelven menos resultados pero mas relevantes.",
       "refineCutoff": "Umbral de refinamiento",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "Modelo de Embedding",
-      "modelInfo": "Modelo de IA para busqueda semantica. Modelos en nube estables; modelos locales personalizables.",
+      "modelInfo": "Modelo de IA para búsqueda semántica. Ambos son multilingües. Gemini es el modelo cloud por defecto; Jina v3 es una alternativa open weight.",
       "gemini": "Gemini",
       "geminiDesc": "Estable, alta calidad",
       "jina": "Jina v3",
-      "jinaDesc": "Modelo de recuperación multilingüe (1024d)"
+      "jinaDesc": "Open weight, modelo de recuperación más pequeño (1024d)"
     },
     "reranker": {
       "model": "Modelo",
@@ -313,9 +263,9 @@
       "dateCalendar": "Calendario de fechas",
       "dateCalendarInfo": "Elegir el sistema de calendario para mostrar las fechas",
       "dateCalendarOptions": {
-        "hijri": "Hégira (AH)",
-        "gregorian": "Gregoriano (CE)",
-        "both": "Ambos (AH / CE)"
+        "hijri": "Hégira",
+        "gregorian": "Gregoriano",
+        "both": "Ambos"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF no disponible",
     "fontSize": "Tamaño de fuente",
     "copyWord": "Copiar",
-    "wordTap": "Tocar palabra",
+    "wordDefinitions": "Definiciones de palabras",
     "dictionary": {
       "notFound": "No se encontró definición",
       "rootMatch": "Encontrado por coincidencia de raíz",

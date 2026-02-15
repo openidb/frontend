@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -30,6 +31,8 @@ const buttonVariants = cva(
   }
 )
 
+const MotionButton = motion.create("button")
+
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
@@ -38,12 +41,36 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      )
+    }
+
+    // Extract only the props compatible with motion.button, omitting React DnD event handlers
+    // that conflict with Framer Motion's types (onDrag, onDragStart, onDragEnd, onAnimationStart)
+    const {
+      onDrag: _a,
+      onDragStart: _b,
+      onDragEnd: _c,
+      onAnimationStart: _d,
+      onDragOver: _e,
+      onDragEnter: _f,
+      onDragLeave: _g,
+      ...motionProps
+    } = props
+
     return (
-      <Comp
+      <MotionButton
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        {...props}
+        whileTap={{ scale: 0.97 }}
+        transition={{ duration: 0.1 }}
+        {...motionProps}
       />
     )
   }

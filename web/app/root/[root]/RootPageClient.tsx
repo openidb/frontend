@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { PrefetchLink } from "@/components/PrefetchLink";
 import type { RootFamilyData, DerivedForm, Definition } from "@/lib/types/dictionary";
 
 type DictionaryEntry = Omit<Definition, "matchType">;
@@ -33,12 +33,12 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
     <div className="max-w-4xl mx-auto px-4 py-8" dir="rtl">
       {/* Header */}
       <div className="mb-8">
-        <Link
+        <PrefetchLink
           href="/"
           className="text-sm text-gray-500 dark:text-gray-400 hover:underline mb-2 inline-block"
         >
           &larr; Home
-        </Link>
+        </PrefetchLink>
         <h1 className="text-4xl font-bold font-arabic mb-2">{data.root}</h1>
         <p className="text-gray-600 dark:text-gray-400">
           Root: <span className="font-arabic font-semibold">{data.root}</span>
@@ -172,7 +172,7 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
                       )}
                       {entry.bookId && entry.startPage && (
                         <div className="mt-3 text-sm text-gray-500">
-                          <Link
+                          <PrefetchLink
                             href={`/reader/${entry.bookId}?page=${entry.startPage}`}
                             className="hover:underline text-blue-600 dark:text-blue-400"
                           >
@@ -181,7 +181,7 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
                               ? `–${entry.endPage}`
                               : ""}
                             )
-                          </Link>
+                          </PrefetchLink>
                         </div>
                       )}
                     </div>

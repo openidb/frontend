@@ -1,7 +1,13 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { SearchConfig, defaultSearchConfig, TranslationDisplayOption, DateCalendarType } from "@/components/SearchConfigDropdown";
+import {
+  type SearchConfig,
+  type TranslationDisplayOption,
+  type DateCalendarType,
+  DEFAULT_SEARCH_CONFIG,
+  INTERNAL_CONFIG_KEYS,
+} from "@/lib/config/search-defaults";
 
 interface AppConfigContextType {
   config: SearchConfig;
@@ -13,8 +19,17 @@ interface AppConfigContextType {
 const AppConfigContext = createContext<AppConfigContextType | null>(null);
 const STORAGE_KEY = "searchConfig";
 
+/** Force internal (non-user-facing) config keys back to centralized defaults. */
+function applyInternalDefaults(config: SearchConfig): SearchConfig {
+  const patched = { ...config };
+  for (const key of INTERNAL_CONFIG_KEYS) {
+    (patched as Record<string, unknown>)[key] = DEFAULT_SEARCH_CONFIG[key];
+  }
+  return patched;
+}
+
 export function AppConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfigState] = useState<SearchConfig>(defaultSearchConfig);
+  const [config, setConfigState] = useState<SearchConfig>(DEFAULT_SEARCH_CONFIG);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -30,46 +45,12 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           }
           // Clean up removed tocDisplay field
           delete parsed.tocDisplay;
-          // Clamp similarityCutoff to valid range (0.1-0.8)
-          if (typeof parsed.similarityCutoff === "number") {
-            parsed.similarityCutoff = Math.max(0.1, Math.min(0.8, parsed.similarityCutoff));
-          }
-          // Clamp refineSimilarityCutoff to valid range (0.15-0.65)
-          if (typeof parsed.refineSimilarityCutoff === "number") {
-            parsed.refineSimilarityCutoff = Math.max(0.15, Math.min(0.65, parsed.refineSimilarityCutoff));
-          }
-          // Clamp refine query weights
-          if (typeof parsed.refineOriginalWeight === "number") {
-            parsed.refineOriginalWeight = Math.max(0.5, Math.min(1.0, parsed.refineOriginalWeight));
-          }
-          if (typeof parsed.refineExpandedWeight === "number") {
-            parsed.refineExpandedWeight = Math.max(0.3, Math.min(1.0, parsed.refineExpandedWeight));
-          }
-          // Clamp refine per-query limits
-          if (typeof parsed.refineBookPerQuery === "number") {
-            parsed.refineBookPerQuery = Math.max(10, Math.min(60, parsed.refineBookPerQuery));
-          }
-          if (typeof parsed.refineAyahPerQuery === "number") {
-            parsed.refineAyahPerQuery = Math.max(10, Math.min(60, parsed.refineAyahPerQuery));
-          }
-          if (typeof parsed.refineHadithPerQuery === "number") {
-            parsed.refineHadithPerQuery = Math.max(10, Math.min(60, parsed.refineHadithPerQuery));
-          }
-          // Clamp refine reranker limits
-          if (typeof parsed.refineBookRerank === "number") {
-            parsed.refineBookRerank = Math.max(5, Math.min(40, parsed.refineBookRerank));
-          }
-          if (typeof parsed.refineAyahRerank === "number") {
-            parsed.refineAyahRerank = Math.max(5, Math.min(25, parsed.refineAyahRerank));
-          }
-          if (typeof parsed.refineHadithRerank === "number") {
-            parsed.refineHadithRerank = Math.max(5, Math.min(25, parsed.refineHadithRerank));
-          }
           // Validate embedding model (default to gemini if invalid)
           if (parsed.embeddingModel !== "gemini" && parsed.embeddingModel !== "jina") {
             parsed.embeddingModel = "gemini";
           }
-          setConfigState({ ...defaultSearchConfig, ...parsed });
+          // Merge stored values with defaults, then force-reset internal keys
+          setConfigState(applyInternalDefaults({ ...DEFAULT_SEARCH_CONFIG, ...parsed }));
         }
       } catch {
         // Invalid JSON, use defaults
@@ -128,4 +109,4 @@ export function useAppConfig() {
 
 // Re-export types for convenience
 export type { SearchConfig, TranslationDisplayOption, DateCalendarType };
-export { defaultSearchConfig };
+export { DEFAULT_SEARCH_CONFIG };

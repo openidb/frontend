@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
+import { PrefetchLink } from "@/components/PrefetchLink";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -143,15 +143,15 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
     return (
       <div className="p-4 md:p-8">
         <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="h-8 w-32 bg-muted animate-pulse rounded" />
-          <div className="h-10 w-64 bg-muted animate-pulse rounded" />
+          <div className="h-8 w-32 bg-muted animate-shimmer rounded" />
+          <div className="h-10 w-64 bg-muted animate-shimmer rounded" />
         </div>
         <div className="rounded-md border">
           <div className="h-12 bg-muted/50 border-b" />
           {[...Array(10)].map((_, i) => (
             <div key={i} className="h-16 border-b flex items-center gap-4 px-4">
-              <div className="h-4 w-48 bg-muted animate-pulse rounded" />
-              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-48 bg-muted animate-shimmer rounded" />
+              <div className="h-4 w-24 bg-muted animate-shimmer rounded" />
             </div>
           ))}
         </div>
@@ -188,7 +188,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
             <TableRow>
               <TableHead className="w-16">ID</TableHead>
               <TableHead>{t("authors.tableHeaders.name")}</TableHead>
-              <TableHead className="w-40">{t("authors.tableHeaders.deathYear")}</TableHead>
+              <TableHead className="w-24 md:w-40">{t("authors.tableHeaders.deathYear")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -196,14 +196,14 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
               [...Array(10)].map((_, i) => (
                 <TableRow key={i}>
                   <TableCell>
-                    <div className="h-4 w-10 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-10 bg-muted animate-shimmer rounded" />
                   </TableCell>
                   <TableCell>
-                    <div className="h-4 w-48 bg-muted animate-pulse rounded mb-2" />
-                    <div className="h-3 w-32 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-48 bg-muted animate-shimmer rounded mb-2" />
+                    <div className="h-3 w-32 bg-muted animate-shimmer rounded" />
                   </TableCell>
                   <TableCell>
-                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-16 bg-muted animate-shimmer rounded" />
                   </TableCell>
                 </TableRow>
               ))
@@ -220,15 +220,17 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
                     {author.id}
                   </TableCell>
                   <TableCell className="overflow-hidden">
-                    <Link
+                    <PrefetchLink
                       href={`/authors/${author.id}`}
                       className="font-medium hover:underline"
                     >
                       <div className="truncate">{author.nameArabic}</div>
-                      <div className="truncate text-sm text-muted-foreground">
-                        {author.nameLatin}
-                      </div>
-                    </Link>
+                      {config.showAuthorTransliteration && (
+                        <div className="truncate text-sm text-muted-foreground">
+                          {author.nameLatin}
+                        </div>
+                      )}
+                    </PrefetchLink>
                   </TableCell>
                   <TableCell>
                     {author.deathDateHijri || author.deathDateGregorian ? (

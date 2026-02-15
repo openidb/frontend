@@ -2,16 +2,16 @@
 
 import * as React from "react"
 import { useState, useEffect } from "react"
-import { ChevronDown } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
+import { motion } from "framer-motion"
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface FilterOption {
   value: string
@@ -51,57 +51,81 @@ export function MultiSelectDropdown({
     ? `${title} (${selected.length})`
     : title
 
+  const triggerClassName = "flex h-10 items-center justify-between gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-all duration-200 hover:border-muted-foreground/50 outline-none whitespace-nowrap"
+
   // Render a placeholder button during SSR to avoid hydration mismatch
   if (!mounted) {
     return (
-      <Button
-        variant="outline"
-        className="border-border hover:bg-accent"
-      >
-        {displayTitle}
-        <ChevronDown className="ms-2 h-4 w-4" />
-      </Button>
+      <button type="button" className={triggerClassName}>
+        <span>{displayTitle}</span>
+        <ChevronDown className="h-4 w-4 opacity-50" />
+      </button>
     )
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="border-border hover:bg-accent"
-        >
-          {displayTitle}
-          <ChevronDown className="ms-2 h-4 w-4" />
-        </Button>
+        <button type="button" className={triggerClassName}>
+          <span>{displayTitle}</span>
+          <ChevronDown className="h-4 w-4 opacity-50" />
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 max-h-80 overflow-y-auto bg-popover border border-border" align="start">
-        <DropdownMenuLabel>{title}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {options.map((option) => (
-          <DropdownMenuCheckboxItem
-            key={option.value}
-            checked={selected.includes(option.value)}
-            onCheckedChange={() => (!option.disabled || selected.includes(option.value)) && handleToggle(option.value)}
-            onSelect={(e) => e.preventDefault()}
-            disabled={option.disabled}
-            className={option.disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-accent"}
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col">
-                <span>{option.label}</span>
-                {option.labelArabic && (
-                  <span className="text-sm text-muted-foreground">
-                    {option.labelArabic}
-                  </span>
+      <DropdownMenuContent
+        className="min-w-[12rem] max-h-80 overflow-y-auto rounded-xl border bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-lg shadow-black/5 p-1"
+        align="start"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+        >
+          <DropdownMenuLabel className="py-1.5 px-2 text-sm font-semibold">{title}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {options.map((option) => {
+            const isSelected = selected.includes(option.value)
+            return (
+              <button
+                key={option.value}
+                type="button"
+                disabled={option.disabled && !isSelected}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (!option.disabled || isSelected) handleToggle(option.value)
+                }}
+                className={cn(
+                  "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-accent hover:text-accent-foreground",
+                  option.disabled && !isSelected && "opacity-50 cursor-not-allowed"
                 )}
-              </div>
-              <span className="text-sm text-muted-foreground ms-2">
-                {option.count}
-              </span>
-            </div>
-          </DropdownMenuCheckboxItem>
-        ))}
+              >
+                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    >
+                      <Check className="h-4 w-4" />
+                    </motion.div>
+                  )}
+                </span>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col">
+                    <span>{option.label}</span>
+                    {option.labelArabic && (
+                      <span className="text-sm text-muted-foreground">
+                        {option.labelArabic}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm text-muted-foreground ms-2">
+                    {option.count}
+                  </span>
+                </div>
+              </button>
+            )
+          })}
+        </motion.div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

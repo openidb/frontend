@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "Buscar",
-    "subtitle": "Buscar no Alcorão, Hadith e textos islâmicos clássicos",
+    "subtitle": "Buscar no Alcorão e Hadith",
     "placeholder": "Buscar textos arabes...",
     "refineSearch": "Refinar",
     "refining": "Refinando...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "Mostrar consultas expandidas",
     "results": "Encontrados {count} resultados",
     "noResults": "Nenhum resultado para \"{query}\"",
+    "noResultsHint": "Tente palavras-chave diferentes ou verifique a ortografia",
     "minChars": "Comece a digitar para pesquisar...",
     "error": "Por favor, tente novamente.",
     "tryAgain": "Tentar novamente",
@@ -178,7 +179,7 @@
       "language": "Idioma",
       "appearance": "Aparencia",
       "translations": "Traducoes",
-      "booksDisplay": "Exibicao de livros",
+      "booksDisplay": "Datas e calendário",
       "advanced": "Configuracoes avancadas",
       "similarity": "Similaridade",
       "fuzzySearch": "Busca aproximada",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "Automatico",
-      "automaticInfo": "Selecionar automaticamente as traducoes com base no idioma da interface escolhido.",
       "quranTranslation": "Traducao do Alcorao",
       "quranTranslationInfo": "Exibir traducao ao lado do texto arabe nos resultados de pesquisa do Alcorao.",
-      "bookTitleDisplay": "Titulos dos livros",
-      "bookTitleDisplayInfo": "Exibir titulos de livros traduzidos ao lado do arabe.",
-      "hadithTranslation": "Traducao do Hadith",
-      "hadithTranslationInfo": "Exibir traducao em ingles ao lado do texto arabe nos resultados de pesquisa do hadith.",
-      "hadithOptions": {
-        "none": "Nenhuma",
-        "en": "Ingles (sunnah.com)"
-      },
-      "pageTranslationModel": "Modelo de traducao de paginas",
-      "pageTranslationModelInfo": "Modelo de IA para traduzir paginas. GPT e mais rapido, Gemini e de maior qualidade.",
-      "geminiFlashDesc": "Maior qualidade, mais lento",
-      "gptOss120bDesc": "Rapido, boa qualidade",
-      "bookContentTranslation": "Traducao de conteudo",
-      "bookContentTranslationInfo": "Mostrar traducoes em cache nos resultados de pesquisa de livros.",
-      "bookContentOptions": {
-        "none": "Nenhuma",
-        "en": "Ingles (se disponivel)",
-        "fr": "Frances (se disponivel)",
-        "id": "Indonesio (se disponivel)",
-        "ur": "Urdu (se disponivel)",
-        "es": "Espanhol (se disponivel)",
-        "zh": "Chines (se disponivel)",
-        "pt": "Portugues (se disponivel)",
-        "ru": "Russo (se disponivel)",
-        "ja": "Japones (se disponivel)",
-        "ko": "Coreano (se disponivel)",
-        "it": "Italiano (se disponivel)",
-        "bn": "Bengali (se disponivel)"
-      },
-      "options": {
-        "none": "Nenhuma",
-        "en": "Ingles - Dr. Mustafa Khattab",
-        "fr": "Frances - Muhammad Hamidullah",
-        "id": "Indonesio - Ministerio de Assuntos Islamicos",
-        "ur": "Urdu - Fateh Muhammad Jalandhry",
-        "es": "Espanhol - Isa Garcia",
-        "zh": "Chines - Ma Jian",
-        "pt": "Portugues - Samir El-Hayek",
-        "ru": "Russo - Elmir Kuliev",
-        "ja": "Japones - Ryoichi Mita",
-        "ko": "Coreano - Hamid Choi",
-        "it": "Italiano - Hamza Roberto Piccardo",
-        "bn": "Bengali - Muhiuddin Khan"
-      }
+      "bookTitleDisplay": "Tradução do título",
+      "bookTitleDisplayInfo": "Mostrar títulos traduzidos ou transliterados ao lado do árabe.",
+      "authorTransliteration": "Transliteracao de autores",
+      "authorTransliterationInfo": "Exibir nomes transliterados de autores ao lado do arabe.",
+      "hadithTranslation": "Tradução do Hadith",
+      "hadithTranslationInfo": "Exibir traducao em ingles ao lado do texto arabe nos resultados de pesquisa do hadith. Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "Somente arabe",
+        "none": "Nenhuma",
         "transliteration": "Transliteracao",
-        "en": "Ingles",
-        "fr": "Frances",
-        "id": "Indonesio",
-        "ur": "Urdu",
-        "es": "Espanhol",
-        "zh": "Chines",
-        "pt": "Portugues",
-        "ru": "Russo",
-        "ja": "Japones",
-        "ko": "Coreano",
-        "it": "Italiano",
-        "bn": "Bengali"
+        "translation": "Tradução"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "Limite",
       "cutoffInfo": "Pontuacao minima de similaridade. Valores mais altos retornam menos resultados, mas mais relevantes.",
       "refineCutoff": "Limite de Refinamento",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "Modelo de Embedding",
-      "modelInfo": "Modelo de IA para busca semantica. Modelos em nuvem estaveis; modelos locais personalizaveis.",
+      "modelInfo": "Modelo de IA para busca semântica. Ambos são multilíngues. Gemini é o modelo cloud padrão; Jina v3 é uma alternativa open weight.",
       "gemini": "Gemini",
       "geminiDesc": "Estável, alta qualidade",
       "jina": "Jina v3",
-      "jinaDesc": "Modelo de recuperação multilíngue (1024d)"
+      "jinaDesc": "Open weight, modelo de recuperação menor (1024d)"
     },
     "reranker": {
       "model": "Modelo",
@@ -313,9 +263,9 @@
       "dateCalendar": "Calendário de datas",
       "dateCalendarInfo": "Escolher o sistema de calendário para exibir as datas",
       "dateCalendarOptions": {
-        "hijri": "Hegírico (AH)",
-        "gregorian": "Gregoriano (CE)",
-        "both": "Ambos (AH / CE)"
+        "hijri": "Hegírico",
+        "gregorian": "Gregoriano",
+        "both": "Ambos"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF indisponivel",
     "fontSize": "Tamanho da fonte",
     "copyWord": "Copiar",
-    "wordTap": "Tocar palavra",
+    "wordDefinitions": "Definições de palavras",
     "dictionary": {
       "notFound": "Nenhuma definição encontrada",
       "rootMatch": "Encontrado por correspondência de raiz",

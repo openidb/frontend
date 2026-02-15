@@ -71,7 +71,7 @@ export default async function ReaderPage({
 
   let bookData: BookData;
   try {
-    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&lang=${encodeURIComponent(lang)}` : "";
+    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&bookTitleLang=${encodeURIComponent(lang)}` : "";
     bookData = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}?${langParam}`);
   } catch {
     notFound();

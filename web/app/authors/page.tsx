@@ -39,7 +39,7 @@ export default async function AuthorsPage() {
   try {
     const [authorsData, centuriesData] = await Promise.all([
       fetchAPI<APIResponse>("/api/books/authors?limit=50"),
-      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries/authors").catch(() => ({ centuries: [] })),
+      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries/authors", { revalidate: 3600 }).catch(() => ({ centuries: [] })),
     ]);
 
     authors = authorsData.authors;

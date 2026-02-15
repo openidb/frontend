@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
+import { PrefetchLink } from "@/components/PrefetchLink";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,15 +95,9 @@ export default function BooksClient({
   const [centuries, setCenturies] = useState<CenturyItem[]>(initialCenturies);
 
   // Extract config values
-  const { showPublicationDates, bookTitleDisplay, autoTranslation, dateCalendar } = config;
+  const { showPublicationDates, bookTitleDisplay, dateCalendar } = config;
 
-  // Get effective book title display setting (auto defaults to transliteration)
-  const effectiveBookTitleDisplay = useMemo(() => {
-    if (autoTranslation) {
-      return "transliteration";
-    }
-    return bookTitleDisplay;
-  }, [autoTranslation, bookTitleDisplay]);
+  const effectiveBookTitleDisplay = bookTitleDisplay;
 
   // Re-fetch facet counts when filters change (interdependent filters)
   useEffect(() => {
@@ -174,8 +168,9 @@ export default function BooksClient({
   // Compute the bookTitleLang param to pass to API (language code or undefined)
   const bookTitleLang = useMemo(() => {
     if (effectiveBookTitleDisplay === "none" || effectiveBookTitleDisplay === "transliteration") return undefined;
-    return effectiveBookTitleDisplay;
-  }, [effectiveBookTitleDisplay]);
+    // "translation" → resolve to actual locale code
+    return locale === "ar" ? "en" : locale;
+  }, [effectiveBookTitleDisplay, locale]);
 
   // Fetch books from API when search, filters, pagination, or title language changes
   useEffect(() => {
@@ -256,9 +251,9 @@ export default function BooksClient({
     return book.titleTranslated || book.titleLatin;
   };
 
-  // Helper to get secondary author name based on display setting
+  // Helper to get secondary author name based on showAuthorTransliteration setting
   const getSecondaryAuthorName = (author: Author): string | null => {
-    if (effectiveBookTitleDisplay === "none") return null;
+    if (!config.showAuthorTransliteration) return null;
     return author.nameLatin;
   };
 
@@ -267,16 +262,16 @@ export default function BooksClient({
     return (
       <div className="p-4 md:p-8">
         <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="h-8 w-32 bg-muted animate-pulse rounded" />
-          <div className="h-10 w-64 bg-muted animate-pulse rounded" />
+          <div className="h-8 w-32 bg-muted animate-shimmer rounded" />
+          <div className="h-10 w-64 bg-muted animate-shimmer rounded" />
         </div>
         <div className="rounded-md border">
           <div className="h-12 bg-muted/50 border-b" />
           {[...Array(10)].map((_, i) => (
             <div key={i} className="h-16 border-b flex items-center gap-4 px-4">
-              <div className="h-4 w-48 bg-muted animate-pulse rounded" />
-              <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-              <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-48 bg-muted animate-shimmer rounded" />
+              <div className="h-4 w-32 bg-muted animate-shimmer rounded" />
+              <div className="h-4 w-16 bg-muted animate-shimmer rounded" />
             </div>
           ))}
         </div>
@@ -322,7 +317,7 @@ export default function BooksClient({
               <TableHead className="w-16">ID</TableHead>
               <TableHead>{t("books.tableHeaders.name")}</TableHead>
               <TableHead className="w-1/4">{t("books.tableHeaders.author")}</TableHead>
-              <TableHead className="w-40">{t("books.tableHeaders.year")}</TableHead>
+              <TableHead className="w-24 md:w-40">{t("books.tableHeaders.year")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -330,17 +325,17 @@ export default function BooksClient({
               [...Array(10)].map((_, i) => (
                 <TableRow key={i}>
                   <TableCell>
-                    <div className="h-4 w-10 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-10 bg-muted animate-shimmer rounded" />
                   </TableCell>
                   <TableCell>
-                    <div className="h-4 w-48 bg-muted animate-pulse rounded mb-2" />
-                    <div className="h-3 w-32 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-48 bg-muted animate-shimmer rounded mb-2" />
+                    <div className="h-3 w-32 bg-muted animate-shimmer rounded" />
                   </TableCell>
                   <TableCell>
-                    <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-32 bg-muted animate-shimmer rounded" />
                   </TableCell>
                   <TableCell>
-                    <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-16 bg-muted animate-shimmer rounded" />
                   </TableCell>
                 </TableRow>
               ))
@@ -363,7 +358,7 @@ export default function BooksClient({
                       {book.id}
                     </TableCell>
                     <TableCell className="overflow-hidden">
-                      <Link
+                      <PrefetchLink
                         href={`/reader/${book.id}`}
                         className="font-medium hover:underline"
                       >
@@ -373,7 +368,7 @@ export default function BooksClient({
                             {secondaryTitle}
                           </div>
                         )}
-                      </Link>
+                      </PrefetchLink>
                     </TableCell>
                     <TableCell className="overflow-hidden">
                       <div className="truncate">{book.author.nameArabic}</div>

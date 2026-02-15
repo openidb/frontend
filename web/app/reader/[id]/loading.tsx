@@ -3,10 +3,10 @@ export default function ReaderLoading() {
     <div className="flex flex-col h-full">
       {/* Top bar skeleton */}
       <div className="flex items-center justify-between p-3 border-b">
-        <div className="h-5 w-48 bg-muted rounded animate-pulse" />
+        <div className="h-5 w-48 bg-muted rounded animate-shimmer" />
         <div className="flex gap-2">
-          <div className="h-8 w-16 bg-muted rounded animate-pulse" />
-          <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+          <div className="h-8 w-16 bg-muted rounded animate-shimmer" />
+          <div className="h-8 w-16 bg-muted rounded animate-shimmer" />
         </div>
       </div>
 
@@ -15,7 +15,7 @@ export default function ReaderLoading() {
         {[85, 92, 78, 95, 70, 88, 74, 97, 82, 90, 76, 93].map((w, i) => (
           <div
             key={i}
-            className="h-4 bg-muted rounded animate-pulse"
+            className="h-4 bg-muted rounded animate-shimmer"
             style={{ width: `${w}%` }}
           />
         ))}

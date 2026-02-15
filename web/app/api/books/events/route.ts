@@ -3,11 +3,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.text();
     const res = await fetchAPIRaw("/api/books/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body,
+      body: request.body,
+      // @ts-expect-error -- Node fetch supports duplex for streaming request bodies
+      duplex: "half",
     });
     return new Response(res.body, {
       status: res.status,

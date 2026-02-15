@@ -7,7 +7,7 @@
   },
   "search": {
     "title": "검색",
-    "subtitle": "꾸란, 하디스 및 고전 이슬람 문헌 검색",
+    "subtitle": "꾸란 및 하디스 검색",
     "placeholder": "아랍어 텍스트 검색...",
     "refineSearch": "정제",
     "refining": "정제 중...",
@@ -16,6 +16,7 @@
     "showExpandedQueries": "확장된 쿼리 보기",
     "results": "{count}개의 결과를 찾았습니다",
     "noResults": "\"{query}\"에 대한 결과가 없습니다",
+    "noResultsHint": "다른 키워드를 시도하거나 맞춤법을 확인하세요",
     "minChars": "검색하려면 입력하세요...",
     "error": "다시 시도해 주세요.",
     "tryAgain": "다시 시도",
@@ -178,7 +179,7 @@
       "language": "언어",
       "appearance": "외관",
       "translations": "번역",
-      "booksDisplay": "책 표시",
+      "booksDisplay": "날짜 및 달력",
       "advanced": "고급 설정",
       "similarity": "유사도",
       "fuzzySearch": "퍼지 검색",
@@ -194,74 +195,23 @@
       }
     },
     "translations": {
-      "automatic": "자동",
-      "automaticInfo": "선택한 인터페이스 언어에 따라 번역을 자동으로 선택합니다.",
       "quranTranslation": "꾸란 번역",
       "quranTranslationInfo": "꾸란 검색 결과에서 아랍어 텍스트 옆에 번역을 표시합니다.",
-      "bookTitleDisplay": "책 제목",
-      "bookTitleDisplayInfo": "아랍어 옆에 번역된 책 제목을 표시합니다.",
+      "bookTitleDisplay": "제목 번역",
+      "bookTitleDisplayInfo": "아랍어와 함께 번역 또는 음역된 제목을 표시합니다.",
+      "authorTransliteration": "저자 음역",
+      "authorTransliterationInfo": "아랍어 옆에 음역된 저자 이름을 표시합니다.",
       "hadithTranslation": "하디스 번역",
-      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다.",
-      "hadithOptions": {
-        "none": "없음",
-        "en": "영어 (sunnah.com)"
-      },
-      "pageTranslationModel": "페이지 번역 모델",
-      "pageTranslationModelInfo": "페이지 번역용 AI 모델. GPT가 더 빠르고, Gemini가 품질이 높습니다.",
-      "geminiFlashDesc": "최고 품질, 느림",
-      "gptOss120bDesc": "빠름, 좋은 품질",
-      "bookContentTranslation": "도서 콘텐츠 번역",
-      "bookContentTranslationInfo": "검색 결과에 캐시된 번역을 표시합니다.",
-      "bookContentOptions": {
-        "none": "없음",
-        "en": "영어 (가능한 경우)",
-        "fr": "프랑스어 (가능한 경우)",
-        "id": "인도네시아어 (가능한 경우)",
-        "ur": "우르두어 (가능한 경우)",
-        "es": "스페인어 (가능한 경우)",
-        "zh": "중국어 (가능한 경우)",
-        "pt": "포르투갈어 (가능한 경우)",
-        "ru": "러시아어 (가능한 경우)",
-        "ja": "일본어 (가능한 경우)",
-        "ko": "한국어 (가능한 경우)",
-        "it": "이탈리아어 (가능한 경우)",
-        "bn": "벵골어 (가능한 경우)"
-      },
-      "options": {
-        "none": "없음",
-        "en": "영어 - 무스타파 핫탑 박사",
-        "fr": "프랑스어 - 무함마드 하미둘라",
-        "id": "인도네시아어 - 이슬람부",
-        "ur": "우르두어 - 파테 무함마드 잘란드리",
-        "es": "스페인어 - 이사 가르시아",
-        "zh": "중국어 - 마지엔",
-        "pt": "포르투갈어 - 사미르 엘하예크",
-        "ru": "러시아어 - 엘미르 쿨리에프",
-        "ja": "일본어 - 미타 료이치",
-        "ko": "한국어 - 하미드 최",
-        "it": "이탈리아어 - 함자 로베르토 피카르도",
-        "bn": "벵골어 - 무히웃딘 칸"
-      }
+      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다. Sources: sunnah.com, hadithunlocked.com."
     },
     "translationDisplay": {
       "options": {
-        "none": "아랍어만",
+        "none": "없음",
         "transliteration": "음역",
-        "en": "영어",
-        "fr": "프랑스어",
-        "id": "인도네시아어",
-        "ur": "우르두어",
-        "es": "스페인어",
-        "zh": "중국어",
-        "pt": "포르투갈어",
-        "ru": "러시아어",
-        "ja": "일본어",
-        "ko": "한국어",
-        "it": "이탈리아어",
-        "bn": "벵골어"
+        "translation": "번역"
       }
     },
-      "similarity": {
+    "similarity": {
       "cutoff": "임계값",
       "cutoffInfo": "결과의 최소 유사도 점수. 높은 값은 더 적지만 관련성 높은 결과를 반환합니다.",
       "refineCutoff": "정제 임계값",
@@ -273,11 +223,11 @@
     },
     "embedding": {
       "model": "임베딩 모델",
-      "modelInfo": "시맨틱 검색용 AI 모델. 클라우드 모델은 안정적; 로컬 모델은 미세 조정 가능.",
+      "modelInfo": "시맨틱 검색용 AI 모델. 둘 다 다국어를 지원합니다. Gemini는 기본 클라우드 모델이며, Jina v3는 오픈 웨이트 대안입니다.",
       "gemini": "Gemini",
       "geminiDesc": "안정적, 고품질",
       "jina": "Jina v3",
-      "jinaDesc": "다국어 검색 모델 (1024d)"
+      "jinaDesc": "오픈 웨이트, 소형 검색 모델 (1024d)"
     },
     "reranker": {
       "model": "모델",
@@ -313,9 +263,9 @@
       "dateCalendar": "날짜 달력",
       "dateCalendarInfo": "날짜 표시에 사용할 달력 시스템 선택",
       "dateCalendarOptions": {
-        "hijri": "히즈라력 (AH)",
-        "gregorian": "그레고리력 (CE)",
-        "both": "모두 (AH / CE)"
+        "hijri": "히즈라력",
+        "gregorian": "그레고리력",
+        "both": "모두"
       }
     },
     "rerankerOptions": {
@@ -371,7 +321,7 @@
     "pdfNotAvailable": "PDF를 사용할 수 없음",
     "fontSize": "글꼴 크기",
     "copyWord": "복사",
-    "wordTap": "단어 탭",
+    "wordDefinitions": "단어 정의",
     "dictionary": {
       "notFound": "정의를 찾을 수 없습니다",
       "rootMatch": "어근 일치로 검색됨",

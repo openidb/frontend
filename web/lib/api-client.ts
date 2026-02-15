@@ -1,12 +1,14 @@
 const OPENIDB_URL = process.env.OPENIDB_URL || "http://localhost:4000";
 
-export async function fetchAPI<T>(path: string, init?: RequestInit): Promise<T> {
+export async function fetchAPI<T>(path: string, init?: RequestInit & { revalidate?: number }): Promise<T> {
+  const { revalidate, ...fetchInit } = init ?? {};
   const res = await fetch(`${OPENIDB_URL}${path}`, {
-    ...init,
+    ...fetchInit,
     headers: {
       "Content-Type": "application/json",
-      ...init?.headers,
+      ...fetchInit?.headers,
     },
+    ...(revalidate !== undefined ? { next: { revalidate } } : {}),
   });
   if (!res.ok) {
     throw new Error(`API ${path}: ${res.status} ${res.statusText}`);
