@@ -1,8 +1,8 @@
-# sabeel
+# frontend
 
 Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and browse Quran, Hadith, and classical Arabic books.
 
-**Live:** [sabeel.dev](https://sabeel.dev)
+**Live:** [openidb.org](https://openidb.org)
 
 ## Features
 
@@ -27,14 +27,14 @@ Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and 
 | Math | KaTeX |
 | Icons | Lucide React |
 
-No backend dependencies — all data comes from the [openidb](https://github.com/openidb/openidb) API via proxy routes.
+No backend dependencies — all data comes from the [api](https://github.com/openidb/api) server via proxy routes.
 
 ## Architecture
 
-sabeel is a pure frontend. Server pages fetch data with `fetchAPI<T>()`, and client-side requests go through Next.js API routes that proxy to openidb using `fetchAPIRaw()`. This keeps the backend URL private and allows centralized error handling (all proxy routes return 503 on backend failure).
+This is a pure frontend. Server pages fetch data with `fetchAPI<T>()`, and client-side requests go through Next.js API routes that proxy to the API server using `fetchAPIRaw()`. This keeps the backend URL private and allows centralized error handling (all proxy routes return 503 on backend failure).
 
 ```
-Browser → sabeel (Next.js) → /api/* proxy routes → openidb API (port 4000)
+Browser → frontend (Next.js) → /api/* proxy routes → api server (port 4000)
 ```
 
 ## Project Structure
@@ -53,7 +53,7 @@ web/
 │   ├── authors/                # Author listing + detail
 │   ├── root/[root]/page.tsx    # Root word family page
 │   ├── config/page.tsx         # Settings
-│   └── api/                    # Proxy routes to openidb
+│   └── api/                    # Proxy routes to api server
 │       ├── search/route.ts
 │       ├── transcribe/route.ts
 │       ├── books/route.ts
@@ -91,13 +91,13 @@ web/
 ## Setup
 
 ```bash
-cd sabeel/web
+cd frontend/web
 bun install
 cp .env.example .env    # set OPENIDB_URL
 bun run dev             # → http://localhost:3000
 ```
 
-Requires the [openidb](https://github.com/openidb/openidb) API running on port 4000.
+Requires the [api](https://github.com/openidb/api) server running on port 4000.
 
 ## Environment Variables
 
@@ -105,10 +105,10 @@ Requires the [openidb](https://github.com/openidb/openidb) API running on port 4
 |----------|---------|-------------|
 | `OPENIDB_URL` | `http://localhost:4000` | Backend API URL |
 | `INTERNAL_API_SECRET` | — | Shared secret for internal API calls (must match openidb) |
-| `SITE_URL` | `https://sabeel.dev` | Public URL (sitemap, OpenGraph) |
+| `SITE_URL` | `https://openidb.org` | Public URL (sitemap, OpenGraph) |
 
 ## Part of [OpenIDB](https://github.com/openidb)
 
 This is the frontend. See also:
-- [openidb](https://github.com/openidb/openidb) — API server (Hono, PostgreSQL, Qdrant, Elasticsearch, Neo4j)
+- [api](https://github.com/openidb/api) — API server (Hono, PostgreSQL, Qdrant, Elasticsearch, Neo4j)
 - [scrapers](https://github.com/openidb/scrapers) — Data acquisition

@@ -1,4 +1,4 @@
-# sabeel
+# frontend
 
 Frontend for OpenIslamicDB — search and browse Quran, Hadith, and classical Arabic books.
 
@@ -40,8 +40,8 @@ OPENIDB_URL=http://localhost:4000   # API server URL (default)
 This is a pure frontend — no direct database access. All data comes from the openidb API server.
 
 - **Server pages** fetch data via `fetchAPI<T>()` from `lib/api-client.ts`
-- **API routes** (`app/api/`) are thin proxies forwarding to openidb via `fetchAPIRaw()`, with error handling returning 503 on backend failure
-- **Client components** use Next.js API routes (not openidb directly) to avoid CORS
+- **API routes** (`app/api/`) are thin proxies forwarding to the api server via `fetchAPIRaw()`, with error handling returning 503 on backend failure
+- **Client components** use Next.js API routes (not the api server directly) to avoid CORS
 
 ### Security
 
@@ -89,7 +89,7 @@ web/
 │   │   └── loading.tsx         # Search loading skeleton
 │   ├── reader/[id]/            # Book reader
 │   ├── authors/                # Author listing + detail
-│   └── api/                    # Proxy routes to openidb
+│   └── api/                    # Proxy routes to api server
 ├── components/
 │   ├── ui/                     # shadcn/ui primitives
 │   ├── SearchConfigDropdown.tsx
@@ -104,5 +104,5 @@ web/
 ## Part of [OpenIDB](https://github.com/openidb)
 
 This is the frontend. See also:
-- [openidb](https://github.com/openidb/openidb) — API server
+- [api](https://github.com/openidb/api) — API server
 - [scrapers](https://github.com/openidb/scrapers) — Data acquisition

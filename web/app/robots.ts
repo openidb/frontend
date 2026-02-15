@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.SITE_URL || "https://sabeel.dev";
+const SITE_URL = process.env.SITE_URL || "https://openidb.org";
 
 export default function robots(): MetadataRoute.Robots {
   return {

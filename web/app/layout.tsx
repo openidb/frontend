@@ -30,11 +30,11 @@ const themeLocaleScript = `
 })();
 `;
 
-const SITE_URL = process.env.SITE_URL || "https://sabeel.dev";
+const SITE_URL = process.env.SITE_URL || "https://openidb.org";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Sabeel",
+  title: "Open Islamic Database",
   description: "Search across Quran, Hadith, and Islamic texts",
   icons: {
     icon: [
@@ -44,17 +44,17 @@ export const metadata: Metadata = {
     apple: "/favicon-128.png",
   },
   openGraph: {
-    title: "Sabeel",
+    title: "Open Islamic Database",
     description: "Search across Quran, Hadith, and Islamic texts",
     url: SITE_URL,
-    siteName: "Sabeel",
+    siteName: "Open Islamic Database",
     type: "website",
     locale: "en_US",
-    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Sabeel" }],
+    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Open Islamic Database" }],
   },
   twitter: {
     card: "summary",
-    title: "Sabeel",
+    title: "Open Islamic Database",
     description: "Search across Quran, Hadith, and Islamic texts",
     images: ["/icon.png"],
   },
