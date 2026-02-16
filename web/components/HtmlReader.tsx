@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, Languages } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, Languages, X } from "lucide-react";
 import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
@@ -668,11 +668,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
       {/* Header */}
       <div
-        className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-3 md:px-4 py-2.5 md:py-3 shrink-0"
+        className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
         style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
       >
-        <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0">
-          <ArrowLeft className="h-5 w-5 rtl:scale-x-[-1]" />
+        {/* Back button — bigger on mobile */}
+        <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0 h-10 w-10 sm:h-9 sm:w-9">
+          <ArrowLeft className="h-6 w-6 sm:h-5 sm:w-5 rtl:scale-x-[-1]" />
         </Button>
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-semibold text-base">
@@ -694,7 +695,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             </span>
           )}
 
-          <div className="flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
+          {/* Desktop page controls — hidden on mobile (moved to bottom bar) */}
+          <div className="hidden sm:flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
             <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
               <Button
                 variant="ghost"
@@ -742,15 +744,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             </motion.div>
           </div>
 
+          {/* Menu button — bigger on mobile */}
           <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowSidebar(!showSidebar)}
               title={t("reader.chapters")}
-              className="h-9 w-9 md:h-10 md:w-10"
+              className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
             >
-              <EllipsisVertical className="h-5 w-5" />
+              <EllipsisVertical className="h-6 w-6 sm:h-5 sm:w-5" />
             </Button>
           </motion.div>
         </div>
@@ -764,27 +767,38 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         />
       </div>
 
-      {/* Sidebar overlay */}
+      {/* Sidebar overlay — desktop only (mobile uses full-screen) */}
       {showSidebar && (
         <div
-          className="fixed inset-0 z-20"
+          className="hidden sm:block fixed inset-0 z-20"
           onClick={() => setShowSidebar(false)}
         />
       )}
 
-      {/* Options panel */}
+      {/* Options panel — full-screen on mobile, dropdown on desktop */}
       <AnimatePresence>
       {showSidebar && (
       <motion.div
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.8 }}
         dir="rtl"
-        className="absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-80 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-[hsl(var(--reader-bg))] rounded-lg border shadow-xl z-30 flex flex-col"
+        className="fixed inset-0 sm:absolute sm:inset-auto sm:top-20 sm:right-4 sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--reader-bg))] z-30 flex flex-col"
       >
+        {/* Mobile close header */}
+        <div className="sm:hidden flex items-center justify-between px-4 py-3 border-b">
+          <h2 className="font-semibold text-base">{t("reader.chapters")}</h2>
+          <button
+            onClick={() => setShowSidebar(false)}
+            className="h-10 w-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
         {/* Links section */}
-        <div className="p-3 space-y-1">
+        <div className="p-3 sm:p-3 space-y-1">
           <PrefetchLink
             href={`/authors/${bookMetadata.authorId}`}
             className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
@@ -881,7 +895,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
             </div>
 
-            <div className="flex-1 overflow-auto p-3 pt-0">
+            <div className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)]">
               <div className="space-y-1">
                 {toc.map((entry, index) => {
                   const depth = entry.level;
@@ -951,7 +965,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
           {pageData && !isLoading && (
             <div
-              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-24 md:pb-10"
+              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-28 sm:pb-10"
               style={{
                 fontFamily:
                   '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
@@ -976,6 +990,49 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             </div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Mobile bottom page navigation */}
+      <div
+        className="sm:hidden shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+        style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
+        dir="ltr"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage >= totalPages - 1}
+            className="h-12 w-12 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center transition-colors disabled:opacity-30"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1.5 text-sm">
+            {pageData && totalVolumes > 1 && pageData.volumeNumber > 0 && (
+              <span className="text-muted-foreground">
+                {t("reader.volume")} {pageData.volumeNumber} ·
+              </span>
+            )}
+            <span className="text-muted-foreground">{t("reader.page")}</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={pageInputValue}
+              onChange={(e) => setPageInputValue(e.target.value)}
+              onBlur={handlePageInputSubmit}
+              className="w-12 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
+            />
+            <span className="text-muted-foreground">/ {maxPrintedPage}</span>
+          </form>
+
+          <button
+            onClick={goToPrevPage}
+            disabled={currentPage <= 0}
+            className="h-12 w-12 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center transition-colors disabled:opacity-30"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </div>
       </div>
 
       {selectedWord && (

@@ -119,6 +119,10 @@ export function MobileNavigation() {
     router.push(href);
   }, [pathname, router]);
 
+  // Hide mobile nav when in the book reader
+  const isReaderPage = pathname.startsWith("/reader/");
+  if (isReaderPage) return null;
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 min-h-[4rem] z-50 pb-[env(safe-area-inset-bottom)]">
       {navItems.map(({ href, icon: Icon, labelKey, iconClass }) => {
