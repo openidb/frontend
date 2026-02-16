@@ -481,16 +481,11 @@ export default function SearchClient() {
       )
       .map((r) => r.data as HadithResultData);
 
-    console.log(`[translate] ${allHadiths.length} hadiths, ${pendingHadiths.length} need translation, lang=${searchConfig.hadithTranslation}`);
-
     if (pendingHadiths.length === 0) return;
 
     // Prevent re-triggering for the same set of results
     const fingerprint = `${searchConfig.hadithTranslation}:${pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`).join(",")}`;
-    if (translationTriggeredRef.current === fingerprint) {
-      console.log("[translate] skipped: fingerprint match");
-      return;
-    }
+    if (translationTriggeredRef.current === fingerprint) return;
     translationTriggeredRef.current = fingerprint;
 
     const controller = new AbortController();
@@ -529,15 +524,8 @@ export default function SearchClient() {
           signal: controller.signal,
         });
 
-        console.log(`[translate] POST status=${res.status}`);
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => null);
-          console.warn("[translate] failed:", res.status, errBody);
-          console.warn("[translate] sent:", pendingHadiths.slice(0, 3).map(h => ({ bookId: h.bookId, hadithNumber: h.hadithNumber, textLen: h.text?.length })));
-          clearPending(); return;
-        }
+        if (!res.ok) { clearPending(); return; }
         const data = await res.json();
-        console.log(`[translate] got ${data.translations?.length || 0} translations`, data.error || "");
         if (!data.translations?.length) { clearPending(); return; }
 
         const translationMap = new Map<string, string>(
@@ -563,9 +551,7 @@ export default function SearchClient() {
             return r;
           })
         );
-      } catch (err) {
-        console.warn("[translate] error:", err);
-        // Clear pending on failure so spinner doesn't hang
+      } catch {
         clearPending();
       }
     })();
