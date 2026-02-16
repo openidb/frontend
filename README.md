@@ -31,8 +31,8 @@ Next.js frontend for [OpenIslamicDB](https://github.com/openidb) — search and 
 ## Features
 
 - **Hybrid Search** — Semantic + keyword search with debug panel and timing breakdown
-- **13 Languages** — English, Arabic, French, Indonesian, Urdu, Spanish, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
-- **RTL Support** — Full right-to-left layout for Arabic and Urdu with dedicated fonts (Amiri, Scheherazade New)
+- **28 Languages** — English, Arabic, French, Indonesian, Urdu, Spanish, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali, Hausa, Swahili, Dutch, German, Turkish, Persian, Hindi, Malay, Punjabi, Kurdish, Pashto, Somali, Uzbek, Yoruba, Tamil
+- **RTL Support** — Full right-to-left layout for Arabic, Urdu, Persian, Pashto, and Kurdish with dedicated fonts (Amiri, Scheherazade New)
 - **Voice Search** — Audio transcription via Groq Whisper
 - **Book Reader** — Built-in HTML reader with navigation, table of contents, and in-book translation
 - **Word Definitions** — Tap any Arabic word to see dictionary definitions from 43 classical sources with root derivation
@@ -102,7 +102,7 @@ web/
 │   └── ui/                     # shadcn/ui primitives
 ├── lib/
 │   ├── api-client.ts           # fetchAPI / fetchAPIRaw
-│   ├── i18n/                   # I18nProvider + 13 translation files
+│   ├── i18n/                   # I18nProvider + 28 translation files
 │   ├── theme/                  # ThemeProvider (light/dark/system)
 │   ├── config/                 # AppConfigProvider (search settings)
 │   ├── csrf.ts                 # CSRF token generation

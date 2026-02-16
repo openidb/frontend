@@ -11,7 +11,7 @@ Built with Next.js 16 (App Router), Tailwind CSS, and shadcn/ui.
 - **Hadith browser** with collection/book navigation
 - **Book reader** with HTML rendering and page translation
 - **Voice search** via audio transcription
-- **13 languages** — English, Arabic, French, Spanish, Indonesian, Urdu, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali
+- **28 languages** — English, Arabic, French, Spanish, Indonesian, Urdu, Chinese, Portuguese, Russian, Japanese, Korean, Italian, Bengali, Hausa, Swahili, Dutch, German, Turkish, Persian, Hindi, Malay, Punjabi, Kurdish, Pashto, Somali, Uzbek, Yoruba, Tamil
 
 ## Setup
 
@@ -64,7 +64,7 @@ Dynamic `generateMetadata()` on:
 
 ### Internationalization
 
-Type-safe i18n system with 13 languages. Translation files in `lib/i18n/translations/`. All keys are typed from `en.json` — adding a key to English requires adding it to all other languages.
+Type-safe i18n system with 28 languages. Translation files in `lib/i18n/translations/`. All keys are typed from `en.json` — adding a key to English requires adding it to all other languages.
 
 ### Error Handling
 
@@ -98,7 +98,7 @@ web/
 │   └── VoiceRecorder.tsx
 └── lib/
     ├── api-client.ts           # fetchAPI / fetchAPIRaw
-    └── i18n/                   # Translation system + 13 locales
+    └── i18n/                   # Translation system + 28 locales
 ```
 
 ## Part of [OpenIDB](https://github.com/openidb)
