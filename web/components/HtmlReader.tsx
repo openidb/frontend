@@ -477,11 +477,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     contentRef.current?.scrollTo(0, 0);
   }, [pageData]);
 
-  // Close word popover and reset translation on page change
+  // Close word popover and reset translation on page change (instant if cached)
   useEffect(() => {
     setSelectedWord(null);
-    setTranslation(null);
-  }, [currentPage]);
+    if (autoTranslate) {
+      const cached = translationCacheRef.current.get(currentPage);
+      setTranslation(cached || null);
+    } else {
+      setTranslation(null);
+    }
+  }, [currentPage, autoTranslate]);
 
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
   const rafRef = useRef<number>(0);
@@ -606,58 +611,75 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   }, [bookMetadata.id, currentPage, pdfLoading]);
 
-  // Auto-translate effect: fetches translation when toggle is on, with 1s debounce
+  // Shared translation fetch helper (used for current page + prefetch)
+  const fetchTranslation = useCallback(async (page: number, signal?: AbortSignal) => {
+    const cached = translationCacheRef.current.get(page);
+    if (cached) return cached;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+    const lang = locale === "ar" ? "en" : locale;
+    const res = await fetch(`/api/pages/${bookMetadata.id}/${page}/translate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+      body: JSON.stringify({ lang, model: "gemini-flash" }),
+      signal,
+    });
+    if (!res.ok) throw new Error("Translation failed");
+    const data = await res.json();
+    if (!data.paragraphs || data.paragraphs.length === 0) throw new Error("No translatable content");
+    translationCacheRef.current.set(page, data.paragraphs);
+    return data.paragraphs;
+  }, [locale, bookMetadata.id]);
+
+  // Auto-translate effect: instant cache hits, debounced fetch, prefetch next page
   useEffect(() => {
     if (!autoTranslate || !pageData) return;
 
     const page = currentPage;
 
-    // Check cache first
+    // Instant cache hit — no debounce, no loading state
     const cached = translationCacheRef.current.get(page);
     if (cached) {
       setTranslation(cached);
+      setIsTranslating(false);
+      // Prefetch next page silently
+      if (page + 1 < totalPages) {
+        fetchTranslation(page + 1).catch(() => {});
+      }
       return;
     }
 
-    let cancelled = false;
+    // Cache miss — show loading, debounce fetch
+    const controller = new AbortController();
     setIsTranslating(true);
 
     const timer = setTimeout(async () => {
       try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
-        const lang = locale === "ar" ? "en" : locale;
-        const res = await fetch(`/api/pages/${bookMetadata.id}/${page}/translate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-          body: JSON.stringify({ lang, model: "gemini-flash" }),
-        });
-        if (!res.ok) throw new Error("Translation failed");
-        const data = await res.json();
-        if (!data.paragraphs || data.paragraphs.length === 0) {
-          throw new Error("No translatable content");
-        }
-        // Always cache, even if user navigated away
-        translationCacheRef.current.set(page, data.paragraphs);
-        if (!cancelled) {
-          setTranslation(data.paragraphs);
+        const result = await fetchTranslation(page, controller.signal);
+        if (!controller.signal.aborted) {
+          setTranslation(result);
+          // Prefetch next page silently
+          if (page + 1 < totalPages) {
+            fetchTranslation(page + 1).catch(() => {});
+          }
         }
       } catch {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setTranslation(null);
         }
       } finally {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setIsTranslating(false);
         }
       }
-    }, 1000);
+    }, 500);
 
     return () => {
-      cancelled = true;
+      controller.abort();
       clearTimeout(timer);
       setIsTranslating(false);
     };
-  }, [currentPage, autoTranslate, pageData, locale, bookMetadata.id]);
+  }, [currentPage, autoTranslate, pageData, totalPages, fetchTranslation]);
 
   const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();
@@ -976,6 +998,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 color: 'hsl(var(--reader-fg))',
               }}
             >
+              {/* Instant AI translation disclaimer when translating */}
+              {autoTranslate && !translation && isTranslating && (
+                <div dir="auto" style={{ fontFamily: 'system-ui,-apple-system,sans-serif', fontSize: '0.8rem', color: '#e67e22', lineHeight: 1.5, margin: '0 0 0.75em', padding: '0.5em 0.75em', borderRadius: '4px', background: 'rgba(230,126,34,0.08)' }}>
+                  <strong>{t('reader.llmTranslationLabel')}</strong> {t('reader.llmTranslationWarning')}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35em', marginInlineStart: '0.5em', opacity: 0.8 }}>
+                    — {t('reader.translate')}…
+                  </span>
+                </div>
+              )}
               <div
                 dangerouslySetInnerHTML={{
                   __html: formatContentHtml(
