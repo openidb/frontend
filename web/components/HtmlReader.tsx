@@ -783,15 +783,17 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
         transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.8 }}
-        dir="rtl"
-        className="fixed inset-0 sm:absolute sm:inset-auto sm:top-20 sm:right-4 sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--reader-bg))] z-30 flex flex-col"
+        dir={dir}
+        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--reader-bg))] z-30 flex flex-col`}
       >
-        {/* Mobile close header */}
-        <div className="sm:hidden flex items-center justify-between px-4 py-3 border-b">
-          <h2 className="font-semibold text-base">{t("reader.chapters")}</h2>
+        {/* Mobile close header — X positioned to match the options menu button */}
+        <div className="sm:hidden flex items-center border-b px-2 py-2">
+          <div className="flex-1 ps-2">
+            <h2 className="font-semibold text-base">{t("reader.options")}</h2>
+          </div>
           <button
             onClick={() => setShowSidebar(false)}
-            className="h-10 w-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+            className="h-10 w-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0"
           >
             <X className="h-5 w-5" />
           </button>
@@ -998,13 +1000,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
         dir="ltr"
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between">
           <button
             onClick={goToNextPage}
             disabled={currentPage >= totalPages - 1}
-            className="h-12 w-12 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center transition-colors disabled:opacity-30"
+            className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-5 w-5" />
+            {t("reader.next")}
           </button>
 
           <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1.5 text-sm">
@@ -1020,17 +1023,18 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               value={pageInputValue}
               onChange={(e) => setPageInputValue(e.target.value)}
               onBlur={handlePageInputSubmit}
-              className="w-12 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
+              className="w-10 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
             />
-            <span className="text-muted-foreground">/ {maxPrintedPage}</span>
+            <span className="text-muted-foreground text-xs">/ {maxPrintedPage}</span>
           </form>
 
           <button
             onClick={goToPrevPage}
             disabled={currentPage <= 0}
-            className="h-12 w-12 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center transition-colors disabled:opacity-30"
+            className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
           >
-            <ChevronRight className="h-6 w-6" />
+            {t("reader.prev")}
+            <ChevronRight className="h-5 w-5" />
           </button>
         </div>
       </div>
