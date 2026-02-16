@@ -638,6 +638,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
   // Auto-translate: one state, one effect, AbortController for cancellation.
   // Results are tagged with page number — stale results are stored but never displayed.
+  // Loading state is deferred until after debounce to avoid layout jitter on page flips.
   useEffect(() => {
     if (!autoTranslate) {
       setTranslateResult(null);
@@ -653,11 +654,13 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       return;
     }
 
-    // Cache miss — loading state, debounce for rapid page flips
-    setTranslateResult({ page, data: null });
+    // Cache miss — debounce before showing loading or fetching
     const controller = new AbortController();
 
     const timer = setTimeout(() => {
+      // Show loading only after debounce (avoids flicker during rapid page flips)
+      setTranslateResult({ page, data: null });
+
       fetchTranslationRef.current(page, controller.signal)
         .then((result) => {
           if (!controller.signal.aborted) {
