@@ -338,13 +338,13 @@ export default function BooksClient({
               >
                 <div className="font-semibold text-base truncate" dir="rtl">{book.titleArabic}</div>
                 {secondaryTitle && (
-                  <div className="text-sm text-muted-foreground truncate">{secondaryTitle}</div>
+                  <div className="text-sm text-muted-foreground truncate mt-0.5">{secondaryTitle}</div>
                 )}
-                <div className="text-sm text-muted-foreground mt-1 truncate" dir="rtl">{book.author.nameArabic}</div>
+                <div className="text-sm text-muted-foreground mt-2 truncate" dir="rtl">{book.author.nameArabic}</div>
                 {secondaryAuthor && (
                   <div className="text-sm text-muted-foreground truncate">{secondaryAuthor}</div>
                 )}
-                <div className="text-sm text-muted-foreground mt-1">
+                <div className="text-sm text-muted-foreground mt-1.5">
                   {getBookYear(book, showPublicationDates, dateCalendar, t("books.publication"))}
                 </div>
               </PrefetchLink>
