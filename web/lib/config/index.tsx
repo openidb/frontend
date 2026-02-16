@@ -8,6 +8,7 @@ import {
   DEFAULT_SEARCH_CONFIG,
   INTERNAL_CONFIG_KEYS,
 } from "@/lib/config/search-defaults";
+import { useTranslation } from "@/lib/i18n";
 
 interface AppConfigContextType {
   config: SearchConfig;
@@ -18,6 +19,7 @@ interface AppConfigContextType {
 
 const AppConfigContext = createContext<AppConfigContextType | null>(null);
 const STORAGE_KEY = "searchConfig";
+const LOCALE_STORAGE_KEY = "locale";
 
 /** Force internal (non-user-facing) config keys back to centralized defaults. */
 function applyInternalDefaults(config: SearchConfig): SearchConfig {
@@ -28,12 +30,42 @@ function applyInternalDefaults(config: SearchConfig): SearchConfig {
   return patched;
 }
 
+/** Sync translation settings to match the given locale. */
+function syncTranslationsToLocale(cfg: SearchConfig, currentLocale: string): SearchConfig {
+  const target = currentLocale === "ar" ? "en" : currentLocale;
+  let changed = false;
+  const updates: Partial<SearchConfig> = {};
+  if (cfg.quranTranslation !== "none" && cfg.quranTranslation !== target) {
+    updates.quranTranslation = target;
+    changed = true;
+  }
+  if (cfg.hadithTranslation !== "none" && cfg.hadithTranslation !== target) {
+    updates.hadithTranslation = target;
+    changed = true;
+  }
+  return changed ? { ...cfg, ...updates } : cfg;
+}
+
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfigState] = useState<SearchConfig>(DEFAULT_SEARCH_CONFIG);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { locale } = useTranslation();
+
+  // Sync translations when locale changes AFTER initial load
+  useEffect(() => {
+    if (!isLoaded) return;
+    setConfigState((prev) => {
+      const synced = syncTranslationsToLocale(prev, locale);
+      if (synced !== prev) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(synced));
+      }
+      return synced;
+    });
+  }, [locale, isLoaded]);
 
   useEffect(() => {
     const loadConfig = () => {
+      let loaded = DEFAULT_SEARCH_CONFIG;
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
@@ -50,10 +82,19 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
             parsed.embeddingModel = "gemini";
           }
           // Merge stored values with defaults, then force-reset internal keys
-          setConfigState(applyInternalDefaults({ ...DEFAULT_SEARCH_CONFIG, ...parsed }));
+          loaded = applyInternalDefaults({ ...DEFAULT_SEARCH_CONFIG, ...parsed });
         }
       } catch {
         // Invalid JSON, use defaults
+      }
+
+      // Read locale directly from localStorage to avoid race condition
+      // (I18nProvider's useEffect hasn't fired yet, so the hook value is still default)
+      const currentLocale = localStorage.getItem(LOCALE_STORAGE_KEY) || "en";
+      const synced = syncTranslationsToLocale(loaded, currentLocale);
+      setConfigState(synced);
+      if (synced !== loaded) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(synced));
       }
       setIsLoaded(true);
     };

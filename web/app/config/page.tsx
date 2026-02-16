@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -168,15 +168,6 @@ export default function ConfigPage() {
   const { theme, setTheme } = useTheme();
   const { config, updateConfig, isLoaded } = useAppConfig();
 
-  // Sync Quran translation to match locale when language changes
-  useEffect(() => {
-    if (!isLoaded || config.quranTranslation === "none") return;
-    const target = locale === "ar" ? "en" : locale;
-    if (config.quranTranslation !== target) {
-      updateConfig({ quranTranslation: target });
-    }
-  }, [locale]); // eslint-disable-line react-hooks/exhaustive-deps
-
   if (!isLoaded) {
     return (
       <div className="p-4 md:p-8">
@@ -293,9 +284,16 @@ export default function ConfigPage() {
             info={t("config.translations.authorTransliterationInfo")}
           />
           <ToggleSetting
-            label={t("config.translations.hadithTranslation")}
+            label={(() => {
+              const base = t("config.translations.hadithTranslation");
+              if (config.hadithTranslation === "none") return base;
+              const langCode = config.hadithTranslation;
+              const match = LOCALES.find(l => l.code === langCode);
+              if (!match) return base;
+              return `${base} [${match.nativeName}]`;
+            })()}
             checked={config.hadithTranslation !== "none"}
-            onChange={(checked) => updateConfig({ hadithTranslation: checked ? "en" : "none" })}
+            onChange={(checked) => updateConfig({ hadithTranslation: checked ? (locale === "ar" ? "en" : locale) : "none" })}
             info={t("config.translations.hadithTranslationInfo")}
           />
 
@@ -342,10 +340,10 @@ export default function ConfigPage() {
 
         {/* Basmala / About */}
         <div className="space-y-4" dir="rtl">
-          <p className="text-base font-semibold text-center" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+          <p className="text-base font-semibold text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
             بسم الله الرحمن الرحيم
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed text-center" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+          <p className="text-sm text-muted-foreground leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
             الحمد لله ربّ العالمين، والصلاة والسلام على أشرف الأنبياء والمرسلين، نبيّنا محمّد وعلى آله وصحبه أجمعين.
           </p>
           <div className="space-y-3 text-sm text-muted-foreground/80 leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>

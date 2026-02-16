@@ -150,7 +150,7 @@ function SearchResultSkeleton() {
 export default function SearchClient() {
   const searchParams = useSearchParams();
   const { t, locale } = useTranslation();
-  const { config: searchConfig, setConfig: setSearchConfig } = useAppConfig();
+  const { config: searchConfig, setConfig: setSearchConfig, isLoaded: configLoaded } = useAppConfig();
 
   const [query, setQuery] = useState("");
   const [authors, setAuthors] = useState<AuthorResultData[]>([]);
@@ -171,6 +171,20 @@ export default function SearchClient() {
   const restoredQueryRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevTranslationRef = useRef({ quran: searchConfig.quranTranslation, hadith: searchConfig.hadithTranslation });
+
+  // When translation language changes, re-search to get results in the new language
+  useEffect(() => {
+    const prev = prevTranslationRef.current;
+    prevTranslationRef.current = { quran: searchConfig.quranTranslation, hadith: searchConfig.hadithTranslation };
+    const quranChanged = prev.quran !== searchConfig.quranTranslation;
+    const hadithChanged = prev.hadith !== searchConfig.hadithTranslation;
+    if (!quranChanged && !hadithChanged) return;
+    if (!unifiedResults.length || !query || query.length < 2) return;
+
+    // Re-search with updated translation config (quick search, no reranking)
+    fetchResults(query, searchConfig, false);
+  }, [searchConfig.quranTranslation, searchConfig.hadithTranslation]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize query and restore cached results on mount only
   const initializedRef = useRef(false);
@@ -182,7 +196,7 @@ export default function SearchClient() {
     if (q) {
       setQuery(q);
       // Try to restore cached results
-      const cacheKey = `search_${q}`;
+      const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${searchConfig.hadithTranslation}`;
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
@@ -329,7 +343,7 @@ export default function SearchClient() {
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
-        const cacheKey = `search_${searchQuery}`;
+        const cacheKey = `search_${searchQuery}_${config.quranTranslation}_${config.hadithTranslation}`;
         sessionStorage.setItem(cacheKey, JSON.stringify({
           unifiedResults: limitedUnified,
           authors: data.authors || [],
@@ -442,34 +456,57 @@ export default function SearchClient() {
   };
 
   // Auto-search on initial load if URL has query param (quick search, no reranking)
+  // Wait for configLoaded to avoid searching with default "en" before locale sync completes
   useEffect(() => {
+    if (!configLoaded) return;
     const q = searchParams.get("q");
     if (q && q.length >= 2 && !hasSearched && restoredQueryRef.current !== q) {
       // Trigger quick search if we have a URL param but haven't searched yet (and no cache)
       fetchResults(q, searchConfig, false);
     }
-  }, [searchParams, hasSearched, fetchResults, searchConfig]);
+  }, [searchParams, hasSearched, fetchResults, searchConfig, configLoaded]);
 
   // Background translation for hadiths without translations
   const translationTriggeredRef = useRef<string | null>(null);
   useEffect(() => {
     if (!unifiedResults.length || isLoading || isRefining) return;
 
-    const pendingHadiths = unifiedResults
+    if (searchConfig.hadithTranslation === "none") return;
+
+    const allHadiths = unifiedResults.filter((r) => r.type === "hadith");
+    const pendingHadiths = allHadiths
       .filter(
         (r): r is UnifiedResult & { type: "hadith" } =>
-          r.type === "hadith" && !!(r.data as HadithResultData).translationPending && !(r.data as HadithResultData).translation
+          !(r.data as HadithResultData).translation
       )
       .map((r) => r.data as HadithResultData);
+
+    console.log(`[translate] ${allHadiths.length} hadiths, ${pendingHadiths.length} need translation, lang=${searchConfig.hadithTranslation}`);
 
     if (pendingHadiths.length === 0) return;
 
     // Prevent re-triggering for the same set of results
-    const fingerprint = pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`).join(",");
-    if (translationTriggeredRef.current === fingerprint) return;
+    const fingerprint = `${searchConfig.hadithTranslation}:${pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`).join(",")}`;
+    if (translationTriggeredRef.current === fingerprint) {
+      console.log("[translate] skipped: fingerprint match");
+      return;
+    }
     translationTriggeredRef.current = fingerprint;
 
     const controller = new AbortController();
+
+    const pendingKeys = new Set(pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`));
+
+    const clearPending = () => {
+      setUnifiedResults((prev) =>
+        prev.map((r) => {
+          if (r.type !== "hadith") return r;
+          const hd = r.data as HadithResultData;
+          if (!pendingKeys.has(`${hd.bookId}-${hd.hadithNumber}`)) return r;
+          return { ...r, data: { ...hd, translationPending: false } };
+        })
+      );
+    };
 
     (async () => {
       try {
@@ -492,9 +529,16 @@ export default function SearchClient() {
           signal: controller.signal,
         });
 
-        if (!res.ok) return;
+        console.log(`[translate] POST status=${res.status}`);
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          console.warn("[translate] failed:", res.status, errBody);
+          console.warn("[translate] sent:", pendingHadiths.slice(0, 3).map(h => ({ bookId: h.bookId, hadithNumber: h.hadithNumber, textLen: h.text?.length })));
+          clearPending(); return;
+        }
         const data = await res.json();
-        if (!data.translations?.length) return;
+        console.log(`[translate] got ${data.translations?.length || 0} translations`, data.error || "");
+        if (!data.translations?.length) { clearPending(); return; }
 
         const translationMap = new Map<string, string>(
           data.translations.map((t: { bookId: number; hadithNumber: string; translation: string }) => [
@@ -507,21 +551,22 @@ export default function SearchClient() {
           prev.map((r) => {
             if (r.type !== "hadith") return r;
             const hd = r.data as HadithResultData;
-            const translation = translationMap.get(`${hd.bookId}-${hd.hadithNumber}`);
-            if (!translation) return r;
-            return {
-              ...r,
-              data: {
-                ...hd,
-                translation,
-                translationSource: "llm",
-                translationPending: false,
-              },
-            };
+            const key = `${hd.bookId}-${hd.hadithNumber}`;
+            const translation = translationMap.get(key);
+            if (translation) {
+              return { ...r, data: { ...hd, translation, translationSource: "llm", translationPending: false } };
+            }
+            // Clear pending even if this specific hadith wasn't translated
+            if (pendingKeys.has(key)) {
+              return { ...r, data: { ...hd, translationPending: false } };
+            }
+            return r;
           })
         );
-      } catch {
-        // Silently fail — translations are nice-to-have
+      } catch (err) {
+        console.warn("[translate] error:", err);
+        // Clear pending on failure so spinner doesn't hang
+        clearPending();
       }
     })();
 

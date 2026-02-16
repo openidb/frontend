@@ -59,7 +59,7 @@ export interface SearchConfig {
   showPublicationDates: boolean;
   autoTranslation: boolean;
   quranTranslation: string;
-  hadithTranslation: "none" | "en";
+  hadithTranslation: string;
   embeddingModel: EmbeddingModelType;
   queryExpansionModel: QueryExpansionModelType;
   pageTranslationModel: PageTranslationModelType;
