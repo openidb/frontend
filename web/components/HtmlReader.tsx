@@ -631,9 +631,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   // Keep ref in sync so the effect below doesn't depend on fetchTranslation identity
   fetchTranslationRef.current = fetchTranslation;
 
-  // Auto-translate: one state, one effect, AbortController for cancellation.
-  // Results are tagged with page number — stale results are stored but never displayed.
-  // Loading state is deferred until after debounce to avoid layout jitter on page flips.
+  // Auto-translate: tagged state ensures stale results are never displayed.
   useEffect(() => {
     if (!autoTranslate) {
       setTranslateResult(null);
@@ -642,36 +640,32 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
     const page = currentPage;
 
-    // Instant cache hit
+    // Cache hit — instant
     const cached = translationCacheRef.current.get(page);
     if (cached) {
       setTranslateResult({ page, data: cached });
       return;
     }
 
-    // Cache miss — debounce before showing loading or fetching
-    const controller = new AbortController();
+    // Cache miss — show loading, fetch immediately
+    setTranslateResult({ page, data: null });
+    let cancelled = false;
 
-    const timer = setTimeout(() => {
-      // Show loading only after debounce (avoids flicker during rapid page flips)
-      setTranslateResult({ page, data: null });
-
-      fetchTranslationRef.current(page, controller.signal)
-        .then((result) => {
-          if (!controller.signal.aborted) {
-            setTranslateResult({ page, data: result });
-          }
-        })
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setTranslateResult(null);
-          }
-        });
-    }, 500);
+    fetchTranslationRef.current(page)
+      .then((result) => {
+        if (!cancelled) {
+          setTranslateResult({ page, data: result });
+        }
+      })
+      .catch((err) => {
+        console.error("[auto-translate]", err);
+        if (!cancelled) {
+          setTranslateResult(null);
+        }
+      });
 
     return () => {
-      clearTimeout(timer);
-      controller.abort();
+      cancelled = true;
     };
   }, [currentPage, autoTranslate]);
 
@@ -682,7 +676,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
-      {autoTranslate && <style>{`@keyframes tl-fade-in { from { opacity: 0; } to { opacity: 1; } } .tl-para { animation: tl-fade-in 0.3s ease; }`}</style>}
+      {autoTranslate && <style>{`.tl-para { transition: opacity 0.3s ease; }`}</style>}
       {/* Header */}
       <div
         className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
@@ -1010,7 +1004,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                     pageData.contentHtml,
                     wordTapEnabled,
                     autoTranslate && translation && translation.length > 0 ? translation : undefined,
-                    `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em;animation:tl-fade-in 0.3s ease`,
+                    `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
                   ),
                 }}
               />
