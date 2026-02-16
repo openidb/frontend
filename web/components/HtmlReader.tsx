@@ -255,7 +255,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [isTranslating, setIsTranslating] = useState(false);
   const [autoTranslate, setAutoTranslate] = useState(false);
   const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
-  const translateVersionRef = useRef(0);
   const fetchTranslationRef = useRef<(page: number, signal?: AbortSignal) => Promise<{ index: number; translation: string }[]>>(null!);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
@@ -632,10 +631,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   fetchTranslationRef.current = fetchTranslation;
 
   // Auto-translate effect: instant cache hits, debounced fetch, prefetch next page
-  // Uses fetchTranslationRef (not fetchTranslation) to avoid re-runs from unstable callback identity
+  // Uses page-based staleness check (currentPageRef) instead of version counter —
+  // immune to effect re-runs that don't change the page
   useEffect(() => {
-    const version = ++translateVersionRef.current;
-
     if (!autoTranslate) {
       setIsTranslating(false);
       return;
@@ -661,8 +659,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     const timer = setTimeout(() => {
       fetchTranslationRef.current(page)
         .then((result) => {
-          // Only apply if this is still the latest request
-          if (translateVersionRef.current !== version) return;
+          // Only apply if user is still on the same page
+          if (currentPageRef.current !== page) return;
           setTranslation(result);
           setIsTranslating(false);
           // Prefetch next page silently
@@ -671,7 +669,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           }
         })
         .catch(() => {
-          if (translateVersionRef.current !== version) return;
+          if (currentPageRef.current !== page) return;
           setTranslation(null);
           setIsTranslating(false);
         });
