@@ -215,8 +215,12 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
                     ? formatYear(author.deathDateHijri, author.deathDateGregorian, config.dateCalendar)
                     : "—"}
                 </span>
-                <span className="text-border">|</span>
-                <span>{author._count.books} {t("authors.tableHeaders.name") === "Name" ? "books" : ""}</span>
+                {author._count?.books != null && (
+                  <>
+                    <span className="text-border">|</span>
+                    <span>{author._count.books}</span>
+                  </>
+                )}
               </div>
             </PrefetchLink>
           ))
