@@ -104,7 +104,6 @@ function formatContentHtml(
   enableWordWrap = true,
   translations?: { index: number; translation: string }[],
   translationStyle?: string,
-  translationBanner?: string,
 ): string {
   // Build translation lookup by line index
   const tlMap = translations ? new Map(translations.map(t => [t.index, t.translation])) : undefined;
@@ -197,14 +196,10 @@ function formatContentHtml(
 
   // Replace translation placeholders with actual HTML (after wrapWords to avoid wrapping translation text)
   if (tlMap && translationStyle) {
-    // Prepend banner before all content
-    if (translationBanner) {
-      result = `${translationBanner}${result}`;
-    }
     result = result.replace(/%%TL_(\d+)%%/g, (_, idx) => {
       const text = tlMap.get(parseInt(idx));
       if (!text) return '';
-      return `<p dir="auto" style="${translationStyle}">${text}</p>`;
+      return `<p dir="auto" class="tl-para" style="${translationStyle}">${text}</p>`;
     });
   }
 
@@ -687,6 +682,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
+      {autoTranslate && <style>{`@keyframes tl-fade-in { from { opacity: 0; } to { opacity: 1; } } .tl-para { animation: tl-fade-in 0.3s ease; }`}</style>}
       {/* Header */}
       <div
         className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
@@ -997,13 +993,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 color: 'hsl(var(--reader-fg))',
               }}
             >
-              {/* Instant AI translation disclaimer when translating */}
-              {autoTranslate && !translation && isTranslating && (
+              {/* AI translation disclaimer — always visible when translate is on */}
+              {autoTranslate && (
                 <div dir="auto" style={{ fontFamily: 'system-ui,-apple-system,sans-serif', fontSize: '0.8rem', color: '#e67e22', lineHeight: 1.5, margin: '0 0 0.75em', padding: '0.5em 0.75em', borderRadius: '4px', background: 'rgba(230,126,34,0.08)' }}>
                   <strong>{t('reader.llmTranslationLabel')}</strong> {t('reader.llmTranslationWarning')}
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35em', marginInlineStart: '0.5em', opacity: 0.8 }}>
-                    — {t('reader.translate')}…
-                  </span>
+                  {isTranslating && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35em', marginInlineStart: '0.5em', opacity: 0.8 }}>
+                      — <Loader2 className="h-3 w-3 animate-spin" style={{ display: 'inline' }} /> {t('reader.translate')}…
+                    </span>
+                  )}
                 </div>
               )}
               <div
@@ -1012,10 +1010,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                     pageData.contentHtml,
                     wordTapEnabled,
                     autoTranslate && translation && translation.length > 0 ? translation : undefined,
-                    `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
-                    autoTranslate && translation && translation.length > 0
-                      ? `<p dir="auto" style="font-family:system-ui,-apple-system,sans-serif;font-size:0.8rem;color:#e67e22;line-height:1.5;margin:0 0 0.75em;padding:0.5em 0.75em;border-radius:4px;background:rgba(230,126,34,0.08)"><strong>${t('reader.llmTranslationLabel')}</strong> ${t('reader.llmTranslationWarning')}</p>`
-                      : undefined,
+                    `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em;animation:tl-fade-in 0.3s ease`,
                   ),
                 }}
               />
