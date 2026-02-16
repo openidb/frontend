@@ -125,10 +125,30 @@ html[dir="rtl"] .font-mono {
   background-size: 200% 100%;
 }
 
+/* Eliminate 300ms mobile tap delay on nav elements */
+nav a, nav button {
+  touch-action: manipulation;
+}
+.touch-action-manipulation {
+  touch-action: manipulation;
+}
+
+/* Nav icon hover animations (pure CSS, no framer-motion) */
+.nav-link:hover .nav-icon-search  { transform: rotate(-15deg); }
+.nav-link:hover .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
+.nav-link:hover .nav-icon-authors { transform: translateY(-2px); }
+.nav-link:hover .nav-icon-config  { transform: rotate(90deg); }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-shimmer,
   .animate-fade-in {
     animation: none;
+  }
+  .nav-link:hover .nav-icon-search,
+  .nav-link:hover .nav-icon-books,
+  .nav-link:hover .nav-icon-authors,
+  .nav-link:hover .nav-icon-config {
+    transform: none;
   }
 }
 

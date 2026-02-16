@@ -3,44 +3,16 @@
 import Link from "next/link";
 import { BookOpen, Users, Search, Settings2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { LanguageSwitcher, LanguageSwitcherCompact } from "./LanguageSwitcher";
-import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
-const iconAnimations = {
-  // Magnifying glass tilts like it's scanning
-  search: {
-    rest: { rotate: 0 },
-    hover: { rotate: -15 },
-    tap: { rotate: -15 },
-  },
-  // Book tilts like a cover opening
-  books: {
-    rest: { rotate: 0, y: 0 },
-    hover: { rotate: -12, y: -1 },
-    tap: { rotate: -12, y: -1 },
-  },
-  // People bounce up
-  authors: {
-    rest: { y: 0 },
-    hover: { y: -2 },
-    tap: { y: -2 },
-  },
-  // Gear rotates
-  config: {
-    rest: { rotate: 0 },
-    hover: { rotate: 90 },
-    tap: { rotate: 90 },
-  },
-} as const;
-
 const navItems = [
-  { href: "/search", icon: Search, labelKey: "nav.search" as const, animation: "search" as const },
-  { href: "/", icon: BookOpen, labelKey: "nav.books" as const, animation: "books" as const },
-  { href: "/authors", icon: Users, labelKey: "nav.authors" as const, animation: "authors" as const },
-  { href: "/config", icon: Settings2, labelKey: "nav.config" as const, animation: "config" as const },
+  { href: "/search", icon: Search, labelKey: "nav.search" as const, iconClass: "nav-icon-search" },
+  { href: "/", icon: BookOpen, labelKey: "nav.books" as const, iconClass: "nav-icon-books" },
+  { href: "/authors", icon: Users, labelKey: "nav.authors" as const, iconClass: "nav-icon-authors" },
+  { href: "/config", icon: Settings2, labelKey: "nav.config" as const, iconClass: "nav-icon-config" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -51,7 +23,25 @@ function isActive(pathname: string, href: string) {
 export function DesktopNavigation() {
   const { t } = useTranslation();
   const pathname = usePathname();
-  const prefersReducedMotion = useReducedMotion();
+  const router = useRouter();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // Clear pending state when navigation completes
+  useEffect(() => { setPendingHref(null); }, [pathname]);
+
+  // Prefetch all nav pages on mount
+  useEffect(() => {
+    navItems.forEach(({ href }) => router.prefetch(href));
+  }, [router]);
+
+  const activeHref = pendingHref ?? pathname;
+
+  const handleNav = useCallback((e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (href === pathname) return;
+    setPendingHref(href);
+    router.push(href);
+  }, [pathname, router]);
 
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
@@ -74,36 +64,26 @@ export function DesktopNavigation() {
       </Link>
 
       <nav className="space-y-2 flex-1">
-        {navItems.map(({ href, icon: Icon, labelKey, animation }) => {
-          const active = isActive(pathname, href);
+        {navItems.map(({ href, icon: Icon, labelKey, iconClass }) => {
+          const active = isActive(activeHref, href);
           return (
-            <motion.div
+            <a
               key={href}
-              initial="rest"
-              whileHover={prefersReducedMotion ? undefined : "hover"}
-              whileTap={prefersReducedMotion ? undefined : "tap"}
-              animate="rest"
+              href={href}
+              onClick={(e) => handleNav(e, href)}
+              className={cn(
+                "nav-link relative flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 hover:bg-muted touch-action-manipulation",
+                active ? "text-foreground" : "text-muted-foreground"
+              )}
             >
-              <Link
-                href={href}
-                className={cn(
-                  "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 hover:bg-muted",
-                  active ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
-                {active && (
-                  <span className="absolute inset-0 bg-muted rounded-md" />
-                )}
-                <motion.span
-                  className="relative inline-flex"
-                  variants={prefersReducedMotion ? undefined : iconAnimations[animation]}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <Icon className="h-4 w-4" />
-                </motion.span>
-                <span className="relative">{t(labelKey)}</span>
-              </Link>
-            </motion.div>
+              {active && (
+                <span className="absolute inset-0 bg-muted rounded-md" />
+              )}
+              <span className={cn("relative inline-flex transition-transform duration-200", iconClass)}>
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="relative">{t(labelKey)}</span>
+            </a>
           );
         })}
       </nav>
@@ -119,40 +99,48 @@ export function DesktopNavigation() {
 export function MobileNavigation() {
   const { t } = useTranslation();
   const pathname = usePathname();
-  const prefersReducedMotion = useReducedMotion();
+  const router = useRouter();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // Clear pending state when navigation completes
+  useEffect(() => { setPendingHref(null); }, [pathname]);
+
+  // Prefetch all nav pages on mount
+  useEffect(() => {
+    navItems.forEach(({ href }) => router.prefetch(href));
+  }, [router]);
+
+  const activeHref = pendingHref ?? pathname;
+
+  const handleNav = useCallback((e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (href === pathname) return;
+    setPendingHref(href);
+    router.push(href);
+  }, [pathname, router]);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 z-50">
-      {navItems.map(({ href, icon: Icon, labelKey, animation }) => {
-        const active = isActive(pathname, href);
+      {navItems.map(({ href, icon: Icon, labelKey, iconClass }) => {
+        const active = isActive(activeHref, href);
         return (
-          <motion.div
+          <a
             key={href}
-            initial="rest"
-            whileHover={prefersReducedMotion ? undefined : "hover"}
-            whileTap={prefersReducedMotion ? undefined : "tap"}
-            animate="rest"
+            href={href}
+            onClick={(e) => handleNav(e, href)}
+            className={cn(
+              "nav-link relative flex flex-col items-center justify-center gap-1 py-2 px-4 transition-colors duration-150 hover:text-foreground touch-action-manipulation",
+              active ? "text-foreground" : "text-muted-foreground"
+            )}
           >
-            <Link
-              href={href}
-              className={cn(
-                "relative flex flex-col items-center justify-center gap-1 py-2 px-4 transition-colors duration-150 hover:text-foreground",
-                active ? "text-foreground" : "text-muted-foreground"
-              )}
-            >
-              {active && (
-                <span className="absolute inset-0 bg-muted rounded-md" />
-              )}
-              <motion.span
-                className="relative inline-flex"
-                variants={prefersReducedMotion ? undefined : iconAnimations[animation]}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
-                <Icon className="h-5 w-5" />
-              </motion.span>
-              <span className="text-xs relative">{t(labelKey)}</span>
-            </Link>
-          </motion.div>
+            {active && (
+              <span className="absolute inset-0 bg-muted rounded-md" />
+            )}
+            <span className={cn("relative inline-flex transition-transform duration-200", iconClass)}>
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="text-xs relative">{t(labelKey)}</span>
+          </a>
         );
       })}
     </nav>
