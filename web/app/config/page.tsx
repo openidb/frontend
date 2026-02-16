@@ -344,22 +344,20 @@ export default function ConfigPage() {
             بسم الله الرحمن الرحيم
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
-            الحمد لله ربّ العالمين، والصلاة والسلام على أشرف الأنبياء والمرسلين، نبيّنا محمّد وعلى آله وصحبه أجمعين.
+            الحمد لله ربّ العالمين، والصلاة والسلام على نبيّنا محمّد وعلى آله وصحبه أجمعين.
           </p>
-          <div className="space-y-3 text-sm text-muted-foreground/80 leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+          <p className="text-sm text-muted-foreground leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+            هذا مشروعٌ يهدف إلى تيسير الوصول إلى العلم الشرعي ونشره، عملاً بوصيّة النبيّ ﷺ:
+          </p>
+          <div className="text-sm text-muted-foreground/80 leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
             <blockquote className="border-s-2 border-border ps-3 italic">
-              بَلِّغُوا عَنِّي وَلَوْ آيَةً، وَحَدِّثُوا عَنْ بَنِي إِسْرَائِيلَ وَلاَ حَرَجَ، وَمَنْ كَذَبَ عَلَىَّ مُتَعَمِّدًا فَلْيَتَبَوَّأْ مَقْعَدَهُ مِنَ النَّارِ
+              «بَلِّغُوا عَنِّي وَلَوْ آيَةً»
               <footer className="text-xs text-muted-foreground/60 mt-1 not-italic">— صحيح البخاري ٣٤٦١</footer>
             </blockquote>
-            <blockquote className="border-s-2 border-border ps-3 italic">
-              مَنْ دَعَا إِلَى هُدَى كَانَ لَهُ مِنَ الأَجْرِ مِثْلُ أُجُورِ مَنْ تَبِعَهُ لاَ يَنْقُصُ ذَلِكَ مِنْ أُجُورِهِمْ شَيْئًا
-              <footer className="text-xs text-muted-foreground/60 mt-1 not-italic">— رياض الصالحين ١٣٨٢</footer>
-            </blockquote>
-            <blockquote className="border-s-2 border-border ps-3 italic">
-              نَضَّرَ اللَّهُ امْرَأً سَمِعَ مِنَّا شَيْئًا فَبَلَّغَهُ كَمَا سَمِعَهُ فَرُبَّ مُبَلِّغٍ أَوْعَى مِنْ سَامِعٍ
-              <footer className="text-xs text-muted-foreground/60 mt-1 not-italic">— رياض الصالحين ١٣٨٩</footer>
-            </blockquote>
           </div>
+          <p className="text-sm text-muted-foreground leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+            نسأل الله أن ينفع بهذا العمل ويبارك فيه.
+          </p>
           <p className={`text-xs text-muted-foreground/60 leading-relaxed ${RTL_LOCALES.includes(locale) ? "text-right" : "text-left"}`} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}>
             {t("config.about.description")}{" "}
             <a

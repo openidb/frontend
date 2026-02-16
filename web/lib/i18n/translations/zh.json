@@ -291,7 +291,7 @@
       "noneDesc": "跳过重新排序"
     },
     "about": {
-      "description": "开放伊斯兰数据库（OpenIDB）是一个开源项目，致力于索引和改进伊斯兰文本的搜索，通过统一的数据存储使其可访问。我们还为开发者提供APIs来进行构建。",
+      "description": "Open Islamic Database (OpenIDB) 是一个开源项目，致力于索引和改进伊斯兰文本的搜索，通过统一的数据存储使其可访问。我们还为开发者提供APIs来进行构建。",
       "github": "在GitHub上找到我们"
     }
   },
