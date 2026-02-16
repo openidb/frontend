@@ -9,7 +9,7 @@ export function Toaster() {
   return (
     <SonnerToaster
       theme={resolvedTheme as "light" | "dark"}
-      position="bottom-right"
+      position="top-right"
       toastOptions={{
         className: "border border-border bg-background text-foreground",
       }}

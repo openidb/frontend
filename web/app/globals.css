@@ -133,11 +133,13 @@ nav a, nav button {
   touch-action: manipulation;
 }
 
-/* Nav icon hover animations (pure CSS, no framer-motion) */
-.nav-link:hover .nav-icon-search  { transform: rotate(-15deg); }
-.nav-link:hover .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
-.nav-link:hover .nav-icon-authors { transform: translateY(-2px); }
-.nav-link:hover .nav-icon-config  { transform: rotate(90deg); }
+/* Nav icon hover animations — only on devices with a real pointer (not touch) */
+@media (hover: hover) {
+  .nav-link:hover .nav-icon-search  { transform: rotate(-15deg); }
+  .nav-link:hover .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
+  .nav-link:hover .nav-icon-authors { transform: translateY(-2px); }
+  .nav-link:hover .nav-icon-config  { transform: rotate(90deg); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-shimmer,

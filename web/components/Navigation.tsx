@@ -120,7 +120,7 @@ export function MobileNavigation() {
   }, [pathname, router]);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 z-50 pb-[env(safe-area-inset-bottom)]">
       {navItems.map(({ href, icon: Icon, labelKey, iconClass }) => {
         const active = isActive(activeHref, href);
         return (

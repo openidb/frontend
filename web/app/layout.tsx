@@ -101,7 +101,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeLocaleScript }} />
         <meta name="csrf-token" content={csrfToken} />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className="antialiased">
         <ThemeProvider>
@@ -112,7 +112,7 @@ export default function RootLayout({
                 <DesktopNavigation />
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-auto bg-background pb-16 md:pb-0">
+                <main className="flex-1 overflow-auto bg-background pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
                   {children}
                 </main>
 
