@@ -603,7 +603,7 @@ export default function SearchClient() {
         }`}
       >
         {/* Header */}
-        <div className={`${isHeroState ? "max-w-3xl text-center" : "max-w-2xl"} mx-auto mb-6 md:mb-8`}>
+        <div className={`${isHeroState ? "max-w-4xl text-center" : "max-w-2xl"} mx-auto mb-6 md:mb-8`}>
           <h1 className={`font-bold mb-2 ${isHeroState ? "text-3xl md:text-4xl" : "text-2xl md:text-3xl"}`}>{t("search.title")}</h1>
           <p className="text-sm md:text-base text-muted-foreground">
             {t("search.subtitle")}
@@ -611,7 +611,7 @@ export default function SearchClient() {
         </div>
 
         {/* Search Bar */}
-        <div className={`${isHeroState ? "max-w-3xl" : "max-w-2xl"} mx-auto mb-6 md:mb-8`}>
+        <div className={`${isHeroState ? "max-w-4xl" : "max-w-2xl"} mx-auto mb-6 md:mb-8`}>
           <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/60" suppressHydrationWarning>
             <div className="relative flex-1 min-w-0 rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
               {!isRecording && (
