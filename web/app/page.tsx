@@ -1,7 +1,7 @@
 import { fetchAPI } from "@/lib/api-client";
 import BooksClient from "./BooksClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface Author {
   id: string;

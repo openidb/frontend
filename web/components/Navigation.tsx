@@ -1,6 +1,6 @@
 "use client";
 
-import { PrefetchLink } from "./PrefetchLink";
+import Link from "next/link";
 import { BookOpen, Users, Search, Settings2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { LanguageSwitcher, LanguageSwitcherCompact } from "./LanguageSwitcher";
@@ -56,7 +56,7 @@ export function DesktopNavigation() {
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
       {/* Logo */}
-      <PrefetchLink href="/search" className="flex items-center justify-center gap-1.5 mb-4">
+      <Link href="/search" className="flex items-center justify-center gap-1.5 mb-4">
         <span
           className="text-[2.6rem] font-bold leading-[1] self-center"
           style={{ fontFamily: "var(--font-montserrat), sans-serif", color: "#37C1C4" }}
@@ -71,7 +71,7 @@ export function DesktopNavigation() {
           <span>Islamic</span>
           <span>Database</span>
         </div>
-      </PrefetchLink>
+      </Link>
 
       <nav className="space-y-2 flex-1">
         {navItems.map(({ href, icon: Icon, labelKey, animation }) => {
@@ -84,7 +84,7 @@ export function DesktopNavigation() {
               whileTap={prefersReducedMotion ? undefined : "tap"}
               animate="rest"
             >
-              <PrefetchLink
+              <Link
                 href={href}
                 className={cn(
                   "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 hover:bg-muted",
@@ -102,7 +102,7 @@ export function DesktopNavigation() {
                   <Icon className="h-4 w-4" />
                 </motion.span>
                 <span className="relative">{t(labelKey)}</span>
-              </PrefetchLink>
+              </Link>
             </motion.div>
           );
         })}
@@ -133,7 +133,7 @@ export function MobileNavigation() {
             whileTap={prefersReducedMotion ? undefined : "tap"}
             animate="rest"
           >
-            <PrefetchLink
+            <Link
               href={href}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 py-2 px-4 transition-colors duration-150 hover:text-foreground",
@@ -151,7 +151,7 @@ export function MobileNavigation() {
                 <Icon className="h-5 w-5" />
               </motion.span>
               <span className="text-xs relative">{t(labelKey)}</span>
-            </PrefetchLink>
+            </Link>
           </motion.div>
         );
       })}
