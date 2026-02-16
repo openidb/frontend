@@ -287,7 +287,7 @@
       "noneDesc": "Tsallake sake tsarawa"
     },
     "about": {
-      "description": "OpenIDB wani bukatun buɗe ne da aka sadaurata ga tsarin bayanai da inganta binciken littattafan Musulunci, yana sa su kasansu ta hanyar ajiyar bayanai ta gida. Mun kuma ba da APIs ga masu bunkasa don gina akan.",
+      "description": "Open Islamic Database (OpenIDB) wani bukatun buɗe ne da aka sadaurata ga tsarin bayanai da inganta binciken littattafan Musulunci, yana sa su kasansu ta hanyar ajiyar bayanai ta gida. Mun kuma ba da APIs ga masu bunkasa don gina akan.",
       "github": "Samu mu a GitHub"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Nau'ikan Abun Ciki",
     "quranVerses": "Ayoyin Alƙur'ani",
     "hadiths": "Hadisai",
-    "books": "Littattafai"
+    "books": "Littattafai",
+    "filterCollections": "Tace tarin littattafai",
+    "allCollections": "Dukkan littattafai",
+    "primaryCollections": "Manyan littattafai (Kutub al-Sittah)",
+    "otherCollections": "Sauran littattafai"
   },
   "results": {
     "quran": "Alƙur'ani",

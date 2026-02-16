@@ -287,7 +287,7 @@
       "noneDesc": "Fò ìtúnṣe kọjá"
     },
     "about": {
-      "description": "OpenIDB jẹ́ iṣẹ́ ètò ìbùkún tí a gbe fún ìkọ́kọ́-indexing àti ìmúpọ̀sí rírán àwọn ọ̀rọ̀ Ìsìlámù, tí yoo má ṣe wọ́pọ̀ wọ́n nípa pó-ìkójọpọ̀ dátà. Àwa sì máa fúnni àwọn mubarmmisuuq ni APIs wọ́n lè kọ̀lè síi.",
+      "description": "Open Islamic Database (OpenIDB) jẹ́ iṣẹ́ ètò ìbùkún tí a gbe fún ìkọ́kọ́-indexing àti ìmúpọ̀sí rírán àwọn ọ̀rọ̀ Ìsìlámù, tí yoo má ṣe wọ́pọ̀ wọ́n nípa pó-ìkójọpọ̀ dátà. Àwa sì máa fúnni àwọn mubarmmisuuq ni APIs wọ́n lè kọ̀lè síi.",
       "github": "Wá àwa lórí GitHub"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Àwọn oríṣi àkóónú",
     "quranVerses": "Àwọn ẹ̀ka Kùránì",
     "hadiths": "Àwọn hadiṣi",
-    "books": "Àwọn ìwé"
+    "books": "Àwọn ìwé",
+    "filterCollections": "Ṣàyẹ̀wò àwọn àkójọ",
+    "allCollections": "Gbogbo àwọn àkójọ",
+    "primaryCollections": "Àwọn àkójọ àkọ́kọ́ (Kutub al-Sittah)",
+    "otherCollections": "Àwọn àkójọ mìíràn"
   },
   "results": {
     "quran": "Kùránì",

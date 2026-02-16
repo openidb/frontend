@@ -287,7 +287,7 @@
       "noneDesc": "Sla herrangschikking over"
     },
     "about": {
-      "description": "OpenIDB is een open-source project gewijd aan het indexeren en verbeteren van het zoeken naar Islamitische teksten, waardoor ze toegankelijk worden gemaakt via een eenmalige datastore. We bieden ook APIs voor ontwikkelaars om op voort te bouwen.",
+      "description": "Open Islamic Database (OpenIDB) is een open-source project gewijd aan het indexeren en verbeteren van het zoeken naar Islamitische teksten, waardoor ze toegankelijk worden gemaakt via een eenmalige datastore. We bieden ook APIs voor ontwikkelaars om op voort te bouwen.",
       "github": "Vind ons op GitHub"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Inhoudstypen",
     "quranVerses": "Koranverzen",
     "hadiths": "Hadiths",
-    "books": "Boeken"
+    "books": "Boeken",
+    "filterCollections": "Collecties filteren",
+    "allCollections": "Alle collecties",
+    "primaryCollections": "Primaire collecties (Kutub al-Sittah)",
+    "otherCollections": "Overige collecties"
   },
   "results": {
     "quran": "Koran",

@@ -287,7 +287,7 @@
       "noneDesc": "Ruka kupanga upya"
     },
     "about": {
-      "description": "OpenIDB ni mradi wa chanzo wazi unaohusishwa na kufiphi na kuboreshwa kwa utafutaji wa maandishi ya Kiislamu, na kuzifanya zipatikane kupitia hifadhidata iliyoungwa kwa pamoja. Pia tunatoa APIs kwa waendelezaji kujengea.",
+      "description": "Open Islamic Database (OpenIDB) ni mradi wa chanzo wazi unaohusishwa na kufiphi na kuboreshwa kwa utafutaji wa maandishi ya Kiislamu, na kuzifanya zipatikane kupitia hifadhidata iliyoungwa kwa pamoja. Pia tunatoa APIs kwa waendelezaji kujengea.",
       "github": "Tupate GitHub"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Aina za Maudhui",
     "quranVerses": "Aya za Qur'an",
     "hadiths": "Hadith",
-    "books": "Vitabu"
+    "books": "Vitabu",
+    "filterCollections": "Chuja makusanyo",
+    "allCollections": "Makusanyo yote",
+    "primaryCollections": "Makusanyo makuu (Kutub al-Sittah)",
+    "otherCollections": "Makusanyo mengine"
   },
   "results": {
     "quran": "Qur'an",

@@ -287,7 +287,7 @@
       "noneDesc": "Skip reranking"
     },
     "about": {
-      "description": "OpenIDB is an open-source project dedicated to indexing and improving the search of Islamic texts, making them accessible through a unified data store. We also provide APIs for developers to build upon.",
+      "description": "Open Islamic Database (OpenIDB) is an open-source project dedicated to indexing and improving the search of Islamic texts, making them accessible through a unified data store. We also provide APIs for developers to build upon.",
       "github": "Find us on GitHub"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Content Types",
     "quranVerses": "Quran verses",
     "hadiths": "Hadiths",
-    "books": "Books"
+    "books": "Books",
+    "filterCollections": "Filter collections",
+    "allCollections": "All collections",
+    "primaryCollections": "Primary collections (Kutub al-Sittah)",
+    "otherCollections": "Other collections"
   },
   "results": {
     "quran": "Quran",

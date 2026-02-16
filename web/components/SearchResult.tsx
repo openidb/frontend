@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { PrefetchLink } from "./PrefetchLink";
 import { BookOpen, FileText, ExternalLink, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
@@ -346,7 +346,22 @@ interface HadithResultProps {
 function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const isLong = hadith.text.length > 200;
+  const [isClamped, setIsClamped] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
+  const translationRef = useRef<HTMLDivElement>(null);
+
+  const checkOverflow = useCallback(() => {
+    if (expanded) return;
+    const textOverflows = textRef.current ? textRef.current.scrollHeight > textRef.current.clientHeight + 1 : false;
+    const translationOverflows = translationRef.current ? translationRef.current.scrollHeight > translationRef.current.clientHeight + 1 : false;
+    setIsClamped(textOverflows || translationOverflows);
+  }, [expanded]);
+
+  useEffect(() => {
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [checkOverflow, hadith.text, hadith.translation]);
 
   return (
     <a
@@ -402,6 +417,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
 
       {/* Hadith Text */}
       <div
+        ref={textRef}
         className={`text-sm text-foreground${expanded ? "" : " line-clamp-3"}`}
         dir="rtl"
       >
@@ -419,6 +435,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {/* Translation */}
       {hadith.translation && (
         <div
+          ref={translationRef}
           className={`text-sm text-muted-foreground mt-2 italic border-t border-border/50 pt-2${expanded ? "" : " line-clamp-3"}`}
           dir="auto"
         >
@@ -430,7 +447,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       )}
 
       {/* Expand/Collapse button */}
-      {isLong && (
+      {(isClamped || expanded) && (
         <button
           type="button"
           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors"

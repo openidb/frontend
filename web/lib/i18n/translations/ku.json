@@ -287,7 +287,7 @@
       "noneDesc": "Reranking-ê derbas bike"
     },
     "about": {
-      "description": "OpenIDB proyeyek çavkanî ye ku ji bo nîşankirin û baştir kirina lêgerîna nivîsên Îslamî tê niyetlandin, ew di navbera pergalê daneyan yekgirtî de dihêlîn gihîştbar. Berw jî APIs ji bo pêşketî didin da ku ew li ser ew ava bikin.",
+      "description": "Open Islamic Database (OpenIDB) proyeyek çavkanî ye ku ji bo nîşankirin û baştir kirina lêgerîna nivîsên Îslamî tê niyetlandin, ew di navbera pergalê daneyan yekgirtî de dihêlîn gihîştbar. Berw jî APIs ji bo pêşketî didin da ku ew li ser ew ava bikin.",
       "github": "Me li ser GitHub bibînin"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Cureyên Naverokê",
     "quranVerses": "Ayetên Qur'anê",
     "hadiths": "Hedîsan",
-    "books": "Pirtûkan"
+    "books": "Pirtûkan",
+    "filterCollections": "Parzûnkirina berhevkan",
+    "allCollections": "Hemû berhevk",
+    "primaryCollections": "Berhevkên sereke (Kutub al-Sittah)",
+    "otherCollections": "Berhevkên din"
   },
   "results": {
     "quran": "Qur'an",

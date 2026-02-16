@@ -291,7 +291,7 @@
       "noneDesc": "Lewati pengurutan ulang"
     },
     "about": {
-      "description": "OpenIDB adalah proyek sumber terbuka yang didedikasikan untuk mengindeks dan meningkatkan pencarian teks Islami, membuatnya dapat diakses melalui penyimpanan data terpadu. Kami juga menyediakan APIs untuk pengembang membangun di atasnya.",
+      "description": "Open Islamic Database (OpenIDB) adalah proyek sumber terbuka yang didedikasikan untuk mengindeks dan meningkatkan pencarian teks Islami, membuatnya dapat diakses melalui penyimpanan data terpadu. Kami juga menyediakan APIs untuk pengembang membangun di atasnya.",
       "github": "Temukan kami di GitHub"
     }
   },
@@ -299,7 +299,11 @@
     "contentTypes": "Jenis Konten",
     "quranVerses": "Ayat Al-Quran",
     "hadiths": "Hadis",
-    "books": "Buku"
+    "books": "Buku",
+    "filterCollections": "Filter koleksi",
+    "allCollections": "Semua koleksi",
+    "primaryCollections": "Koleksi utama (Kutub al-Sittah)",
+    "otherCollections": "Koleksi lainnya"
   },
   "results": {
     "quran": "Al-Quran",

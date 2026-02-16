@@ -287,7 +287,7 @@
       "noneDesc": "Yeniden sıralamayı atla"
     },
     "about": {
-      "description": "OpenIDB, İslami metinlerin indexlenmesi ve aramasının iyileştirilmesine adanmış açık kaynaklı bir projededir ve bunları birleştirilmiş bir veri deposu aracılığıyla erişilebilir hale getirir. Ayrıca geliştiricilerin üzerine inşa etmeleri için APIs sağlarız.",
+      "description": "Open Islamic Database (OpenIDB), İslami metinlerin indexlenmesi ve aramasının iyileştirilmesine adanmış açık kaynaklı bir projededir ve bunları birleştirilmiş bir veri deposu aracılığıyla erişilebilir hale getirir. Ayrıca geliştiricilerin üzerine inşa etmeleri için APIs sağlarız.",
       "github": "GitHub'da bizi bulun"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "İçerik Türleri",
     "quranVerses": "Kuran ayetleri",
     "hadiths": "Hadisler",
-    "books": "Kitaplar"
+    "books": "Kitaplar",
+    "filterCollections": "Koleksiyonları filtrele",
+    "allCollections": "Tüm koleksiyonlar",
+    "primaryCollections": "Ana koleksiyonlar (Kütüb-i Sitte)",
+    "otherCollections": "Diğer koleksiyonlar"
   },
   "results": {
     "quran": "Kuran",

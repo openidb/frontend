@@ -291,7 +291,7 @@
       "noneDesc": "跳过重新排序"
     },
     "about": {
-      "description": "OpenIDB是一个开源项目，致力于索引和改进伊斯兰文本的搜索，通过统一的数据存储使其可访问。我们还为开发者提供APIs来进行构建。",
+      "description": "开放伊斯兰数据库（OpenIDB）是一个开源项目，致力于索引和改进伊斯兰文本的搜索，通过统一的数据存储使其可访问。我们还为开发者提供APIs来进行构建。",
       "github": "在GitHub上找到我们"
     }
   },
@@ -299,7 +299,11 @@
     "contentTypes": "内容类型",
     "quranVerses": "古兰经经文",
     "hadiths": "圣训",
-    "books": "书籍"
+    "books": "书籍",
+    "filterCollections": "筛选文集",
+    "allCollections": "所有文集",
+    "primaryCollections": "主要文集（六大圣训集）",
+    "otherCollections": "其他文集"
   },
   "results": {
     "quran": "古兰经",

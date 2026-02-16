@@ -10,6 +10,44 @@ export type DateCalendarType = "hijri" | "gregorian" | "both";
 
 export type TranslationDisplayOption = "none" | "transliteration" | "translation";
 
+export type HadithCollectionGroup = "primary" | "other";
+
+export interface HadithCollectionInfo {
+  slug: string;
+  nameEnglish: string;
+  nameArabic: string;
+  group: HadithCollectionGroup;
+}
+
+export const HADITH_COLLECTIONS: HadithCollectionInfo[] = [
+  // Primary (Kutub al-Sittah)
+  { slug: "bukhari", nameEnglish: "Sahih al-Bukhari", nameArabic: "صحيح البخاري", group: "primary" },
+  { slug: "muslim", nameEnglish: "Sahih Muslim", nameArabic: "صحيح مسلم", group: "primary" },
+  { slug: "abudawud", nameEnglish: "Sunan Abu Dawud", nameArabic: "سنن أبي داود", group: "primary" },
+  { slug: "tirmidhi", nameEnglish: "Jami al-Tirmidhi", nameArabic: "جامع الترمذي", group: "primary" },
+  { slug: "nasai", nameEnglish: "Sunan al-Nasa'i", nameArabic: "سنن النسائي", group: "primary" },
+  { slug: "ibnmajah", nameEnglish: "Sunan Ibn Majah", nameArabic: "سنن ابن ماجه", group: "primary" },
+  // Other collections
+  { slug: "ahmad", nameEnglish: "Musnad Ahmad", nameArabic: "مسند أحمد", group: "other" },
+  { slug: "malik", nameEnglish: "Muwatta Malik", nameArabic: "موطأ مالك", group: "other" },
+  { slug: "darimi", nameEnglish: "Sunan al-Darimi", nameArabic: "سنن الدارمي", group: "other" },
+  { slug: "mustadrak", nameEnglish: "Al-Mustadrak", nameArabic: "المستدرك", group: "other" },
+  { slug: "ibn-hibban", nameEnglish: "Sahih Ibn Hibban", nameArabic: "صحيح ابن حبان", group: "other" },
+  { slug: "mujam-kabir", nameEnglish: "Al-Mu'jam al-Kabir", nameArabic: "المعجم الكبير", group: "other" },
+  { slug: "sunan-kubra-bayhaqi", nameEnglish: "Sunan al-Kubra (Bayhaqi)", nameArabic: "السنن الكبرى للبيهقي", group: "other" },
+  { slug: "sunan-kubra-nasai", nameEnglish: "Sunan al-Kubra (Nasa'i)", nameArabic: "السنن الكبرى للنسائي", group: "other" },
+  { slug: "suyuti", nameEnglish: "Al-Jami' al-Saghir (Suyuti)", nameArabic: "الجامع الصغير للسيوطي", group: "other" },
+  { slug: "ahmad-zuhd", nameEnglish: "Al-Zuhd (Ahmad)", nameArabic: "الزهد لأحمد", group: "other" },
+  { slug: "riyadussalihin", nameEnglish: "Riyad al-Salihin", nameArabic: "رياض الصالحين", group: "other" },
+  { slug: "adab", nameEnglish: "Al-Adab al-Mufrad", nameArabic: "الأدب المفرد", group: "other" },
+  { slug: "shamail", nameEnglish: "Shama'il Muhammadiyyah", nameArabic: "الشمائل المحمدية", group: "other" },
+  { slug: "mishkat", nameEnglish: "Mishkat al-Masabih", nameArabic: "مشكاة المصابيح", group: "other" },
+  { slug: "bulugh", nameEnglish: "Bulugh al-Maram", nameArabic: "بلوغ المرام", group: "other" },
+  { slug: "nawawi40", nameEnglish: "40 Hadith Nawawi", nameArabic: "الأربعون النووية", group: "other" },
+  { slug: "qudsi40", nameEnglish: "40 Hadith Qudsi", nameArabic: "الأحاديث القدسية", group: "other" },
+  { slug: "hisn", nameEnglish: "Hisn al-Muslim", nameArabic: "حصن المسلم", group: "other" },
+];
+
 // Quran translation options (27 languages, matching app UI languages except Arabic)
 export const QURAN_TRANSLATIONS: { code: string; edition: string; name: string; translator: string }[] = [
   { code: "none", edition: "", name: "None", translator: "" },
@@ -72,6 +110,7 @@ export interface SearchConfig {
   refineBookRerank: number;
   refineAyahRerank: number;
   refineHadithRerank: number;
+  hadithCollections: string[];
 }
 
 export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
@@ -103,6 +142,7 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   refineBookRerank: 20,
   refineAyahRerank: 12,
   refineHadithRerank: 15,
+  hadithCollections: [],
 };
 
 // Internal config keys that are NOT user-configurable via the config page.

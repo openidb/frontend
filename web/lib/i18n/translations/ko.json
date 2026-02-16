@@ -291,7 +291,7 @@
       "noneDesc": "재정렬 건너뛰기"
     },
     "about": {
-      "description": "OpenIDB는 이슬람 텍스트의 색인 및 검색 개선에 전념하는 오픈 소스 프로젝트로, 통일된 데이터 저장소를 통해 텍스트를 접근할 수 있게 합니다. 또한 개발자들이 구축할 수 있는 APIs를 제공합니다.",
+      "description": "Open Islamic Database(OpenIDB)는 이슬람 텍스트의 색인 및 검색 개선에 전념하는 오픈 소스 프로젝트로, 통일된 데이터 저장소를 통해 텍스트를 접근할 수 있게 합니다. 또한 개발자들이 구축할 수 있는 APIs를 제공합니다.",
       "github": "GitHub에서 찾기"
     }
   },
@@ -299,7 +299,11 @@
     "contentTypes": "콘텐츠 유형",
     "quranVerses": "꾸란 구절",
     "hadiths": "하디스",
-    "books": "책"
+    "books": "책",
+    "filterCollections": "컬렉션 필터",
+    "allCollections": "모든 컬렉션",
+    "primaryCollections": "주요 컬렉션 (쿠투브 알시타)",
+    "otherCollections": "기타 컬렉션"
   },
   "results": {
     "quran": "꾸란",

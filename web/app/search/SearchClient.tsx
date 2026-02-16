@@ -196,7 +196,8 @@ export default function SearchClient() {
     if (q) {
       setQuery(q);
       // Try to restore cached results
-      const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${searchConfig.hadithTranslation}`;
+      const restoreCollectionKey = searchConfig.hadithCollections.length > 0 ? searchConfig.hadithCollections.join(",") : "all";
+      const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${searchConfig.hadithTranslation}_${restoreCollectionKey}`;
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
@@ -274,6 +275,9 @@ export default function SearchClient() {
         hadithTranslation: config.hadithTranslation || "none",
         bookContentTranslation: locale === "ar" ? "en" : locale,
         bookTitleLang: effectiveBookTitleLang,
+        ...(config.hadithCollections.length > 0 && {
+          hadithCollections: config.hadithCollections.join(","),
+        }),
         ...(isRefineSearch && {
           refine: "true",
           refineOriginalWeight: String(config.refineOriginalWeight),
@@ -343,7 +347,8 @@ export default function SearchClient() {
 
       // Cache results in sessionStorage (ignore quota errors)
       try {
-        const cacheKey = `search_${searchQuery}_${config.quranTranslation}_${config.hadithTranslation}`;
+        const collectionKey = config.hadithCollections.length > 0 ? config.hadithCollections.join(",") : "all";
+        const cacheKey = `search_${searchQuery}_${config.quranTranslation}_${config.hadithTranslation}_${collectionKey}`;
         sessionStorage.setItem(cacheKey, JSON.stringify({
           unifiedResults: limitedUnified,
           authors: data.authors || [],
@@ -611,7 +616,7 @@ export default function SearchClient() {
         </div>
 
         {/* Search Bar */}
-        <div className={`${isHeroState ? "max-w-4xl" : "max-w-2xl"} mx-auto mb-6 md:mb-8`}>
+        <div className={`${isHeroState ? "max-w-2xl" : "max-w-2xl"} w-full mx-auto mb-6 md:mb-8`}>
           <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/60" suppressHydrationWarning>
             <div className="relative flex-1 min-w-0 rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
               {!isRecording && (

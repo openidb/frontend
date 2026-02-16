@@ -32,15 +32,31 @@ function applyInternalDefaults(config: SearchConfig): SearchConfig {
 
 /** Sync translation settings to match the given locale. */
 function syncTranslationsToLocale(cfg: SearchConfig, currentLocale: string): SearchConfig {
-  const target = currentLocale === "ar" ? "en" : currentLocale;
+  // Arabic users don't need translations/transliterations — content is already in Arabic
+  if (currentLocale === "ar") {
+    const updates: Partial<SearchConfig> = {};
+    let changed = false;
+    if (cfg.quranTranslation !== "none") { updates.quranTranslation = "none"; changed = true; }
+    if (cfg.hadithTranslation !== "none") { updates.hadithTranslation = "none"; changed = true; }
+    if (cfg.bookTitleDisplay !== "none") { updates.bookTitleDisplay = "none" as TranslationDisplayOption; changed = true; }
+    if (cfg.showAuthorTransliteration !== false) { updates.showAuthorTransliteration = false; changed = true; }
+    return changed ? { ...cfg, ...updates } : cfg;
+  }
+
+  // Non-Arabic: enable translations in the user's language, and author transliteration
+  const target = currentLocale;
   let changed = false;
   const updates: Partial<SearchConfig> = {};
-  if (cfg.quranTranslation !== "none" && cfg.quranTranslation !== target) {
+  if (cfg.quranTranslation !== target) {
     updates.quranTranslation = target;
     changed = true;
   }
-  if (cfg.hadithTranslation !== "none" && cfg.hadithTranslation !== target) {
+  if (cfg.hadithTranslation !== target) {
     updates.hadithTranslation = target;
+    changed = true;
+  }
+  if (cfg.showAuthorTransliteration !== true) {
+    updates.showAuthorTransliteration = true;
     changed = true;
   }
   return changed ? { ...cfg, ...updates } : cfg;

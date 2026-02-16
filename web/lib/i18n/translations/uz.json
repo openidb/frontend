@@ -287,7 +287,7 @@
       "noneDesc": "Qayta tartiblashni o'tkazib yuborish"
     },
     "about": {
-      "description": "OpenIDB islomiy matnlarni indekslashtirish va izlanishni yaxshilashga bag'ishlangan ochiq manbali loyihasi bo'lib, ularni birlashtirilgan ma'lumotlar saqlagich orqali foydalanish mumkin qiladi. Shuningdek, biz ishlab chiquvchilar uchun APIs taqdim etamiz.",
+      "description": "Open Islamic Database (OpenIDB) islomiy matnlarni indekslashtirish va izlanishni yaxshilashga bag'ishlangan ochiq manbali loyihasi bo'lib, ularni birlashtirilgan ma'lumotlar saqlagich orqali foydalanish mumkin qiladi. Shuningdek, biz ishlab chiquvchilar uchun APIs taqdim etamiz.",
       "github": "GitHub'da biz toping"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Kontent turlari",
     "quranVerses": "Qur'on oyatlari",
     "hadiths": "Hadislar",
-    "books": "Kitoblar"
+    "books": "Kitoblar",
+    "filterCollections": "To'plamlarni filtrlash",
+    "allCollections": "Barcha to'plamlar",
+    "primaryCollections": "Asosiy to'plamlar (Kutub al-Sittah)",
+    "otherCollections": "Boshqa to'plamlar"
   },
   "results": {
     "quran": "Qur'on",

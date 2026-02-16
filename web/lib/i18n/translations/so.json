@@ -287,7 +287,7 @@
       "noneDesc": "Ka bood dib-u-kala-soocidda"
     },
     "about": {
-      "description": "OpenIDB waa masharuuc furan oo ay waxba u fadhiiso feerkujinta iyo hagaajinta raadinta qoraallo Islaamiyeed, iyada oo ay ay accessible u yeedhaan adeegsiga depo data midaysan. Waxaan sidoo kale bixinaa APIs oo loogu talagalay mubarmmisuuq inay samaystaan.",
+      "description": "Open Islamic Database (OpenIDB) waa masharuuc furan oo ay waxba u fadhiiso feerkujinta iyo hagaajinta raadinta qoraallo Islaamiyeed, iyada oo ay ay accessible u yeedhaan adeegsiga depo data midaysan. Waxaan sidoo kale bixinaa APIs oo loogu talagalay mubarmmisuuq inay samaystaan.",
       "github": "Naga hel GitHub"
     }
   },
@@ -295,7 +295,11 @@
     "contentTypes": "Noocyada Waxa Ku Jira",
     "quranVerses": "Aayaadka Qur'aanka",
     "hadiths": "Xadiithyada",
-    "books": "Kutub"
+    "books": "Kutub",
+    "filterCollections": "Shaandhee ururrada",
+    "allCollections": "Dhammaan ururrada",
+    "primaryCollections": "Ururrada muhiimka ah (Kutub al-Sittah)",
+    "otherCollections": "Ururrada kale"
   },
   "results": {
     "quran": "Qur'aan",
