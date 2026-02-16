@@ -39,7 +39,7 @@ export function WordDefinitionPopover({
     setError(false);
     setResult(null);
 
-    fetch(`/api/dictionary/${encodeURIComponent(word)}`)
+    fetch(`/api/dictionary/lookup/${encodeURIComponent(word)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
