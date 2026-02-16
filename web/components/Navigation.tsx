@@ -120,7 +120,7 @@ export function MobileNavigation() {
   }, [pathname, router]);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 z-50 pb-[env(safe-area-inset-bottom)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 min-h-[4rem] z-50 pb-[env(safe-area-inset-bottom)]">
       {navItems.map(({ href, icon: Icon, labelKey, iconClass }) => {
         const active = isActive(activeHref, href);
         return (
@@ -129,7 +129,7 @@ export function MobileNavigation() {
             href={href}
             onClick={(e) => handleNav(e, href)}
             className={cn(
-              "nav-link relative flex flex-col items-center justify-center gap-1 py-2 px-4 transition-colors duration-150 hover:text-foreground touch-action-manipulation",
+              "nav-link relative flex flex-col items-center justify-center gap-1 py-2 px-4 min-w-[3.5rem] transition-colors duration-150 hover:text-foreground touch-action-manipulation",
               active ? "text-foreground" : "text-muted-foreground"
             )}
           >
@@ -137,9 +137,9 @@ export function MobileNavigation() {
               <span className="absolute inset-0 bg-muted rounded-md" />
             )}
             <span className={cn("relative inline-flex transition-transform duration-200", iconClass)}>
-              <Icon className="h-5 w-5" />
+              <Icon className="h-6 w-6" />
             </span>
-            <span className="text-xs relative">{t(labelKey)}</span>
+            <span className="text-[0.7rem] relative">{t(labelKey)}</span>
           </a>
         );
       })}

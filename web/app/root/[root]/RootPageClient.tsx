@@ -30,7 +30,7 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8" dir="rtl">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8" dir="rtl">
       {/* Header */}
       <div className="mb-8">
         <PrefetchLink
@@ -60,17 +60,17 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
               <h3 className="text-lg font-medium mb-3 text-blue-700 dark:text-blue-400">
                 Verbs ({verbs.length})
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {verbs.map((v, i) => (
                   <div
                     key={i}
-                    className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center"
+                    className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 sm:p-4 text-center"
                   >
                     <span className="font-arabic text-lg block">
                       {v.vocalized || v.word}
                     </span>
                     {v.pattern && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 font-arabic">
+                      <span className="text-sm sm:text-xs text-gray-500 dark:text-gray-400 font-arabic">
                         {v.pattern}
                       </span>
                     )}
@@ -91,22 +91,22 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
                   <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 font-arabic">
                     {pattern} ({forms.length})
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {forms.map((f, i) => (
                       <div
                         key={i}
-                        className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3"
+                        className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 sm:p-4"
                       >
                         <span className="font-arabic text-lg block text-center">
                           {f.vocalized || f.word}
                         </span>
                         {f.wordType && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400 block text-center">
+                          <span className="text-sm sm:text-xs text-gray-500 dark:text-gray-400 block text-center">
                             {f.wordType}
                           </span>
                         )}
                         {f.definition && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 font-arabic">
+                          <p className="text-sm sm:text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 font-arabic">
                             {f.definition.slice(0, 100)}
                           </p>
                         )}
@@ -136,7 +136,7 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
                 >
                   <button
                     onClick={() => toggleEntry(entry.id)}
-                    className="w-full p-4 text-right hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    className="w-full p-4 sm:p-5 text-right hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     aria-expanded={isExpanded}
                   >
                     <div className="flex items-center justify-between">

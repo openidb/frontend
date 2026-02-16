@@ -598,7 +598,7 @@ export default function SearchClient() {
   const isHeroState = !hasSearched && !isLoading && query.length < 2;
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 sm:p-6 md:p-8">
       {/* Header + Search Bar wrapper — centers vertically in hero state, collapses to top otherwise */}
       <div
         className={`transition-all duration-500 ease-out ${
@@ -617,15 +617,15 @@ export default function SearchClient() {
 
         {/* Search Bar */}
         <div className={`${isHeroState ? "max-w-2xl" : "max-w-2xl"} w-full mx-auto mb-6 md:mb-8`}>
-          <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/60" suppressHydrationWarning>
+          <div className="flex gap-2 p-2 sm:p-1.5 rounded-2xl bg-muted/60" suppressHydrationWarning>
             <div className="relative flex-1 min-w-0 rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
               {!isRecording && (
                 <>
-                  <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                  <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder={t("search.placeholder")}
-                    className="text-base md:text-sm h-10 md:h-12 pl-9 pr-9 md:px-12 rounded-lg border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="text-base md:text-sm h-12 pl-10 pr-9 md:px-12 rounded-lg border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     dir="auto"
                     value={query}
                     onChange={handleInputChange}
@@ -637,7 +637,7 @@ export default function SearchClient() {
                       className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
                       aria-label={t("common.close")}
                     >
-                      <X className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                      <X className="h-5 w-5 text-muted-foreground" />
                     </button>
                   )}
                 </>
@@ -652,7 +652,7 @@ export default function SearchClient() {
             <Button
               onClick={handleRefineSearch}
               disabled={query.length < 2 || isRefining || isRecording}
-              className={`h-10 md:h-12 px-3 md:px-6 shrink-0 border box-border rounded-lg focus:outline-none focus-visible:ring-0 active:transform-none transition-shadow duration-200 ${isRecording ? "" : "border-brand bg-gradient-to-b from-brand to-[hsl(var(--brand)/0.85)] text-white shadow-[0_1px_3px_0_hsl(var(--brand)/0.3)] hover:shadow-[0_2px_8px_0_hsl(var(--brand)/0.35)]"}`}
+              className={`h-12 px-4 md:px-6 shrink-0 border box-border rounded-lg focus:outline-none focus-visible:ring-0 active:transform-none transition-shadow duration-200 ${isRecording ? "" : "border-brand bg-gradient-to-b from-brand to-[hsl(var(--brand)/0.85)] text-white shadow-[0_1px_3px_0_hsl(var(--brand)/0.3)] hover:shadow-[0_2px_8px_0_hsl(var(--brand)/0.35)]"}`}
             >
               {isRefining ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : t("search.refineSearch")}
             </Button>
@@ -665,7 +665,7 @@ export default function SearchClient() {
 
         {/* Disclaimer — shown only in hero state, inside the centered flex container */}
         {isHeroState && (
-          <p className="max-w-md mx-auto text-[0.65rem] text-muted-foreground/75 text-center leading-relaxed mt-8">
+          <p className="max-w-md mx-auto text-xs text-muted-foreground/75 text-center leading-relaxed mt-8">
             {t("search.disclaimer")}
           </p>
         )}
@@ -729,8 +729,8 @@ export default function SearchClient() {
               transition={{ duration: 0.2 }}
               className="flex flex-col items-center justify-center py-16 gap-3"
             >
-              <Search className="h-12 w-12 text-muted-foreground/30" />
-              <p className="text-muted-foreground text-lg">
+              <Search className="h-16 w-16 sm:h-12 sm:w-12 text-muted-foreground/30" />
+              <p className="text-muted-foreground text-xl sm:text-lg">
                 {t("search.noResults", { query })}
               </p>
               <p className="text-sm text-muted-foreground/60">
@@ -757,12 +757,12 @@ export default function SearchClient() {
                       <PrefetchLink
                         key={author.id}
                         href={`/authors/${encodeURIComponent(author.nameLatin)}`}
-                        className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-background"
+                        className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-background"
                       >
-                        <User className="h-4 w-4 text-muted-foreground" />
+                        <User className="h-5 w-5 text-muted-foreground" />
                         <div>
                           <div className="font-medium" dir="rtl">{author.nameArabic}</div>
-                          <div className="text-xs text-muted-foreground flex items-center gap-2">
+                          <div className="text-sm sm:text-xs text-muted-foreground flex items-center gap-2">
                             {searchConfig.showAuthorTransliteration && (
                               <span>{author.nameLatin}</span>
                             )}
@@ -806,7 +806,7 @@ export default function SearchClient() {
                   </p>
                   <div className="flex items-center gap-2">
                     {isRefined && (
-                      <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                      <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
                         {t("search.refined")}
                       </span>
                     )}

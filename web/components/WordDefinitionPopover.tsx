@@ -216,7 +216,7 @@ export function WordDefinitionPopover({
       <div className="border-t border-border">
         <button
           onClick={handleCopy}
-          className="flex w-full items-center justify-center gap-1.5 px-3 py-2.5 text-sm hover:bg-muted transition-colors rounded-b-lg"
+          className="flex w-full items-center justify-center gap-1.5 px-3 py-3 text-sm hover:bg-muted transition-colors rounded-b-lg"
         >
           <Copy className="h-4 w-4" />
           <span>{t("reader.copyWord")}</span>

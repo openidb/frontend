@@ -164,11 +164,11 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
       <div className="mb-6 space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("authors.title")}</h1>
         <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-muted/60 p-1.5" suppressHydrationWarning>
-          <div className="relative flex-1 min-w-[16rem] rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
+          <div className="relative flex-1 min-w-0 w-full sm:min-w-[16rem] rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
             <Input
               type="text"
               placeholder={t("authors.searchPlaceholder")}
-              className="text-base sm:text-sm h-10 rounded-lg border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="text-base sm:text-sm h-12 sm:h-10 rounded-lg border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -184,7 +184,47 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg">
+      {/* Mobile card layout */}
+      <div className="sm:hidden space-y-3">
+        {loading ? (
+          [...Array(6)].map((_, i) => (
+            <div key={i} className="p-4 border rounded-lg animate-pulse bg-card">
+              <div className="h-5 w-3/4 bg-muted rounded mb-2" />
+              <div className="h-4 w-1/2 bg-muted rounded mb-2" />
+              <div className="h-3 w-1/4 bg-muted rounded" />
+            </div>
+          ))
+        ) : authors.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            {t("authors.noAuthors")}
+          </div>
+        ) : (
+          authors.map((author) => (
+            <PrefetchLink
+              key={author.id}
+              href={`/authors/${author.id}`}
+              className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-card"
+            >
+              <div className="font-semibold text-base truncate" dir="rtl">{author.nameArabic}</div>
+              {config.showAuthorTransliteration && (
+                <div className="text-sm text-muted-foreground truncate">{author.nameLatin}</div>
+              )}
+              <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                <span>
+                  {author.deathDateHijri || author.deathDateGregorian
+                    ? formatYear(author.deathDateHijri, author.deathDateGregorian, config.dateCalendar)
+                    : "—"}
+                </span>
+                <span className="text-border">|</span>
+                <span>{author._count.books} {t("authors.tableHeaders.name") === "Name" ? "books" : ""}</span>
+              </div>
+            </PrefetchLink>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table layout */}
+      <div className="hidden sm:block overflow-x-auto rounded-lg">
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>

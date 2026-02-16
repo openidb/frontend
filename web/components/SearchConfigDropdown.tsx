@@ -85,9 +85,9 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
       <Button
         variant="ghost"
         size="icon"
-        className="group/gear h-10 w-10 md:h-12 md:w-12 rounded-lg hover:bg-muted shrink-0"
+        className="group/gear h-12 w-12 rounded-lg hover:bg-muted shrink-0"
       >
-        <Settings2 className="h-4 w-4 md:h-5 md:w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
+        <Settings2 className="h-5 w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
       </Button>
     );
   }
@@ -98,14 +98,14 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
         <Button
           variant="ghost"
           size="icon"
-          className="group/gear h-10 w-10 md:h-12 md:w-12 rounded-lg hover:bg-muted shrink-0"
+          className="group/gear h-12 w-12 rounded-lg hover:bg-muted shrink-0"
           aria-label={t("searchConfig.contentTypes")}
         >
-          <Settings2 className="h-4 w-4 md:h-5 md:w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
+          <Settings2 className="h-5 w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="min-w-[14rem] rounded-xl border bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-lg shadow-black/5 p-1"
+        className="min-w-[16rem] rounded-xl border bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-lg shadow-black/5 p-1"
         align="end"
       >
         <motion.div
@@ -128,10 +128,10 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
                     updateConfig({ [item.key]: !isChecked });
                   }}
                   className={cn(
-                    "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
+                    "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
-                  <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                  <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
                     {isChecked && (
                       <motion.div
                         initial={{ scale: 0, opacity: 0 }}
@@ -154,7 +154,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
                         e.preventDefault();
                         setCollectionsExpanded(!collectionsExpanded);
                       }}
-                      className="flex w-full items-center gap-1.5 rounded-lg py-1 px-2 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      className="flex w-full items-center gap-1.5 rounded-lg py-1.5 px-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
                       <ChevronDown className={cn("h-3 w-3 shrink-0 transition-transform", collectionsExpanded && "rotate-180")} />
                       <span>{t("searchConfig.filterCollections")}</span>
@@ -194,7 +194,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
                             <DropdownMenuSeparator className="my-0.5" />
 
                             {/* Primary collections */}
-                            <div className="px-2 pt-0.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                            <div className="px-2 pt-0.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                               {t("searchConfig.primaryCollections")}
                             </div>
                             {primaryCollections.map((col) => (
@@ -209,7 +209,7 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
                             <DropdownMenuSeparator className="my-0.5" />
 
                             {/* Other collections */}
-                            <div className="px-2 pt-0.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                            <div className="px-2 pt-0.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                               {t("searchConfig.otherCollections")}
                             </div>
                             {otherCollections.map((col) => (
@@ -243,10 +243,10 @@ function CollectionCheckbox({ name, checked, onToggle }: { name: string; checked
         e.preventDefault();
         onToggle();
       }}
-      className="relative flex w-full items-center rounded-md py-0.5 pl-6 pr-2 text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+      className="relative flex w-full items-center rounded-md py-1.5 pl-7 pr-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
     >
-      <span className="absolute left-1 flex h-3 w-3 items-center justify-center">
-        {checked && <Check className="h-3 w-3 text-foreground/80" />}
+      <span className="absolute left-1.5 flex h-3.5 w-3.5 items-center justify-center">
+        {checked && <Check className="h-3.5 w-3.5 text-foreground/80" />}
       </span>
       <span className="truncate">{name}</span>
     </button>

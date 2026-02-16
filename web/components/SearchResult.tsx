@@ -151,7 +151,7 @@ function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransl
 
       {/* Author */}
       <div className="flex items-center gap-1 text-sm mb-3 text-muted-foreground">
-        <BookOpen className="h-3.5 w-3.5" />
+        <BookOpen className="h-4 w-4" />
         <span dir="rtl">{book.author.nameArabic}</span>
         {showAuthorTransliteration && (
           <>
@@ -163,8 +163,8 @@ function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransl
 
       {/* Page/Volume Info */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
-          <FileText className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded">
+          <FileText className="h-3.5 w-3.5" />
           {t("results.page")} {urlPageIndex || pageNumber}
           {volumeNumber > 1 && `, ${t("results.volume")} ${volumeNumber}`}
         </span>
@@ -280,11 +280,11 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
 
       {/* Surah/Ayah Info */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded" dir="rtl">
+        <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded" dir="rtl">
           {ayahLabel}
         </span>
-        <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
-          <FileText className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded">
+          <FileText className="h-3.5 w-3.5" />
           {t("results.juz")} {ayah.juzNumber}
         </span>
       </div>
@@ -399,18 +399,18 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {/* Book name */}
       {hadith.bookNameArabic && (
         <div className="flex items-center gap-1 text-sm mb-3 text-muted-foreground">
-          <BookOpen className="h-3.5 w-3.5" />
+          <BookOpen className="h-4 w-4" />
           <span dir="rtl">{hadith.bookNameArabic}</span>
         </div>
       )}
 
       {/* Hadith/Book Info */}
       <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded" dir="rtl">
+        <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded" dir="rtl">
           {t("results.hadithNumber")} {(hadith.numberInCollection || hadith.hadithNumber).replace(/[A-Z]+$/, '')}
         </span>
-        <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
-          <FileText className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded">
+          <FileText className="h-3.5 w-3.5" />
           {t("results.book")} {hadith.bookNumber}
         </span>
       </div>
@@ -450,7 +450,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {(isClamped || expanded) && (
         <button
           type="button"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors"
+          className="flex items-center gap-1 text-sm sm:text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -459,12 +459,12 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
         >
           {expanded ? (
             <>
-              <ChevronUp className="h-3.5 w-3.5" />
+              <ChevronUp className="h-4 w-4" />
               {t("results.showLess")}
             </>
           ) : (
             <>
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="h-4 w-4" />
               {t("results.showMore")}
             </>
           )}

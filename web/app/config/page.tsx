@@ -22,7 +22,7 @@ import { useTheme, type Theme } from "@/lib/theme";
 function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="relative group">
-      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" />
+      <HelpCircle className="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" />
       <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 text-xs bg-neutral-800 text-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-48 text-center z-50">
         {text}
       </span>
@@ -32,7 +32,7 @@ function InfoTooltip({ text }: { text: string }) {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+    <h2 className="text-sm sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
       {children}
     </h2>
   );
@@ -64,15 +64,15 @@ function ToggleSetting({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           checked ? "bg-neutral-700 dark:bg-neutral-300" : "bg-stone-300 dark:bg-neutral-600"
         }`}
       >
         <span
-          className={`pointer-events-none block h-4 w-4 rounded-full shadow-md ring-0 transition-all duration-200 ${
+          className={`pointer-events-none block h-5 w-5 rounded-full shadow-md ring-0 transition-all duration-200 ${
             checked ? "bg-white dark:bg-neutral-700" : "bg-neutral-100 dark:bg-neutral-300"
           } ${
-            checked ? "ltr:translate-x-4 rtl:-translate-x-4" : "translate-x-0"
+            checked ? "ltr:translate-x-5 rtl:-translate-x-5" : "translate-x-0"
           }`}
         />
       </button>
@@ -130,7 +130,7 @@ function SegmentedControl<T extends string>({
           key={option}
           type="button"
           onClick={() => onChange(option)}
-          className={`relative z-10 px-2.5 py-1 text-[11px] font-medium rounded-full whitespace-nowrap transition-colors ${
+          className={`relative z-10 px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
             value === option
               ? "text-white dark:text-neutral-900"
               : "text-muted-foreground hover:text-foreground"
@@ -262,7 +262,7 @@ export default function ConfigPage() {
                 value={config.bookTitleDisplay}
                 onValueChange={(v) => updateConfig({ bookTitleDisplay: v as TranslationDisplayOption })}
               >
-                <SelectTrigger className="w-full h-8 text-xs">
+                <SelectTrigger className="w-full h-10 text-sm">
                   <SelectValue>
                     {t(`config.translationDisplay.options.${config.bookTitleDisplay}`)}
                   </SelectValue>
@@ -300,12 +300,12 @@ export default function ConfigPage() {
           {/* Translation sources card */}
           <div className="rounded-lg border border-border/50 bg-muted/30 px-3.5 py-3 space-y-2">
             <span className="text-xs font-medium text-muted-foreground">{t("config.translations.sourcesTitle")}</span>
-            <ul className="space-y-1 text-[11px] text-muted-foreground/80 leading-relaxed">
+            <ul className="space-y-1 text-xs text-muted-foreground/80 leading-relaxed">
               <li>{t("config.translations.sourcesQuran")}</li>
               <li>{t("config.translations.sourcesHadith")}</li>
               <li>{t("config.translations.sourcesBooks")}</li>
             </ul>
-            <p className="text-[11px] text-muted-foreground/60 leading-relaxed italic">
+            <p className="text-xs text-muted-foreground/60 leading-relaxed italic">
               {t("config.translations.sourcesDisclaimer")}
             </p>
           </div>
@@ -358,7 +358,7 @@ export default function ConfigPage() {
           <p className="text-sm text-muted-foreground leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
             نسأل الله أن ينفع بهذا العمل ويبارك فيه.
           </p>
-          <p className={`text-xs text-muted-foreground/60 leading-relaxed ${RTL_LOCALES.includes(locale) ? "text-right" : "text-left"}`} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}>
+          <p className={`text-xs text-muted-foreground/60 leading-relaxed ${RTL_LOCALES.includes(locale) ? "text-right" : "text-left"}`} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"} style={{ fontSize: "0.75rem" }}>
             {t("config.about.description")}{" "}
             <a
               href="https://github.com/openidb"

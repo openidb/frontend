@@ -94,11 +94,11 @@ export function MultiSelectDropdown({
                   if (!option.disabled || isSelected) handleToggle(option.value)
                 }}
                 className={cn(
-                  "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-accent hover:text-accent-foreground",
+                  "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors duration-150 hover:bg-accent hover:text-accent-foreground",
                   option.disabled && !isSelected && "opacity-50 cursor-not-allowed"
                 )}
               >
-                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
                   {isSelected && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}

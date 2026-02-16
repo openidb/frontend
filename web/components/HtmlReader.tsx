@@ -238,7 +238,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [fontSize, setFontSize] = useState(1.1);
+  const [fontSize, setFontSize] = useState(1.15);
   const [wordTapEnabled, setWordTapEnabled] = useState(true);
 
   const [currentPage, setCurrentPage] = useState<number>(
@@ -337,23 +337,62 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     };
   }, [bookMetadata.id]);
 
-  // Page cache
+  // Page cache (LRU, capped at 30 entries)
   const cacheRef = useRef<Map<number, PageData>>(new Map());
+  const CACHE_MAX = 30;
+
+  const cacheGet = useCallback((key: number): PageData | undefined => {
+    const val = cacheRef.current.get(key);
+    if (val !== undefined) {
+      // Move to end (most recently used)
+      cacheRef.current.delete(key);
+      cacheRef.current.set(key, val);
+    }
+    return val;
+  }, []);
+
+  const cacheSet = useCallback((key: number, val: PageData) => {
+    cacheRef.current.delete(key); // remove if exists (refresh position)
+    cacheRef.current.set(key, val);
+    // Evict oldest if over limit
+    if (cacheRef.current.size > CACHE_MAX) {
+      const oldest = cacheRef.current.keys().next().value;
+      if (oldest !== undefined) cacheRef.current.delete(oldest);
+    }
+  }, []);
+
+  // Abort controller for current page fetch (cancels stale requests)
+  const abortRef = useRef<AbortController | null>(null);
+  // Tracks the latest requested page to guard against race conditions
+  const latestRequestedPageRef = useRef<number>(currentPage);
 
   const fetchPage = useCallback(async (pageNumber: number) => {
+    latestRequestedPageRef.current = pageNumber;
+
     // Check cache
-    const cached = cacheRef.current.get(pageNumber);
+    const cached = cacheGet(pageNumber);
     if (cached) {
       setPageData(cached);
       setIsLoading(false);
       return;
     }
 
+    // Abort any in-flight fetch
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`);
+      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`, {
+        signal: controller.signal,
+      });
+
+      // Guard: if user already navigated away, discard this response
+      if (latestRequestedPageRef.current !== pageNumber) return;
+
       if (!res.ok) {
         if (res.status === 404) {
           setError("Page not found");
@@ -366,40 +405,62 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
       const data = await res.json();
       const page = data.page as PageData;
-      cacheRef.current.set(pageNumber, page);
-      setPageData(page);
-    } catch {
-      setError("Failed to load page");
-      setPageData(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [bookMetadata.id]);
+      cacheSet(pageNumber, page);
 
-  // Prefetch adjacent pages
-  const prefetchPage = useCallback(async (pageNumber: number) => {
+      // Final guard before setting state
+      if (latestRequestedPageRef.current === pageNumber) {
+        setPageData(page);
+      }
+    } catch (err: unknown) {
+      // Ignore abort errors — they're expected
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      if (latestRequestedPageRef.current === pageNumber) {
+        setError("Failed to load page");
+        setPageData(null);
+      }
+    } finally {
+      if (latestRequestedPageRef.current === pageNumber) {
+        setIsLoading(false);
+      }
+    }
+  }, [bookMetadata.id, cacheGet, cacheSet]);
+
+  // Prefetch a single page (with abort signal support)
+  const prefetchPage = useCallback(async (pageNumber: number, signal?: AbortSignal) => {
     if (pageNumber < 0 || pageNumber >= totalPages || cacheRef.current.has(pageNumber)) return;
     try {
-      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`);
+      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`, { signal });
       if (res.ok) {
         const data = await res.json();
-        cacheRef.current.set(pageNumber, data.page);
+        cacheSet(pageNumber, data.page);
       }
     } catch {
-      // Silent prefetch failure
+      // Silent prefetch failure (including AbortError)
     }
-  }, [bookMetadata.id, totalPages]);
+  }, [bookMetadata.id, totalPages, cacheSet]);
+
+  // Abort controller for prefetch batch — cancelled on every navigation
+  const prefetchAbortRef = useRef<AbortController | null>(null);
 
   // Fetch current page
   useEffect(() => {
     fetchPage(currentPage);
   }, [currentPage, fetchPage]);
 
-  // Prefetch next/prev after loading current
+  // Prefetch 5 ahead + 2 behind after current page loads
   useEffect(() => {
     if (!isLoading && pageData) {
-      prefetchPage(currentPage + 1);
-      prefetchPage(currentPage - 1);
+      // Cancel previous prefetch batch
+      prefetchAbortRef.current?.abort();
+      const controller = new AbortController();
+      prefetchAbortRef.current = controller;
+
+      for (let i = 1; i <= 5; i++) {
+        prefetchPage(currentPage + i, controller.signal);
+      }
+      for (let i = 1; i <= 2; i++) {
+        prefetchPage(currentPage - i, controller.signal);
+      }
     }
   }, [isLoading, pageData, currentPage, prefetchPage]);
 
@@ -422,7 +483,41 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     setTranslation(null);
   }, [currentPage]);
 
-  // Keyboard navigation
+  // RAF-debounced navigation: collapses rapid calls into one state update per frame
+  const rafRef = useRef<number>(0);
+  const pendingPageRef = useRef<number | null>(null);
+
+  const commitPage = useCallback((targetPage: number) => {
+    pendingPageRef.current = targetPage;
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = 0;
+        if (pendingPageRef.current !== null) {
+          setCurrentPage(pendingPageRef.current);
+          pendingPageRef.current = null;
+        }
+      });
+    }
+  }, []);
+
+  // Clean up RAF on unmount
+  useEffect(() => {
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  const goToPrevPage = useCallback(() => {
+    const cur = pendingPageRef.current ?? currentPageRef.current;
+    const next = Math.max(0, cur - 1);
+    commitPage(next);
+  }, [commitPage]);
+
+  const goToNextPage = useCallback(() => {
+    const cur = pendingPageRef.current ?? currentPageRef.current;
+    const next = Math.min(totalPages - 1, cur + 1);
+    commitPage(next);
+  }, [totalPages, commitPage]);
+
+  // Keyboard navigation (fixed dependency array)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
@@ -444,19 +539,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  });
-
-  const goToPrevPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage((p) => p - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage((p) => p + 1);
-    }
-  };
+  }, [goToNextPage, goToPrevPage, dir]);
 
   const goBack = () => {
     router.back();
@@ -593,18 +676,18 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
       {/* Header */}
       <div
-        className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 md:px-4 py-2 md:py-3 shrink-0"
+        className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-3 md:px-4 py-2.5 md:py-3 shrink-0"
         style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
       >
         <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0">
           <ArrowLeft className="h-5 w-5 rtl:scale-x-[-1]" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-semibold text-sm md:text-base">
+          <h1 className="truncate font-semibold text-base">
             {expandHonorifics(bookMetadata.title)}
           </h1>
           {config.bookTitleDisplay !== "none" && (
-            <p className="truncate text-xs md:text-sm text-muted-foreground hidden sm:block">
+            <p className="truncate text-sm text-muted-foreground hidden sm:block">
               {config.bookTitleDisplay === "translation"
                 ? (translatedTitle || bookMetadata.titleLatin)
                 : bookMetadata.titleLatin}
@@ -627,18 +710,18 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 onClick={goToNextPage}
                 disabled={currentPage >= totalPages - 1}
                 title={t("reader.nextPage")}
-                className="h-7 w-7"
+                className="h-8 w-8"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
             </motion.div>
             <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
               {pageData && totalVolumes > 1 && pageData.volumeNumber > 0 && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   {t("reader.volume")} {pageData.volumeNumber} ·
                 </span>
               )}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 {t("reader.page")}
               </span>
               <input
@@ -647,7 +730,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 value={pageInputValue}
                 onChange={(e) => setPageInputValue(e.target.value)}
                 onBlur={handlePageInputSubmit}
-                className="w-10 text-xs text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
+                className="w-12 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
               />
               <span className="text-xs text-muted-foreground hidden md:inline">
                 / {maxPrintedPage}
@@ -660,9 +743,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 onClick={goToPrevPage}
                 disabled={currentPage <= 0}
                 title={t("reader.prevPage")}
-                className="h-7 w-7"
+                className="h-8 w-8"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </motion.div>
           </div>
@@ -673,9 +756,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               size="icon"
               onClick={() => setShowSidebar(!showSidebar)}
               title={t("reader.chapters")}
-              className="h-8 w-8 md:h-9 md:w-9"
+              className="h-9 w-9 md:h-10 md:w-10"
             >
-              <EllipsisVertical className="h-4 w-4 md:h-5 md:w-5" />
+              <EllipsisVertical className="h-5 w-5" />
             </Button>
           </motion.div>
         </div>
@@ -706,13 +789,13 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         exit={{ opacity: 0, y: -6 }}
         transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
         dir="rtl"
-        className="absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-72 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-[hsl(var(--reader-bg))] rounded-lg border shadow-xl z-30 flex flex-col"
+        className="absolute top-14 md:top-20 right-2 md:right-4 w-[calc(100vw-1rem)] sm:w-80 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-6rem)] bg-[hsl(var(--reader-bg))] rounded-lg border shadow-xl z-30 flex flex-col"
       >
         {/* Links section */}
         <div className="p-3 space-y-1">
           <PrefetchLink
             href={`/authors/${bookMetadata.authorId}`}
-            className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
             onClick={() => setShowSidebar(false)}
           >
             <User className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -725,7 +808,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 setShowSidebar(false);
               }}
               disabled={pdfLoading}
-              className="w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+              className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
             >
               {pdfLoading
                 ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
@@ -733,28 +816,28 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               <span>{t("reader.openPdf")}</span>
             </button>
           ) : (
-            <div className="w-full px-3 py-2 text-sm flex items-center gap-2 text-muted-foreground">
+            <div className="w-full px-4 py-3 text-sm flex items-center gap-2 text-muted-foreground">
               <FileText className="h-4 w-4 shrink-0" />
               <span>{t("reader.pdfNotAvailable")}</span>
             </div>
           )}
 
           {/* Font size */}
-          <div className="w-full px-3 py-2 text-sm flex items-center justify-between">
+          <div className="w-full px-4 py-3 text-sm flex items-center justify-between">
             <span>{t("reader.fontSize")}</span>
             <div className="flex items-center gap-2" dir="ltr">
               <button
                 onClick={() => setFontSize((s) => Math.max(0.8, +(s - 0.1).toFixed(1)))}
-                className="h-7 w-7 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
+                className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
               >
-                <Minus className="h-3.5 w-3.5" />
+                <Minus className="h-4 w-4" />
               </button>
               <span className="w-10 text-center text-muted-foreground">{Math.round(fontSize * 100)}%</span>
               <button
                 onClick={() => setFontSize((s) => Math.min(2.0, +(s + 0.1).toFixed(1)))}
-                className="h-7 w-7 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
+                className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -765,14 +848,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               setWordTapEnabled((v) => !v);
               setSelectedWord(null);
             }}
-            className="w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
+            className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
           >
             <span>{t("reader.wordDefinitions")}</span>
             <div
-              className={`w-9 h-5 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-muted-foreground/20"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-muted-foreground/20"}`}
             >
               <div
-                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${wordTapEnabled ? "right-0.5" : "right-[calc(100%-1.125rem)]"}`}
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${wordTapEnabled ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`}
               />
             </div>
           </button>
@@ -780,7 +863,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           {/* Auto-translate toggle */}
           <button
             onClick={() => setAutoTranslate((v) => !v)}
-            className="w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
+            className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
           >
             <span className="flex items-center gap-2">
               {isTranslating
@@ -789,10 +872,10 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               {t("reader.translate")}
             </span>
             <div
-              className={`w-9 h-5 rounded-full transition-colors relative ${autoTranslate ? "bg-primary" : "bg-muted-foreground/20"}`}
+              className={`w-11 h-6 rounded-full transition-colors relative ${autoTranslate ? "bg-primary" : "bg-muted-foreground/20"}`}
             >
               <div
-                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${autoTranslate ? "right-0.5" : "right-[calc(100%-1.125rem)]"}`}
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${autoTranslate ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`}
               />
             </div>
           </button>
@@ -822,7 +905,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                         setCurrentPage(entry.page);
                         setShowSidebar(false);
                       }}
-                      className={`w-full px-3 py-2 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
+                      className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
                       style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
                     >
                       {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
@@ -847,7 +930,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         onClick={handleContentClick}
         style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {isLoading && (
             <motion.div
               key="loading"
@@ -881,7 +964,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               initial="initial"
               animate="animate"
               exit="exit"
-              className="max-w-3xl mx-auto px-4 md:px-12 py-6 md:py-10"
+              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10"
               style={{
                 fontFamily:
                   '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',

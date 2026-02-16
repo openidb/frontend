@@ -179,7 +179,7 @@ export default function EntityPanel({
             {/* Header */}
             <button
               onClick={() => setExpandedEntity(isExpanded ? null : entity.id)}
-              className="w-full px-4 py-3 flex items-start gap-3 hover:bg-muted/30 transition-colors text-start"
+              className="w-full px-4 py-3.5 flex items-start gap-3 hover:bg-muted/30 transition-colors text-start"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -316,7 +316,7 @@ export default function EntityPanel({
                         <button
                           key={i}
                           onClick={() => onEntityClick(rel.targetNameArabic)}
-                          className="text-xs px-2 py-1 rounded-full border hover:bg-muted transition-colors"
+                          className="text-sm sm:text-xs px-2.5 py-1.5 rounded-full border hover:bg-muted transition-colors"
                           dir="rtl"
                         >
                           {rel.targetNameArabic}
