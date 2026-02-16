@@ -1,7 +1,7 @@
 import { fetchAPI } from "@/lib/api-client";
 import BooksClient from "./BooksClient";
 
-export const revalidate = 60;
+export const revalidate = 86400; // 24h — data is static
 
 interface Author {
   id: string;
