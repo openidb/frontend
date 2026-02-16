@@ -133,12 +133,18 @@ nav a, nav button {
   touch-action: manipulation;
 }
 
-/* Nav icon hover animations — only on devices with a real pointer (not touch) */
+/* Nav icon hover animations — :hover for pointer devices, :active for touch */
 @media (hover: hover) {
   .nav-link:hover .nav-icon-search  { transform: rotate(-15deg); }
   .nav-link:hover .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
   .nav-link:hover .nav-icon-authors { transform: translateY(-2px); }
   .nav-link:hover .nav-icon-config  { transform: rotate(90deg); }
+}
+@media (hover: none) {
+  .nav-link:active .nav-icon-search  { transform: rotate(-15deg); }
+  .nav-link:active .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
+  .nav-link:active .nav-icon-authors { transform: translateY(-2px); }
+  .nav-link:active .nav-icon-config  { transform: rotate(90deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
