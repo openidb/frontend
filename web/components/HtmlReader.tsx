@@ -256,6 +256,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [autoTranslate, setAutoTranslate] = useState(false);
   const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
   const translateVersionRef = useRef(0);
+  const fetchTranslationRef = useRef<(page: number, signal?: AbortSignal) => Promise<{ index: number; translation: string }[]>>(null!);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
   // Hydrate reader preferences from localStorage after mount
@@ -627,8 +628,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     return data.paragraphs;
   }, [locale, bookMetadata.id]);
 
+  // Keep ref in sync so the effect below doesn't depend on fetchTranslation identity
+  fetchTranslationRef.current = fetchTranslation;
+
   // Auto-translate effect: instant cache hits, debounced fetch, prefetch next page
-  // Uses a version ref (not closure boolean) to handle stale results — immune to effect re-runs
+  // Uses fetchTranslationRef (not fetchTranslation) to avoid re-runs from unstable callback identity
   useEffect(() => {
     const version = ++translateVersionRef.current;
 
@@ -646,7 +650,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       setIsTranslating(false);
       // Prefetch next page silently
       if (page + 1 < totalPages) {
-        fetchTranslation(page + 1).catch(() => {});
+        fetchTranslationRef.current(page + 1).catch(() => {});
       }
       return;
     }
@@ -655,7 +659,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     setIsTranslating(true);
 
     const timer = setTimeout(() => {
-      fetchTranslation(page)
+      fetchTranslationRef.current(page)
         .then((result) => {
           // Only apply if this is still the latest request
           if (translateVersionRef.current !== version) return;
@@ -663,7 +667,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           setIsTranslating(false);
           // Prefetch next page silently
           if (page + 1 < totalPages) {
-            fetchTranslation(page + 1).catch(() => {});
+            fetchTranslationRef.current(page + 1).catch(() => {});
           }
         })
         .catch(() => {
@@ -676,7 +680,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     return () => {
       clearTimeout(timer);
     };
-  }, [currentPage, autoTranslate, totalPages, fetchTranslation]);
+  }, [currentPage, autoTranslate, totalPages]);
 
   const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();
