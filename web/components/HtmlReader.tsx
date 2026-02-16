@@ -477,16 +477,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     contentRef.current?.scrollTo(0, 0);
   }, [pageData]);
 
-  // Close word popover and reset translation on page change (instant if cached)
+  // Close word popover and reset translation on page change
   useEffect(() => {
     setSelectedWord(null);
-    if (autoTranslate) {
-      const cached = translationCacheRef.current.get(currentPage);
-      setTranslation(cached || null);
-    } else {
-      setTranslation(null);
-    }
-  }, [currentPage, autoTranslate]);
+    setTranslation(null);
+  }, [currentPage]);
 
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
   const rafRef = useRef<number>(0);
@@ -633,7 +628,10 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
   // Auto-translate effect: instant cache hits, debounced fetch, prefetch next page
   useEffect(() => {
-    if (!autoTranslate || !pageData) return;
+    if (!autoTranslate) {
+      setIsTranslating(false);
+      return;
+    }
 
     const page = currentPage;
 
@@ -650,36 +648,33 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
 
     // Cache miss — show loading, debounce fetch
-    const controller = new AbortController();
+    let cancelled = false;
     setIsTranslating(true);
 
     const timer = setTimeout(async () => {
       try {
-        const result = await fetchTranslation(page, controller.signal);
-        if (!controller.signal.aborted) {
+        const result = await fetchTranslation(page);
+        if (!cancelled) {
           setTranslation(result);
+          setIsTranslating(false);
           // Prefetch next page silently
           if (page + 1 < totalPages) {
             fetchTranslation(page + 1).catch(() => {});
           }
         }
       } catch {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setTranslation(null);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
           setIsTranslating(false);
         }
       }
     }, 500);
 
     return () => {
-      controller.abort();
+      cancelled = true;
       clearTimeout(timer);
-      setIsTranslating(false);
     };
-  }, [currentPage, autoTranslate, pageData, totalPages, fetchTranslation]);
+  }, [currentPage, autoTranslate, totalPages, fetchTranslation]);
 
   const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();
