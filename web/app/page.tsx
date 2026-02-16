@@ -1,7 +1,7 @@
 import { fetchAPI } from "@/lib/api-client";
 import BooksClient from "./BooksClient";
 
-export const dynamic = 'force-dynamic'; // fetch at runtime, not build time
+export const dynamic = 'force-dynamic'; // skip build-time render (API unavailable during Docker build)
 
 interface Author {
   id: string;
@@ -63,9 +63,9 @@ export default async function BooksPage() {
 
   try {
     const [booksData, categoriesData, centuriesData] = await Promise.all([
-      fetchAPI<APIResponse>("/api/books?limit=50"),
-      fetchAPI<{ categories: CategoryItem[] }>("/api/books/categories?flat=true", { revalidate: 3600 }).catch(() => ({ categories: [] })),
-      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries", { revalidate: 3600 }).catch(() => ({ centuries: [] })),
+      fetchAPI<APIResponse>("/api/books?limit=50", { revalidate: 86400 }),
+      fetchAPI<{ categories: CategoryItem[] }>("/api/books/categories?flat=true", { revalidate: 86400 }).catch(() => ({ categories: [] })),
+      fetchAPI<{ centuries: CenturyItem[] }>("/api/books/centuries", { revalidate: 86400 }).catch(() => ({ centuries: [] })),
     ]);
 
     books = booksData.books;
