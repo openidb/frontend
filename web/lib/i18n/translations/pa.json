@@ -310,7 +310,9 @@
     "ayahRange": "ਆਇਤਾਂ",
     "hadithNumber": "ਹਦੀਸ",
     "chapters": "ਅਧਿਆਇ",
-    "noChapters": "ਕੋਈ ਅਧਿਆਇ ਉਪਲਬਧ ਨਹੀਂ"
+    "noChapters": "ਕੋਈ ਅਧਿਆਇ ਉਪਲਬਧ ਨਹੀਂ",
+    "showMore": "ਹੋਰ ਦਿਖਾਓ",
+    "showLess": "ਘੱਟ ਦਿਖਾਓ"
   },
   "reader": {
     "page": "ਪੰਨਾ",

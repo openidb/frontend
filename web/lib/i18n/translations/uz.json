@@ -310,7 +310,9 @@
     "ayahRange": "Oyatlar",
     "hadithNumber": "Hadis",
     "chapters": "Boblar",
-    "noChapters": "Boblar mavjud emas"
+    "noChapters": "Boblar mavjud emas",
+    "showMore": "Ko'proq ko'rsatish",
+    "showLess": "Kamroq ko'rsatish"
   },
   "reader": {
     "page": "Sahifa",

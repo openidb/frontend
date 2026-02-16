@@ -314,7 +314,9 @@
     "ayahRange": "节",
     "hadithNumber": "圣训",
     "chapters": "章节",
-    "noChapters": "没有可用的章节"
+    "noChapters": "没有可用的章节",
+    "showMore": "展开更多",
+    "showLess": "收起"
   },
   "reader": {
     "page": "页",

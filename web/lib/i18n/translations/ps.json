@@ -310,7 +310,9 @@
     "ayahRange": "آیتونه",
     "hadithNumber": "حدیث",
     "chapters": "بابونه",
-    "noChapters": "بابونه شتون نلري"
+    "noChapters": "بابونه شتون نلري",
+    "showMore": "نور وښایئ",
+    "showLess": "لږ وښایئ"
   },
   "reader": {
     "page": "مخ",

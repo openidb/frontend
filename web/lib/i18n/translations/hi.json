@@ -310,7 +310,9 @@
     "ayahRange": "आयतें",
     "hadithNumber": "हदीस",
     "chapters": "अध्याय",
-    "noChapters": "कोई अध्याय उपलब्ध नहीं"
+    "noChapters": "कोई अध्याय उपलब्ध नहीं",
+    "showMore": "और दिखाएँ",
+    "showLess": "कम दिखाएँ"
   },
   "reader": {
     "page": "पृष्ठ",

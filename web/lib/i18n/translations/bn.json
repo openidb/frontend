@@ -314,7 +314,9 @@
     "ayahRange": "আয়াত",
     "hadithNumber": "হাদিস",
     "chapters": "অধ্যায়",
-    "noChapters": "কোনো অধ্যায় নেই"
+    "noChapters": "কোনো অধ্যায় নেই",
+    "showMore": "আরও দেখুন",
+    "showLess": "কম দেখুন"
   },
   "reader": {
     "page": "পৃষ্ঠা",

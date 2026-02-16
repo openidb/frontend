@@ -314,7 +314,9 @@
     "ayahRange": "아야",
     "hadithNumber": "하디스",
     "chapters": "장",
-    "noChapters": "장이 없습니다"
+    "noChapters": "장이 없습니다",
+    "showMore": "더 보기",
+    "showLess": "접기"
   },
   "reader": {
     "page": "페이지",

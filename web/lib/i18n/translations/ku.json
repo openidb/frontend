@@ -310,7 +310,9 @@
     "ayahRange": "Ayetan",
     "hadithNumber": "Hedîs",
     "chapters": "Beşan",
-    "noChapters": "Beş tune ne"
+    "noChapters": "Beş tune ne",
+    "showMore": "Bêtir nîşan bide",
+    "showLess": "Kêmtir nîşan bide"
   },
   "reader": {
     "page": "Rûpel",

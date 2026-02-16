@@ -310,7 +310,9 @@
     "ayahRange": "Àwọn ẹ̀ka",
     "hadithNumber": "Hadiṣi",
     "chapters": "Àwọn orí",
-    "noChapters": "Kò sí àwọn orí"
+    "noChapters": "Kò sí àwọn orí",
+    "showMore": "Fi diẹ̀ sí i hàn",
+    "showLess": "Fi díẹ̀ sí i pamọ́"
   },
   "reader": {
     "page": "Ojú-ìwé",

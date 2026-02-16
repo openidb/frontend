@@ -310,7 +310,9 @@
     "ayahRange": "Ayetler",
     "hadithNumber": "Hadis",
     "chapters": "Bölümler",
-    "noChapters": "Bölüm mevcut değil"
+    "noChapters": "Bölüm mevcut değil",
+    "showMore": "Daha fazla göster",
+    "showLess": "Daha az göster"
   },
   "reader": {
     "page": "Sayfa",

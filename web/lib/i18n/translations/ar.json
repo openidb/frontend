@@ -314,7 +314,9 @@
     "ayahRange": "آيات",
     "hadithNumber": "حديث",
     "chapters": "الفصول",
-    "noChapters": "لا توجد فصول متاحة"
+    "noChapters": "لا توجد فصول متاحة",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل"
   },
   "reader": {
     "page": "الصفحة",

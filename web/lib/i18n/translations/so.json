@@ -310,7 +310,9 @@
     "ayahRange": "Aayaad",
     "hadithNumber": "Xadiith",
     "chapters": "Cutubyo",
-    "noChapters": "Cutubyo lama heli karo"
+    "noChapters": "Cutubyo lama heli karo",
+    "showMore": "Wax badan tus",
+    "showLess": "Wax yar tus"
   },
   "reader": {
     "page": "Bogga",

@@ -310,7 +310,9 @@
     "ayahRange": "Ayat",
     "hadithNumber": "Hadith",
     "chapters": "Kapitel",
-    "noChapters": "Keine Kapitel verfügbar"
+    "noChapters": "Keine Kapitel verfügbar",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "reader": {
     "page": "Seite",

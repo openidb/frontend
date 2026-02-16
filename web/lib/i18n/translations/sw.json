@@ -310,7 +310,9 @@
     "ayahRange": "Aya",
     "hadithNumber": "Hadith",
     "chapters": "Sura",
-    "noChapters": "Hakuna sura zinazopatikana"
+    "noChapters": "Hakuna sura zinazopatikana",
+    "showMore": "Onyesha zaidi",
+    "showLess": "Onyesha kidogo"
   },
   "reader": {
     "page": "Ukurasa",

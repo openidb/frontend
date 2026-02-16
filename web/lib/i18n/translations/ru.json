@@ -314,7 +314,9 @@
     "ayahRange": "Аяты",
     "hadithNumber": "Хадис",
     "chapters": "Главы",
-    "noChapters": "Главы недоступны"
+    "noChapters": "Главы недоступны",
+    "showMore": "Показать больше",
+    "showLess": "Показать меньше"
   },
   "reader": {
     "page": "Страница",

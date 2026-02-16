@@ -314,7 +314,9 @@
     "ayahRange": "アーヤ",
     "hadithNumber": "ハディース",
     "chapters": "章",
-    "noChapters": "章がありません"
+    "noChapters": "章がありません",
+    "showMore": "もっと見る",
+    "showLess": "折りたたむ"
   },
   "reader": {
     "page": "ページ",

@@ -314,7 +314,9 @@
     "ayahRange": "Ayahs",
     "hadithNumber": "Hadith",
     "chapters": "Chapitres",
-    "noChapters": "Aucun chapitre disponible"
+    "noChapters": "Aucun chapitre disponible",
+    "showMore": "Afficher plus",
+    "showLess": "Afficher moins"
   },
   "reader": {
     "page": "Page",

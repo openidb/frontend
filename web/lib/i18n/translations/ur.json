@@ -314,7 +314,9 @@
     "ayahRange": "آیات",
     "hadithNumber": "حدیث",
     "chapters": "ابواب",
-    "noChapters": "کوئی باب دستیاب نہیں"
+    "noChapters": "کوئی باب دستیاب نہیں",
+    "showMore": "مزید دکھائیں",
+    "showLess": "کم دکھائیں"
   },
   "reader": {
     "page": "صفحہ",

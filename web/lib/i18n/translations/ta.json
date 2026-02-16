@@ -310,7 +310,9 @@
     "ayahRange": "ஆயத்துகள்",
     "hadithNumber": "ஹதீஸ்",
     "chapters": "அத்தியாயங்கள்",
-    "noChapters": "அத்தியாயங்கள் இல்லை"
+    "noChapters": "அத்தியாயங்கள் இல்லை",
+    "showMore": "மேலும் காட்டு",
+    "showLess": "குறைவாகக் காட்டு"
   },
   "reader": {
     "page": "பக்கம்",

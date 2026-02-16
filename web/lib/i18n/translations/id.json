@@ -314,7 +314,9 @@
     "ayahRange": "Ayat",
     "hadithNumber": "Hadis",
     "chapters": "Bab",
-    "noChapters": "Tidak ada bab tersedia"
+    "noChapters": "Tidak ada bab tersedia",
+    "showMore": "Tampilkan lebih",
+    "showLess": "Tampilkan kurang"
   },
   "reader": {
     "page": "Halaman",

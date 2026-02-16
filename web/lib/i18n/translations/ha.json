@@ -310,7 +310,9 @@
     "ayahRange": "Ayoyi",
     "hadithNumber": "Hadisi",
     "chapters": "Babi",
-    "noChapters": "Babu babi"
+    "noChapters": "Babu babi",
+    "showMore": "Nuna ƙari",
+    "showLess": "Nuna ƙasa"
   },
   "reader": {
     "page": "Shafi",

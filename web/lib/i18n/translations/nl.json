@@ -310,7 +310,9 @@
     "ayahRange": "Ayahs",
     "hadithNumber": "Hadith",
     "chapters": "Hoofdstukken",
-    "noChapters": "Geen hoofdstukken beschikbaar"
+    "noChapters": "Geen hoofdstukken beschikbaar",
+    "showMore": "Meer tonen",
+    "showLess": "Minder tonen"
   },
   "reader": {
     "page": "Pagina",

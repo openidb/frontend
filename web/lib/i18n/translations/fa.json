@@ -310,7 +310,9 @@
     "ayahRange": "آیات",
     "hadithNumber": "حدیث",
     "chapters": "فصل‌ها",
-    "noChapters": "فصلی موجود نیست"
+    "noChapters": "فصلی موجود نیست",
+    "showMore": "نمایش بیشتر",
+    "showLess": "نمایش کمتر"
   },
   "reader": {
     "page": "صفحه",

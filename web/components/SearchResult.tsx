@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { PrefetchLink } from "./PrefetchLink";
-import { BookOpen, FileText, ExternalLink, Loader2 } from "lucide-react";
+import { BookOpen, FileText, ExternalLink, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/lib/config/search-defaults";
@@ -345,6 +345,8 @@ interface HadithResultProps {
 
 function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const isLong = hadith.text.length > 200;
 
   return (
     <a
@@ -400,7 +402,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
 
       {/* Hadith Text */}
       <div
-        className="text-sm line-clamp-3 text-foreground"
+        className={`text-sm text-foreground${expanded ? "" : " line-clamp-3"}`}
         dir="rtl"
       >
         {hadith.text}
@@ -417,7 +419,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {/* Translation */}
       {hadith.translation && (
         <div
-          className="text-sm text-muted-foreground mt-2 line-clamp-3 italic border-t border-border/50 pt-2"
+          className={`text-sm text-muted-foreground mt-2 italic border-t border-border/50 pt-2${expanded ? "" : " line-clamp-3"}`}
           dir="auto"
         >
           {hadith.translationSource && (
@@ -425,6 +427,31 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
           )}{" "}
           {hadith.translation}
         </div>
+      )}
+
+      {/* Expand/Collapse button */}
+      {isLong && (
+        <button
+          type="button"
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpanded(!expanded);
+          }}
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-3.5 w-3.5" />
+              {t("results.showLess")}
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3.5 w-3.5" />
+              {t("results.showMore")}
+            </>
+          )}
+        </button>
       )}
     </a>
   );
