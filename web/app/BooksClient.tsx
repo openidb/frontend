@@ -338,7 +338,7 @@ export default function BooksClient({
               >
                 <div className="font-semibold text-base truncate" dir="rtl">{book.titleArabic}</div>
                 {secondaryTitle && (
-                  <div className="text-sm text-muted-foreground truncate mt-0.5">{secondaryTitle}</div>
+                  <div className="text-sm text-muted-foreground truncate mt-1">{secondaryTitle}</div>
                 )}
                 <div className="text-sm text-muted-foreground mt-2 truncate" dir="rtl">{book.author.nameArabic}</div>
                 {secondaryAuthor && (
