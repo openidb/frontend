@@ -255,6 +255,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [isTranslating, setIsTranslating] = useState(false);
   const [autoTranslate, setAutoTranslate] = useState(false);
   const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
+  const translateVersionRef = useRef(0);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
   // Hydrate reader preferences from localStorage after mount
@@ -627,7 +628,10 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   }, [locale, bookMetadata.id]);
 
   // Auto-translate effect: instant cache hits, debounced fetch, prefetch next page
+  // Uses a version ref (not closure boolean) to handle stale results — immune to effect re-runs
   useEffect(() => {
+    const version = ++translateVersionRef.current;
+
     if (!autoTranslate) {
       setIsTranslating(false);
       return;
@@ -647,31 +651,29 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       return;
     }
 
-    // Cache miss — show loading, debounce fetch
-    let cancelled = false;
+    // Cache miss — show loading, short debounce for rapid page flips
     setIsTranslating(true);
 
-    const timer = setTimeout(async () => {
-      try {
-        const result = await fetchTranslation(page);
-        if (!cancelled) {
+    const timer = setTimeout(() => {
+      fetchTranslation(page)
+        .then((result) => {
+          // Only apply if this is still the latest request
+          if (translateVersionRef.current !== version) return;
           setTranslation(result);
           setIsTranslating(false);
           // Prefetch next page silently
           if (page + 1 < totalPages) {
             fetchTranslation(page + 1).catch(() => {});
           }
-        }
-      } catch {
-        if (!cancelled) {
+        })
+        .catch(() => {
+          if (translateVersionRef.current !== version) return;
           setTranslation(null);
           setIsTranslating(false);
-        }
-      }
+        });
     }, 500);
 
     return () => {
-      cancelled = true;
       clearTimeout(timer);
     };
   }, [currentPage, autoTranslate, totalPages, fetchTranslation]);
