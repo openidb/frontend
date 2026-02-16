@@ -53,7 +53,7 @@ const themeLocaleScript = `
     }
     if (locale) {
       document.documentElement.lang = locale;
-      document.documentElement.dir = (locale === 'ar' || locale === 'ur' || locale === 'fa' || locale === 'ps') ? 'rtl' : 'ltr';
+      document.documentElement.dir = (locale === 'ar' || locale === 'ur' || locale === 'fa' || locale === 'ps' || locale === 'ku') ? 'rtl' : 'ltr';
     }
   } catch (e) {}
 })();

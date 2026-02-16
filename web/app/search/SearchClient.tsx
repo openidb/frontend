@@ -697,20 +697,7 @@ export default function SearchClient() {
             </motion.div>
           )}
 
-          {/* Refining State with Ayah Carousel */}
-          {isRefining && (
-            <motion.div
-              key="refining"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <RefiningCarousel
-                quranTranslation={searchConfig.quranTranslation || "none"}
-              />
-            </motion.div>
-          )}
+          {/* Refining State with Ayah Carousel — rendered outside conditional to avoid remount flicker */}
 
           {/* Error State */}
           {error && !isLoading && !isRefining && (
@@ -888,6 +875,12 @@ export default function SearchClient() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Rendered outside AnimatePresence to stay mounted and avoid shuffle flicker */}
+        <RefiningCarousel
+          quranTranslation={searchConfig.quranTranslation || "none"}
+          visible={isRefining}
+        />
       </div>
     </div>
   );

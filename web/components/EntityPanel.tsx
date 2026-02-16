@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp, BookOpen, ArrowRight } from "lucide-react";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation, RTL_LOCALES } from "@/lib/i18n";
 
 interface ResolvedSource {
   type: "quran" | "hadith" | "tafsir" | "book";
@@ -150,7 +150,7 @@ export default function EntityPanel({
   onEntityClick?: (nameArabic: string) => void;
 }) {
   const { t, locale } = useTranslation();
-  const isRtl = locale === "ar" || locale === "ur";
+  const isRtl = RTL_LOCALES.includes(locale);
   const [expandedEntity, setExpandedEntity] = useState<string | null>(
     graphContext.entities[0]?.id || null
   );

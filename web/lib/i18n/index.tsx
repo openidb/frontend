@@ -36,7 +36,7 @@ import ta from "./translations/ta.json";
 export type Locale = "en" | "ar" | "fr" | "id" | "ur" | "es" | "zh" | "pt" | "ru" | "ja" | "ko" | "it" | "bn" | "ha" | "sw" | "nl" | "de" | "tr" | "fa" | "hi" | "ms" | "pa" | "ku" | "ps" | "so" | "uz" | "yo" | "ta";
 
 // RTL locales
-export const RTL_LOCALES: Locale[] = ["ar", "ur", "fa", "ps"];
+export const RTL_LOCALES: Locale[] = ["ar", "ur", "fa", "ps", "ku"];
 
 // All supported locales with native names
 export const LOCALES: { code: Locale; name: string; nativeName: string }[] = [
