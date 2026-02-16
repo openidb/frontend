@@ -207,9 +207,9 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
             >
               <div className="font-semibold text-base truncate" dir="rtl">{author.nameArabic}</div>
               {config.showAuthorTransliteration && (
-                <div className="text-sm text-muted-foreground truncate">{author.nameLatin}</div>
+                <div className="text-sm text-muted-foreground truncate mt-1">{author.nameLatin}</div>
               )}
-              <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
                 <span>
                   {author.deathDateHijri || author.deathDateGregorian
                     ? formatYear(author.deathDateHijri, author.deathDateGregorian, config.dateCalendar)

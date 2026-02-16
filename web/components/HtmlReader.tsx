@@ -662,14 +662,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();
 
-  const pageVariants = prefersReducedMotion
-    ? undefined
-    : {
-        initial: { opacity: 0, y: 12 },
-        animate: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
-        exit: { opacity: 0, transition: { duration: 0.1 } },
-      };
-
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
@@ -958,13 +950,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           )}
 
           {pageData && !isLoading && (
-            <motion.div
-              key={currentPage}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10"
+            <div
+              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-24 md:pb-10"
               style={{
                 fontFamily:
                   '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
@@ -986,7 +973,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                   ),
                 }}
               />
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
