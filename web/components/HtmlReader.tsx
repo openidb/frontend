@@ -251,11 +251,18 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     initialPageNumber || "0"
   );
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
-  const [translation, setTranslation] = useState<{ index: number; translation: string }[] | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
+  // Single tagged state: null = idle, data: null = loading, data: [...] = ready
+  const [translateResult, setTranslateResult] = useState<{
+    page: number;
+    data: { index: number; translation: string }[] | null;
+  } | null>(null);
   const [autoTranslate, setAutoTranslate] = useState(false);
   const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
   const fetchTranslationRef = useRef<(page: number, signal?: AbortSignal) => Promise<{ index: number; translation: string }[]>>(null!);
+
+  // Derived from tagged state — always correct, no stale closures possible
+  const translation = translateResult?.page === currentPage ? translateResult.data : null;
+  const isTranslating = translateResult?.page === currentPage && translateResult.data === null;
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
   // Hydrate reader preferences from localStorage after mount
@@ -478,10 +485,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     contentRef.current?.scrollTo(0, 0);
   }, [pageData]);
 
-  // Close word popover and reset translation on page change
+  // Close word popover on page change
   useEffect(() => {
     setSelectedWord(null);
-    setTranslation(null);
   }, [currentPage]);
 
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
@@ -630,55 +636,46 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   // Keep ref in sync so the effect below doesn't depend on fetchTranslation identity
   fetchTranslationRef.current = fetchTranslation;
 
-  // Auto-translate effect: instant cache hits, debounced fetch, prefetch next page
-  // Uses page-based staleness check (currentPageRef) instead of version counter —
-  // immune to effect re-runs that don't change the page
+  // Auto-translate: one state, one effect, AbortController for cancellation.
+  // Results are tagged with page number — stale results are stored but never displayed.
   useEffect(() => {
     if (!autoTranslate) {
-      setIsTranslating(false);
+      setTranslateResult(null);
       return;
     }
 
     const page = currentPage;
 
-    // Instant cache hit — no debounce, no loading state
+    // Instant cache hit
     const cached = translationCacheRef.current.get(page);
     if (cached) {
-      setTranslation(cached);
-      setIsTranslating(false);
-      // Prefetch next page silently
-      if (page + 1 < totalPages) {
-        fetchTranslationRef.current(page + 1).catch(() => {});
-      }
+      setTranslateResult({ page, data: cached });
       return;
     }
 
-    // Cache miss — show loading, short debounce for rapid page flips
-    setIsTranslating(true);
+    // Cache miss — loading state, debounce for rapid page flips
+    setTranslateResult({ page, data: null });
+    const controller = new AbortController();
 
     const timer = setTimeout(() => {
-      fetchTranslationRef.current(page)
+      fetchTranslationRef.current(page, controller.signal)
         .then((result) => {
-          // Only apply if user is still on the same page
-          if (currentPageRef.current !== page) return;
-          setTranslation(result);
-          setIsTranslating(false);
-          // Prefetch next page silently
-          if (page + 1 < totalPages) {
-            fetchTranslationRef.current(page + 1).catch(() => {});
+          if (!controller.signal.aborted) {
+            setTranslateResult({ page, data: result });
           }
         })
         .catch(() => {
-          if (currentPageRef.current !== page) return;
-          setTranslation(null);
-          setIsTranslating(false);
+          if (!controller.signal.aborted) {
+            setTranslateResult(null);
+          }
         });
     }, 500);
 
     return () => {
       clearTimeout(timer);
+      controller.abort();
     };
-  }, [currentPage, autoTranslate, totalPages]);
+  }, [currentPage, autoTranslate]);
 
   const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();
