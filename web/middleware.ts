@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const SUPPORTED_LOCALES = new Set([
   "en", "ar", "fr", "id", "ur", "es", "zh", "pt", "ru", "ja", "ko", "it", "bn",
+  "ha", "sw", "nl", "de", "tr", "fa", "hi", "ms", "pa", "ku", "ps", "so", "uz", "yo", "ta",
 ]);
 
 const COOKIE_NAME = "detected-locale";

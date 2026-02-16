@@ -16,12 +16,27 @@ import ja from "./translations/ja.json";
 import ko from "./translations/ko.json";
 import it from "./translations/it.json";
 import bn from "./translations/bn.json";
+import ha from "./translations/ha.json";
+import sw from "./translations/sw.json";
+import nl from "./translations/nl.json";
+import de from "./translations/de.json";
+import tr from "./translations/tr.json";
+import fa from "./translations/fa.json";
+import hi from "./translations/hi.json";
+import ms from "./translations/ms.json";
+import pa from "./translations/pa.json";
+import ku from "./translations/ku.json";
+import ps from "./translations/ps.json";
+import so from "./translations/so.json";
+import uz from "./translations/uz.json";
+import yo from "./translations/yo.json";
+import ta from "./translations/ta.json";
 
 // Locale type
-export type Locale = "en" | "ar" | "fr" | "id" | "ur" | "es" | "zh" | "pt" | "ru" | "ja" | "ko" | "it" | "bn";
+export type Locale = "en" | "ar" | "fr" | "id" | "ur" | "es" | "zh" | "pt" | "ru" | "ja" | "ko" | "it" | "bn" | "ha" | "sw" | "nl" | "de" | "tr" | "fa" | "hi" | "ms" | "pa" | "ku" | "ps" | "so" | "uz" | "yo" | "ta";
 
 // RTL locales
-export const RTL_LOCALES: Locale[] = ["ar", "ur"];
+export const RTL_LOCALES: Locale[] = ["ar", "ur", "fa", "ps"];
 
 // All supported locales with native names
 export const LOCALES: { code: Locale; name: string; nativeName: string }[] = [
@@ -38,6 +53,21 @@ export const LOCALES: { code: Locale; name: string; nativeName: string }[] = [
   { code: "ko", name: "Korean", nativeName: "한국어" },
   { code: "it", name: "Italian", nativeName: "Italiano" },
   { code: "bn", name: "Bengali", nativeName: "বাংলা" },
+  { code: "ha", name: "Hausa", nativeName: "Hausa" },
+  { code: "sw", name: "Swahili", nativeName: "Kiswahili" },
+  { code: "nl", name: "Dutch", nativeName: "Nederlands" },
+  { code: "de", name: "German", nativeName: "Deutsch" },
+  { code: "tr", name: "Turkish", nativeName: "Türkçe" },
+  { code: "fa", name: "Persian", nativeName: "فارسی" },
+  { code: "hi", name: "Hindi", nativeName: "हिन्दी" },
+  { code: "ms", name: "Malay", nativeName: "Bahasa Melayu" },
+  { code: "pa", name: "Punjabi", nativeName: "ਪੰਜਾਬੀ" },
+  { code: "ku", name: "Kurdish", nativeName: "Kurdî" },
+  { code: "ps", name: "Pashto", nativeName: "پښتو" },
+  { code: "so", name: "Somali", nativeName: "Soomaali" },
+  { code: "uz", name: "Uzbek", nativeName: "Oʻzbekcha" },
+  { code: "yo", name: "Yoruba", nativeName: "Yorùbá" },
+  { code: "ta", name: "Tamil", nativeName: "தமிழ்" },
 ];
 
 // Translation dictionary type
@@ -58,6 +88,21 @@ const translations: Record<Locale, TranslationDict> = {
   ko,
   it,
   bn,
+  ha,
+  sw,
+  nl,
+  de,
+  tr,
+  fa,
+  hi,
+  ms,
+  pa,
+  ku,
+  ps,
+  so,
+  uz,
+  yo,
+  ta,
 };
 
 // LocalStorage key

@@ -203,7 +203,16 @@
       "authorTransliteration": "저자 음역",
       "authorTransliterationInfo": "아랍어 옆에 음역된 저자 이름을 표시합니다.",
       "hadithTranslation": "하디스 번역",
-      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다. Sources: sunnah.com, hadithunlocked.com."
+      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다. Sources: sunnah.com, hadithunlocked.com.",
+      "sourcesTitle": "번역 출처",
+      "sourcesQuran": "꾸란: 출판된 학술 저작의 공식 번역.",
+      "sourcesHadith": "하디스: 이용 가능한 경우 출처 사이트의 인간 번역, 격차가 있을 때는 AI 번역으로 보완.",
+      "sourcesBooks": "책: AI 생성 번역.",
+      "sourcesDisclaimer": "번역은 이해를 돕기 위해 제공되며 아랍어 원문의 의미를 완전히 전달하지 못할 수 있습니다. 단독으로 의존해서는 안 됩니다.",
+      "sourcesQuran": "꾸란: 출판된 학술 저작의 공식 번역.",
+      "sourcesHadith": "하디스: 이용 가능한 경우 출처 사이트의 인간 번역, 격차가 있을 때는 AI 번역으로 보완.",
+      "sourcesBooks": "책: AI 생성 번역.",
+      "sourcesDisclaimer": "번역은 이해를 돕기 위해 제공되며 아랍어 원문의 의미를 완전히 전달하지 못할 수 있습니다. 단독으로 의존해서는 안 됩니다."
     },
     "translationDisplay": {
       "options": {
@@ -280,6 +289,10 @@
       "jinaDesc": "가장 빠름",
       "none": "없음",
       "noneDesc": "재정렬 건너뛰기"
+    },
+    "about": {
+      "description": "OpenIDB는 이슬람 텍스트의 색인 및 검색 개선에 전념하는 오픈 소스 프로젝트로, 통일된 데이터 저장소를 통해 텍스트를 접근할 수 있게 합니다. 또한 개발자들이 구축할 수 있는 APIs를 제공합니다.",
+      "github": "GitHub에서 찾기"
     }
   },
   "searchConfig": {
@@ -363,7 +376,22 @@
     "ja": "日本語",
     "ko": "한국어",
     "it": "Italiano",
-    "bn": "বাংলা"
+    "bn": "বাংলা",
+    "ha": "Hausa",
+    "sw": "Kiswahili",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "tr": "Türkçe",
+    "fa": "فارسی",
+    "hi": "हिन्दी",
+    "ms": "Bahasa Melayu",
+    "pa": "ਪੰਜਾਬੀ",
+    "ku": "Kurdî",
+    "ps": "پښتو",
+    "so": "Soomaali",
+    "uz": "Oʻzbekcha",
+    "yo": "Yorùbá",
+    "ta": "தமிழ்"
   },
   "categories": {
     "45": "일반",

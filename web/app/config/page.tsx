@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -13,9 +13,10 @@ import {
 import {
   type TranslationDisplayOption,
   type DateCalendarType,
+  QURAN_TRANSLATIONS,
 } from "@/lib/config/search-defaults";
 import { useAppConfig } from "@/lib/config";
-import { useTranslation, LOCALES, type Locale } from "@/lib/i18n";
+import { useTranslation, LOCALES, RTL_LOCALES, type Locale } from "@/lib/i18n";
 import { useTheme, type Theme } from "@/lib/theme";
 
 function InfoTooltip({ text }: { text: string }) {
@@ -55,7 +56,7 @@ function ToggleSetting({
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex items-center gap-1.5 min-w-0">
-        <label className="text-sm">{label}</label>
+        <label className="text-sm truncate">{label}</label>
         {info && <InfoTooltip text={info} />}
       </div>
       <button
@@ -63,7 +64,6 @@ function ToggleSetting({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        dir="ltr"
         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           checked ? "bg-neutral-700 dark:bg-neutral-300" : "bg-stone-300 dark:bg-neutral-600"
         }`}
@@ -72,7 +72,7 @@ function ToggleSetting({
           className={`pointer-events-none block h-4 w-4 rounded-full shadow-md ring-0 transition-all duration-200 ${
             checked ? "bg-white dark:bg-neutral-700" : "bg-neutral-100 dark:bg-neutral-300"
           } ${
-            checked ? "translate-x-4" : "translate-x-0"
+            checked ? "ltr:translate-x-4 rtl:-translate-x-4" : "translate-x-0"
           }`}
         />
       </button>
@@ -117,7 +117,6 @@ function SegmentedControl<T extends string>({
   return (
     <div
       ref={containerRef}
-      dir="ltr"
       className="relative flex w-fit rounded-full bg-muted p-0.5"
     >
       <motion.div
@@ -168,6 +167,15 @@ export default function ConfigPage() {
   const { t, locale, setLocale } = useTranslation();
   const { theme, setTheme } = useTheme();
   const { config, updateConfig, isLoaded } = useAppConfig();
+
+  // Sync Quran translation to match locale when language changes
+  useEffect(() => {
+    if (!isLoaded || config.quranTranslation === "none") return;
+    const target = locale === "ar" ? "en" : locale;
+    if (config.quranTranslation !== target) {
+      updateConfig({ quranTranslation: target });
+    }
+  }, [locale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isLoaded) {
     return (
@@ -234,7 +242,13 @@ export default function ConfigPage() {
         <div className="space-y-4">
           <SectionHeader>{t("config.sections.translations")}</SectionHeader>
           <ToggleSetting
-            label={t("config.translations.quranTranslation")}
+            label={(() => {
+              const base = t("config.translations.quranTranslation");
+              if (config.quranTranslation === "none") return base;
+              const match = QURAN_TRANSLATIONS.find(tr => tr.code === config.quranTranslation);
+              if (!match || !match.translator) return base;
+              return `${base} [${match.translator}]`;
+            })()}
             checked={config.quranTranslation !== "none"}
             onChange={(checked) => updateConfig({ quranTranslation: checked ? (locale === "ar" ? "en" : locale) : "none" })}
             info={t("config.translations.quranTranslationInfo")}
@@ -284,6 +298,19 @@ export default function ConfigPage() {
             onChange={(checked) => updateConfig({ hadithTranslation: checked ? "en" : "none" })}
             info={t("config.translations.hadithTranslationInfo")}
           />
+
+          {/* Translation sources card */}
+          <div className="rounded-lg border border-border/50 bg-muted/30 px-3.5 py-3 space-y-2">
+            <span className="text-xs font-medium text-muted-foreground">{t("config.translations.sourcesTitle")}</span>
+            <ul className="space-y-1 text-[11px] text-muted-foreground/80 leading-relaxed">
+              <li>{t("config.translations.sourcesQuran")}</li>
+              <li>{t("config.translations.sourcesHadith")}</li>
+              <li>{t("config.translations.sourcesBooks")}</li>
+            </ul>
+            <p className="text-[11px] text-muted-foreground/60 leading-relaxed italic">
+              {t("config.translations.sourcesDisclaimer")}
+            </p>
+          </div>
         </div>
 
         <Divider />
@@ -309,6 +336,43 @@ export default function ConfigPage() {
             onChange={(checked) => updateConfig({ showPublicationDates: checked })}
             info={t("config.display.showPublicationDatesInfo")}
           />
+        </div>
+
+        <Divider />
+
+        {/* Basmala / About */}
+        <div className="space-y-4" dir="rtl">
+          <p className="text-base font-semibold text-center" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+            بسم الله الرحمن الرحيم
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed text-center" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+            الحمد لله ربّ العالمين، والصلاة والسلام على أشرف الأنبياء والمرسلين، نبيّنا محمّد وعلى آله وصحبه أجمعين.
+          </p>
+          <div className="space-y-3 text-sm text-muted-foreground/80 leading-relaxed text-start" style={{ fontFamily: "var(--font-noto-naskh), serif" }}>
+            <blockquote className="border-s-2 border-border ps-3 italic">
+              بَلِّغُوا عَنِّي وَلَوْ آيَةً، وَحَدِّثُوا عَنْ بَنِي إِسْرَائِيلَ وَلاَ حَرَجَ، وَمَنْ كَذَبَ عَلَىَّ مُتَعَمِّدًا فَلْيَتَبَوَّأْ مَقْعَدَهُ مِنَ النَّارِ
+              <footer className="text-xs text-muted-foreground/60 mt-1 not-italic">— صحيح البخاري ٣٤٦١</footer>
+            </blockquote>
+            <blockquote className="border-s-2 border-border ps-3 italic">
+              مَنْ دَعَا إِلَى هُدَى كَانَ لَهُ مِنَ الأَجْرِ مِثْلُ أُجُورِ مَنْ تَبِعَهُ لاَ يَنْقُصُ ذَلِكَ مِنْ أُجُورِهِمْ شَيْئًا
+              <footer className="text-xs text-muted-foreground/60 mt-1 not-italic">— رياض الصالحين ١٣٨٢</footer>
+            </blockquote>
+            <blockquote className="border-s-2 border-border ps-3 italic">
+              نَضَّرَ اللَّهُ امْرَأً سَمِعَ مِنَّا شَيْئًا فَبَلَّغَهُ كَمَا سَمِعَهُ فَرُبَّ مُبَلِّغٍ أَوْعَى مِنْ سَامِعٍ
+              <footer className="text-xs text-muted-foreground/60 mt-1 not-italic">— رياض الصالحين ١٣٨٩</footer>
+            </blockquote>
+          </div>
+          <p className={`text-xs text-muted-foreground/60 leading-relaxed ${RTL_LOCALES.includes(locale) ? "text-right" : "text-left"}`} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}>
+            {t("config.about.description")}{" "}
+            <a
+              href="https://github.com/openidb"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-muted-foreground transition-colors"
+            >
+              {t("config.about.github")}
+            </a>
+          </p>
         </div>
       </div>
     </div>

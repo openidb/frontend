@@ -56,7 +56,7 @@ export function DesktopNavigation() {
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
       {/* Logo */}
-      <Link href="/search" className="flex items-center justify-center gap-1.5 mb-4">
+      <Link href="/search" dir="ltr" className="flex items-center justify-center gap-1.5 mb-4">
         <span
           className="text-[2.6rem] font-bold leading-[1] self-center"
           style={{ fontFamily: "var(--font-montserrat), sans-serif", color: "#37C1C4" }}

@@ -203,7 +203,16 @@
       "authorTransliteration": "Transliterasi Penulis",
       "authorTransliterationInfo": "Tampilkan nama penulis yang ditransliterasi di samping Arab.",
       "hadithTranslation": "Terjemahan Hadis",
-      "hadithTranslationInfo": "Tampilkan terjemahan bahasa Inggris di samping teks Arab dalam hasil pencarian hadits. Sources: sunnah.com, hadithunlocked.com."
+      "hadithTranslationInfo": "Tampilkan terjemahan bahasa Inggris di samping teks Arab dalam hasil pencarian hadits. Sources: sunnah.com, hadithunlocked.com.",
+      "sourcesTitle": "Sumber Terjemahan",
+      "sourcesQuran": "Al-Qur'an: Terjemahan resmi dari karya akademis yang diterbitkan.",
+      "sourcesHadith": "Hadis: Terjemahan manusia dari situs sumber di mana tersedia, dilengkapi dengan terjemahan AI di mana ada celah.",
+      "sourcesBooks": "Buku: Terjemahan yang dihasilkan oleh AI.",
+      "sourcesDisclaimer": "Terjemahan disediakan sebagai bantuan untuk pemahaman dan mungkin tidak sepenuhnya menyampaikan makna dari teks Arab asli. Mereka tidak boleh diandalkan secara terpisah.",
+      "sourcesQuran": "Al-Qur'an: Terjemahan resmi dari karya akademis yang diterbitkan.",
+      "sourcesHadith": "Hadis: Terjemahan manusia dari situs sumber di mana tersedia, dilengkapi dengan terjemahan AI di mana ada celah.",
+      "sourcesBooks": "Buku: Terjemahan yang dihasilkan oleh AI.",
+      "sourcesDisclaimer": "Terjemahan disediakan sebagai bantuan untuk pemahaman dan mungkin tidak sepenuhnya menyampaikan makna dari teks Arab asli. Mereka tidak boleh diandalkan secara terpisah."
     },
     "translationDisplay": {
       "options": {
@@ -280,6 +289,10 @@
       "jinaDesc": "Tercepat",
       "none": "Tidak ada",
       "noneDesc": "Lewati pengurutan ulang"
+    },
+    "about": {
+      "description": "OpenIDB adalah proyek sumber terbuka yang didedikasikan untuk mengindeks dan meningkatkan pencarian teks Islami, membuatnya dapat diakses melalui penyimpanan data terpadu. Kami juga menyediakan APIs untuk pengembang membangun di atasnya.",
+      "github": "Temukan kami di GitHub"
     }
   },
   "searchConfig": {
@@ -363,7 +376,22 @@
     "ja": "日本語",
     "ko": "한국어",
     "it": "Italiano",
-    "bn": "বাংলা"
+    "bn": "বাংলা",
+    "ha": "Hausa",
+    "sw": "Kiswahili",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "tr": "Türkçe",
+    "fa": "فارسی",
+    "hi": "हिन्दी",
+    "ms": "Bahasa Melayu",
+    "pa": "ਪੰਜਾਬੀ",
+    "ku": "Kurdî",
+    "ps": "پښتو",
+    "so": "Soomaali",
+    "uz": "Oʻzbekcha",
+    "yo": "Yorùbá",
+    "ta": "தமிழ்"
   },
   "categories": {
     "45": "Umum",

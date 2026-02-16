@@ -10,21 +10,36 @@ export type DateCalendarType = "hijri" | "gregorian" | "both";
 
 export type TranslationDisplayOption = "none" | "transliteration" | "translation";
 
-// Quran translation options (12 languages, matching app UI languages except Arabic)
-export const QURAN_TRANSLATIONS: { code: string; edition: string; name: string }[] = [
-  { code: "none", edition: "", name: "None" },
-  { code: "en", edition: "eng-mustafakhattaba", name: "English - Dr. Mustafa Khattab" },
-  { code: "fr", edition: "fra-muhammadhameedu", name: "French - Muhammad Hamidullah" },
-  { code: "id", edition: "ind-indonesianislam", name: "Indonesian - Islamic Ministry" },
-  { code: "ur", edition: "urd-fatehmuhammadja", name: "Urdu - Fateh Muhammad Jalandhry" },
-  { code: "es", edition: "spa-muhammadisagarc", name: "Spanish - Isa Garcia" },
-  { code: "zh", edition: "zho-majian", name: "Chinese - Ma Jian" },
-  { code: "pt", edition: "por-samirelhayek", name: "Portuguese - Samir El-Hayek" },
-  { code: "ru", edition: "rus-elmirkuliev", name: "Russian - Elmir Kuliev" },
-  { code: "ja", edition: "jpn-ryoichimita", name: "Japanese - Ryoichi Mita" },
-  { code: "ko", edition: "kor-hamidchoi", name: "Korean - Hamid Choi" },
-  { code: "it", edition: "ita-hamzarobertopic", name: "Italian - Hamza Roberto Piccardo" },
-  { code: "bn", edition: "ben-muhiuddinkhan", name: "Bengali - Muhiuddin Khan" },
+// Quran translation options (27 languages, matching app UI languages except Arabic)
+export const QURAN_TRANSLATIONS: { code: string; edition: string; name: string; translator: string }[] = [
+  { code: "none", edition: "", name: "None", translator: "" },
+  { code: "en", edition: "eng-mustafakhattaba", name: "English - Dr. Mustafa Khattab", translator: "Mustafa Khattab" },
+  { code: "fr", edition: "fra-muhammadhameedu", name: "French - Muhammad Hamidullah", translator: "Hamidullah" },
+  { code: "id", edition: "ind-indonesianislam", name: "Indonesian - Islamic Ministry", translator: "Islamic Ministry" },
+  { code: "ur", edition: "urd-fatehmuhammadja", name: "Urdu - Fateh Muhammad Jalandhry", translator: "Jalandhry" },
+  { code: "es", edition: "spa-muhammadisagarc", name: "Spanish - Isa Garcia", translator: "Isa Garcia" },
+  { code: "zh", edition: "zho-majian", name: "Chinese - Ma Jian", translator: "Ma Jian" },
+  { code: "pt", edition: "por-samirelhayek", name: "Portuguese - Samir El-Hayek", translator: "El-Hayek" },
+  { code: "ru", edition: "rus-elmirkuliev", name: "Russian - Elmir Kuliev", translator: "Kuliev" },
+  { code: "ja", edition: "jpn-ryoichimita", name: "Japanese - Ryoichi Mita", translator: "Ryoichi Mita" },
+  { code: "ko", edition: "kor-hamidchoi", name: "Korean - Hamid Choi", translator: "Hamid Choi" },
+  { code: "it", edition: "ita-hamzarobertopic", name: "Italian - Hamza Roberto Piccardo", translator: "Piccardo" },
+  { code: "bn", edition: "ben-muhiuddinkhan", name: "Bengali - Muhiuddin Khan", translator: "Muhiuddin Khan" },
+  { code: "de", edition: "deu-asfbubenheimand", name: "German - Bubenheim & Elyas", translator: "Bubenheim" },
+  { code: "fa", edition: "fas-mohammadmahdifo", name: "Persian - Fooladvand", translator: "Fooladvand" },
+  { code: "ha", edition: "hau-abubakarmahmood", name: "Hausa - Abubakar Mahmood Jummi", translator: "Mahmood Jummi" },
+  { code: "hi", edition: "hin-suhelfarooqkhan", name: "Hindi - Suhel Farooq Khan", translator: "Farooq Khan" },
+  { code: "ku", edition: "kur-muhammadsalehba", name: "Kurdish - Muhammad Saleh Bamoki", translator: "Bamoki" },
+  { code: "ms", edition: "msa-abdullahmuhamma", name: "Malay - Abdullah Muhammad Basmeih", translator: "Basmeih" },
+  { code: "nl", edition: "nld-sofianssiregar", name: "Dutch - Sofian S. Siregar", translator: "Siregar" },
+  { code: "pa", edition: "pan-drmuhamadhabibb", name: "Punjabi - Dr. Muhamad Habib", translator: "Dr. Habib" },
+  { code: "ps", edition: "qul-118", name: "Pashto - Zakaria Abulsalam", translator: "Abulsalam" },
+  { code: "so", edition: "som-mahmudmuhammada", name: "Somali - Mahmud Muhammad Abduh", translator: "M. Abduh" },
+  { code: "sw", edition: "swa-alimuhsinalbarw", name: "Swahili - Ali Muhsin Al Barwani", translator: "Al Barwani" },
+  { code: "ta", edition: "tam-abdulhameedbaqa", name: "Tamil - Abdulhameed Baqavi", translator: "Baqavi" },
+  { code: "tr", edition: "tur-diyanetisleri", name: "Turkish - Diyanet Isleri", translator: "Diyanet" },
+  { code: "uz", edition: "uzb-muhammadsodikmu", name: "Uzbek - Muhammad Sodik Muhammad Yusuf", translator: "M. Yusuf" },
+  { code: "yo", edition: "yor-shaykhaburahima", name: "Yoruba - Shaykh Abu Rahimah", translator: "Abu Rahimah" },
 ];
 
 

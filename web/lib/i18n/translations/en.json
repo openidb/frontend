@@ -203,7 +203,12 @@
       "authorTransliteration": "Author Transliterations",
       "authorTransliterationInfo": "Show transliterated author names alongside Arabic.",
       "hadithTranslation": "Hadith Translation",
-      "hadithTranslationInfo": "Display English translation alongside Arabic text in hadith search results. Sources: sunnah.com, hadithunlocked.com."
+      "hadithTranslationInfo": "Display English translation alongside Arabic text in hadith search results. Sources: sunnah.com, hadithunlocked.com.",
+      "sourcesTitle": "Translation Sources",
+      "sourcesQuran": "Quran: Official translations from published scholarly works.",
+      "sourcesHadith": "Hadith: Human translations from source sites where available, supplemented with AI translation where gaps exist.",
+      "sourcesBooks": "Books: AI-generated translation.",
+      "sourcesDisclaimer": "Translations are provided as an aid to understanding and may not fully convey the meaning of the original Arabic. They should not be relied upon in isolation."
     },
     "translationDisplay": {
       "options": {
@@ -280,6 +285,10 @@
       "jinaDesc": "Fastest",
       "none": "None",
       "noneDesc": "Skip reranking"
+    },
+    "about": {
+      "description": "OpenIDB is an open-source project dedicated to indexing and improving the search of Islamic texts, making them accessible through a unified data store. We also provide APIs for developers to build upon.",
+      "github": "Find us on GitHub"
     }
   },
   "searchConfig": {
@@ -363,7 +372,22 @@
     "ja": "日本語",
     "ko": "한국어",
     "it": "Italiano",
-    "bn": "বাংলা"
+    "bn": "বাংলা",
+    "ha": "Hausa",
+    "sw": "Kiswahili",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "tr": "Türkçe",
+    "fa": "فارسی",
+    "hi": "हिन्दी",
+    "ms": "Bahasa Melayu",
+    "pa": "ਪੰਜਾਬੀ",
+    "ku": "Kurdî",
+    "ps": "پښتو",
+    "so": "Soomaali",
+    "uz": "Oʻzbekcha",
+    "yo": "Yorùbá",
+    "ta": "தமிழ்"
   },
   "categories": {
     "45": "General",

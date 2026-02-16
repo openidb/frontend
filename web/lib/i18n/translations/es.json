@@ -203,7 +203,16 @@
       "authorTransliteration": "Transliteracion de autores",
       "authorTransliterationInfo": "Mostrar nombres transliterados de autores junto al arabe.",
       "hadithTranslation": "Traducción del Hadiz",
-      "hadithTranslationInfo": "Mostrar traduccion al ingles junto al texto arabe en los resultados de busqueda de hadiz. Sources: sunnah.com, hadithunlocked.com."
+      "hadithTranslationInfo": "Mostrar traduccion al ingles junto al texto arabe en los resultados de busqueda de hadiz. Sources: sunnah.com, hadithunlocked.com.",
+      "sourcesTitle": "Fuentes de Traducción",
+      "sourcesQuran": "Corán: Traducciones oficiales de obras académicas publicadas.",
+      "sourcesHadith": "Hadiz: Traducciones humanas de sitios de fuentes donde estén disponibles, complementadas con traducción de IA donde existan brechas.",
+      "sourcesBooks": "Libros: Traducción generada por IA.",
+      "sourcesDisclaimer": "Las traducciones se proporcionan como ayuda para la comprensión y pueden no transmitir completamente el significado del árabe original. No deben utilizarse de forma aislada.",
+      "sourcesQuran": "Corán: Traducciones oficiales de obras académicas publicadas.",
+      "sourcesHadith": "Hadiz: Traducciones humanas de sitios de fuentes donde estén disponibles, complementadas con traducción de IA donde existan brechas.",
+      "sourcesBooks": "Libros: Traducción generada por IA.",
+      "sourcesDisclaimer": "Las traducciones se proporcionan como ayuda para la comprensión y pueden no transmitir completamente el significado del árabe original. No deben utilizarse de forma aislada."
     },
     "translationDisplay": {
       "options": {
@@ -280,6 +289,10 @@
       "jinaDesc": "El mas rapido",
       "none": "Ninguno",
       "noneDesc": "Omitir reordenamiento"
+    },
+    "about": {
+      "description": "OpenIDB es un proyecto de código abierto dedicado a indexar y mejorar la búsqueda de textos islámicos, haciéndolos accesibles a través de un almacén de datos unificado. También proporcionamos APIs para que los desarrolladores construyan sobre ellas.",
+      "github": "Encuéntranos en GitHub"
     }
   },
   "searchConfig": {
@@ -363,7 +376,22 @@
     "ja": "日本語",
     "ko": "한국어",
     "it": "Italiano",
-    "bn": "বাংলা"
+    "bn": "বাংলা",
+    "ha": "Hausa",
+    "sw": "Kiswahili",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "tr": "Türkçe",
+    "fa": "فارسی",
+    "hi": "हिन्दी",
+    "ms": "Bahasa Melayu",
+    "pa": "ਪੰਜਾਬੀ",
+    "ku": "Kurdî",
+    "ps": "پښتو",
+    "so": "Soomaali",
+    "uz": "Oʻzbekcha",
+    "yo": "Yorùbá",
+    "ta": "தமிழ்"
   },
   "categories": {
     "45": "General",

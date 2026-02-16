@@ -203,7 +203,16 @@
       "authorTransliteration": "作者音译",
       "authorTransliterationInfo": "在阿拉伯语旁边显示作者的音译名称。",
       "hadithTranslation": "圣训翻译",
-      "hadithTranslationInfo": "在圣训搜索结果中显示阿拉伯文旁边的英文翻译。 Sources: sunnah.com, hadithunlocked.com."
+      "hadithTranslationInfo": "在圣训搜索结果中显示阿拉伯文旁边的英文翻译。 Sources: sunnah.com, hadithunlocked.com.",
+      "sourcesTitle": "翻译来源",
+      "sourcesQuran": "古兰经：来自已出版学术著作的官方翻译。",
+      "sourcesHadith": "圣训：来自源网站的人工翻译（如有），以及在存在差距处由AI翻译补充。",
+      "sourcesBooks": "书籍：AI生成的翻译。",
+      "sourcesDisclaimer": "翻译作为理解的辅助而提供，可能无法完全传达阿拉伯语原文的含义。不应单独依赖翻译。",
+      "sourcesQuran": "古兰经：来自已出版学术著作的官方翻译。",
+      "sourcesHadith": "圣训：来自源网站的人工翻译（如有），以及在存在差距处由AI翻译补充。",
+      "sourcesBooks": "书籍：AI生成的翻译。",
+      "sourcesDisclaimer": "翻译作为理解的辅助而提供，可能无法完全传达阿拉伯语原文的含义。不应单独依赖翻译。"
     },
     "translationDisplay": {
       "options": {
@@ -280,6 +289,10 @@
       "jinaDesc": "最快",
       "none": "无",
       "noneDesc": "跳过重新排序"
+    },
+    "about": {
+      "description": "OpenIDB是一个开源项目，致力于索引和改进伊斯兰文本的搜索，通过统一的数据存储使其可访问。我们还为开发者提供APIs来进行构建。",
+      "github": "在GitHub上找到我们"
     }
   },
   "searchConfig": {
@@ -363,7 +376,22 @@
     "ja": "日本語",
     "ko": "한국어",
     "it": "Italiano",
-    "bn": "বাংলা"
+    "bn": "বাংলা",
+    "ha": "Hausa",
+    "sw": "Kiswahili",
+    "nl": "Nederlands",
+    "de": "Deutsch",
+    "tr": "Türkçe",
+    "fa": "فارسی",
+    "hi": "हिन्दी",
+    "ms": "Bahasa Melayu",
+    "pa": "ਪੰਜਾਬੀ",
+    "ku": "Kurdî",
+    "ps": "پښتو",
+    "so": "Soomaali",
+    "uz": "Oʻzbekcha",
+    "yo": "Yorùbá",
+    "ta": "தமிழ்"
   },
   "categories": {
     "45": "综合",
