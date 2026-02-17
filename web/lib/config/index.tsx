@@ -97,6 +97,11 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           if (parsed.embeddingModel !== "gemini" && parsed.embeddingModel !== "jina") {
             parsed.embeddingModel = "gemini";
           }
+          // Migrate hadithCollections: empty array used to mean "all",
+          // now we use an explicit list; apply the new default
+          if (Array.isArray(parsed.hadithCollections) && parsed.hadithCollections.length === 0) {
+            delete parsed.hadithCollections;
+          }
           // Merge stored values with defaults, then force-reset internal keys
           loaded = applyInternalDefaults({ ...DEFAULT_SEARCH_CONFIG, ...parsed });
         }

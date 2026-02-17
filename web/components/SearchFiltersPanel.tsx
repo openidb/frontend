@@ -23,30 +23,23 @@ export function SearchFiltersPanel({ config, onChange }: SearchFiltersPanelProps
   const otherCollections = HADITH_COLLECTIONS.filter(c => c.group === "other");
 
   const selectedSlugs = new Set(config.hadithCollections);
-  const allSelected = config.hadithCollections.length === 0;
+  const allSelected = config.hadithCollections.length === HADITH_COLLECTIONS.length;
 
   const toggleCollection = (slug: string) => {
-    if (allSelected) {
-      const allSlugs = HADITH_COLLECTIONS.map(c => c.slug).filter(s => s !== slug);
-      updateConfig({ hadithCollections: allSlugs });
-    } else if (selectedSlugs.has(slug)) {
+    if (selectedSlugs.has(slug)) {
       const updated = config.hadithCollections.filter(s => s !== slug);
       updateConfig({ hadithCollections: updated });
     } else {
       const updated = [...config.hadithCollections, slug];
-      if (updated.length === HADITH_COLLECTIONS.length) {
-        updateConfig({ hadithCollections: [] });
-      } else {
-        updateConfig({ hadithCollections: updated });
-      }
+      updateConfig({ hadithCollections: updated });
     }
   };
 
   const selectAll = () => {
-    updateConfig({ hadithCollections: [] });
+    updateConfig({ hadithCollections: HADITH_COLLECTIONS.map(c => c.slug) });
   };
 
-  const isCollectionChecked = (slug: string) => allSelected || selectedSlugs.has(slug);
+  const isCollectionChecked = (slug: string) => selectedSlugs.has(slug);
 
   const getCollectionName = (c: { nameEnglish: string; nameArabic: string }) =>
     locale === "ar" ? c.nameArabic : c.nameEnglish;

@@ -113,6 +113,9 @@ export interface SearchConfig {
   hadithCollections: string[];
 }
 
+/** Collections excluded from search by default (still selectable by users) */
+const DEFAULT_EXCLUDED_COLLECTIONS = new Set(["mustadrak", "mujam-kabir", "suyuti"]);
+
 export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   includeQuran: true,
   includeHadith: true,
@@ -142,7 +145,9 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   refineBookRerank: 20,
   refineAyahRerank: 12,
   refineHadithRerank: 15,
-  hadithCollections: [],
+  hadithCollections: HADITH_COLLECTIONS
+    .filter(c => !DEFAULT_EXCLUDED_COLLECTIONS.has(c.slug))
+    .map(c => c.slug),
 };
 
 // Internal config keys that are NOT user-configurable via the config page.
