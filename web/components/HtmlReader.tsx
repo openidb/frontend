@@ -1029,22 +1029,24 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             {t("reader.next")}
           </button>
 
-          <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1.5 text-sm">
+          <form onSubmit={handlePageInputSubmit} className="flex flex-col items-center">
             {pageData && totalVolumes > 1 && pageData.volumeNumber > 0 && (
-              <span className="text-muted-foreground">
-                {t("reader.volume")} {pageData.volumeNumber} ·
+              <span className="text-[11px] text-muted-foreground/70 mb-0.5">
+                {t("reader.volume")} {pageData.volumeNumber}
               </span>
             )}
-            <span className="text-muted-foreground">{t("reader.page")}</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={pageInputValue}
-              onChange={(e) => setPageInputValue(e.target.value)}
-              onBlur={handlePageInputSubmit}
-              className="w-10 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
-            />
-            <span className="text-muted-foreground text-xs">/ {maxPrintedPage}</span>
+            <div className="flex items-center gap-1.5 text-sm">
+              <span className="text-muted-foreground">{t("reader.page")}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={pageInputValue}
+                onChange={(e) => setPageInputValue(e.target.value)}
+                onBlur={handlePageInputSubmit}
+                className="w-10 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
+              />
+              <span className="text-muted-foreground text-xs">/ {maxPrintedPage}</span>
+            </div>
           </form>
 
           <button
