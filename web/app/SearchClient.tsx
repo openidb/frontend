@@ -394,7 +394,7 @@ export default function SearchClient() {
     if (searchQuery.length >= 2) {
       fetchResults(searchQuery, config, false);
       // Update URL without navigation
-      window.history.replaceState({}, "", `/search?q=${encodeURIComponent(searchQuery)}`);
+      window.history.replaceState({}, "", `/?q=${encodeURIComponent(searchQuery)}`);
     }
   }, [fetchResults]);
 
@@ -441,7 +441,7 @@ export default function SearchClient() {
       setUnifiedResults([]);
       setAuthors([]);
       setExpandedQueries([]);
-      window.history.replaceState({}, "", "/search");
+      window.history.replaceState({}, "", "/");
     }
   }, [triggerSearch, searchConfig]);
 
@@ -450,7 +450,7 @@ export default function SearchClient() {
     if (query.length < 2) return;
     fetchResults(query, searchConfig, true);
     // Update URL without navigation
-    window.history.replaceState({}, "", `/search?q=${encodeURIComponent(query)}`);
+    window.history.replaceState({}, "", `/?q=${encodeURIComponent(query)}`);
   }, [query, searchConfig, fetchResults]);
 
   // Handle Enter key press - trigger Refine Search
@@ -585,7 +585,7 @@ export default function SearchClient() {
     setGraphContext(null);
     setShowDebugStats(false);
     translationTriggeredRef.current = null;
-    window.history.replaceState({}, "", "/search");
+    window.history.replaceState({}, "", "/");
   };
 
   // Handle voice transcription result

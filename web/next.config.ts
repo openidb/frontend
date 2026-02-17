@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
       static: 3600,
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/search",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
