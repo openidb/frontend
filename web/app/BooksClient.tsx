@@ -283,8 +283,8 @@ export default function BooksClient({
     <div className="p-4 md:p-8">
       <div className="mb-6 space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("books.title")}</h1>
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-muted/60 p-1.5" suppressHydrationWarning>
-          <div className="relative flex-1 min-w-0 w-full sm:min-w-[16rem] rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 rounded-2xl bg-muted/60 p-1.5" suppressHydrationWarning>
+          <div className="relative flex-1 min-w-0 sm:min-w-[16rem] rounded-lg ring-1 ring-transparent focus-within:ring-brand/50 focus-within:shadow-[0_0_0_3px_hsl(var(--brand)/0.1)] transition-[box-shadow,ring-color] duration-200">
             <Input
               type="text"
               placeholder={t("books.searchPlaceholder")}
@@ -293,32 +293,34 @@ export default function BooksClient({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {categoryOptions.length > 0 && (
-            <MultiSelectDropdown
-              title={t("books.category")}
-              options={categoryOptions}
-              selected={selectedCategories}
-              onChange={setSelectedCategories}
-            />
-          )}
-          {centuryOptions.length > 0 && (
-            <MultiSelectDropdown
-              title={t("books.century")}
-              options={centuryOptions}
-              selected={selectedCenturies}
-              onChange={setSelectedCenturies}
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {categoryOptions.length > 0 && (
+              <MultiSelectDropdown
+                title={t("books.category")}
+                options={categoryOptions}
+                selected={selectedCategories}
+                onChange={setSelectedCategories}
+              />
+            )}
+            {centuryOptions.length > 0 && (
+              <MultiSelectDropdown
+                title={t("books.century")}
+                options={centuryOptions}
+                selected={selectedCenturies}
+                onChange={setSelectedCenturies}
+              />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile card layout */}
-      <div className="sm:hidden space-y-3">
+      {/* Mobile row layout */}
+      <div className="sm:hidden space-y-1">
         {loading ? (
           [...Array(6)].map((_, i) => (
-            <div key={i} className="p-4 border rounded-lg animate-pulse bg-card">
-              <div className="h-5 w-3/4 bg-muted rounded mb-2" />
-              <div className="h-4 w-1/2 bg-muted rounded mb-2" />
+            <div key={i} className="p-2.5 rounded-lg bg-muted/25 animate-pulse">
+              <div className="h-4 w-3/4 bg-muted rounded mb-2" />
+              <div className="h-3 w-1/2 bg-muted rounded mb-2" />
               <div className="h-3 w-1/3 bg-muted rounded" />
             </div>
           ))
@@ -330,22 +332,24 @@ export default function BooksClient({
           books.map((book) => {
             const secondaryTitle = getSecondaryTitle(book);
             const secondaryAuthor = getSecondaryAuthorName(book.author);
+            const year = getBookYear(book, showPublicationDates, dateCalendar, t("books.publication"));
             return (
               <PrefetchLink
                 key={book.id}
                 href={`/reader/${book.id}`}
-                className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-card"
+                className="block p-2.5 rounded-lg bg-muted/25 hover:bg-muted/70 transition-colors"
               >
-                <div className="font-semibold text-base truncate" dir="rtl">{book.titleArabic}</div>
+                <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
                 {secondaryTitle && (
-                  <div className="text-sm text-muted-foreground truncate mt-1">{secondaryTitle}</div>
+                  <div className="text-xs text-muted-foreground truncate mt-0.5">{secondaryTitle}</div>
                 )}
-                <div className="text-sm text-muted-foreground mt-2 truncate" dir="rtl">{book.author.nameArabic}</div>
+                <div className="text-xs text-muted-foreground truncate mt-1" dir="rtl">{book.author.nameArabic}</div>
                 {secondaryAuthor && (
-                  <div className="text-sm text-muted-foreground truncate">{secondaryAuthor}</div>
+                  <div className="text-xs text-muted-foreground truncate">{secondaryAuthor}</div>
                 )}
-                <div className="text-sm text-muted-foreground mt-1.5">
-                  {getBookYear(book, showPublicationDates, dateCalendar, t("books.publication"))}
+                <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground/70">
+                  <span className="tabular-nums">#{book.id}</span>
+                  {year && <><span>·</span><span>{year}</span></>}
                 </div>
               </PrefetchLink>
             );
