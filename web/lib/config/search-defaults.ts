@@ -114,7 +114,7 @@ export interface SearchConfig {
 }
 
 /** Collections excluded from search by default (still selectable by users) */
-const DEFAULT_EXCLUDED_COLLECTIONS = new Set(["mustadrak", "mujam-kabir", "suyuti"]);
+const DEFAULT_EXCLUDED_COLLECTIONS = new Set(["mustadrak", "mujam-kabir", "suyuti", "sunan-kubra-bayhaqi"]);
 
 export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   includeQuran: true,
