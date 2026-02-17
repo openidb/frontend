@@ -271,11 +271,11 @@ export function VoiceRecorder({
     return (
       <button
         onClick={startRecording}
-        className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+        className="p-2 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
         aria-label={t("search.voiceRecord")}
         type="button"
       >
-        <Mic className="h-4 w-4 md:h-5 md:w-5" />
+        <Mic className="h-5 w-5" />
       </button>
     );
   }

@@ -84,10 +84,10 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
     return (
       <Button
         variant="ghost"
-        size="icon"
-        className="group/gear h-12 w-12 rounded-lg hover:bg-muted shrink-0"
+        className="h-9 px-3 rounded-lg hover:bg-muted shrink-0 text-muted-foreground text-sm gap-1"
       >
-        <Settings2 className="h-5 w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
+        {t("searchConfig.contentTypes")}
+        <ChevronDown className="h-3.5 w-3.5" />
       </Button>
     );
   }
@@ -97,11 +97,11 @@ export function SearchConfigDropdown({ config, onChange }: SearchConfigDropdownP
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className="group/gear h-12 w-12 rounded-lg hover:bg-muted shrink-0"
+          className="h-9 px-3 rounded-lg hover:bg-muted shrink-0 text-muted-foreground text-sm gap-1"
           aria-label={t("searchConfig.contentTypes")}
         >
-          <Settings2 className="h-5 w-5 transition-transform duration-200 group-hover/gear:rotate-90" />
+          {t("searchConfig.contentTypes")}
+          <ChevronDown className="h-3.5 w-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
