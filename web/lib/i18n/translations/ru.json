@@ -334,6 +334,7 @@
     "next": "Далее",
     "prev": "Назад",
     "translate": "Перевести",
+    "translating": "Перевод",
     "hideTranslation": "Скрыть перевод",
     "llmTranslationLabel": "[Перевод ИИ]",
     "llmTranslationWarning": "Этот перевод сгенерирован автоматически и может неточно передавать замысел автора.",

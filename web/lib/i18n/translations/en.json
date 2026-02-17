@@ -330,6 +330,7 @@
     "next": "Next",
     "prev": "Prev",
     "translate": "Translate",
+    "translating": "Translating",
     "hideTranslation": "Hide Translation",
     "llmTranslationLabel": "[AI Translation]",
     "llmTranslationWarning": "This translation is automatically generated and may not accurately reflect the author\u2019s intended meaning.",

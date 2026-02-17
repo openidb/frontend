@@ -334,6 +334,7 @@
     "next": "Lanjut",
     "prev": "Kembali",
     "translate": "Terjemahkan",
+    "translating": "Menerjemahkan",
     "hideTranslation": "Sembunyikan terjemahan",
     "llmTranslationLabel": "[Terjemahan AI]",
     "llmTranslationWarning": "Terjemahan ini dibuat secara otomatis dan mungkin tidak mencerminkan makna yang dimaksud penulis.",

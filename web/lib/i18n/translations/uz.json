@@ -330,6 +330,7 @@
     "next": "Keyingi",
     "prev": "Oldingi",
     "translate": "Tarjima qilish",
+    "translating": "Tarjima qilinmoqda",
     "hideTranslation": "Tarjimani yashirish",
     "llmTranslationLabel": "[AI tarjimasi]",
     "llmTranslationWarning": "Bu tarjima avtomatik ravishda yaratilgan va muallifning mo'ljallangan ma'nosini aniq aks ettirmasligi mumkin.",

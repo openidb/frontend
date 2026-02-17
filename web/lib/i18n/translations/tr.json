@@ -330,6 +330,7 @@
     "next": "Sonraki",
     "prev": "Önceki",
     "translate": "Çevir",
+    "translating": "Çevriliyor",
     "hideTranslation": "Çeviriyi Gizle",
     "llmTranslationLabel": "[Yapay Zeka Çevirisi]",
     "llmTranslationWarning": "Bu çeviri otomatik olarak oluşturulmuştur ve yazarın amaçladığı anlamı doğru bir şekilde yansıtmayabilir.",

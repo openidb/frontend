@@ -330,6 +330,7 @@
     "next": "Weiter",
     "prev": "Zurück",
     "translate": "Übersetzen",
+    "translating": "Übersetze",
     "hideTranslation": "Übersetzung ausblenden",
     "llmTranslationLabel": "[KI-Übersetzung]",
     "llmTranslationWarning": "Diese Übersetzung wurde automatisch generiert und gibt möglicherweise nicht genau die beabsichtigte Bedeutung des Autors wieder.",

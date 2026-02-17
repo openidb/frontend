@@ -330,6 +330,7 @@
     "next": "بل",
     "prev": "مخکینی",
     "translate": "ژباړه وکړئ",
+    "translating": "ژباړه کېږي",
     "hideTranslation": "ژباړه پټه کړئ",
     "llmTranslationLabel": "[د AI ژباړه]",
     "llmTranslationWarning": "دا ژباړه په اتومات ډول تولید شوې او ممکن د مؤلف مطلوب معنی په دقیقه توګه نه وړاندې کړي.",

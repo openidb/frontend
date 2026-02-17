@@ -330,6 +330,7 @@
     "next": "Na gaba",
     "prev": "Baya",
     "translate": "Fassara",
+    "translating": "Ana fassara",
     "hideTranslation": "Ɓoye Fassara",
     "llmTranslationLabel": "[Fassarar AI]",
     "llmTranslationWarning": "Wannan fassara an samar da ita ta atomatik kuma ƙila ba ta nuna ainihin ma'anar marubuci ba.",

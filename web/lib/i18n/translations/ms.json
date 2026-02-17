@@ -330,6 +330,7 @@
     "next": "Seterusnya",
     "prev": "Sebelumnya",
     "translate": "Terjemah",
+    "translating": "Menterjemah",
     "hideTranslation": "Sembunyikan Terjemahan",
     "llmTranslationLabel": "[Terjemahan AI]",
     "llmTranslationWarning": "Terjemahan ini dijana secara automatik dan mungkin tidak mencerminkan dengan tepat maksud yang dimaksudkan oleh penulis.",

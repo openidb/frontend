@@ -702,7 +702,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           {isTranslating && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full animate-in fade-in">
               <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="hidden sm:inline">{t("reader.translate")}…</span>
+              <span className="hidden sm:inline">{t("reader.translating")}…</span>
             </span>
           )}
 
@@ -993,7 +993,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                   <strong>{t('reader.llmTranslationLabel')}</strong> {t('reader.llmTranslationWarning')}
                   {isTranslating && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35em', marginInlineStart: '0.5em', opacity: 0.8 }}>
-                      — <Loader2 className="h-3 w-3 animate-spin" style={{ display: 'inline' }} /> {t('reader.translate')}…
+                      — <Loader2 className="h-3 w-3 animate-spin" style={{ display: 'inline' }} /> {t('reader.translating')}…
                     </span>
                   )}
                 </div>

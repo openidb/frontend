@@ -334,6 +334,7 @@
     "next": "التالي",
     "prev": "السابق",
     "translate": "ترجمة",
+    "translating": "جارٍ الترجمة",
     "hideTranslation": "إخفاء الترجمة",
     "llmTranslationLabel": "[ترجمة آلية]",
     "llmTranslationWarning": "هذه الترجمة مولّدة تلقائيًا وقد لا تعكس بدقة المعنى الذي قصده المؤلف.",

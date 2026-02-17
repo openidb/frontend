@@ -334,6 +334,7 @@
     "next": "다음",
     "prev": "이전",
     "translate": "번역",
+    "translating": "번역 중",
     "hideTranslation": "번역 숨기기",
     "llmTranslationLabel": "[AI 번역]",
     "llmTranslationWarning": "이 번역은 자동으로 생성되었으며 저자의 의도를 정확히 반영하지 못할 수 있습니다.",

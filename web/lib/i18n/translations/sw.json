@@ -330,6 +330,7 @@
     "next": "Inayofuata",
     "prev": "Iliyotangulia",
     "translate": "Tafsiri",
+    "translating": "Inatafsiri",
     "hideTranslation": "Ficha Tafsiri",
     "llmTranslationLabel": "[Tafsiri ya AI]",
     "llmTranslationWarning": "Tafsiri hii imeundwa kiotomatiki na inaweza isieleze kwa usahihi maana iliyokusudiwa na mwandishi.",

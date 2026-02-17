@@ -330,6 +330,7 @@
     "next": "بعدی",
     "prev": "قبلی",
     "translate": "ترجمه",
+    "translating": "در حال ترجمه",
     "hideTranslation": "پنهان کردن ترجمه",
     "llmTranslationLabel": "[ترجمه هوش مصنوعی]",
     "llmTranslationWarning": "این ترجمه به طور خودکار تولید شده است و ممکن است به طور دقیق منظور نویسنده را منعکس نکند.",

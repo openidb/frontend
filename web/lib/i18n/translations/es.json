@@ -334,6 +334,7 @@
     "next": "Sig",
     "prev": "Ant",
     "translate": "Traducir",
+    "translating": "Traduciendo",
     "hideTranslation": "Ocultar traduccion",
     "llmTranslationLabel": "[Traducción IA]",
     "llmTranslationWarning": "Esta traducción se genera automáticamente y puede no reflejar con precisión el significado previsto por el autor.",

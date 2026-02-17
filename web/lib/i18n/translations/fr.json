@@ -334,6 +334,7 @@
     "next": "Suiv",
     "prev": "Prec",
     "translate": "Traduire",
+    "translating": "Traduction en cours",
     "hideTranslation": "Masquer la traduction",
     "llmTranslationLabel": "[Traduction IA]",
     "llmTranslationWarning": "Cette traduction est générée automatiquement et peut ne pas refléter fidèlement la pensée de l\u2019auteur.",

@@ -334,6 +334,7 @@
     "next": "Prox",
     "prev": "Ant",
     "translate": "Traduzir",
+    "translating": "Traduzindo",
     "hideTranslation": "Ocultar traducao",
     "llmTranslationLabel": "[Tradução IA]",
     "llmTranslationWarning": "Esta tradução é gerada automaticamente e pode não refletir com precisão o significado pretendido pelo autor.",
