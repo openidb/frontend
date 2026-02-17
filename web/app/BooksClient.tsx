@@ -340,10 +340,10 @@ export default function BooksClient({
                 className="block p-2.5 rounded-lg bg-muted/25 hover:bg-muted/70 transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
+                <div className="text-xs text-muted-foreground truncate mt-0.5" dir="rtl">{book.author.nameArabic}</div>
                 {secondaryTitle && (
-                  <div className="text-xs text-muted-foreground truncate mt-0.5">{secondaryTitle}</div>
+                  <div className="text-xs text-muted-foreground truncate mt-1">{secondaryTitle}</div>
                 )}
-                <div className="text-xs text-muted-foreground truncate mt-1" dir="rtl">{book.author.nameArabic}</div>
                 {secondaryAuthor && (
                   <div className="text-xs text-muted-foreground truncate">{secondaryAuthor}</div>
                 )}
