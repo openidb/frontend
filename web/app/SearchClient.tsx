@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { PrefetchLink } from "@/components/PrefetchLink";
 import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, HadithResultData } from "@/components/SearchResult";
-import { SearchConfigDropdown } from "@/components/SearchConfigDropdown";
+import { SearchFiltersPanel } from "@/components/SearchFiltersPanel";
 import { QURAN_TRANSLATIONS } from "@/lib/config/search-defaults";
 import { useAppConfig, type SearchConfig } from "@/lib/config";
 import { formatYear } from "@/lib/dates";
@@ -146,7 +146,7 @@ function SearchResultSkeleton() {
   );
 }
 
-type ActiveTab = "results" | "deep";
+type ActiveTab = "results" | "deep" | "filters";
 type DeepSearchStatus = "idle" | "loading" | "done" | "error";
 
 /** Parse search response into sorted, limited UnifiedResult[] */
@@ -327,7 +327,8 @@ export default function SearchClient() {
     setDeepExpandedQueries([]);
     setDeepSearchStatus("idle");
     setDeepSearchError(null);
-    setActiveTab("results");
+    // Switch to results tab unless user is on filters (they stay while results refresh in background)
+    setActiveTab((prev) => prev === "filters" ? "filters" : "results");
 
     try {
       const params = buildSearchParams(searchQuery, config, locale, false);
@@ -686,17 +687,17 @@ export default function SearchClient() {
   const isHeroState = !hasSearched && !isLoading && query.length < 2;
 
   // Tab bar should show when we have quick results or deep search has been triggered
-  const showTabBar = hasSearched && !isLoading && (quickResults.length > 0 || deepSearchStatus !== "idle");
+  const showTabBar = hasSearched && !isLoading && (quickResults.length > 0 || deepSearchStatus !== "idle" || activeTab === "filters");
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
       {/* Header + Search Bar wrapper — centers vertically in hero state, collapses to top otherwise */}
       <div
-        className={`transition-all duration-500 ease-out ${
+        className={
           isHeroState
             ? "min-h-[60vh] flex flex-col justify-center"
             : ""
-        }`}
+        }
       >
         {/* Header */}
         <div className={`${isHeroState ? "max-w-4xl text-center" : "max-w-2xl"} mx-auto mb-6 md:mb-8`}>
@@ -709,17 +710,8 @@ export default function SearchClient() {
         {/* Search Bar — single row: input + filter + mic */}
         <div className="max-w-2xl w-full mx-auto mb-6 md:mb-8">
           <div className="rounded-2xl border border-border/60 bg-muted/40 focus-within:border-brand/50 transition-colors duration-200" suppressHydrationWarning>
-            {isRecording ? (
-              <div className="flex items-center gap-1 px-3 py-3">
-                <VoiceRecorder
-                  showMic={false}
-                  onRecordingChange={(recording) => { setIsRecording(recording); if (recording) setVoiceError(null); }}
-                  onTranscription={handleTranscription}
-                  onError={(msg) => setVoiceError(msg)}
-                />
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 px-3 py-2">
+            <div className="flex items-center gap-1 px-3 py-2">
+              {!isRecording && (
                 <div className="relative flex-1">
                   <Input
                     type="text"
@@ -740,15 +732,14 @@ export default function SearchClient() {
                     </button>
                   )}
                 </div>
-                <SearchConfigDropdown config={searchConfig} onChange={handleConfigChange} />
-                <VoiceRecorder
-                  showMic={!query && !isRecording}
-                  onRecordingChange={(recording) => { setIsRecording(recording); if (recording) setVoiceError(null); }}
-                  onTranscription={handleTranscription}
-                  onError={(msg) => setVoiceError(msg)}
-                />
-              </div>
-            )}
+              )}
+              <VoiceRecorder
+                showMic={!query && !isRecording}
+                onRecordingChange={(recording) => { setIsRecording(recording); if (recording) setVoiceError(null); }}
+                onTranscription={handleTranscription}
+                onError={(msg) => setVoiceError(msg)}
+              />
+            </div>
           </div>
           {voiceError && (
             <p className="text-sm text-red-500 mt-2 text-center">{voiceError}</p>
@@ -789,6 +780,16 @@ export default function SearchClient() {
               {t("search.refineSearch")}
               {deepSearchStatus === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {deepSearchStatus === "done" && ` (${deepResults.length})`}
+            </button>
+            <button
+              onClick={() => setActiveTab("filters")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "filters"
+                  ? "border-brand text-brand"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t("search.filters")}
             </button>
           </div>
         )}
@@ -1157,6 +1158,20 @@ export default function SearchClient() {
                   })}
                 </motion.div>
               )}
+            </motion.div>
+          )}
+
+          {/* Filters Panel */}
+          {activeTab === "filters" && (
+            <motion.div
+              key="filters-panel"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="py-2"
+            >
+              <SearchFiltersPanel config={searchConfig} onChange={handleConfigChange} />
             </motion.div>
           )}
         </AnimatePresence>

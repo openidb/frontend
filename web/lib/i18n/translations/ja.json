@@ -56,7 +56,8 @@
     "mentionedInQuran": "クルアーンでの言及",
     "entityRelationships": "関係",
     "sourceText": "出典",
-    "graphCoverage": "ナレッジグラフは3つのパイロット章をカバー（部分的カバレッジ）"
+    "graphCoverage": "ナレッジグラフは3つのパイロット章をカバー（部分的カバレッジ）",
+    "filters": "フィルター"
   },
   "algorithm": {
     "pipelineOverview": "検索パイプライン概要",

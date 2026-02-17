@@ -56,7 +56,8 @@
     "mentionedInQuran": "কুরআনে উল্লেখিত",
     "entityRelationships": "সম্পর্কসমূহ",
     "sourceText": "সূত্র",
-    "graphCoverage": "জ্ঞান গ্রাফ ৩টি পাইলট সূরা কভার করে (আংশিক কভারেজ)"
+    "graphCoverage": "জ্ঞান গ্রাফ ৩টি পাইলট সূরা কভার করে (আংশিক কভারেজ)",
+    "filters": "ফিল্টার"
   },
   "algorithm": {
     "pipelineOverview": "অনুসন্ধান পাইপলাইন সারসংক্ষেপ",

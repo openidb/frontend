@@ -56,7 +56,8 @@
     "mentionedInQuran": "古兰经中提及",
     "entityRelationships": "关系",
     "sourceText": "来源",
-    "graphCoverage": "知识图谱覆盖3个试点章节（部分覆盖）"
+    "graphCoverage": "知识图谱覆盖3个试点章节（部分覆盖）",
+    "filters": "筛选"
   },
   "algorithm": {
     "pipelineOverview": "搜索管道概述",

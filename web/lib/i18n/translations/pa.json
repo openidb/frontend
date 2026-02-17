@@ -56,7 +56,8 @@
     "mentionedInQuran": "ਕੁਰਾਨ ਵਿੱਚ ਜ਼ਿਕਰ",
     "entityRelationships": "ਰਿਸ਼ਤੇ",
     "sourceText": "ਸਰੋਤ",
-    "graphCoverage": "ਗਿਆਨ ਗ੍ਰਾਫ਼ 3 ਪਾਇਲਟ ਸੂਰਾਹਾਂ ਨੂੰ ਕਵਰ ਕਰਦਾ ਹੈ (ਅੰਸ਼ਕ ਕਵਰੇਜ)"
+    "graphCoverage": "ਗਿਆਨ ਗ੍ਰਾਫ਼ 3 ਪਾਇਲਟ ਸੂਰਾਹਾਂ ਨੂੰ ਕਵਰ ਕਰਦਾ ਹੈ (ਅੰਸ਼ਕ ਕਵਰੇਜ)",
+    "filters": "ਫਿਲਟਰ"
   },
   "algorithm": {
     "pipelineOverview": "ਖੋਜ ਪਾਈਪਲਾਈਨ ਸੰਖੇਪ",

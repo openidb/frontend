@@ -56,7 +56,8 @@
     "mentionedInQuran": "Im Koran erwähnt",
     "entityRelationships": "Beziehungen",
     "sourceText": "Quellen",
-    "graphCoverage": "Wissensgraph deckt 3 Pilot-Suren ab (teilweise Abdeckung)"
+    "graphCoverage": "Wissensgraph deckt 3 Pilot-Suren ab (teilweise Abdeckung)",
+    "filters": "Filter"
   },
   "algorithm": {
     "pipelineOverview": "Such-Pipeline Übersicht",

@@ -56,7 +56,8 @@
     "mentionedInQuran": "ورد في القرآن",
     "entityRelationships": "العلاقات",
     "sourceText": "المصادر",
-    "graphCoverage": "تغطي شبكة المعرفة ٣ سور تجريبية (تغطية جزئية)"
+    "graphCoverage": "تغطي شبكة المعرفة ٣ سور تجريبية (تغطية جزئية)",
+    "filters": "تصفية"
   },
   "algorithm": {
     "pipelineOverview": "نظرة عامة على مسار البحث",

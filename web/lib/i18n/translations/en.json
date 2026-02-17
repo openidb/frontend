@@ -56,7 +56,8 @@
     "mentionedInQuran": "Mentioned in Quran",
     "entityRelationships": "Relationships",
     "sourceText": "Sources",
-    "graphCoverage": "Knowledge graph covers 3 pilot surahs (partial coverage)"
+    "graphCoverage": "Knowledge graph covers 3 pilot surahs (partial coverage)",
+    "filters": "Filters"
   },
   "algorithm": {
     "pipelineOverview": "Search Pipeline Overview",

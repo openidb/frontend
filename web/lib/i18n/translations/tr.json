@@ -56,7 +56,8 @@
     "mentionedInQuran": "Kuran'da geçiyor",
     "entityRelationships": "İlişkiler",
     "sourceText": "Kaynaklar",
-    "graphCoverage": "Bilgi grafiği 3 pilot sureyi kapsar (kısmi kapsam)"
+    "graphCoverage": "Bilgi grafiği 3 pilot sureyi kapsar (kısmi kapsam)",
+    "filters": "Filtreler"
   },
   "algorithm": {
     "pipelineOverview": "Arama Hattı Genel Bakış",

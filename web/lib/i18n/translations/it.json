@@ -56,7 +56,8 @@
     "mentionedInQuran": "Menzionato nel Corano",
     "entityRelationships": "Relazioni",
     "sourceText": "Fonti",
-    "graphCoverage": "Il grafo copre 3 sure pilota (copertura parziale)"
+    "graphCoverage": "Il grafo copre 3 sure pilota (copertura parziale)",
+    "filters": "Filtri"
   },
   "algorithm": {
     "pipelineOverview": "Panoramica del pipeline di ricerca",

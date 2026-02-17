@@ -56,7 +56,8 @@
     "mentionedInQuran": "Mencionado no Alcorao",
     "entityRelationships": "Relacoes",
     "sourceText": "Fontes",
-    "graphCoverage": "O grafo cobre 3 suras piloto (cobertura parcial)"
+    "graphCoverage": "O grafo cobre 3 suras piloto (cobertura parcial)",
+    "filters": "Filtros"
   },
   "algorithm": {
     "pipelineOverview": "Visao geral do pipeline de busca",

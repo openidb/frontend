@@ -56,7 +56,8 @@
     "mentionedInQuran": "A dárúkọ rẹ̀ nínú Kùránì",
     "entityRelationships": "Àwọn ìbáṣepọ̀",
     "sourceText": "Àwọn orísun",
-    "graphCoverage": "Gíráàfù ìmọ̀ bo àwọn sura mẹ́ta àpilọ́kọ́ (ìbòsí àpapọ̀)"
+    "graphCoverage": "Gíráàfù ìmọ̀ bo àwọn sura mẹ́ta àpilọ́kọ́ (ìbòsí àpapọ̀)",
+    "filters": "Àwọn àyọ̀kà"
   },
   "algorithm": {
     "pipelineOverview": "Àkópọ̀ pípọ́ọ̀sì wíwá",

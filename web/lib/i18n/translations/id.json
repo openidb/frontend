@@ -56,7 +56,8 @@
     "mentionedInQuran": "Disebutkan dalam Al-Quran",
     "entityRelationships": "Hubungan",
     "sourceText": "Sumber",
-    "graphCoverage": "Grafik pengetahuan mencakup 3 surah percontohan (cakupan parsial)"
+    "graphCoverage": "Grafik pengetahuan mencakup 3 surah percontohan (cakupan parsial)",
+    "filters": "Filter"
   },
   "algorithm": {
     "pipelineOverview": "Gambaran Pipeline Pencarian",

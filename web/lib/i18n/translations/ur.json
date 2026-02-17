@@ -56,7 +56,8 @@
     "mentionedInQuran": "قرآن میں مذکور",
     "entityRelationships": "تعلقات",
     "sourceText": "مصادر",
-    "graphCoverage": "علمی گراف ۳ تجرباتی سورتوں کا احاطہ کرتا ہے (جزوی کوریج)"
+    "graphCoverage": "علمی گراف ۳ تجرباتی سورتوں کا احاطہ کرتا ہے (جزوی کوریج)",
+    "filters": "فلٹرز"
   },
   "algorithm": {
     "pipelineOverview": "تلاش پائپ لائن کا جائزہ",

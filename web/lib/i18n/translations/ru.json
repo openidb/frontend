@@ -56,7 +56,8 @@
     "mentionedInQuran": "Упоминается в Коране",
     "entityRelationships": "Связи",
     "sourceText": "Источники",
-    "graphCoverage": "Граф знаний охватывает 3 пилотные суры (частичное покрытие)"
+    "graphCoverage": "Граф знаний охватывает 3 пилотные суры (частичное покрытие)",
+    "filters": "Фильтры"
   },
   "algorithm": {
     "pipelineOverview": "Обзор конвейера поиска",

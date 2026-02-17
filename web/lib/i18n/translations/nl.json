@@ -56,7 +56,8 @@
     "mentionedInQuran": "Vermeld in de Koran",
     "entityRelationships": "Relaties",
     "sourceText": "Bronnen",
-    "graphCoverage": "Kennisgrafiek dekt 3 piloot-sura's (gedeeltelijke dekking)"
+    "graphCoverage": "Kennisgrafiek dekt 3 piloot-sura's (gedeeltelijke dekking)",
+    "filters": "Filters"
   },
   "algorithm": {
     "pipelineOverview": "Overzicht Zoekpijplijn",

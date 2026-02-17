@@ -56,7 +56,8 @@
     "mentionedInQuran": "An ambata a cikin Alƙur'ani",
     "entityRelationships": "Dangantaka",
     "sourceText": "Majiyoyi",
-    "graphCoverage": "Jadawalin ilimi ya rufe surori 3 na gwaji (rufe wani bangare)"
+    "graphCoverage": "Jadawalin ilimi ya rufe surori 3 na gwaji (rufe wani bangare)",
+    "filters": "Tacewa"
   },
   "algorithm": {
     "pipelineOverview": "Bayyani na Binciken Pipeline",

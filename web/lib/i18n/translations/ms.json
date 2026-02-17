@@ -56,7 +56,8 @@
     "mentionedInQuran": "Disebut dalam Al-Quran",
     "entityRelationships": "Hubungan",
     "sourceText": "Sumber",
-    "graphCoverage": "Graf pengetahuan meliputi 3 surah perintis (liputan separa)"
+    "graphCoverage": "Graf pengetahuan meliputi 3 surah perintis (liputan separa)",
+    "filters": "Penapis"
   },
   "algorithm": {
     "pipelineOverview": "Gambaran Keseluruhan Saluran Carian",

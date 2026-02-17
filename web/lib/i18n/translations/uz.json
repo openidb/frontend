@@ -56,7 +56,8 @@
     "mentionedInQuran": "Qur'onda zikr etilgan",
     "entityRelationships": "Munosabatlar",
     "sourceText": "Manbalar",
-    "graphCoverage": "Bilim grafigi 3 ta sinov surasini qamrab oladi (qisman qamrov)"
+    "graphCoverage": "Bilim grafigi 3 ta sinov surasini qamrab oladi (qisman qamrov)",
+    "filters": "Filtrlar"
   },
   "algorithm": {
     "pipelineOverview": "Qidiruv quvuri umumiy ko'rinishi",

@@ -56,7 +56,8 @@
     "mentionedInQuran": "कुरान में उल्लेख",
     "entityRelationships": "संबंध",
     "sourceText": "स्रोत",
-    "graphCoverage": "ज्ञान ग्राफ 3 पायलट सूरहों को कवर करता है (आंशिक कवरेज)"
+    "graphCoverage": "ज्ञान ग्राफ 3 पायलट सूरहों को कवर करता है (आंशिक कवरेज)",
+    "filters": "फ़िल्टर"
   },
   "algorithm": {
     "pipelineOverview": "खोज पाइपलाइन अवलोकन",

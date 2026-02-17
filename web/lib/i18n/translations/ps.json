@@ -56,7 +56,8 @@
     "mentionedInQuran": "په قرآن کې یادونه",
     "entityRelationships": "اړیکې",
     "sourceText": "سرچینې",
-    "graphCoverage": "د پوهې ګراف 3 پیلوټ سورتونه پوښي (جزوي پوښښ)"
+    "graphCoverage": "د پوهې ګراف 3 پیلوټ سورتونه پوښي (جزوي پوښښ)",
+    "filters": "فلټرونه"
   },
   "algorithm": {
     "pipelineOverview": "د لټون پایپ لاین لنډیز",

@@ -56,7 +56,8 @@
     "mentionedInQuran": "در قرآن ذکر شده",
     "entityRelationships": "روابط",
     "sourceText": "منابع",
-    "graphCoverage": "نمودار دانش ۳ سوره آزمایشی را پوشش می‌دهد (پوشش جزئی)"
+    "graphCoverage": "نمودار دانش ۳ سوره آزمایشی را پوشش می‌دهد (پوشش جزئی)",
+    "filters": "فیلترها"
   },
   "algorithm": {
     "pipelineOverview": "مرور کلی خط لوله جستجو",

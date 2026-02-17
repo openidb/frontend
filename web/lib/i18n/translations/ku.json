@@ -56,7 +56,8 @@
     "mentionedInQuran": "Di Qur'anê de hatiye behs kirin",
     "entityRelationships": "Peywendî",
     "sourceText": "Çavkanî",
-    "graphCoverage": "Grafikê zanînê 3 sûreyên pîlot digire (şopandina parçeyî)"
+    "graphCoverage": "Grafikê zanînê 3 sûreyên pîlot digire (şopandina parçeyî)",
+    "filters": "Parzûn"
   },
   "algorithm": {
     "pipelineOverview": "Pêşdîtina Boriya Lêgerînê",

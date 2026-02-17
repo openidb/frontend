@@ -56,7 +56,8 @@
     "mentionedInQuran": "Lagu sheegay Qur'aanka",
     "entityRelationships": "Xiriirrada",
     "sourceText": "Ilaha",
-    "graphCoverage": "Garaafka aqoontu wuxuu daboolaa 3 suuro tijaabo ah (daboolid qayb ah)"
+    "graphCoverage": "Garaafka aqoontu wuxuu daboolaa 3 suuro tijaabo ah (daboolid qayb ah)",
+    "filters": "Shaandhayno"
   },
   "algorithm": {
     "pipelineOverview": "Dulmar Guud ee Habka Raadinta",
