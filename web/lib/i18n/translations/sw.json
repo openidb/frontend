@@ -335,6 +335,7 @@
     "hideTranslation": "Ficha Tafsiri",
     "llmTranslationLabel": "[Tafsiri ya AI]",
     "llmTranslationWarning": "Tafsiri hii imeundwa kiotomatiki na inaweza isieleze kwa usahihi maana iliyokusudiwa na mwandishi.",
+    "translationFailed": "Tafsiri imeshindwa. Tafadhali jaribu tena.",
     "pdf": "PDF",
     "volume": "Jil.",
     "author": "Mwandishi",

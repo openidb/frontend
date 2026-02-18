@@ -5,7 +5,7 @@ import { BookOpen, Users, Search, Settings2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
-import { LanguageSwitcher, LanguageSwitcherCompact } from "./LanguageSwitcher";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn } from "@/lib/utils";
 
 const navItems = [

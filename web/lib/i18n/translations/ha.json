@@ -335,6 +335,7 @@
     "hideTranslation": "Ɓoye Fassara",
     "llmTranslationLabel": "[Fassarar AI]",
     "llmTranslationWarning": "Wannan fassara an samar da ita ta atomatik kuma ƙila ba ta nuna ainihin ma'anar marubuci ba.",
+    "translationFailed": "Fassarar ta gaza. Da fatan za a sake gwadawa.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Marubuci",

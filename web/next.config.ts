@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   experimental: {
+    optimizePackageImports: ['lucide-react'],
     staleTimes: {
       dynamic: 3600,
       static: 3600,
@@ -22,6 +23,12 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
       {
         source: "/:path*",
         headers: [

@@ -31,8 +31,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch books and authors from API for dynamic pages
   try {
     const [booksRes, authorsRes] = await Promise.all([
-      fetchAPI<{ books: BookEntry[]; total: number }>("/api/books?limit=50000&offset=0").catch(() => null),
-      fetchAPI<{ authors: AuthorEntry[] }>("/api/books/authors?limit=50000&offset=0").catch(() => null),
+      fetchAPI<{ books: BookEntry[]; total: number }>("/api/books?limit=50000&offset=0", { revalidate: 86400 }).catch(() => null),
+      fetchAPI<{ authors: AuthorEntry[] }>("/api/books/authors?limit=50000&offset=0", { revalidate: 86400 }).catch(() => null),
     ]);
 
     if (booksRes?.books) {

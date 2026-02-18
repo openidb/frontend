@@ -335,6 +335,7 @@
     "hideTranslation": "Sembunyikan Terjemahan",
     "llmTranslationLabel": "[Terjemahan AI]",
     "llmTranslationWarning": "Terjemahan ini dijana secara automatik dan mungkin tidak mencerminkan dengan tepat maksud yang dimaksudkan oleh penulis.",
+    "translationFailed": "Terjemahan gagal. Sila cuba lagi.",
     "pdf": "PDF",
     "volume": "Jilid",
     "author": "Penulis",

@@ -335,6 +335,7 @@
     "hideTranslation": "Tarjimani yashirish",
     "llmTranslationLabel": "[AI tarjimasi]",
     "llmTranslationWarning": "Bu tarjima avtomatik ravishda yaratilgan va muallifning mo'ljallangan ma'nosini aniq aks ettirmasligi mumkin.",
+    "translationFailed": "Tarjima amalga oshmadi. Iltimos, qaytadan urinib ko'ring.",
     "pdf": "PDF",
     "volume": "Jild",
     "author": "Muallif",

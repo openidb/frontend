@@ -339,6 +339,7 @@
     "hideTranslation": "Sembunyikan terjemahan",
     "llmTranslationLabel": "[Terjemahan AI]",
     "llmTranslationWarning": "Terjemahan ini dibuat secara otomatis dan mungkin tidak mencerminkan makna yang dimaksud penulis.",
+    "translationFailed": "Terjemahan gagal. Silakan coba lagi.",
     "pdf": "PDF",
     "volume": "Jil.",
     "author": "Penulis",

@@ -335,6 +335,7 @@
     "hideTranslation": "پنهان کردن ترجمه",
     "llmTranslationLabel": "[ترجمه هوش مصنوعی]",
     "llmTranslationWarning": "این ترجمه به طور خودکار تولید شده است و ممکن است به طور دقیق منظور نویسنده را منعکس نکند.",
+    "translationFailed": "ترجمه ناموفق بود. لطفاً دوباره تلاش کنید.",
     "pdf": "PDF",
     "volume": "جلد",
     "author": "نویسنده",

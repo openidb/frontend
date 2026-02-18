@@ -40,7 +40,7 @@ export async function generateMetadata({
   const { name } = await params;
   const authorId = name;
   try {
-    const data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`);
+    const data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`, { revalidate: 3600 });
     const title = data.author?.nameArabic || data.author?.nameLatin || authorId;
     const latin = data.author?.nameLatin || "";
     return {
@@ -62,7 +62,7 @@ export default async function AuthorDetailPage({
 
   let data: AuthorData;
   try {
-    data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`);
+    data = await fetchAPI<AuthorData>(`/api/books/authors/${encodeURIComponent(authorId)}`, { revalidate: 3600 });
   } catch {
     notFound();
   }

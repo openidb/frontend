@@ -200,8 +200,7 @@ function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransl
   );
 }
 
-const SearchResult = React.memo(SearchResultInner);
-export default SearchResult;
+export const SearchResult = React.memo(SearchResultInner);
 
 // Separate component for Quran ayah results
 interface AyahResultProps {
@@ -482,7 +481,7 @@ interface UnifiedSearchResultProps {
   searchEventId?: string | null;
 }
 
-export function UnifiedSearchResult({ result, searchEventId }: UnifiedSearchResultProps) {
+export const UnifiedSearchResult = React.memo(function UnifiedSearchResult({ result, searchEventId }: UnifiedSearchResultProps) {
   switch (result.type) {
     case "quran":
       return <AyahResult ayah={result.data} searchEventId={searchEventId} />;
@@ -491,4 +490,4 @@ export function UnifiedSearchResult({ result, searchEventId }: UnifiedSearchResu
     default:
       return null;
   }
-}
+});

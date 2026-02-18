@@ -339,6 +339,7 @@
     "hideTranslation": "번역 숨기기",
     "llmTranslationLabel": "[AI 번역]",
     "llmTranslationWarning": "이 번역은 자동으로 생성되었으며 저자의 의도를 정확히 반영하지 못할 수 있습니다.",
+    "translationFailed": "번역에 실패했습니다. 다시 시도해 주세요.",
     "pdf": "PDF",
     "volume": "권",
     "author": "저자",

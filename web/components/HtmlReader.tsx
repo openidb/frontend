@@ -10,6 +10,7 @@ import { useTheme } from "@/lib/theme";
 import { useAppConfig } from "@/lib/config";
 import { WordDefinitionPopover } from "./WordDefinitionPopover";
 import { trackBookEvent } from "@/lib/analytics";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -252,7 +253,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     data: { index: number; translation: string }[] | null;
   } | null>(null);
   const [autoTranslate, setAutoTranslate] = useState(false);
-  const translationCacheRef = useRef<Map<number, { index: number; translation: string }[]>>(new Map());
+  const translationCacheRef = useRef<Map<string, { index: number; translation: string }[]>>(new Map());
+  const TRANSLATION_CACHE_MAX = 50;
   const fetchTranslationRef = useRef<(page: number, signal?: AbortSignal) => Promise<{ index: number; translation: string }[]>>(null!);
 
   // Derived from tagged state — always correct, no stale closures possible
@@ -608,9 +610,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   }, [bookMetadata.id, currentPage, pdfLoading]);
 
+  // Clear translation cache when locale changes
+  useEffect(() => {
+    translationCacheRef.current.clear();
+  }, [locale]);
+
   // Shared translation fetch helper (used for current page + prefetch)
   const fetchTranslation = useCallback(async (page: number, signal?: AbortSignal) => {
-    const cached = translationCacheRef.current.get(page);
+    const cacheKey = `${page}:${locale}`;
+    const cached = translationCacheRef.current.get(cacheKey);
     if (cached) return cached;
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
@@ -624,7 +632,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     if (!res.ok) throw new Error("Translation failed");
     const data = await res.json();
     if (!data.paragraphs || data.paragraphs.length === 0) throw new Error("No translatable content");
-    translationCacheRef.current.set(page, data.paragraphs);
+    // LRU eviction
+    const cache = translationCacheRef.current;
+    cache.delete(cacheKey); // refresh position
+    cache.set(cacheKey, data.paragraphs);
+    if (cache.size > TRANSLATION_CACHE_MAX) {
+      const oldest = cache.keys().next().value;
+      if (oldest !== undefined) cache.delete(oldest);
+    }
     return data.paragraphs;
   }, [locale, bookMetadata.id]);
 
@@ -639,9 +654,10 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
 
     const page = currentPage;
+    const cacheKey = `${page}:${locale}`;
 
     // Cache hit — instant
-    const cached = translationCacheRef.current.get(page);
+    const cached = translationCacheRef.current.get(cacheKey);
     if (cached) {
       setTranslateResult({ page, data: cached });
       return;
@@ -661,13 +677,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         console.error("[auto-translate]", err);
         if (!cancelled) {
           setTranslateResult(null);
+          toast.error(t("reader.translationFailed"));
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [currentPage, autoTranslate]);
+  }, [currentPage, autoTranslate, locale, t]);
 
   const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();

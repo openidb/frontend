@@ -68,31 +68,3 @@ export function trackBookEvent(
   }
 }
 
-/** Fire-and-forget batch book event tracking via sendBeacon (for unload). */
-export function trackBookEventBatch(
-  events: {
-    bookId: string;
-    action: "open" | "page_view" | "pdf_open" | "word_lookup";
-    pageNumber?: number;
-    durationMs?: number;
-    word?: string;
-  }[],
-): void {
-  if (events.length === 0) return;
-  const sessionId = getSessionId() || undefined;
-  const payload = JSON.stringify({
-    events: events.map((ev) => ({ sessionId, ...ev })),
-  });
-
-  if (navigator.sendBeacon) {
-    const blob = new Blob([payload], { type: "application/json" });
-    navigator.sendBeacon("/api/books/events/batch", blob);
-  } else {
-    fetch("/api/books/events/batch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: payload,
-      keepalive: true,
-    }).catch(() => {});
-  }
-}

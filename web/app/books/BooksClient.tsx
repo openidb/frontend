@@ -107,17 +107,21 @@ export default function BooksClient({
       return;
     }
 
+    const controller = new AbortController();
+
     const fetchFacets = async () => {
       const [catRes, cenRes] = await Promise.all([
         // Fetch categories filtered by selected centuries
         selectedCenturies.length > 0
-          ? fetch(`/api/categories?flat=true&century=${selectedCenturies.join(",")}`).then((r) => r.json())
+          ? fetch(`/api/categories?flat=true&century=${selectedCenturies.join(",")}`, { signal: controller.signal }).then((r) => r.json())
           : null,
         // Fetch centuries filtered by selected categories
         selectedCategories.length > 0
-          ? fetch(`/api/centuries?categoryId=${selectedCategories.join(",")}`).then((r) => r.json())
+          ? fetch(`/api/centuries?categoryId=${selectedCategories.join(",")}`, { signal: controller.signal }).then((r) => r.json())
           : null,
       ]);
+
+      if (controller.signal.aborted) return;
 
       if (catRes?.categories) {
         setCategories(catRes.categories);
@@ -132,7 +136,11 @@ export default function BooksClient({
       }
     };
 
-    fetchFacets().catch(console.error);
+    fetchFacets().catch((err) => {
+      if (!controller.signal.aborted) console.error(err);
+    });
+
+    return () => controller.abort();
   }, [selectedCategories, selectedCenturies, initialCategories, initialCenturies]);
 
   // Build category options for MultiSelectDropdown (locale-aware via i18n)
@@ -181,6 +189,8 @@ export default function BooksClient({
       return;
     }
 
+    const controller = new AbortController();
+
     const fetchBooks = async () => {
       setLoading(true);
       try {
@@ -202,7 +212,8 @@ export default function BooksClient({
           params.set("bookTitleLang", bookTitleLang);
         }
 
-        const response = await fetch(`/api/books?${params}`);
+        const response = await fetch(`/api/books?${params}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
         const data = await response.json();
 
         setBooks(data.books || []);
@@ -216,13 +227,15 @@ export default function BooksClient({
           totalPages: Math.ceil(resTotal / resLimit),
         });
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error("Error fetching books:", error);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchBooks();
+    return () => controller.abort();
   }, [pagination.page, pagination.limit, debouncedSearch, selectedCategories, selectedCenturies, bookTitleLang]);
 
   // Reset to page 1 when search, filters, or title language change

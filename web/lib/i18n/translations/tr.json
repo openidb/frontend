@@ -335,6 +335,7 @@
     "hideTranslation": "Çeviriyi Gizle",
     "llmTranslationLabel": "[Yapay Zeka Çevirisi]",
     "llmTranslationWarning": "Bu çeviri otomatik olarak oluşturulmuştur ve yazarın amaçladığı anlamı doğru bir şekilde yansıtmayabilir.",
+    "translationFailed": "Çeviri başarısız oldu. Lütfen tekrar deneyin.",
     "pdf": "PDF",
     "volume": "Cilt",
     "author": "Yazar",

@@ -339,6 +339,7 @@
     "hideTranslation": "إخفاء الترجمة",
     "llmTranslationLabel": "[ترجمة آلية]",
     "llmTranslationWarning": "هذه الترجمة مولّدة تلقائيًا وقد لا تعكس بدقة المعنى الذي قصده المؤلف.",
+    "translationFailed": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
     "pdf": "PDF",
     "volume": "ج.",
     "author": "المؤلف",

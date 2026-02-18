@@ -1,36 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 
-// Import translations
+// Only import English statically (default/fallback)
 import en from "./translations/en.json";
-import ar from "./translations/ar.json";
-import fr from "./translations/fr.json";
-import id from "./translations/id.json";
-import ur from "./translations/ur.json";
-import es from "./translations/es.json";
-import zh from "./translations/zh.json";
-import pt from "./translations/pt.json";
-import ru from "./translations/ru.json";
-import ja from "./translations/ja.json";
-import ko from "./translations/ko.json";
-import it from "./translations/it.json";
-import bn from "./translations/bn.json";
-import ha from "./translations/ha.json";
-import sw from "./translations/sw.json";
-import nl from "./translations/nl.json";
-import de from "./translations/de.json";
-import tr from "./translations/tr.json";
-import fa from "./translations/fa.json";
-import hi from "./translations/hi.json";
-import ms from "./translations/ms.json";
-import pa from "./translations/pa.json";
-import ku from "./translations/ku.json";
-import ps from "./translations/ps.json";
-import so from "./translations/so.json";
-import uz from "./translations/uz.json";
-import yo from "./translations/yo.json";
-import ta from "./translations/ta.json";
 
 // Locale type
 export type Locale = "en" | "ar" | "fr" | "id" | "ur" | "es" | "zh" | "pt" | "ru" | "ja" | "ko" | "it" | "bn" | "ha" | "sw" | "nl" | "de" | "tr" | "fa" | "hi" | "ms" | "pa" | "ku" | "ps" | "so" | "uz" | "yo" | "ta";
@@ -73,36 +46,36 @@ export const LOCALES: { code: Locale; name: string; nativeName: string }[] = [
 // Translation dictionary type
 type TranslationDict = typeof en;
 
-// Load all translations
-const translations: Record<Locale, TranslationDict> = {
-  en,
-  ar,
-  fr,
-  id,
-  ur,
-  es,
-  zh,
-  pt,
-  ru,
-  ja,
-  ko,
-  it,
-  bn,
-  ha,
-  sw,
-  nl,
-  de,
-  tr,
-  fa,
-  hi,
-  ms,
-  pa,
-  ku,
-  ps,
-  so,
-  uz,
-  yo,
-  ta,
+// Dynamic locale loaders — only English is bundled, others loaded on demand
+const localeLoaders: Record<Locale, () => Promise<TranslationDict>> = {
+  en: () => Promise.resolve(en),
+  ar: () => import("./translations/ar.json").then(m => m.default),
+  fr: () => import("./translations/fr.json").then(m => m.default),
+  id: () => import("./translations/id.json").then(m => m.default),
+  ur: () => import("./translations/ur.json").then(m => m.default),
+  es: () => import("./translations/es.json").then(m => m.default),
+  zh: () => import("./translations/zh.json").then(m => m.default),
+  pt: () => import("./translations/pt.json").then(m => m.default),
+  ru: () => import("./translations/ru.json").then(m => m.default),
+  ja: () => import("./translations/ja.json").then(m => m.default),
+  ko: () => import("./translations/ko.json").then(m => m.default),
+  it: () => import("./translations/it.json").then(m => m.default),
+  bn: () => import("./translations/bn.json").then(m => m.default),
+  ha: () => import("./translations/ha.json").then(m => m.default),
+  sw: () => import("./translations/sw.json").then(m => m.default),
+  nl: () => import("./translations/nl.json").then(m => m.default),
+  de: () => import("./translations/de.json").then(m => m.default),
+  tr: () => import("./translations/tr.json").then(m => m.default),
+  fa: () => import("./translations/fa.json").then(m => m.default),
+  hi: () => import("./translations/hi.json").then(m => m.default),
+  ms: () => import("./translations/ms.json").then(m => m.default),
+  pa: () => import("./translations/pa.json").then(m => m.default),
+  ku: () => import("./translations/ku.json").then(m => m.default),
+  ps: () => import("./translations/ps.json").then(m => m.default),
+  so: () => import("./translations/so.json").then(m => m.default),
+  uz: () => import("./translations/uz.json").then(m => m.default),
+  yo: () => import("./translations/yo.json").then(m => m.default),
+  ta: () => import("./translations/ta.json").then(m => m.default),
 };
 
 // LocalStorage key
@@ -140,7 +113,21 @@ function getNestedValue(obj: unknown, path: string): string | undefined {
 // Provider component
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+  const [loadedTranslations, setLoadedTranslations] = useState<Record<string, TranslationDict>>({ en });
   const [mounted, setMounted] = useState(false);
+  const loadingRef = useRef<Set<string>>(new Set());
+
+  // Load translations for a locale
+  const loadTranslations = useCallback((loc: Locale) => {
+    if (loc === "en" || loadedTranslations[loc] || loadingRef.current.has(loc)) return;
+    loadingRef.current.add(loc);
+    localeLoaders[loc]().then((dict) => {
+      setLoadedTranslations(prev => ({ ...prev, [loc]: dict }));
+      loadingRef.current.delete(loc);
+    }).catch(() => {
+      loadingRef.current.delete(loc);
+    });
+  }, [loadedTranslations]);
 
   // Load locale from localStorage on mount
   useEffect(() => {
@@ -148,14 +135,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (saved && LOCALES.some((l) => l.code === saved)) {
       setLocaleState(saved as Locale);
+      loadTranslations(saved as Locale);
     } else {
       const match = document.cookie.match(/(?:^|;\s*)detected-locale=([^;]*)/);
       const detected = match?.[1];
       if (detected && LOCALES.some((l) => l.code === detected)) {
         setLocaleState(detected as Locale);
+        loadTranslations(detected as Locale);
       }
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update document direction when locale changes
   useEffect(() => {
@@ -170,16 +159,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
-  }, []);
+    loadTranslations(newLocale);
+  }, [loadTranslations]);
 
-  // Translation function with interpolation and fallback
+  // Translation function with interpolation and fallback to English
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
-    // Try to get translation for current locale
-    let value = getNestedValue(translations[locale], key);
+    const dict = loadedTranslations[locale];
+
+    // Try current locale (falls back to English if not yet loaded)
+    let value = dict ? getNestedValue(dict, key) : undefined;
 
     // Fall back to English if not found
-    if (value === undefined && locale !== "en") {
-      value = getNestedValue(translations.en, key);
+    if (value === undefined) {
+      value = getNestedValue(en, key);
     }
 
     // Return key if still not found
@@ -196,7 +188,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
 
     return value;
-  }, [locale]);
+  }, [locale, loadedTranslations]);
 
   // Direction based on locale
   const dir = RTL_LOCALES.includes(locale) ? "rtl" : "ltr";

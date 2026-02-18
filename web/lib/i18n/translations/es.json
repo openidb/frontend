@@ -339,6 +339,7 @@
     "hideTranslation": "Ocultar traduccion",
     "llmTranslationLabel": "[Traducción IA]",
     "llmTranslationWarning": "Esta traducción se genera automáticamente y puede no reflejar con precisión el significado previsto por el autor.",
+    "translationFailed": "La traducción falló. Inténtelo de nuevo.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Autor",

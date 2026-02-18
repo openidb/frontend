@@ -335,6 +335,7 @@
     "hideTranslation": "Verberg Vertaling",
     "llmTranslationLabel": "[AI Vertaling]",
     "llmTranslationWarning": "Deze vertaling is automatisch gegenereerd en geeft mogelijk niet nauwkeurig de beoogde betekenis van de auteur weer.",
+    "translationFailed": "Vertaling mislukt. Probeer het opnieuw.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Auteur",

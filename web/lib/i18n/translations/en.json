@@ -335,6 +335,7 @@
     "hideTranslation": "Hide Translation",
     "llmTranslationLabel": "[AI Translation]",
     "llmTranslationWarning": "This translation is automatically generated and may not accurately reflect the author\u2019s intended meaning.",
+    "translationFailed": "Translation failed. Please try again.",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Author",

@@ -49,7 +49,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`);
+    const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`, { revalidate: 3600 });
     const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
     return {
       title: `${title} - OpenIDB`,
@@ -73,7 +73,7 @@ export default async function ReaderPage({
   let bookData: BookData;
   try {
     const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&bookTitleLang=${encodeURIComponent(lang)}` : "";
-    bookData = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}?${langParam}`);
+    bookData = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}?${langParam}`, { revalidate: 3600 });
   } catch {
     notFound();
   }

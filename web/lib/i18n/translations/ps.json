@@ -335,6 +335,7 @@
     "hideTranslation": "ژباړه پټه کړئ",
     "llmTranslationLabel": "[د AI ژباړه]",
     "llmTranslationWarning": "دا ژباړه په اتومات ډول تولید شوې او ممکن د مؤلف مطلوب معنی په دقیقه توګه نه وړاندې کړي.",
+    "translationFailed": "ژباړه ناکامه شوه. مهرباني وکړئ بیا هڅه وکړئ.",
     "pdf": "PDF",
     "volume": "ټوک",
     "author": "مؤلف",

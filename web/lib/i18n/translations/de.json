@@ -335,6 +335,7 @@
     "hideTranslation": "Übersetzung ausblenden",
     "llmTranslationLabel": "[KI-Übersetzung]",
     "llmTranslationWarning": "Diese Übersetzung wurde automatisch generiert und gibt möglicherweise nicht genau die beabsichtigte Bedeutung des Autors wieder.",
+    "translationFailed": "Übersetzung fehlgeschlagen. Bitte erneut versuchen.",
     "pdf": "PDF",
     "volume": "Bd.",
     "author": "Autor",

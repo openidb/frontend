@@ -4,7 +4,7 @@ import { Bug } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import AlgorithmDescription from "@/components/AlgorithmDescription";
 
-interface TopResultBreakdown {
+export interface TopResultBreakdown {
   rank: number;
   type: 'book' | 'quran' | 'hadith';
   title: string;
@@ -14,7 +14,7 @@ interface TopResultBreakdown {
   matchType: 'semantic' | 'keyword' | 'both';
 }
 
-interface ExpandedQueryStats {
+export interface ExpandedQueryStats {
   query: string;
   weight: number;
   reason?: string;
@@ -25,7 +25,7 @@ interface ExpandedQueryStats {
   searchTimeMs: number;
 }
 
-interface DebugStats {
+export interface DebugStats {
   databaseStats: {
     totalBooks: number;
     totalPages: number;

@@ -81,6 +81,8 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
       return;
     }
 
+    const controller = new AbortController();
+
     const fetchAuthors = async () => {
       setLoading(true);
       try {
@@ -96,7 +98,8 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
           params.set("century", selectedCenturies.join(","));
         }
 
-        const response = await fetch(`/api/authors?${params}`);
+        const response = await fetch(`/api/authors?${params}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
         const data = await response.json();
 
         setAuthors(data.authors || []);
@@ -110,13 +113,15 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
           totalPages: Math.ceil(resTotal / resLimit),
         });
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error("Error fetching authors:", error);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchAuthors();
+    return () => controller.abort();
   }, [pagination.page, pagination.limit, debouncedSearch, selectedCenturies]);
 
   // Reset to page 1 when search or filters change

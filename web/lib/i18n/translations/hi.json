@@ -335,6 +335,7 @@
     "hideTranslation": "अनुवाद छिपाएं",
     "llmTranslationLabel": "[AI अनुवाद]",
     "llmTranslationWarning": "यह अनुवाद स्वचालित रूप से उत्पन्न होता है और लेखक के इच्छित अर्थ को सटीक रूप से प्रतिबिंबित नहीं कर सकता है।",
+    "translationFailed": "अनुवाद विफल हुआ। कृपया पुनः प्रयास करें।",
     "pdf": "PDF",
     "volume": "खंड",
     "author": "लेखक",

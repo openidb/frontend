@@ -339,6 +339,7 @@
     "hideTranslation": "অনুবাদ লুকান",
     "llmTranslationLabel": "[AI অনুবাদ]",
     "llmTranslationWarning": "এই অনুবাদটি স্বয়ংক্রিয়ভাবে তৈরি এবং লেখকের উদ্দিষ্ট অর্থ সঠিকভাবে প্রতিফলিত নাও করতে পারে।",
+    "translationFailed": "অনুবাদ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
     "pdf": "PDF",
     "volume": "খণ্ড",
     "author": "লেখক",

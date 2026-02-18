@@ -16,7 +16,9 @@ import { useTranslation } from "@/lib/i18n";
 import { RefiningCarousel } from "@/components/RefiningCarousel";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import EntityPanel, { type GraphContext } from "@/components/EntityPanel";
-import { SearchDebugPanel } from "./SearchDebugPanel";
+import dynamic from "next/dynamic";
+const SearchDebugPanel = dynamic(() => import("./SearchDebugPanel").then(m => ({ default: m.SearchDebugPanel })), { ssr: false });
+import type { DebugStats } from "./SearchDebugPanel";
 import { SearchErrorState } from "./SearchErrorState";
 import { getSessionId } from "@/lib/analytics";
 
@@ -32,86 +34,6 @@ interface AuthorResultData {
 interface ExpandedQueryData {
   query: string;
   reason: string;
-}
-
-interface TopResultBreakdown {
-  rank: number;
-  type: 'book' | 'quran' | 'hadith';
-  title: string;
-  keywordScore: number | null; // BM25 score from Elasticsearch
-  semanticScore: number | null;
-  finalScore: number;
-  matchType: 'semantic' | 'keyword' | 'both'; // How this result was matched
-}
-
-interface ExpandedQueryStats {
-  query: string;
-  weight: number;
-  docsRetrieved: number;
-  books: number;
-  ayahs: number;
-  hadiths: number;
-  searchTimeMs: number;
-}
-
-interface DebugStats {
-  databaseStats: {
-    totalBooks: number;
-    totalPages: number;
-    totalHadiths: number;
-    totalAyahs: number;
-  };
-  searchParams: {
-    mode: string;
-    cutoff: number;
-    totalAboveCutoff: number;
-    totalShown: number;
-  };
-  algorithm: {
-    fusionMethod: string;
-    fusionWeights: { semantic: number; keyword: number };
-    keywordEngine: string;
-    bm25Params: { k1: number; b: number; normK: number };
-    rrfK: number;
-    embeddingModel: string;
-    embeddingDimensions: number;
-    rerankerModel: string | null;
-    queryExpansionModel: string | null;
-    // Quran embedding collection info
-    quranCollection: string;
-    quranCollectionFallback: boolean;
-    embeddingTechnique?: string;
-  };
-  topResultsBreakdown: TopResultBreakdown[];
-  refineStats?: {
-    expandedQueries: ExpandedQueryStats[];
-    originalQueryDocs: number;
-    timing: {
-      queryExpansion: number;
-      parallelSearches: number;
-      merge: number;
-      rerank: number;
-      total: number;
-    };
-    candidates: {
-      totalBeforeMerge: number;
-      afterMerge: { books: number; ayahs: number; hadiths: number };
-      sentToReranker: number;
-    };
-    queryExpansionCached: boolean;
-  };
-  timing?: {
-    total: number;
-    embedding: number;
-    semantic: { books: number; ayahs: number; hadiths: number };
-    keyword: { books: number; ayahs: number; hadiths: number };
-    merge: number;
-    authorSearch: number;
-    rerank?: number;
-    translations: number;
-    bookMetadata: number;
-    graph?: number;
-  };
 }
 
 interface SearchResponse {
