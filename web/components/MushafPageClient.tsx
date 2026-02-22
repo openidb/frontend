@@ -285,22 +285,18 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
               );
             }
 
-            // Bismillah line (centered)
+            // Bismillah line (centered, uses Unicode ﷽ character)
             if (line.lineType === "bismillah") {
               return (
                 <div
                   key={`line-${line.lineNumber}`}
                   className="flex justify-center my-2 leading-[3rem]"
                   style={{
-                    fontFamily: `"${fontFamily}", "QPC Hafs", serif`,
-                    fontSize: "1.5rem",
+                    fontFamily: '"QPC Hafs", serif',
+                    fontSize: "1.75rem",
                   }}
                 >
-                  {line.words.map((w) => (
-                    <span key={w.position} className="mushaf-word px-0.5">
-                      {w.glyph || w.text}
-                    </span>
-                  ))}
+                  <span className="mushaf-word">﷽</span>
                 </div>
               );
             }
