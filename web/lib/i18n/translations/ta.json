@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "தேடல்",
+    "quran": "Quran",
     "books": "நூல்கள்",
     "authors": "ஆசிரியர்கள்",
     "config": "அமைப்புகள்"
@@ -349,6 +350,20 @@
       "rootMatch": "மூல பொருத்தத்தால் கண்டறியப்பட்டது",
       "viewFull": "முழு உள்ளீட்டைப் பார்"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "ஏற்றுகிறது...",

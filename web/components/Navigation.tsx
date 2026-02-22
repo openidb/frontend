@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Users, Search, Settings2 } from "lucide-react";
+import { BookOpen, Users, Search, Settings2, BookOpenText } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", icon: Search, labelKey: "nav.search" as const, iconClass: "nav-icon-search" },
+  { href: "/mushaf/1", icon: BookOpenText, labelKey: "nav.quran" as const, iconClass: "nav-icon-quran" },
   { href: "/books", icon: BookOpen, labelKey: "nav.books" as const, iconClass: "nav-icon-books" },
   { href: "/authors", icon: Users, labelKey: "nav.authors" as const, iconClass: "nav-icon-authors" },
   { href: "/config", icon: Settings2, labelKey: "nav.config" as const, iconClass: "nav-icon-config" },
@@ -17,6 +18,7 @@ const navItems = [
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/" || pathname.startsWith("/?");
+  if (href.startsWith("/mushaf/")) return pathname.startsWith("/mushaf");
   return pathname.startsWith(href);
 }
 
@@ -119,8 +121,8 @@ export function MobileNavigation() {
     router.push(href);
   }, [pathname, router]);
 
-  // Hide mobile nav when in the book reader
-  const isReaderPage = pathname.startsWith("/reader/");
+  // Hide mobile nav when in the book reader or mushaf viewer
+  const isReaderPage = pathname.startsWith("/reader/") || pathname.startsWith("/mushaf/");
   if (isReaderPage) return null;
 
   return (

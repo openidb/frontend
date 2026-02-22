@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "Zoeken",
+    "quran": "Quran",
     "books": "Boeken",
     "authors": "Auteurs",
     "config": "Instellingen"
@@ -349,6 +350,20 @@
       "rootMatch": "Gevonden door wortelovereenkomst",
       "viewFull": "Bekijk volledige invoer"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "Laden...",

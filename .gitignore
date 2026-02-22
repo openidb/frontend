@@ -60,3 +60,6 @@ Thumbs.db
 training/data/
 training/outputs/
 web/.cache/
+
+# Mushaf fonts (downloaded at build time)
+web/public/fonts/mushaf/

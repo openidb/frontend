@@ -34,6 +34,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "QPC Hafs";
+  src: url("/fonts/mushaf/UthmanicHafs_V22.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Surah Names";
+  src: url("/fonts/mushaf/sura_names.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 60 20% 98%;
@@ -152,12 +168,14 @@ nav a, nav button {
 /* Nav icon hover animations — :hover for pointer devices, :active for touch */
 @media (hover: hover) {
   .nav-link:hover .nav-icon-search  { transform: rotate(-15deg); }
+  .nav-link:hover .nav-icon-quran   { transform: scale(1.1) translateY(-1px); }
   .nav-link:hover .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
   .nav-link:hover .nav-icon-authors { transform: translateY(-2px); }
   .nav-link:hover .nav-icon-config  { transform: rotate(90deg); }
 }
 @media (hover: none) {
   .nav-link:active .nav-icon-search  { transform: rotate(-15deg); }
+  .nav-link:active .nav-icon-quran   { transform: scale(1.1) translateY(-1px); }
   .nav-link:active .nav-icon-books   { transform: rotate(-12deg) translateY(-1px); }
   .nav-link:active .nav-icon-authors { transform: translateY(-2px); }
   .nav-link:active .nav-icon-config  { transform: rotate(90deg); }
@@ -169,6 +187,7 @@ nav a, nav button {
     animation: none;
   }
   .nav-link:hover .nav-icon-search,
+  .nav-link:hover .nav-icon-quran,
   .nav-link:hover .nav-icon-books,
   .nav-link:hover .nav-icon-authors,
   .nav-link:hover .nav-icon-config {

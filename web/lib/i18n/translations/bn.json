@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "অনুসন্ধান",
+    "quran": "Quran",
     "books": "বই",
     "authors": "লেখক",
     "config": "সেটিংস"
@@ -353,6 +354,20 @@
       "rootMatch": "মূল শব্দের মিল থেকে পাওয়া",
       "viewFull": "সম্পূর্ণ ভুক্তি দেখুন"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "লোড হচ্ছে...",

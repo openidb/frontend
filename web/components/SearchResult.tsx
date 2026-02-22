@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { PrefetchLink } from "./PrefetchLink";
-import { BookOpen, FileText, ExternalLink, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, FileText, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/lib/config/search-defaults";
@@ -247,11 +247,11 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
   // Hide text for full surah results (chunks starting from ayah 1)
   const isFullSurah = ayah.isChunk && ayah.ayahNumber === 1;
 
+  const mushafUrl = `/mushaf/${ayah.pageNumber}?highlight=${ayah.surahNumber}:${ayah.ayahNumber}`;
+
   return (
-    <a
-      href={ayah.quranComUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+    <PrefetchLink
+      href={mushafUrl}
       className="block p-4 border rounded-lg border-s-4 border-s-emerald-500 hover:border-muted-foreground hover:border-s-emerald-500 hover:shadow-sm transition-all bg-card"
       onClick={() => {
         if (searchEventId) {
@@ -269,10 +269,6 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
             {ayah.ayahNumbers?.length || (ayah.ayahEnd ? ayah.ayahEnd - ayah.ayahNumber + 1 : 1)} {t("results.ayahs")}
           </span>
         )}
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <ExternalLink className="h-3 w-3" />
-          quran.com
-        </span>
       </div>
 
       {/* Header */}
@@ -318,7 +314,7 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
           {ayah.translation}
         </div>
       )}
-    </a>
+    </PrefetchLink>
   );
 }
 

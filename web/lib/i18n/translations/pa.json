@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "ਖੋਜ",
+    "quran": "Quran",
     "books": "ਕਿਤਾਬਾਂ",
     "authors": "ਲੇਖਕ",
     "config": "ਸੈਟਿੰਗਾਂ"
@@ -349,6 +350,20 @@
       "rootMatch": "ਮੂਲ ਮੇਲ ਦੁਆਰਾ ਮਿਲਿਆ",
       "viewFull": "ਪੂਰੀ ਐਂਟਰੀ ਦੇਖੋ"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",

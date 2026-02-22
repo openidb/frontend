@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "검색",
+    "quran": "Quran",
     "books": "책",
     "authors": "저자",
     "config": "설정"
@@ -353,6 +354,20 @@
       "rootMatch": "어근 일치로 검색됨",
       "viewFull": "전체 항목 보기"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "로딩 중...",

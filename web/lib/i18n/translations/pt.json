@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "Buscar",
+    "quran": "Quran",
     "books": "Livros",
     "authors": "Autores",
     "config": "Config"
@@ -353,6 +354,20 @@
       "rootMatch": "Encontrado por correspondência de raiz",
       "viewFull": "Ver entrada completa"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "Carregando...",

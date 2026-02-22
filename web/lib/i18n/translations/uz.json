@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "Qidiruv",
+    "quran": "Quran",
     "books": "Kitoblar",
     "authors": "Mualliflar",
     "config": "Sozlamalar"
@@ -349,6 +350,20 @@
       "rootMatch": "Ildiz mosligida topildi",
       "viewFull": "To'liq yozuvni ko'rish"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "Yuklanmoqda...",

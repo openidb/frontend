@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "検索",
+    "quran": "Quran",
     "books": "書籍",
     "authors": "著者",
     "config": "設定"
@@ -353,6 +354,20 @@
       "rootMatch": "語根一致で検出",
       "viewFull": "完全なエントリを表示"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "読み込み中...",

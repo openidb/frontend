@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "تلاش",
+    "quran": "Quran",
     "books": "کتابیں",
     "authors": "مصنفین",
     "config": "ترتیبات"
@@ -353,6 +354,20 @@
       "rootMatch": "جذر کے ذریعے ملا",
       "viewFull": "مکمل اندراج دیکھیں"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "لوڈ ہو رہا ہے...",

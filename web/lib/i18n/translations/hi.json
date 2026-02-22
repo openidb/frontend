@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "खोज",
+    "quran": "Quran",
     "books": "किताबें",
     "authors": "लेखक",
     "config": "सेटिंग्स"
@@ -349,6 +350,20 @@
       "rootMatch": "मूल मिलान द्वारा मिला",
       "viewFull": "पूर्ण प्रविष्टि देखें"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "लोड हो रहा है...",

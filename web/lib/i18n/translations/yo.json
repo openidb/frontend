@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "Wá",
+    "quran": "Quran",
     "books": "Àwọn ìwé",
     "authors": "Àwọn olùkọ̀wé",
     "config": "Ètò"
@@ -349,6 +350,20 @@
       "rootMatch": "Rí i nípa ìbámu gbòǹgbò",
       "viewFull": "Wo àkọsílẹ̀ kíkún"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "Ń gbé wọlé...",

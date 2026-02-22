@@ -1,6 +1,7 @@
 {
   "nav": {
     "search": "Bincike",
+    "quran": "Quran",
     "books": "Littattafai",
     "authors": "Marubuta",
     "config": "Saiti"
@@ -349,6 +350,20 @@
       "rootMatch": "An samo ta daidaitawar tushe",
       "viewFull": "Duba cikakken shigarwa"
     }
+  },
+  "mushaf": {
+    "title": "Quran",
+    "page": "Page",
+    "of": "of",
+    "surah": "Surah",
+    "juz": "Juz",
+    "nextPage": "Next page",
+    "prevPage": "Previous page",
+    "goToPage": "Go to page",
+    "goToSurah": "Go to surah",
+    "goToJuz": "Go to juz",
+    "wordTranslation": "Translation",
+    "loading": "Loading page..."
   },
   "common": {
     "loading": "Ana ɗorawa...",
