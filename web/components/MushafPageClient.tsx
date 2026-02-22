@@ -51,11 +51,35 @@ interface Props {
   highlightAyah?: { surah: number; ayah: number } | null;
 }
 
-// Juz start pages (approximate standard mushaf)
+// Juz start pages (standard Madani mushaf)
 const JUZ_START_PAGES = [
   1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282,
   302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582,
 ];
+
+// Pages where ALL lines should be center-aligned (Al-Fatiha, first page of Al-Baqarah)
+const CENTER_ALIGNED_PAGES = [1, 2];
+
+// Specific lines on specific pages that should be center-aligned
+// (last ayah of certain surahs where text doesn't fill the line)
+const CENTER_ALIGNED_LINES: Record<number, number[]> = {
+  255: [2],
+  528: [9],
+  534: [6],
+  545: [6],
+  586: [1],
+  593: [2],
+  594: [5],
+  600: [10],
+  602: [5, 15],
+  603: [10, 15],
+  604: [4, 9, 14, 15],
+};
+
+function isCenterAligned(pageNumber: number, lineNumber: number): boolean {
+  if (CENTER_ALIGNED_PAGES.includes(pageNumber)) return true;
+  return CENTER_ALIGNED_LINES[pageNumber]?.includes(lineNumber) ?? false;
+}
 
 // --- Component ---
 
@@ -70,37 +94,41 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
 
   const page = data.pageNumber;
 
-  // Load page-specific V4-tajweed font
+  // Load page-specific QPC V2 font
   useEffect(() => {
     setFontLoaded(false);
-    const fontName = `p${page}-v4`;
-    const fontUrl = `/fonts/mushaf/v4/p${page}.woff2`;
+    const fontName = `QCF2_P${String(page).padStart(3, "0")}`;
+    const fontUrl = `/fonts/mushaf/v2/p${page}.woff2`;
 
     const font = new FontFace(fontName, `url(${fontUrl})`);
-    font.load().then((loaded) => {
-      document.fonts.add(loaded);
-      setFontLoaded(true);
-    }).catch(() => {
-      // Font load failed — fallback to unicode text
-      setFontLoaded(true);
-    });
+    font
+      .load()
+      .then((loaded) => {
+        document.fonts.add(loaded);
+        setFontLoaded(true);
+      })
+      .catch(() => {
+        // Font load failed — fallback to unicode text
+        setFontLoaded(true);
+      });
 
     // Prefetch adjacent page fonts
-    [page - 1, page + 1].filter((p) => p >= 1 && p <= 604).forEach((p) => {
-      const link = document.createElement("link");
-      link.rel = "prefetch";
-      link.as = "font";
-      link.href = `/fonts/mushaf/v4/p${p}.woff2`;
-      link.crossOrigin = "anonymous";
-      document.head.appendChild(link);
-    });
+    [page - 1, page + 1]
+      .filter((p) => p >= 1 && p <= 604)
+      .forEach((p) => {
+        const link = document.createElement("link");
+        link.rel = "prefetch";
+        link.as = "font";
+        link.href = `/fonts/mushaf/v2/p${p}.woff2`;
+        link.crossOrigin = "anonymous";
+        document.head.appendChild(link);
+      });
   }, [page]);
 
-  // Keyboard navigation
+  // Keyboard navigation (RTL: Left = next, Right = prev)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
-      // RTL: Left = next page, Right = prev page
       if (e.key === "ArrowLeft") navigateTo(Math.min(page + 1, 604));
       if (e.key === "ArrowRight") navigateTo(Math.max(page - 1, 1));
     };
@@ -113,57 +141,69 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }, []);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
-    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
-    touchStartRef.current = null;
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchStartRef.current) return;
+      const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+      touchStartRef.current = null;
 
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      // RTL: swipe left = next, swipe right = prev
-      if (dx < 0) navigateTo(Math.min(page + 1, 604));
-      else navigateTo(Math.max(page - 1, 1));
-    }
-  }, [page]);
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+        if (dx < 0) navigateTo(Math.min(page + 1, 604));
+        else navigateTo(Math.max(page - 1, 1));
+      }
+    },
+    [page]
+  );
 
-  const navigateTo = useCallback((targetPage: number) => {
-    router.push(`/mushaf/${targetPage}`, { scroll: false });
-  }, [router]);
+  const navigateTo = useCallback(
+    (targetPage: number) => {
+      router.push(`/mushaf/${targetPage}`, { scroll: false });
+    },
+    [router]
+  );
 
   // Surah select handler
-  const handleSurahSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const surahNum = Number(e.target.value);
-    if (!surahNum) return;
-    // Find the first page of this surah from our data
-    // Use the API to look up the page (approximate: surah start pages)
-    fetch(`/api/quran/ayahs?surah=${surahNum}&limit=1`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.ayahs?.[0]?.pageNumber) {
-          navigateTo(data.ayahs[0].pageNumber);
-        }
-      })
-      .catch(() => {});
-  }, [navigateTo]);
+  const handleSurahSelect = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const surahNum = Number(e.target.value);
+      if (!surahNum) return;
+      fetch(`/api/quran/ayahs?surah=${surahNum}&limit=1`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.ayahs?.[0]?.pageNumber) {
+            navigateTo(data.ayahs[0].pageNumber);
+          }
+        })
+        .catch(() => {});
+    },
+    [navigateTo]
+  );
 
   // Juz select handler
-  const handleJuzSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const juzNum = Number(e.target.value);
-    if (!juzNum || juzNum < 1 || juzNum > 30) return;
-    navigateTo(JUZ_START_PAGES[juzNum - 1]);
-  }, [navigateTo]);
+  const handleJuzSelect = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const juzNum = Number(e.target.value);
+      if (!juzNum || juzNum < 1 || juzNum > 30) return;
+      navigateTo(JUZ_START_PAGES[juzNum - 1]);
+    },
+    [navigateTo]
+  );
 
   // Page input handler
-  const handlePageSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    const target = Number(pageInput);
-    if (target >= 1 && target <= 604) {
-      navigateTo(target);
-      setPageInput("");
-    }
-  }, [pageInput, navigateTo]);
+  const handlePageSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const target = Number(pageInput);
+      if (target >= 1 && target <= 604) {
+        navigateTo(target);
+        setPageInput("");
+      }
+    },
+    [pageInput, navigateTo]
+  );
 
-  const fontFamily = `p${page}-v4`;
+  const fontFamily = `QCF2_P${String(page).padStart(3, "0")}`;
   const isHighlighted = (w: MushafWord) =>
     highlightAyah
       ? w.surahNumber === highlightAyah.surah && w.ayahNumber === highlightAyah.ayah
@@ -227,9 +267,7 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
               className="w-12 text-center bg-muted rounded px-1 py-0.5 text-sm border-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               aria-label={t("mushaf.goToPage")}
             />
-            <span className="text-sm text-muted-foreground">
-              {t("mushaf.of")} 604
-            </span>
+            <span className="text-sm text-muted-foreground">{t("mushaf.of")} 604</span>
           </form>
 
           <button
@@ -252,16 +290,16 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
       {/* Mushaf page content */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto flex justify-center py-4 sm:py-6 mushaf-bg"
+        className="flex-1 overflow-auto flex justify-center mushaf-bg"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="w-full max-w-[600px] mx-auto px-4 sm:px-6"
+          className="mushaf-page-frame"
           dir="rtl"
           style={{
             opacity: fontLoaded ? 1 : 0.3,
-            transition: "opacity 0.2s ease-in",
+            transition: "opacity 0.15s ease-in",
           }}
         >
           {data.lines.map((line) => {
@@ -272,47 +310,48 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
                 ? data.surahs.find((s) => s.number === surahWord.surahNumber)
                 : null;
               return (
-                <div key={`line-${line.lineNumber}`} className="my-3">
-                  <div className="flex items-center justify-center gap-3 py-2 px-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                <div key={`line-${line.lineNumber}`} className="mushaf-surah-header">
+                  <div className="mushaf-surah-header-inner">
+                    <div className="mushaf-surah-ornament mushaf-surah-ornament-right" />
                     <span
-                      className="text-2xl text-emerald-800 dark:text-emerald-200"
-                      style={{ fontFamily: '"Surah Names", "QPC Hafs", serif' }}
+                      className="mushaf-surah-name"
+                      style={{ fontFamily: '"QCF_SurahHeader", "Surah Names", serif' }}
                     >
-                      {surahInfo?.nameArabic || ""}
+                      {/* Render the glyph code for the surah header font */}
+                      {surahWord?.glyph || surahInfo?.nameArabic || ""}
                     </span>
+                    <div className="mushaf-surah-ornament mushaf-surah-ornament-left" />
                   </div>
                 </div>
               );
             }
 
-            // Bismillah line (centered, uses Unicode ﷽ character)
+            // Bismillah line
             if (line.lineType === "bismillah") {
               return (
                 <div
                   key={`line-${line.lineNumber}`}
-                  className="flex justify-center my-2 leading-[3rem]"
+                  className="mushaf-line mushaf-line-center"
                   style={{
-                    fontFamily: '"QPC Hafs", serif',
-                    fontSize: "1.75rem",
+                    fontFamily: '"QCF_Bismillah", "QPC Hafs", "UthmanicHafs", serif',
                   }}
                 >
-                  <span className="mushaf-word">﷽</span>
+                  <span className="mushaf-word mushaf-bismillah">
+                    {line.words.map((w) => w.glyph || w.text).join("") || "﷽"}
+                  </span>
                 </div>
               );
             }
 
-            // Centered text line (e.g., Al-Fatiha, start of Al-Baqarah)
-            const isCentered = line.lineType === "center";
+            // Regular text line
+            const centered = isCenterAligned(page, line.lineNumber);
 
             return (
               <div
                 key={`line-${line.lineNumber}`}
-                className={`flex items-baseline leading-[3.2rem] sm:leading-[3.5rem] min-h-[2.5rem] ${
-                  isCentered ? "justify-center gap-[0.3em]" : "justify-between"
-                }`}
+                className={`mushaf-line ${centered ? "mushaf-line-center" : "mushaf-line-justify"}`}
                 style={{
-                  fontFamily: `"${fontFamily}", "QPC Hafs", serif`,
-                  fontSize: "1.65rem",
+                  fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif`,
                 }}
               >
                 {line.words.map((w) => {
@@ -322,11 +361,7 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
                   return (
                     <span
                       key={w.position}
-                      className={`mushaf-word rounded px-px ${
-                        highlighted
-                          ? "bg-emerald-100 dark:bg-emerald-900/40"
-                          : ""
-                      } ${isEnd ? "text-[0.75em] text-emerald-700 dark:text-emerald-400 mx-0.5" : ""}`}
+                      className={`mushaf-word${highlighted ? " mushaf-word-highlighted" : ""}${isEnd ? " mushaf-word-end" : ""}`}
                     >
                       {w.glyph || w.text}
                     </span>
@@ -335,6 +370,9 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
               </div>
             );
           })}
+
+          {/* Page number footer */}
+          <div className="mushaf-page-number">{page}</div>
         </div>
       </div>
 
@@ -347,9 +385,204 @@ export function MushafPageClient({ initialData, allSurahs, highlightAyah }: Prop
       </div>
 
       <style jsx global>{`
+        /* ===== Mushaf Page Layout ===== */
+
         .mushaf-bg {
-          background-color: hsl(var(--reader-bg));
-          color: hsl(var(--reader-fg));
+          background-color: hsl(var(--reader-bg, 40 30% 96%));
+          color: hsl(var(--reader-fg, 0 0% 10%));
+          padding: 1rem 0;
+        }
+
+        @media (min-width: 640px) {
+          .mushaf-bg {
+            padding: 1.5rem 0;
+          }
+        }
+
+        /* Page frame — fixed width to match mushaf proportions */
+        .mushaf-page-frame {
+          width: 100%;
+          max-width: 540px;
+          margin: 0 auto;
+          padding: 0.5rem 1rem;
+          display: flex;
+          flex-direction: column;
+          min-height: calc(100vh - 8rem);
+        }
+
+        @media (min-width: 640px) {
+          .mushaf-page-frame {
+            padding: 1.5rem 2rem;
+            border: 1px solid hsl(var(--border, 0 0% 85%));
+            border-radius: 4px;
+            background: hsl(var(--reader-bg, 40 30% 96%));
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+            min-height: auto;
+          }
+        }
+
+        /* ===== Line Layout ===== */
+
+        .mushaf-line {
+          display: flex;
+          align-items: baseline;
+          direction: rtl;
+          line-height: 3.4;
+          font-size: 1.55rem;
+          min-height: 2.8rem;
+        }
+
+        @media (min-width: 640px) {
+          .mushaf-line {
+            font-size: 1.7rem;
+            line-height: 3.5;
+          }
+        }
+
+        /* Key: space-between to fill the line width (like printed mushaf) */
+        .mushaf-line-justify {
+          justify-content: space-between;
+        }
+
+        /* Center alignment for Al-Fatiha, page 2, and short last-ayah lines */
+        .mushaf-line-center {
+          justify-content: center;
+          gap: 0.2em;
+        }
+
+        /* ===== Words ===== */
+
+        .mushaf-word {
+          cursor: default;
+          padding: 0 1px;
+          border-radius: 2px;
+          transition: background-color 0.15s;
+        }
+
+        .mushaf-word:hover {
+          background-color: hsl(var(--accent, 150 40% 90%) / 0.4);
+        }
+
+        .mushaf-word-highlighted {
+          background-color: hsl(160 50% 90% / 0.6);
+        }
+
+        :is(.dark) .mushaf-word-highlighted {
+          background-color: hsl(160 40% 20% / 0.5);
+        }
+
+        .mushaf-word-end {
+          font-size: 0.75em;
+          color: hsl(160 50% 30%);
+        }
+
+        :is(.dark) .mushaf-word-end {
+          color: hsl(160 40% 60%);
+        }
+
+        /* ===== Surah Header ===== */
+
+        .mushaf-surah-header {
+          margin: 0.6rem 0;
+        }
+
+        .mushaf-surah-header-inner {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          background: linear-gradient(
+            135deg,
+            hsl(150 30% 94%),
+            hsl(150 25% 90%)
+          );
+          border: 1px solid hsl(150 20% 82%);
+          position: relative;
+        }
+
+        :is(.dark) .mushaf-surah-header-inner {
+          background: linear-gradient(
+            135deg,
+            hsl(150 20% 14%),
+            hsl(150 15% 12%)
+          );
+          border-color: hsl(150 15% 25%);
+        }
+
+        .mushaf-surah-name {
+          font-size: 1.6rem;
+          color: hsl(150 40% 25%);
+          line-height: 2;
+        }
+
+        :is(.dark) .mushaf-surah-name {
+          color: hsl(150 30% 75%);
+        }
+
+        .mushaf-surah-ornament {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            hsl(150 20% 70%),
+            transparent
+          );
+        }
+
+        :is(.dark) .mushaf-surah-ornament {
+          background: linear-gradient(
+            90deg,
+            transparent,
+            hsl(150 15% 35%),
+            transparent
+          );
+        }
+
+        /* ===== Bismillah ===== */
+
+        .mushaf-bismillah {
+          font-size: 1.6rem;
+        }
+
+        /* ===== Page Number ===== */
+
+        .mushaf-page-number {
+          text-align: center;
+          padding-top: 0.75rem;
+          margin-top: auto;
+          font-size: 0.8rem;
+          color: hsl(0 0% 55%);
+          font-family: serif;
+          letter-spacing: 0.05em;
+        }
+
+        /* ===== Font face for static mushaf fonts ===== */
+
+        @font-face {
+          font-family: "UthmanicHafs";
+          src: url("/fonts/mushaf/UthmanicHafs_V22.woff2") format("woff2");
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        @font-face {
+          font-family: "QCF_SurahHeader";
+          src: url("/fonts/mushaf/QCF_SurahHeader_COLOR-Regular.woff2") format("woff2");
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        @font-face {
+          font-family: "QCF_Bismillah";
+          src: url("/fonts/mushaf/QCF_Bismillah.woff2") format("woff2");
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
         }
       `}</style>
     </div>
