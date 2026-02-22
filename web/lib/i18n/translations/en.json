@@ -204,7 +204,7 @@
       "authorTransliteration": "Author Transliterations",
       "authorTransliterationInfo": "Show transliterated author names alongside Arabic.",
       "hadithTranslation": "Hadith Translation",
-      "hadithTranslationInfo": "Display English translation alongside Arabic text in hadith search results. Sources: sunnah.com, hadithunlocked.com.",
+      "hadithTranslationInfo": "Display English translation alongside Arabic text in hadith search results. Source: Turath editions.",
       "sourcesTitle": "Translation Sources",
       "sourcesQuran": "Quran: Official translations from published scholarly works.",
       "sourcesHadith": "Hadith: Human translations from source sites where available, supplemented with AI translation where gaps exist.",

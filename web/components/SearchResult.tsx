@@ -10,8 +10,6 @@ import { trackClick } from "@/lib/analytics";
 
 // Format translation source/model names for display
 const SOURCE_LABELS: Record<string, string> = {
-  "sunnah.com": "Sunnah.com",
-  "hadithunlocked.com": "HadithUnlocked.com",
   "llm": "AI",
 };
 
@@ -85,9 +83,19 @@ export interface HadithResultData {
   chapterArabic: string | null;
   chapterEnglish: string | null;
   sourceUrl: string;
-  translation?: string;  // English translation (when requested)
+  sourceVolumeNumber?: number | null;
+  sourcePrintedPage?: number | null;
+  isnad?: string | null;
+  matn?: string | null;
+  translation?: string;
   translationSource?: string;
   translationPending?: boolean;
+  isnadTranslation?: string | null;
+  matnTranslation?: string | null;
+  footnotesTranslation?: string | null;
+  kitabTranslation?: string | null;
+  chapterTranslation?: string | null;
+  gradeExplanationTranslation?: string | null;
 }
 
 // Unified result type that wraps all content types
@@ -318,27 +326,7 @@ export const AyahResult = React.memo(AyahResultInner);
 
 // Component for Hadith results
 interface HadithResultProps {
-  hadith: {
-    score: number;
-    semanticScore?: number;
-    rank?: number;
-    bookId?: number;
-    collectionSlug: string;
-    collectionNameArabic: string;
-    collectionNameEnglish: string;
-    bookNumber: number;
-    bookNameArabic: string;
-    bookNameEnglish: string;
-    hadithNumber: string;
-    numberInCollection?: string | null;
-    text: string;
-    chapterArabic: string | null;
-    chapterEnglish: string | null;
-    sourceUrl: string;
-    translation?: string;
-    translationSource?: string;
-    translationPending?: boolean;
-  };
+  hadith: HadithResultData;
   searchEventId?: string | null;
 }
 
@@ -362,26 +350,32 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
     return () => window.removeEventListener("resize", checkOverflow);
   }, [checkOverflow, hadith.text, hadith.translation]);
 
-  return (
-    <a
-      href={hadith.sourceUrl || "#"}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block p-4 border rounded-lg border-s-4 border-s-amber-500 hover:border-muted-foreground hover:border-s-amber-500 hover:shadow-sm transition-all bg-card"
-      onClick={() => {
-        if (searchEventId) {
-          trackClick(searchEventId, `${hadith.collectionSlug}:${hadith.hadithNumber}`, "hadith", hadith.rank ?? 0);
-        }
-      }}
-    >
+  const isInternalUrl = hadith.sourceUrl?.startsWith("/reader/");
+
+  const sourceLabel = isInternalUrl
+    ? "Sultaniyya"
+    : hadith.sourceUrl?.includes("turath.io")
+      ? "app.turath.io"
+      : "Turath";
+
+  const handleClick = () => {
+    if (searchEventId) {
+      trackClick(searchEventId, `${hadith.collectionSlug}:${hadith.hadithNumber}`, "hadith", hadith.rank ?? 0);
+    }
+  };
+
+  const cardClassName = "block p-4 border rounded-lg border-s-4 border-s-amber-500 hover:border-muted-foreground hover:border-s-amber-500 hover:shadow-sm transition-all bg-card";
+
+  const cardContent = (
+    <>
       {/* Type Tag */}
       <div className="flex items-center gap-2 mb-2">
         <span className="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
           {t("results.hadith")}
         </span>
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <ExternalLink className="h-3 w-3" />
-          {hadith.sourceUrl?.includes("hadithunlocked.com") ? "hadithunlocked.com" : "sunnah.com"}
+          {!isInternalUrl && <ExternalLink className="h-3 w-3" />}
+          {sourceLabel}
         </span>
       </div>
 
@@ -395,11 +389,17 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
         </p>
       </div>
 
-      {/* Book name */}
+      {/* Book name + translated kitab/chapter */}
       {hadith.bookNameArabic && (
         <div className="flex items-center gap-1 text-sm mb-3 text-muted-foreground">
           <BookOpen className="h-4 w-4" />
           <span dir="rtl">{hadith.bookNameArabic}</span>
+          {hadith.kitabTranslation && (
+            <>
+              <span className="text-border">|</span>
+              <span>{hadith.kitabTranslation}</span>
+            </>
+          )}
         </div>
       )}
 
@@ -412,15 +412,34 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
           <FileText className="h-3.5 w-3.5" />
           {t("results.book")} {hadith.bookNumber}
         </span>
+        {hadith.sourceVolumeNumber != null && hadith.sourceVolumeNumber > 0 && (
+          <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded">
+            {t("results.volume")} {hadith.sourceVolumeNumber}
+            {hadith.sourcePrintedPage != null && `, ${t("results.page")} ${hadith.sourcePrintedPage}`}
+          </span>
+        )}
+        {hadith.sourceVolumeNumber == null && hadith.sourcePrintedPage != null && (
+          <span className="inline-flex items-center gap-1 text-sm sm:text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded">
+            {t("results.page")} {hadith.sourcePrintedPage}
+          </span>
+        )}
       </div>
 
-      {/* Hadith Text */}
+      {/* Hadith Text — isnad greyed, matn clear */}
       <div
         ref={textRef}
-        className={`text-sm text-foreground${expanded ? "" : " line-clamp-3"}`}
+        className={`text-sm${expanded ? "" : " line-clamp-3"}`}
         dir="rtl"
       >
-        {hadith.text}
+        {hadith.isnad && hadith.matn ? (
+          <>
+            <span className="text-muted-foreground">{hadith.isnad}</span>
+            {" "}
+            <span className="text-foreground font-medium">{hadith.matn}</span>
+          </>
+        ) : (
+          <span className="text-foreground">{hadith.text}</span>
+        )}
       </div>
 
       {/* Pending Translation Indicator */}
@@ -431,8 +450,33 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
         </div>
       )}
 
-      {/* Translation */}
-      {hadith.translation && (
+      {/* Structured Translation (isnad/matn/footnotes) — mirrors Arabic styling */}
+      {hadith.translation && (hadith.isnadTranslation || hadith.matnTranslation) ? (
+        <div
+          ref={translationRef}
+          className={`text-sm mt-2 border-t border-border/50 pt-2${expanded ? "" : " line-clamp-5"}`}
+          dir="auto"
+        >
+          {hadith.translationSource && (
+            <span className="font-medium text-xs text-muted-foreground">[{formatSourceLabel(hadith.translationSource)} Translation] </span>
+          )}
+          {hadith.isnadTranslation && hadith.matnTranslation ? (
+            <>
+              <span className="text-muted-foreground">{hadith.isnadTranslation}</span>
+              {" "}
+              <span className="text-foreground font-medium">{hadith.matnTranslation}</span>
+            </>
+          ) : (
+            <span className="text-foreground">{hadith.matnTranslation || hadith.isnadTranslation}</span>
+          )}
+          {hadith.footnotesTranslation && (
+            <div className="text-xs text-muted-foreground/80 italic mt-1">
+              {hadith.footnotesTranslation}
+            </div>
+          )}
+        </div>
+      ) : hadith.translation ? (
+        /* Fallback: unstructured full-text translation */
         <div
           ref={translationRef}
           className={`text-sm text-muted-foreground mt-2 italic border-t border-border/50 pt-2${expanded ? "" : " line-clamp-3"}`}
@@ -443,7 +487,7 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
           )}{" "}
           {hadith.translation}
         </div>
-      )}
+      ) : null}
 
       {/* Expand/Collapse button */}
       {(isClamped || expanded) && (
@@ -469,6 +513,26 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
           )}
         </button>
       )}
+    </>
+  );
+
+  if (isInternalUrl) {
+    return (
+      <PrefetchLink href={hadith.sourceUrl} className={cardClassName} onClick={handleClick}>
+        {cardContent}
+      </PrefetchLink>
+    );
+  }
+
+  return (
+    <a
+      href={hadith.sourceUrl || "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cardClassName}
+      onClick={handleClick}
+    >
+      {cardContent}
     </a>
   );
 }

@@ -61,7 +61,7 @@ Evaluated 8 embedding techniques across two test sets:
 ## Why Metadata + Translation
 
 1. **Best overall balance** — top MRR on both test sets, near-best R@10
-2. **No LLM dependency** — uses only data already in the database (translations from Dr. Mustafa Khattab for Quran, sunnah.com for Hadith)
+2. **No LLM dependency** — uses only data already in the database (translations from Dr. Mustafa Khattab for Quran, Turath editions for Hadith)
 3. **English as bridge language** — English translations enable cross-lingual retrieval for queries in any language (French, Turkish, Urdu, etc.) since the embedding model maps similar meanings to nearby vectors regardless of source language
 4. **Metadata prefix helps disambiguation** — "سورة البقرة" prefix helps when query mentions surah by name
 5. **Graceful degradation** — if no translation exists for a hadith, falls back to metadata + Arabic only (2 components)
@@ -85,4 +85,4 @@ This allows BM25 to match queries like "سورة البقرة" to the correct ay
 | Content | Translation Source | Coverage |
 |---------|-------------------|----------|
 | Quran | Dr. Mustafa Khattab (eng-mustafakhattaba) via `AyahTranslation` | 100% |
-| Hadith | sunnah.com via `HadithTranslation` | Varies by collection |
+| Hadith | Turath editions via `HadithTranslation` | Varies by collection |

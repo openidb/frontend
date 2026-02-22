@@ -204,7 +204,7 @@
       "authorTransliteration": "লেখকের প্রতিবর্ণীকরণ",
       "authorTransliterationInfo": "আরবির পাশে লেখকদের প্রতিবর্ণীকৃত নাম প্রদর্শন করুন।",
       "hadithTranslation": "হাদিস অনুবাদ",
-      "hadithTranslationInfo": "হাদিস অনুসন্ধান ফলাফলে আরবি পাঠ্যের পাশে ইংরেজি অনুবাদ প্রদর্শন করুন। Sources: sunnah.com, hadithunlocked.com.",
+      "hadithTranslationInfo": "হাদিস অনুসন্ধান ফলাফলে আরবি পাঠ্যের পাশে ইংরেজি অনুবাদ প্রদর্শন করুন। Source: Turath editions.",
       "sourcesTitle": "অনুবাদ উৎস",
       "sourcesQuran": "কুরআন: প্রকাশিত বৈজ্ঞানিক কর্ম থেকে সরকারি অনুবাদ।",
       "sourcesHadith": "হাদিস: উপলব্ধ হলে উৎস সাইট থেকে মানব অনুবাদ, ফাঁক পূরণের জন্য AI অনুবাদ দ্বারা সম্পূরক।",

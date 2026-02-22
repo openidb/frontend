@@ -204,7 +204,7 @@
       "authorTransliteration": "Yazar Transliterasyonları",
       "authorTransliterationInfo": "Arapça'nın yanında translitere edilmiş yazar adlarını göster.",
       "hadithTranslation": "Hadis Çevirisi",
-      "hadithTranslationInfo": "Hadis arama sonuçlarında Arapça metnin yanında İngilizce çeviriyi göster. Kaynaklar: sunnah.com, hadithunlocked.com.",
+      "hadithTranslationInfo": "Hadis arama sonuçlarında Arapça metnin yanında İngilizce çeviriyi göster. Kaynak: Turath baskıları.",
       "sourcesTitle": "Çeviri Kaynakları",
       "sourcesQuran": "Kuran: Yayınlanmış bilimsel eserlerden resmi çeviriler.",
       "sourcesHadith": "Hadis: Mevcut olduğunda kaynak sitelerden insan çevirileri, boşlukların olduğu yerlerde yapay zeka çevirisi ile desteklenir.",

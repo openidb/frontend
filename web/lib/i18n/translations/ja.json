@@ -204,7 +204,7 @@
       "authorTransliteration": "著者名の翻字",
       "authorTransliterationInfo": "アラビア語の横に翻字された著者名を表示します。",
       "hadithTranslation": "ハディース翻訳",
-      "hadithTranslationInfo": "ハディース検索結果でアラビア語テキストの横に英語翻訳を表示します。 Sources: sunnah.com, hadithunlocked.com.",
+      "hadithTranslationInfo": "ハディース検索結果でアラビア語テキストの横に英語翻訳を表示します。 Source: Turath editions.",
       "sourcesTitle": "翻訳ソース",
       "sourcesQuran": "クルアーン：出版された学術作品からの公式翻訳。",
       "sourcesHadith": "ハディース：利用可能な場合はソースサイトからの人間による翻訳、ギャップがある場合はAI翻訳で補充。",

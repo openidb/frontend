@@ -538,10 +538,21 @@ export default function SearchClient() {
         const data = await res.json();
         if (!data.translations?.length) { clearPending(); return; }
 
-        const translationMap = new Map<string, string>(
-          data.translations.map((t: { bookId: number; hadithNumber: string; translation: string }) => [
+        interface TranslationItem {
+          bookId: number;
+          hadithNumber: string;
+          translation: string;
+          isnadTranslation?: string | null;
+          matnTranslation?: string | null;
+          footnotesTranslation?: string | null;
+          kitabTranslation?: string | null;
+          chapterTranslation?: string | null;
+          gradeExplanationTranslation?: string | null;
+        }
+        const translationMap = new Map<string, TranslationItem>(
+          data.translations.map((t: TranslationItem) => [
             `${t.bookId}-${t.hadithNumber}`,
-            t.translation,
+            t,
           ])
         );
 
@@ -550,9 +561,20 @@ export default function SearchClient() {
             if (r.type !== "hadith") return r;
             const hd = r.data as HadithResultData;
             const key = `${hd.bookId}-${hd.hadithNumber}`;
-            const translation = translationMap.get(key);
-            if (translation) {
-              return { ...r, data: { ...hd, translation, translationSource: "llm", translationPending: false } };
+            const match = translationMap.get(key);
+            if (match) {
+              return { ...r, data: {
+                ...hd,
+                translation: match.translation,
+                translationSource: "llm",
+                translationPending: false,
+                isnadTranslation: match.isnadTranslation,
+                matnTranslation: match.matnTranslation,
+                footnotesTranslation: match.footnotesTranslation,
+                kitabTranslation: match.kitabTranslation,
+                chapterTranslation: match.chapterTranslation,
+                gradeExplanationTranslation: match.gradeExplanationTranslation,
+              } };
             }
             // Clear pending even if this specific hadith wasn't translated
             if (pendingKeys.has(key)) {

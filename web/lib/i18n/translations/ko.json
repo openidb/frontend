@@ -204,7 +204,7 @@
       "authorTransliteration": "저자 음역",
       "authorTransliterationInfo": "아랍어 옆에 음역된 저자 이름을 표시합니다.",
       "hadithTranslation": "하디스 번역",
-      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다. Sources: sunnah.com, hadithunlocked.com.",
+      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다. Source: Turath editions.",
       "sourcesTitle": "번역 출처",
       "sourcesQuran": "꾸란: 출판된 학술 저작의 공식 번역.",
       "sourcesHadith": "하디스: 이용 가능한 경우 출처 사이트의 인간 번역, 격차가 있을 때는 AI 번역으로 보완.",
