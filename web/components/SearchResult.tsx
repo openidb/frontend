@@ -352,12 +352,6 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
 
   const isInternalUrl = hadith.sourceUrl?.startsWith("/reader/");
 
-  const sourceLabel = isInternalUrl
-    ? "Sultaniyya"
-    : hadith.sourceUrl?.includes("turath.io")
-      ? "app.turath.io"
-      : "Turath";
-
   const handleClick = () => {
     if (searchEventId) {
       trackClick(searchEventId, `${hadith.collectionSlug}:${hadith.hadithNumber}`, "hadith", hadith.rank ?? 0);
@@ -372,10 +366,6 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       <div className="flex items-center gap-2 mb-2">
         <span className="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
           {t("results.hadith")}
-        </span>
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-          {!isInternalUrl && <ExternalLink className="h-3 w-3" />}
-          {sourceLabel}
         </span>
       </div>
 
@@ -428,8 +418,9 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {/* Hadith Text — isnad greyed, matn clear */}
       <div
         ref={textRef}
-        className={`text-sm${expanded ? "" : " line-clamp-3"}`}
+        className={`text-sm leading-relaxed${expanded ? "" : " line-clamp-3"}`}
         dir="rtl"
+        style={{ fontFamily: 'var(--font-noto-naskh), "Noto Naskh Arabic", sans-serif' }}
       >
         {hadith.isnad && hadith.matn ? (
           <>
