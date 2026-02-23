@@ -77,7 +77,7 @@ export function QuranAyahViewer({
   const router = useRouter();
   const [fontsLoaded, setFontsLoaded] = useState<Set<number>>(new Set());
   const [surahFontLoaded, setSurahFontLoaded] = useState(false);
-  const [translation, setTranslation] = useState<string>("");
+  const [translations, setTranslations] = useState<Record<number, string>>({});
   const [translatorName, setTranslatorName] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -113,14 +113,20 @@ export function QuranAyahViewer({
     font.load().then((f) => { document.fonts.add(f); setSurahFontLoaded(true); }).catch(() => {});
   }, []);
 
-  // Fetch translation for target ayah
+  // Fetch translations for all displayed ayahs
+  const ayahNumbers = Array.from(ayahSet).sort((a, b) => a - b);
   useEffect(() => {
     const edition = PREFERRED_EDITIONS[locale] || PREFERRED_EDITIONS.en;
     setTranslatorName(edition.name);
-    fetch(`/api/quran/translations/${surahNumber}/${targetAyah}?editionId=${edition.id}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (d?.translations?.[0]?.text) setTranslation(d.translations[0].text); })
-      .catch(() => {});
+    const results: Record<number, string> = {};
+    Promise.all(
+      ayahNumbers.map((num) =>
+        fetch(`/api/quran/translations/${surahNumber}/${num}?editionId=${edition.id}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => { if (d?.translations?.[0]?.text) results[num] = d.translations[0].text; })
+          .catch(() => {})
+      )
+    ).then(() => setTranslations(results));
   }, [surahNumber, targetAyah, locale]);
 
   // Swipe navigation
@@ -244,13 +250,18 @@ export function QuranAyahViewer({
             );
           })}
 
-          {/* Translation — inside the frame, same width */}
-          {translation && (
+          {/* Translations for all displayed ayahs */}
+          {Object.keys(translations).length > 0 && (
             <div dir="ltr" className="mushaf-ayah-translation">
-              <p className="mushaf-ayah-translation-text">{translation}</p>
-              <p className="mushaf-ayah-translation-source">
-                {surahNameEnglish} {surahNumber}:{targetAyah} — [{translatorName}]
-              </p>
+              <p className="mushaf-ayah-translation-label">[{translatorName}]</p>
+              {ayahNumbers.map((num) =>
+                translations[num] ? (
+                  <p key={num} className={`mushaf-ayah-translation-text ${num === targetAyah ? "" : "mushaf-ayah-translation-context"}`}>
+                    <span className="mushaf-ayah-translation-num">{surahNumber}:{num}</span>{" "}
+                    {translations[num]}
+                  </p>
+                ) : null
+              )}
             </div>
           )}
         </div>
@@ -332,12 +343,12 @@ export function QuranAyahViewer({
 
         /* Force ayah-view lines to same compressed height as full mushaf */
         .ayah-view .mushaf-line {
-          height: 2.8rem;
+          height: 3.2rem;
           overflow: visible;
         }
         @media (min-width: 640px) {
           .ayah-view .mushaf-line {
-            height: 2.8rem;
+            height: 3.2rem;
           }
         }
 
@@ -393,20 +404,29 @@ export function QuranAyahViewer({
 
         /* Translation block */
         .mushaf-ayah-translation {
-          margin-top: 1rem;
+          margin-top: 1.5rem;
           padding-top: 0.75rem;
           border-top: 1px solid hsl(var(--border));
+        }
+        .mushaf-ayah-translation-label {
+          font-size: 0.7rem;
+          opacity: 0.4;
+          margin-bottom: 0.5rem;
           text-align: center;
         }
         .mushaf-ayah-translation-text {
           font-size: 0.875rem;
           line-height: 1.6;
-          opacity: 0.7;
+          margin-bottom: 0.5rem;
         }
-        .mushaf-ayah-translation-source {
-          font-size: 0.7rem;
+        .mushaf-ayah-translation-context {
           opacity: 0.4;
-          margin-top: 0.25rem;
+        }
+        .mushaf-ayah-translation-num {
+          font-size: 0.75rem;
+          font-weight: 600;
+          opacity: 0.5;
+          margin-right: 0.25rem;
         }
 
         /* Font faces */
