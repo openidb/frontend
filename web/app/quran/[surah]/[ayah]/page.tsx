@@ -98,6 +98,7 @@ export default async function QuranAyahPage({
         targetAyah={ayahNum}
         surahNumber={surahNum}
         surahNameEnglish={surahInfo.nameEnglish}
+        surahNameArabic={surahInfo.nameArabic}
         totalAyahs={data.total}
         mushafPages={mushafPages}
       />

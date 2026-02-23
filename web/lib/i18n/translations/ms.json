@@ -352,20 +352,21 @@
     }
   },
   "mushaf": {
-    "title": "Quran",
-    "page": "Page",
-    "of": "of",
+    "title": "Al-Quran",
+    "page": "Halaman",
+    "of": "dari",
     "surah": "Surah",
-    "juz": "Juz",
-    "nextPage": "Next page",
-    "prevPage": "Previous page",
-    "goToPage": "Go to page",
-    "goToSurah": "Go to surah",
-    "goToJuz": "Go to juz",
-    "wordTranslation": "Translation",
-    "loading": "Loading page...",
+    "juz": "Juzuk",
+    "nextPage": "Halaman seterusnya",
+    "prevPage": "Halaman sebelumnya",
+    "goToPage": "Pergi ke halaman",
+    "goToSurah": "Pergi ke surah",
+    "goToJuz": "Pergi ke juzuk",
+    "wordTranslation": "Terjemahan",
+    "loading": "Memuatkan halaman...",
     "viewFullSurah": "Lihat Surah Penuh",
-    "ayah": "Ayat"
+    "ayah": "Ayat",
+    "tafsir": "Tafsir"
   },
   "common": {
     "loading": "Memuatkan...",

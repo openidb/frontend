@@ -352,20 +352,21 @@
     }
   },
   "mushaf": {
-    "title": "Quran",
-    "page": "Page",
-    "of": "of",
-    "surah": "Surah",
+    "title": "Koran",
+    "page": "Seite",
+    "of": "von",
+    "surah": "Sure",
     "juz": "Juz",
-    "nextPage": "Next page",
-    "prevPage": "Previous page",
-    "goToPage": "Go to page",
-    "goToSurah": "Go to surah",
-    "goToJuz": "Go to juz",
-    "wordTranslation": "Translation",
-    "loading": "Loading page...",
+    "nextPage": "Nächste Seite",
+    "prevPage": "Vorherige Seite",
+    "goToPage": "Zur Seite",
+    "goToSurah": "Zur Sure",
+    "goToJuz": "Zum Juz",
+    "wordTranslation": "Übersetzung",
+    "loading": "Seite wird geladen...",
     "viewFullSurah": "Vollständige Surah anzeigen",
-    "ayah": "Ayah"
+    "ayah": "Ayah",
+    "tafsir": "Tafsir"
   },
   "common": {
     "loading": "Lädt...",

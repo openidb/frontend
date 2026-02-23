@@ -1,10 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import type { MushafPageData } from "./MushafPageClient";
+
+interface TafsirEdition {
+  id: string;
+  name: string;
+  language: string;
+  author: string | null;
+  direction: string;
+}
 
 interface AyahData {
   ayahNumber: number;
@@ -18,13 +26,14 @@ interface Props {
   targetAyah: number;
   surahNumber: number;
   surahNameEnglish: string;
+  surahNameArabic: string;
   totalAyahs: number;
   mushafPages: MushafPageData[];
 }
 
 const PREFERRED_EDITIONS: Record<string, { id: string; name: string }> = {
-  en: { id: "qul-131", name: "Dr. Mustafa Khattab, The Clear Quran" },
-  ar: { id: "ara-kingfahadquranc-la", name: "King Fahad Quran Complex" },
+  en: { id: "eng-mustafakhattabg", name: "Dr. Mustafa Khattab, The Clear Quran" },
+  ar: { id: "ara-kingfahadquranc", name: "King Fahad Quran Complex" },
   fr: { id: "qul-31", name: "Muhammad Hamidullah" },
   id: { id: "qul-33", name: "Indonesian Islamic Affairs Ministry" },
   ur: { id: "qul-158", name: "Dr. Israr Ahmad (Bayan-ul-Quran)" },
@@ -53,6 +62,25 @@ const PREFERRED_EDITIONS: Record<string, { id: string; name: string }> = {
   ta: { id: "qul-133", name: "Abdul Hameed Baqavi" },
 };
 
+// Get display name for a language code using Intl API; returns null if unresolvable
+function getLanguageName(code: string): string | null {
+  try {
+    const name = new Intl.DisplayNames([code, "en"], { type: "language" }).of(code);
+    if (name && name !== code) return name;
+  } catch {}
+  return null;
+}
+
+// Preferred tafsir editions per language (Ibn Kathir where available)
+const PREFERRED_TAFSIRS: Record<string, string> = {
+  en: "en-tafisr-ibn-kathir",     // Ibn Kathir (abridged)
+  ar: "ar-tafsir-ibn-kathir",     // Tafsir Ibn Kathir
+  bn: "bn-tafseer-ibn-e-kaseer",  // Tafseer ibn Kathir
+  ur: "ur-tafseer-ibn-e-kaseer",  // Tafsir Ibn Kathir
+  ru: "qul-913",                  // Tafsir Ibne Kathir
+  tr: "qul-914",                  // Tafsir Ibne Kathir
+};
+
 // Pages where ALL lines should be center-aligned
 const CENTER_ALIGNED_PAGES = [1, 2];
 const CENTER_ALIGNED_LINES: Record<number, number[]> = {
@@ -70,6 +98,7 @@ export function QuranAyahViewer({
   targetAyah,
   surahNumber,
   surahNameEnglish,
+  surahNameArabic,
   totalAyahs,
   mushafPages,
 }: Props) {
@@ -79,6 +108,10 @@ export function QuranAyahViewer({
   const [surahFontLoaded, setSurahFontLoaded] = useState(false);
   const [translations, setTranslations] = useState<Record<number, string>>({});
   const [translatorName, setTranslatorName] = useState<string>("");
+  const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
+  const [tafsirLang, setTafsirLang] = useState<string>("");
+  const [tafsirEditionId, setTafsirEditionId] = useState<string>("");
+  const [tafsirTexts, setTafsirTexts] = useState<Record<number, string>>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -113,11 +146,13 @@ export function QuranAyahViewer({
     font.load().then((f) => { document.fonts.add(f); setSurahFontLoaded(true); }).catch(() => {});
   }, []);
 
-  // Fetch translations for all displayed ayahs
+  // Fetch translations for all displayed ayahs (skip for Arabic)
   const ayahNumbers = Array.from(ayahSet).sort((a, b) => a - b);
   useEffect(() => {
+    if (locale === "ar") { setTranslations({}); setTranslatorName(""); return; }
     const edition = PREFERRED_EDITIONS[locale] || PREFERRED_EDITIONS.en;
     setTranslatorName(edition.name);
+    let cancelled = false;
     const results: Record<number, string> = {};
     Promise.all(
       ayahNumbers.map((num) =>
@@ -126,8 +161,69 @@ export function QuranAyahViewer({
           .then((d) => { if (d?.translations?.[0]?.text) results[num] = d.translations[0].text; })
           .catch(() => {})
       )
-    ).then(() => setTranslations(results));
+    ).then(() => { if (!cancelled) setTranslations(results); });
+    return () => { cancelled = true; };
   }, [surahNumber, targetAyah, locale]);
+
+  // Fetch available tafsir editions
+  useEffect(() => {
+    fetch("/api/quran/tafsirs")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d?.tafsirs) return;
+        const editions: TafsirEdition[] = d.tafsirs.filter(
+          (t: TafsirEdition) => t.language && t.language !== "unknown"
+        );
+        setTafsirEditions(editions);
+        // Default to user's locale or Arabic (only if language name is resolvable)
+        const hasLang = (l: string) => editions.some((e: TafsirEdition) => e.language === l) && getLanguageName(l);
+        const defaultLang = hasLang(locale) ? locale
+          : hasLang("ar") ? "ar" : editions.find((e: TafsirEdition) => getLanguageName(e.language))?.language || "";
+        setTafsirLang(defaultLang);
+        // Prefer Ibn Kathir for the default language, otherwise first edition
+        const langEditions = editions.filter((e: TafsirEdition) => e.language === defaultLang);
+        const preferred = PREFERRED_TAFSIRS[defaultLang];
+        const defaultEdition = (preferred && langEditions.find((e) => e.id === preferred)) || langEditions[0];
+        if (defaultEdition) setTafsirEditionId(defaultEdition.id);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Group tafsir editions by language
+  const tafsirLangs = useMemo(() => {
+    const langMap: Record<string, TafsirEdition[]> = {};
+    for (const e of tafsirEditions) {
+      if (!langMap[e.language]) langMap[e.language] = [];
+      langMap[e.language].push(e);
+    }
+    return langMap;
+  }, [tafsirEditions]);
+
+  // When tafsir language changes, prefer Ibn Kathir or first edition
+  useEffect(() => {
+    if (!tafsirLang || !tafsirLangs[tafsirLang]) return;
+    const editions = tafsirLangs[tafsirLang];
+    if (editions.length > 0 && !editions.some((e) => e.id === tafsirEditionId)) {
+      const preferred = PREFERRED_TAFSIRS[tafsirLang];
+      const pick = (preferred && editions.find((e) => e.id === preferred)) || editions[0];
+      setTafsirEditionId(pick.id);
+    }
+  }, [tafsirLang, tafsirLangs]);
+
+  // Fetch tafsir text for target ayah only
+  useEffect(() => {
+    if (!tafsirEditionId) { setTafsirTexts({}); return; }
+    let cancelled = false;
+    fetch(`/api/quran/tafsir/${surahNumber}/${targetAyah}?editionId=${tafsirEditionId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled) {
+          setTafsirTexts(d?.tafsirs?.[0]?.text ? { [targetAyah]: d.tafsirs[0].text } : {});
+        }
+      })
+      .catch(() => { if (!cancelled) setTafsirTexts({}); });
+    return () => { cancelled = true; };
+  }, [surahNumber, targetAyah, tafsirEditionId]);
 
   // Swipe navigation
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -187,6 +283,18 @@ export function QuranAyahViewer({
             transition: "opacity 0.15s ease-in",
           }}
         >
+          {/* Title: surah name, ayah range, page */}
+          <div className="mushaf-ayah-title">
+            <span className="mushaf-ayah-title-surah">{locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}</span>
+            <span className="mushaf-ayah-title-detail" dir="ltr">
+              {ayahNumbers.length > 1
+                ? `${surahNumber}:${ayahNumbers[0]}–${ayahNumbers[ayahNumbers.length - 1]}`
+                : `${surahNumber}:${targetAyah}`}
+              {" · "}
+              {t("mushaf.page")} {mushafPages.map((p) => p.pageNumber).join("–")}
+            </span>
+          </div>
+
           {filteredLines.map(({ pageNumber, line }) => {
             const fontFamily = `QCF2_P${String(pageNumber).padStart(3, "0")}`;
 
@@ -264,6 +372,52 @@ export function QuranAyahViewer({
               )}
             </div>
           )}
+
+          {/* Tafsir section */}
+          {tafsirEditions.length > 0 && (
+            <div dir="ltr" className="mushaf-tafsir-section">
+              <p className="mushaf-tafsir-title">{t("mushaf.tafsir")}</p>
+              <div className="mushaf-tafsir-selectors">
+                <select
+                  value={tafsirLang}
+                  onChange={(e) => setTafsirLang(e.target.value)}
+                  className="mushaf-tafsir-select"
+                >
+                  {Object.keys(tafsirLangs).sort().map((lang) => {
+                    const name = getLanguageName(lang);
+                    if (!name) return null;
+                    return (
+                      <option key={lang} value={lang}>
+                        {name} ({tafsirLangs[lang].length})
+                      </option>
+                    );
+                  })}
+                </select>
+
+                <select
+                  value={tafsirEditionId}
+                  onChange={(e) => setTafsirEditionId(e.target.value)}
+                  className="mushaf-tafsir-select mushaf-tafsir-select-edition"
+                >
+                  {(tafsirLangs[tafsirLang] || []).map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {tafsirTexts[targetAyah] && (
+                <div className="mushaf-tafsir-content">
+                  <div
+                    className="mushaf-tafsir-text"
+                    dir={tafsirEditions.find((e) => e.id === tafsirEditionId)?.direction || "ltr"}
+                    dangerouslySetInnerHTML={{ __html: tafsirTexts[targetAyah] }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -307,6 +461,22 @@ export function QuranAyahViewer({
         }
         @media (min-width: 640px) {
           .mushaf-bg { padding: 1.5rem 0; }
+        }
+
+        .mushaf-ayah-title {
+          text-align: center;
+          margin-bottom: 0.75rem;
+        }
+        .mushaf-ayah-title-surah {
+          display: block;
+          font-size: 1rem;
+          font-weight: 600;
+        }
+        .mushaf-ayah-title-detail {
+          display: block;
+          font-size: 0.75rem;
+          opacity: 0.5;
+          margin-top: 0.125rem;
         }
 
         .ayah-view .mushaf-page-frame {
@@ -427,6 +597,48 @@ export function QuranAyahViewer({
           font-weight: 600;
           opacity: 0.5;
           margin-right: 0.25rem;
+        }
+
+        /* Tafsir section */
+        .mushaf-tafsir-section {
+          margin-top: 1rem;
+          border-top: 1px solid hsl(var(--border));
+          padding-top: 0.5rem;
+        }
+        .mushaf-tafsir-title {
+          font-size: 0.9rem;
+          font-weight: 600;
+          opacity: 0.5;
+          text-align: center;
+          margin-bottom: 0.375rem;
+        }
+        .mushaf-tafsir-selectors {
+          display: flex;
+          gap: 0.5rem;
+          margin: 0.25rem 0 0.5rem;
+        }
+        .mushaf-tafsir-select {
+          flex-shrink: 0;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+          border-radius: 6px;
+          border: 1px solid hsl(var(--border));
+          background: hsl(var(--background));
+          color: inherit;
+          cursor: pointer;
+          max-width: 11rem;
+        }
+        .mushaf-tafsir-select-edition {
+          flex: 1;
+          min-width: 0;
+          max-width: none;
+        }
+        .mushaf-tafsir-content {
+          margin-top: 0.5rem;
+        }
+        .mushaf-tafsir-text {
+          font-size: 0.8rem;
+          line-height: 1.7;
         }
 
         /* Font faces */

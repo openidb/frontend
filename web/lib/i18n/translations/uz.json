@@ -352,20 +352,21 @@
     }
   },
   "mushaf": {
-    "title": "Quran",
-    "page": "Page",
-    "of": "of",
-    "surah": "Surah",
+    "title": "Qur'on",
+    "page": "Sahifa",
+    "of": "dan",
+    "surah": "Sura",
     "juz": "Juz",
-    "nextPage": "Next page",
-    "prevPage": "Previous page",
-    "goToPage": "Go to page",
-    "goToSurah": "Go to surah",
-    "goToJuz": "Go to juz",
-    "wordTranslation": "Translation",
-    "loading": "Loading page...",
+    "nextPage": "Keyingi sahifa",
+    "prevPage": "Oldingi sahifa",
+    "goToPage": "Sahifaga o'tish",
+    "goToSurah": "Suraga o'tish",
+    "goToJuz": "Juzga o'tish",
+    "wordTranslation": "Tarjima",
+    "loading": "Sahifa yuklanmoqda...",
     "viewFullSurah": "To'liq Surani ko'rish",
-    "ayah": "Oyat"
+    "ayah": "Oyat",
+    "tafsir": "Tafsir"
   },
   "common": {
     "loading": "Yuklanmoqda...",
