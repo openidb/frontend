@@ -363,7 +363,9 @@
     "goToSurah": "Go to surah",
     "goToJuz": "Go to juz",
     "wordTranslation": "Translation",
-    "loading": "Loading page..."
+    "loading": "Loading page...",
+    "viewFullSurah": "بشپړه سوره وګورئ",
+    "ayah": "آیت"
   },
   "common": {
     "loading": "بار کیږي...",

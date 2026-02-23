@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Users, Search, Settings2, BookOpenText } from "lucide-react";
+import { BookOpen, Users, Search, Settings2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", icon: Search, labelKey: "nav.search" as const, iconClass: "nav-icon-search" },
-  { href: "/mushaf/1", icon: BookOpenText, labelKey: "nav.quran" as const, iconClass: "nav-icon-quran" },
   { href: "/books", icon: BookOpen, labelKey: "nav.books" as const, iconClass: "nav-icon-books" },
   { href: "/authors", icon: Users, labelKey: "nav.authors" as const, iconClass: "nav-icon-authors" },
   { href: "/config", icon: Settings2, labelKey: "nav.config" as const, iconClass: "nav-icon-config" },
@@ -18,7 +17,6 @@ const navItems = [
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/" || pathname.startsWith("/?");
-  if (href.startsWith("/mushaf/")) return pathname.startsWith("/mushaf");
   return pathname.startsWith(href);
 }
 
@@ -44,6 +42,9 @@ export function DesktopNavigation() {
     setPendingHref(href);
     router.push(href);
   }, [pathname, router]);
+
+  // Hide desktop sidebar on full-screen pages
+  if (pathname === "/mushaf/pdf") return null;
 
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">

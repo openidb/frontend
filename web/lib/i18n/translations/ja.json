@@ -367,7 +367,9 @@
     "goToSurah": "Go to surah",
     "goToJuz": "Go to juz",
     "wordTranslation": "Translation",
-    "loading": "Loading page..."
+    "loading": "Loading page...",
+    "viewFullSurah": "スーラ全体を表示",
+    "ayah": "アーヤ"
   },
   "common": {
     "loading": "読み込み中...",

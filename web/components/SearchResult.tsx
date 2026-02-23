@@ -247,7 +247,7 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
   // Hide text for full surah results (chunks starting from ayah 1)
   const isFullSurah = ayah.isChunk && ayah.ayahNumber === 1;
 
-  const mushafUrl = `/mushaf/${ayah.pageNumber}?highlight=${ayah.surahNumber}:${ayah.ayahNumber}`;
+  const mushafUrl = `/quran/${ayah.surahNumber}/${ayah.ayahNumber}`;
 
   return (
     <PrefetchLink

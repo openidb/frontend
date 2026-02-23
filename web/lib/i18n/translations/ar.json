@@ -367,7 +367,9 @@
     "goToSurah": "انتقل إلى السورة",
     "goToJuz": "انتقل إلى الجزء",
     "wordTranslation": "ترجمة",
-    "loading": "جاري تحميل الصفحة..."
+    "loading": "جاري تحميل الصفحة...",
+    "viewFullSurah": "عرض السورة كاملة",
+    "ayah": "آية"
   },
   "common": {
     "loading": "جارٍ التحميل...",
