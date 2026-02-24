@@ -37,6 +37,8 @@ export function MushafPdfClient() {
       try {
         const doc = await pdfjsLib.getDocument({
           url: "/api/quran/mushaf/pdf/stream",
+          disableAutoFetch: true,
+          disableStream: true,
           cMapUrl: "/cmaps/",
           cMapPacked: true,
           enableXfa: false,
