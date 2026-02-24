@@ -123,7 +123,7 @@ export function MobileNavigation() {
   }, [pathname, router]);
 
   // Hide mobile nav when in the book reader or mushaf viewer
-  const isReaderPage = pathname.startsWith("/reader/") || pathname.startsWith("/mushaf/");
+  const isReaderPage = pathname.startsWith("/reader/") || pathname.startsWith("/mushaf/") || pathname.startsWith("/quran/");
   if (isReaderPage) return null;
 
   return (

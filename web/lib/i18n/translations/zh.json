@@ -155,7 +155,13 @@
     "pagination": "(第 {page} 页，共 {totalPages} 页)",
     "previous": "上一页",
     "next": "下一页",
-    "publication": "(出版)"
+    "publication": "(出版)",
+    "features": {
+      "title": "功能",
+      "hasPdf": "有PDF",
+      "isIndexed": "已索引",
+      "isTranslated": "已翻译"
+    }
   },
   "authors": {
     "title": "作者",
@@ -204,15 +210,9 @@
       "bookTitleDisplayInfo": "在阿拉伯语旁显示翻译或音译书名。",
       "authorTransliteration": "作者音译",
       "authorTransliterationInfo": "在阿拉伯语旁边显示作者的音译名称。",
-      "hadithTranslation": "圣训翻译",
-      "hadithTranslationInfo": "在圣训搜索结果中显示阿拉伯文旁边的英文翻译。 Source: Turath editions.",
       "sourcesTitle": "翻译来源",
       "sourcesQuran": "古兰经：来自已出版学术著作的官方翻译。",
-      "sourcesHadith": "圣训：来自源网站的人工翻译（如有），以及在存在差距处由AI翻译补充。",
-      "sourcesBooks": "书籍：AI生成的翻译。",
-      "sourcesDisclaimer": "翻译作为理解的辅助而提供，可能无法完全传达阿拉伯语原文的含义。不应单独依赖翻译。",
-      "sourcesQuran": "古兰经：来自已出版学术著作的官方翻译。",
-      "sourcesHadith": "圣训：来自源网站的人工翻译（如有），以及在存在差距处由AI翻译补充。",
+      "sourcesHadith": "圣训：优先使用人工翻译，辅以AI生成的翻译。",
       "sourcesBooks": "书籍：AI生成的翻译。",
       "sourcesDisclaimer": "翻译作为理解的辅助而提供，可能无法完全传达阿拉伯语原文的含义。不应单独依赖翻译。"
     },
@@ -335,12 +335,10 @@
     "prevPage": "上一页",
     "next": "下页",
     "prev": "上页",
-    "translate": "翻译",
-    "translating": "正在翻译",
-    "hideTranslation": "隐藏翻译",
-    "llmTranslationLabel": "[AI 翻译]",
-    "llmTranslationWarning": "此翻译由AI自动生成，可能无法准确反映作者的原意。",
-    "translationFailed": "翻译失败，请重试。",
+    "showTranslation": "翻译",
+    "translationNotAvailable": "此书暂无翻译",
+    "aiTranslationDisclaimer": "此翻译为自动生成，可能无法准确反映作者的原意。",
+    "translating": "翻译中...",
     "pdf": "PDF",
     "volume": "卷",
     "author": "作者",
@@ -370,6 +368,8 @@
     "loading": "加载页面中...",
     "viewFullSurah": "查看完整苏拉",
     "ayah": "经文",
+    "nextAyah": "下一节经文",
+    "prevAyah": "上一节经文",
     "tafsir": "经注"
   },
   "common": {

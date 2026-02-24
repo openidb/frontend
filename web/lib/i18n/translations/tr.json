@@ -155,7 +155,13 @@
     "pagination": "(sayfa {page} / {totalPages})",
     "previous": "Önceki",
     "next": "Sonraki",
-    "publication": "(yayın)"
+    "publication": "(yayın)",
+    "features": {
+      "title": "Özellikler",
+      "hasPdf": "PDF Var",
+      "isIndexed": "Dizinlenmiş",
+      "isTranslated": "Çevrilmiş"
+    }
   },
   "authors": {
     "title": "Yazarlar",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Arapça'nın yanında çevrilmiş veya translitere edilmiş kitap başlıklarını göster.",
       "authorTransliteration": "Yazar Transliterasyonları",
       "authorTransliterationInfo": "Arapça'nın yanında translitere edilmiş yazar adlarını göster.",
-      "hadithTranslation": "Hadis Çevirisi",
-      "hadithTranslationInfo": "Hadis arama sonuçlarında Arapça metnin yanında İngilizce çeviriyi göster. Kaynak: Turath baskıları.",
       "sourcesTitle": "Çeviri Kaynakları",
       "sourcesQuran": "Kuran: Yayınlanmış bilimsel eserlerden resmi çeviriler.",
-      "sourcesHadith": "Hadis: Mevcut olduğunda kaynak sitelerden insan çevirileri, boşlukların olduğu yerlerde yapay zeka çevirisi ile desteklenir.",
+      "sourcesHadith": "Hadis: Mevcut olduğunda insan çevirileri, yapay zeka tarafından üretilen çevirilerle desteklenir.",
       "sourcesBooks": "Kitaplar: Yapay zeka tarafından oluşturulan çeviri.",
       "sourcesDisclaimer": "Çeviriler anlama yardımcısı olarak sağlanır ve orijinal Arapça'nın anlamını tam olarak aktaramayabilir. Tek başına güvenilmemelidir."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Önceki sayfa",
     "next": "Sonraki",
     "prev": "Önceki",
-    "translate": "Çevir",
-    "translating": "Çevriliyor",
-    "hideTranslation": "Çeviriyi Gizle",
-    "llmTranslationLabel": "[Yapay Zeka Çevirisi]",
-    "llmTranslationWarning": "Bu çeviri otomatik olarak oluşturulmuştur ve yazarın amaçladığı anlamı doğru bir şekilde yansıtmayabilir.",
-    "translationFailed": "Çeviri başarısız oldu. Lütfen tekrar deneyin.",
+    "showTranslation": "Ceviri",
+    "translationNotAvailable": "Bu kitap icin ceviri mevcut degil",
+    "aiTranslationDisclaimer": "Bu çeviri otomatik olarak oluşturulmuştur ve yazarın kastettiği anlamı doğru yansıtmayabilir.",
+    "translating": "Çevriliyor...",
     "pdf": "PDF",
     "volume": "Cilt",
     "author": "Yazar",
@@ -366,6 +368,8 @@
     "loading": "Sayfa yükleniyor...",
     "viewFullSurah": "Tüm Sureyi Görüntüle",
     "ayah": "Ayet",
+    "nextAyah": "Sonraki ayet",
+    "prevAyah": "Önceki ayet",
     "tafsir": "Tefsir"
   },
   "common": {

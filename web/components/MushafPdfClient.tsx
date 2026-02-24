@@ -1,53 +1,34 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-const TOTAL_PDF_PAGES = 640;
+// The PDF has extra pages at the start (cover, title, index) before mushaf page 1
+const PDF_PAGE_OFFSET = 3;
+const TOTAL_MUSHAF_PAGES = 604;
 
 export function MushafPdfClient() {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1); // PDF page (1-indexed)
-  const [totalPages, setTotalPages] = useState(TOTAL_PDF_PAGES);
+  const searchParams = useSearchParams();
+  // mushafPage is the Quran page number (1-604)
+  const initialPage = Math.min(Math.max(Number(searchParams.get("page")) || 1, 1), TOTAL_MUSHAF_PAGES);
+  const [mushafPage, setMushafPage] = useState(initialPage);
   const [loading, setLoading] = useState(true);
   const [pdfReady, setPdfReady] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [pageInput, setPageInput] = useState("");
 
-  const leftCanvasRef = useRef<HTMLCanvasElement>(null);
-  const rightCanvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const pdfDocRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const renderIdRef = useRef(0); // prevent stale renders
+  const renderIdRef = useRef(0);
 
-  // Detect mobile
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  // Book spread logic:
-  // Page 1 (cover) = single page
-  // After that, pairs: (2,3), (4,5), ...
-  // RTL: right canvas = lower page number, left canvas = higher
-  const getSpread = useCallback(
-    (page: number): [number, number | null] => {
-      if (isMobile) return [page, null];
-      if (page === 1) return [1, null];
-      const even = page % 2 === 0 ? page : page - 1;
-      const right = even;
-      const left = even + 1 <= totalPages ? even + 1 : null;
-      return [right, left];
-    },
-    [isMobile, totalPages]
-  );
+  // PDF page = mushaf page + offset
+  const pdfPage = mushafPage + PDF_PAGE_OFFSET;
 
   // Load PDF
   useEffect(() => {
@@ -59,46 +40,41 @@ export function MushafPdfClient() {
           cMapUrl: "/cmaps/",
           cMapPacked: true,
           enableXfa: false,
-          disableAutoFetch: true,
-          disableStream: false,
         }).promise;
         if (cancelled) return;
         pdfDocRef.current = doc;
-        setTotalPages(doc.numPages);
         setPdfReady(true);
       } catch {
         // fail silently
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // Render pages
+  // Render current page
   useEffect(() => {
     if (!pdfReady) return;
     const id = ++renderIdRef.current;
 
     const render = async () => {
       const doc = pdfDocRef.current;
-      if (!doc) return;
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+      if (!doc || !canvas || !container) return;
+      if (pdfPage < 1 || pdfPage > doc.numPages) return;
       setLoading(true);
 
-      const [rightPage, leftPage] = getSpread(currentPage);
-
-      const renderToCanvas = async (
-        pageNum: number,
-        canvas: HTMLCanvasElement | null
-      ) => {
-        if (!canvas || id !== renderIdRef.current) return;
-        const page = await doc.getPage(pageNum);
-        const container = containerRef.current;
-        if (!container || id !== renderIdRef.current) return;
+      try {
+        const page = await doc.getPage(pdfPage);
+        if (id !== renderIdRef.current) return;
 
         const containerHeight = container.clientHeight - 32;
+        const containerWidth = container.clientWidth - 32;
         const viewport = page.getViewport({ scale: 1 });
-        const scale = containerHeight / viewport.height;
+
+        const scaleH = containerHeight / viewport.height;
+        const scaleW = containerWidth / viewport.width;
+        const scale = Math.min(scaleH, scaleW);
         const scaled = page.getViewport({ scale });
         const dpr = window.devicePixelRatio || 1;
 
@@ -114,26 +90,6 @@ export function MushafPdfClient() {
           canvasContext: ctx,
           viewport: scaled,
         } as any).promise;
-      };
-
-      try {
-        if (isMobile) {
-          // Single page — use left canvas
-          await renderToCanvas(rightPage, leftCanvasRef.current);
-          if (rightCanvasRef.current) {
-            rightCanvasRef.current.width = 0;
-            rightCanvasRef.current.height = 0;
-          }
-        } else {
-          // Two-page spread
-          await renderToCanvas(rightPage, rightCanvasRef.current);
-          if (leftPage) {
-            await renderToCanvas(leftPage, leftCanvasRef.current);
-          } else if (leftCanvasRef.current) {
-            leftCanvasRef.current.width = 0;
-            leftCanvasRef.current.height = 0;
-          }
-        }
       } catch {
         // render error
       }
@@ -142,7 +98,7 @@ export function MushafPdfClient() {
     };
 
     render();
-  }, [currentPage, pdfReady, isMobile, getSpread]);
+  }, [pdfPage, pdfReady]);
 
   // Re-render on resize
   useEffect(() => {
@@ -150,39 +106,22 @@ export function MushafPdfClient() {
     const handler = () => {
       renderIdRef.current++;
       setLoading(true);
-      // Small delay to let layout settle
-      setTimeout(() => {
-        if (pdfDocRef.current) {
-          // trigger re-render by toggling a dep
-          setCurrentPage((p) => p);
-        }
-      }, 100);
+      setTimeout(() => setMushafPage((p) => p), 100);
     };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, [pdfReady]);
 
   // Navigation
-  const step = isMobile ? 1 : 2;
-
   const goNext = useCallback(() => {
-    setCurrentPage((p) => {
-      if (p === 1) return 2; // cover → first spread
-      const next = p + step;
-      return next <= totalPages ? (next % 2 === 0 ? next : next - 1) : p;
-    });
-  }, [step, totalPages]);
+    setMushafPage((p) => (p < TOTAL_MUSHAF_PAGES ? p + 1 : p));
+  }, []);
 
   const goPrev = useCallback(() => {
-    setCurrentPage((p) => {
-      if (p <= 1) return 1;
-      if (p === 2) return 1; // back to cover
-      const prev = p - step;
-      return prev >= 2 ? (prev % 2 === 0 ? prev : prev - 1) : 1;
-    });
-  }, [step]);
+    setMushafPage((p) => (p > 1 ? p - 1 : p));
+  }, []);
 
-  // Keyboard (RTL: left = forward/higher, right = back/lower)
+  // Keyboard (RTL: left = forward/higher page, right = back/lower page)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -195,10 +134,7 @@ export function MushafPdfClient() {
 
   // Swipe
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    };
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }, []);
 
   const handleTouchEnd = useCallback(
@@ -219,24 +155,22 @@ export function MushafPdfClient() {
     (e: React.FormEvent) => {
       e.preventDefault();
       const target = Number(pageInput);
-      if (target >= 1 && target <= totalPages) {
-        setCurrentPage(isMobile ? target : target <= 1 ? 1 : target % 2 === 0 ? target : target - 1);
+      if (target >= 1 && target <= TOTAL_MUSHAF_PAGES) {
+        setMushafPage(target);
         setPageInput("");
       }
     },
-    [pageInput, totalPages, isMobile]
+    [pageInput]
   );
 
-  const [rightPage, leftPage] = getSpread(currentPage);
-  const displayRange = leftPage ? `${rightPage}-${leftPage}` : String(rightPage);
-  const canGoNext = isMobile ? currentPage < totalPages : (currentPage === 1 ? true : currentPage + step <= totalPages);
-  const canGoPrev = currentPage > 1;
+  const canGoNext = mushafPage < TOTAL_MUSHAF_PAGES;
+  const canGoPrev = mushafPage > 1;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-neutral-800 select-none">
       {/* Close button */}
       <button
-        onClick={() => router.push("/mushaf/1")}
+        onClick={() => router.back()}
         className="absolute top-3 left-3 z-20 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors"
         aria-label="Close"
       >
@@ -247,7 +181,6 @@ export function MushafPdfClient() {
       <div
         ref={containerRef}
         className="flex-1 flex items-center justify-center relative overflow-hidden"
-        dir="rtl"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -278,43 +211,31 @@ export function MushafPdfClient() {
           <ChevronRight className="h-6 w-6" />
         </button>
 
-        {/* Canvases */}
-        <div className="flex items-center justify-center gap-1 h-full py-4">
-          {!isMobile && (
-            <canvas
-              ref={rightCanvasRef}
-              className="bg-white shadow-lg"
-              style={{
-                opacity: loading ? 0.3 : 1,
-                transition: "opacity 0.15s",
-              }}
-            />
-          )}
-          <canvas
-            ref={leftCanvasRef}
-            className="bg-white shadow-lg"
-            style={{
-              opacity: loading ? 0.3 : 1,
-              transition: "opacity 0.15s",
-            }}
-          />
-        </div>
+        {/* Canvas */}
+        <canvas
+          ref={canvasRef}
+          className="bg-white shadow-lg"
+          style={{
+            opacity: loading ? 0.3 : 1,
+            transition: "opacity 0.15s",
+          }}
+        />
       </div>
 
-      {/* Bottom bar */}
+      {/* Bottom bar — shows mushaf page number (1-604) */}
       <div className="shrink-0 flex items-center justify-center gap-4 px-4 py-2.5 bg-neutral-900/90 text-white text-sm">
         <form onSubmit={handlePageSubmit} className="flex items-center gap-1.5">
           <input
             type="number"
             min={1}
-            max={totalPages}
-            placeholder={displayRange}
+            max={TOTAL_MUSHAF_PAGES}
+            placeholder={String(mushafPage)}
             value={pageInput}
             onChange={(e) => setPageInput(e.target.value)}
             className="w-16 text-center bg-neutral-700 text-white rounded px-2 py-1 text-sm border-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus:outline-none focus:ring-1 focus:ring-white/30"
             aria-label="Go to page"
           />
-          <span className="text-neutral-400">/ {totalPages}</span>
+          <span className="text-neutral-400">/ {TOTAL_MUSHAF_PAGES}</span>
         </form>
       </div>
     </div>

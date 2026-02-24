@@ -155,7 +155,13 @@
     "pagination": "(shafi {page} na {totalPages})",
     "previous": "Baya",
     "next": "Na gaba",
-    "publication": "(bugawa)"
+    "publication": "(bugawa)",
+    "features": {
+      "title": "Fasaloli",
+      "hasPdf": "Yana da PDF",
+      "isIndexed": "An jera",
+      "isTranslated": "An fassara"
+    }
   },
   "authors": {
     "title": "Marubuta",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Nuna sunayen littattafai da aka fassara ko aka rubuta tare da Larabci.",
       "authorTransliteration": "Rubuta Sunayen Marubuta",
       "authorTransliterationInfo": "Nuna sunayen marubuta da aka rubuta tare da Larabci.",
-      "hadithTranslation": "Fassarar Hadisi",
-      "hadithTranslationInfo": "Nuna fassarar Turanci tare da rubutun Larabci a cikin sakamakon binciken hadisi. Majiya: bugu na Turath.",
       "sourcesTitle": "Majiyoyin Fassara",
       "sourcesQuran": "Alƙur'ani: Fassarori na hukuma daga ayyukan malaman da aka buga.",
-      "sourcesHadith": "Hadisi: Fassarorin ɗan adam daga shafukan majiya inda ake samu, an ƙara da fassarar AI inda akwai rata.",
+      "sourcesHadith": "Hadisi: Fassarorin mutane inda suke samuwa, tare da fassarorin da AI ta samar.",
       "sourcesBooks": "Littattafai: Fassara da AI ta samar.",
       "sourcesDisclaimer": "Ana bayar da fassarori azaman taimako ga fahimta kuma ƙila ba za su iya isar da cikakken ma'anar ainihin Larabci ba. Bai kamata a dogara da su kaɗai ba."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Shafin baya",
     "next": "Na gaba",
     "prev": "Baya",
-    "translate": "Fassara",
-    "translating": "Ana fassara",
-    "hideTranslation": "Ɓoye Fassara",
-    "llmTranslationLabel": "[Fassarar AI]",
-    "llmTranslationWarning": "Wannan fassara an samar da ita ta atomatik kuma ƙila ba ta nuna ainihin ma'anar marubuci ba.",
-    "translationFailed": "Fassarar ta gaza. Da fatan za a sake gwadawa.",
+    "showTranslation": "Fassara",
+    "translationNotAvailable": "Fassarar wannan littafi ba ta samuwa",
+    "aiTranslationDisclaimer": "An samar da wannan fassarar ne ta atomatik kuma mai yiwuwa ba ta nuna ainihin ma'anar da marubucin ya nufa ba.",
+    "translating": "Ana fassara...",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Marubuci",
@@ -366,6 +368,8 @@
     "loading": "Ana ɗora shafi...",
     "viewFullSurah": "Duba Cikakkiyar Surah",
     "ayah": "Aya",
+    "nextAyah": "Aya na gaba",
+    "prevAyah": "Aya da ta gabata",
     "tafsir": "Tafsiri"
   },
   "common": {

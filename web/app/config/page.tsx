@@ -283,20 +283,6 @@ export default function ConfigPage() {
             onChange={(checked) => updateConfig({ showAuthorTransliteration: checked })}
             info={t("config.translations.authorTransliterationInfo")}
           />
-          <ToggleSetting
-            label={(() => {
-              const base = t("config.translations.hadithTranslation");
-              if (config.hadithTranslation === "none") return base;
-              const langCode = config.hadithTranslation;
-              const match = LOCALES.find(l => l.code === langCode);
-              if (!match) return base;
-              return `${base} [${match.nativeName}]`;
-            })()}
-            checked={config.hadithTranslation !== "none"}
-            onChange={(checked) => updateConfig({ hadithTranslation: checked ? (locale === "ar" ? "en" : locale) : "none" })}
-            info={t("config.translations.hadithTranslationInfo")}
-          />
-
           {/* Translation sources card */}
           <div className="rounded-lg border border-border/50 bg-muted/30 px-3.5 py-3 space-y-2">
             <span className="text-xs font-medium text-muted-foreground">{t("config.translations.sourcesTitle")}</span>

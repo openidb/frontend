@@ -155,7 +155,13 @@
     "pagination": "(bogga {page} ee {totalPages})",
     "previous": "Ka hore",
     "next": "Xiga",
-    "publication": "(daab.)"
+    "publication": "(daab.)",
+    "features": {
+      "title": "Astaamaha",
+      "hasPdf": "PDF leh",
+      "isIndexed": "La tusaaliyay",
+      "isTranslated": "La turjumay"
+    }
   },
   "authors": {
     "title": "Qorayaal",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Tus cinwaannada kutubta ee la turjumay ama la dhigaaleeyay agteeda Carabiga.",
       "authorTransliteration": "Dhigaalaysiinta Qorayaasha",
       "authorTransliterationInfo": "Tus magacyada qorayaasha ee la dhigaaleeyay agteeda Carabiga.",
-      "hadithTranslation": "Turjumaadda Xadiithka",
-      "hadithTranslationInfo": "Tus turjumaadda Ingiriisiga agteeda qoraalka Carabiga ee natiijooyinka raadinta xadiithka. Isha: daabacaadaha Turath.",
       "sourcesTitle": "Ilaha Turjumaadda",
       "sourcesQuran": "Qur'aanka: Turjumaaddo rasmi ah oo ka yimid shaqooyinka culimaada la daabacay.",
-      "sourcesHadith": "Xadiithka: Turjumaaddo aadanaha ah oo ka yimid bogagga ilaha halkaas oo la heli karo, oo lagu kaabay turjumaadda AI halkaas oo faaruq jiro.",
+      "sourcesHadith": "Xadiis: Turjumaadda aadanaha marka la heli karo, lagu kaabiyey turjumaaddo ay AI sameysay.",
       "sourcesBooks": "Kutubta: Turjumaadda AI ay sameysay.",
       "sourcesDisclaimer": "Turjumaadda waxaa loo bixiyaa inay caawiso fahamka mana aha inay si buuxda u gudbiyo macnaha Carabiga asalka ah. Waa inaan lagu kalsoonaanin iyaga oo keli ah."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Bogga hore",
     "next": "Xiga",
     "prev": "Hore",
-    "translate": "Turjun",
-    "translating": "Turjumaynta",
-    "hideTranslation": "Qari Turjumaadda",
-    "llmTranslationLabel": "[Turjumaadda AI]",
-    "llmTranslationWarning": "Turjumaaddani waa si otomaatig ah loo sameeyay waana laga yaabaa inaysan si sax ah u muujinin macnaha qoraagu lahaa.",
-    "translationFailed": "Tarjumaaddu waa fashilantay. Fadlan mar kale isku day.",
+    "showTranslation": "Turjumaad",
+    "translationNotAvailable": "Turjumaadda buuggan lama heli karo",
+    "aiTranslationDisclaimer": "Turjumaaddan waxaa si toos ah loo sameeyay waxaana laga yaabaa inaanay si sax ah u muujin macnaha qoraagu uu la jeeday.",
+    "translating": "Turjumaanaya...",
     "pdf": "PDF",
     "volume": "Muj.",
     "author": "Qoraaga",
@@ -366,6 +368,8 @@
     "loading": "Bogga waa la soo rarayaa...",
     "viewFullSurah": "Arag Suuradda Oo Dhan",
     "ayah": "Aayad",
+    "nextAyah": "Aayada xiga",
+    "prevAyah": "Aayada hore",
     "tafsir": "Tafsiir"
   },
   "common": {

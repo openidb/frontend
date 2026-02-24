@@ -111,7 +111,6 @@ function buildSearchParams(searchQuery: string, config: SearchConfig, locale: st
       ? (QURAN_TRANSLATIONS.find(t => t.code === config.quranTranslation)?.edition || "eng-mustafakhattaba")
       : "none",
     hadithTranslation: config.hadithTranslation || "none",
-    bookContentTranslation: locale === "ar" ? "en" : locale,
     bookTitleLang: effectiveBookTitleLang,
     ...(config.hadithCollections.length > 0 && {
       hadithCollections: config.hadithCollections.join(","),
@@ -173,20 +172,19 @@ export default function SearchClient() {
   const quickAbortRef = useRef<AbortController | null>(null);
   const deepAbortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevTranslationRef = useRef({ quran: searchConfig.quranTranslation, hadith: searchConfig.hadithTranslation });
+  const prevTranslationRef = useRef({ quran: searchConfig.quranTranslation });
 
   // When translation language changes, re-search to get results in the new language
   useEffect(() => {
     const prev = prevTranslationRef.current;
-    prevTranslationRef.current = { quran: searchConfig.quranTranslation, hadith: searchConfig.hadithTranslation };
+    prevTranslationRef.current = { quran: searchConfig.quranTranslation };
     const quranChanged = prev.quran !== searchConfig.quranTranslation;
-    const hadithChanged = prev.hadith !== searchConfig.hadithTranslation;
-    if (!quranChanged && !hadithChanged) return;
+    if (!quranChanged) return;
     if (!quickResults.length || !query || query.length < 2) return;
 
     // Re-search with updated translation config (quick search only)
     fetchQuickResults(query, searchConfig);
-  }, [searchConfig.quranTranslation, searchConfig.hadithTranslation]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchConfig.quranTranslation]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize query and restore cached results on mount only
   const initializedRef = useRef(false);
@@ -199,7 +197,7 @@ export default function SearchClient() {
       setQuery(q);
       // Try to restore cached results
       const restoreCollectionKey = searchConfig.hadithCollections.length > 0 ? searchConfig.hadithCollections.join(",") : "all";
-      const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${searchConfig.hadithTranslation}_${restoreCollectionKey}`;
+      const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${restoreCollectionKey}`;
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         try {
@@ -275,7 +273,6 @@ export default function SearchClient() {
       const data: SearchResponse = await response.json();
       const limitedUnified = parseSearchResults(data, config.postRerankLimit);
 
-      translationTriggeredRef.current = null;
       setQuickResults(limitedUnified);
       setQuickAuthors(data.authors || []);
       setQuickDebugStats(data.debugStats || null);
@@ -285,7 +282,7 @@ export default function SearchClient() {
       // Cache results in sessionStorage (ignore quota errors)
       try {
         const collectionKey = config.hadithCollections.length > 0 ? config.hadithCollections.join(",") : "all";
-        const cacheKey = `search_${searchQuery}_${config.quranTranslation}_${config.hadithTranslation}_${collectionKey}`;
+        const cacheKey = `search_${searchQuery}_${config.quranTranslation}_${collectionKey}`;
         sessionStorage.setItem(cacheKey, JSON.stringify({
           quickResults: limitedUnified,
           quickAuthors: data.authors || [],
@@ -472,125 +469,6 @@ export default function SearchClient() {
     }
   }, [searchParams, hasSearched, fetchQuickResults, searchConfig, configLoaded]);
 
-  // Background translation for hadiths without translations
-  const translationTriggeredRef = useRef<string | null>(null);
-  useEffect(() => {
-    // Determine which results are currently visible
-    const visibleResults = activeTab === "results" ? quickResults : deepResults;
-    const setVisibleResults = activeTab === "results" ? setQuickResults : setDeepResults;
-    const isDeepLoading = deepSearchStatus === "loading";
-
-    if (!visibleResults.length || isLoading || isDeepLoading) return;
-    if (searchConfig.hadithTranslation === "none") return;
-
-    const allHadiths = visibleResults.filter((r) => r.type === "hadith");
-    const pendingHadiths = allHadiths
-      .filter(
-        (r): r is UnifiedResult & { type: "hadith" } =>
-          !(r.data as HadithResultData).translation
-      )
-      .map((r) => r.data as HadithResultData);
-
-    if (pendingHadiths.length === 0) return;
-
-    // Prevent re-triggering for the same set of results
-    const fingerprint = `${activeTab}:${searchConfig.hadithTranslation}:${pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`).join(",")}`;
-    if (translationTriggeredRef.current === fingerprint) return;
-    translationTriggeredRef.current = fingerprint;
-
-    const controller = new AbortController();
-
-    const pendingKeys = new Set(pendingHadiths.map((h) => `${h.bookId}-${h.hadithNumber}`));
-
-    const clearPending = () => {
-      setVisibleResults((prev) =>
-        prev.map((r) => {
-          if (r.type !== "hadith") return r;
-          const hd = r.data as HadithResultData;
-          if (!pendingKeys.has(`${hd.bookId}-${hd.hadithNumber}`)) return r;
-          return { ...r, data: { ...hd, translationPending: false } };
-        })
-      );
-    };
-
-    (async () => {
-      try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
-        const res = await fetch("/api/search/translate-hadiths", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(csrfToken && { "X-CSRF-Token": csrfToken }),
-          },
-          body: JSON.stringify({
-            hadiths: pendingHadiths.slice(0, 10).map((h) => ({
-              bookId: h.bookId,
-              hadithNumber: h.hadithNumber,
-              collectionSlug: h.collectionSlug,
-              text: h.text,
-            })),
-            language: searchConfig.hadithTranslation || "en",
-          }),
-          signal: controller.signal,
-        });
-
-        if (!res.ok) { clearPending(); return; }
-        const data = await res.json();
-        if (!data.translations?.length) { clearPending(); return; }
-
-        interface TranslationItem {
-          bookId: number;
-          hadithNumber: string;
-          translation: string;
-          isnadTranslation?: string | null;
-          matnTranslation?: string | null;
-          footnotesTranslation?: string | null;
-          kitabTranslation?: string | null;
-          chapterTranslation?: string | null;
-          gradeExplanationTranslation?: string | null;
-        }
-        const translationMap = new Map<string, TranslationItem>(
-          data.translations.map((t: TranslationItem) => [
-            `${t.bookId}-${t.hadithNumber}`,
-            t,
-          ])
-        );
-
-        setVisibleResults((prev) =>
-          prev.map((r) => {
-            if (r.type !== "hadith") return r;
-            const hd = r.data as HadithResultData;
-            const key = `${hd.bookId}-${hd.hadithNumber}`;
-            const match = translationMap.get(key);
-            if (match) {
-              return { ...r, data: {
-                ...hd,
-                translation: match.translation,
-                translationSource: "llm",
-                translationPending: false,
-                isnadTranslation: match.isnadTranslation,
-                matnTranslation: match.matnTranslation,
-                footnotesTranslation: match.footnotesTranslation,
-                kitabTranslation: match.kitabTranslation,
-                chapterTranslation: match.chapterTranslation,
-                gradeExplanationTranslation: match.gradeExplanationTranslation,
-              } };
-            }
-            // Clear pending even if this specific hadith wasn't translated
-            if (pendingKeys.has(key)) {
-              return { ...r, data: { ...hd, translationPending: false } };
-            }
-            return r;
-          })
-        );
-      } catch {
-        clearPending();
-      }
-    })();
-
-    return () => controller.abort();
-  }, [quickResults, deepResults, activeTab, isLoading, deepSearchStatus, searchConfig.hadithTranslation]);
-
   // Cleanup debounce timeout on unmount
   useEffect(() => {
     return () => {
@@ -617,7 +495,6 @@ export default function SearchClient() {
     setActiveTab("results");
     setHasSearched(false);
     setShowDebugStats(false);
-    translationTriggeredRef.current = null;
     window.history.replaceState({}, "", "/");
   };
 

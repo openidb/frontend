@@ -9,7 +9,7 @@
   "search": {
     "title": "Recherche",
     "subtitle": "\"...et dis : « Seigneur, ajoute à ma science ! »\" — Sourate Taha, 20:114",
-    "disclaimer": "Le Coran et le hadith doivent être étudiés sous la direction de savants qualifiés, car les avis juridiques dépendent d\u2019un contexte plus large. Les traductions peuvent ne pas restituer pleinement le sens de l\u2019arabe original et ne doivent pas être utilisées isolément.",
+    "disclaimer": "Le Coran et le hadith doivent être étudiés sous la direction de savants qualifiés, car les avis juridiques dépendent d’un contexte plus large. Les traductions peuvent ne pas restituer pleinement le sens de l’arabe original et ne doivent pas être utilisées isolément.",
     "placeholder": "Rechercher dans le Coran et les Hadiths...",
     "refineSearch": "Recherche approfondie",
     "refining": "Affinage...",
@@ -155,7 +155,13 @@
     "pagination": "(page {page} sur {totalPages})",
     "previous": "Precedent",
     "next": "Suivant",
-    "publication": "(pub.)"
+    "publication": "(pub.)",
+    "features": {
+      "title": "Fonctionnalités",
+      "hasPdf": "Avec PDF",
+      "isIndexed": "Indexé",
+      "isTranslated": "Traduit"
+    }
   },
   "authors": {
     "title": "Auteurs",
@@ -204,15 +210,9 @@
       "bookTitleDisplayInfo": "Afficher les titres traduits ou translittérés à côté de l'arabe.",
       "authorTransliteration": "Translitteration des auteurs",
       "authorTransliterationInfo": "Afficher les noms translitteres des auteurs a cote de l'arabe.",
-      "hadithTranslation": "Traduction du Hadith",
-      "hadithTranslationInfo": "Afficher la traduction anglaise a cote du texte arabe dans les resultats de recherche du hadith. Source: éditions Turath.",
       "sourcesTitle": "Sources de Traduction",
       "sourcesQuran": "Coran: Traductions officielles provenant d'ouvrages académiques publiés.",
-      "sourcesHadith": "Hadith: Traductions humaines provenant de sites sources où disponibles, complétées par traduction par IA où il existe des lacunes.",
-      "sourcesBooks": "Livres: Traduction générée par IA.",
-      "sourcesDisclaimer": "Les traductions sont fournies comme aide à la compréhension et peuvent ne pas transmettre complètement le sens de l'arabe original. Elles ne doivent pas être utilisées isolément.",
-      "sourcesQuran": "Coran: Traductions officielles provenant d'ouvrages académiques publiés.",
-      "sourcesHadith": "Hadith: Traductions humaines provenant de sites sources où disponibles, complétées par traduction par IA où il existe des lacunes.",
+      "sourcesHadith": "Hadith : Traductions humaines lorsque disponibles, complétées par des traductions générées par IA.",
       "sourcesBooks": "Livres: Traduction générée par IA.",
       "sourcesDisclaimer": "Les traductions sont fournies comme aide à la compréhension et peuvent ne pas transmettre complètement le sens de l'arabe original. Elles ne doivent pas être utilisées isolément."
     },
@@ -335,12 +335,10 @@
     "prevPage": "Page precedente",
     "next": "Suiv",
     "prev": "Prec",
-    "translate": "Traduire",
-    "translating": "Traduction en cours",
-    "hideTranslation": "Masquer la traduction",
-    "llmTranslationLabel": "[Traduction IA]",
-    "llmTranslationWarning": "Cette traduction est générée automatiquement et peut ne pas refléter fidèlement la pensée de l\u2019auteur.",
-    "translationFailed": "La traduction a échoué. Veuillez réessayer.",
+    "showTranslation": "Traduction",
+    "translationNotAvailable": "Traduction non disponible pour ce livre",
+    "aiTranslationDisclaimer": "Cette traduction est générée automatiquement et peut ne pas refléter fidèlement le sens voulu par l'auteur.",
+    "translating": "Traduction en cours...",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Auteur",
@@ -370,6 +368,8 @@
     "loading": "Chargement de la page...",
     "viewFullSurah": "Afficher la sourate complète",
     "ayah": "Ayah",
+    "nextAyah": "Ayah suivant",
+    "prevAyah": "Ayah précédent",
     "tafsir": "Tafsir"
   },
   "common": {

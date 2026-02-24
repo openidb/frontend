@@ -155,7 +155,13 @@
     "pagination": "(pagina {page} van {totalPages})",
     "previous": "Vorige",
     "next": "Volgende",
-    "publication": "(publ.)"
+    "publication": "(publ.)",
+    "features": {
+      "title": "Kenmerken",
+      "hasPdf": "Heeft PDF",
+      "isIndexed": "Geïndexeerd",
+      "isTranslated": "Vertaald"
+    }
   },
   "authors": {
     "title": "Auteurs",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Toon vertaalde of getranslitereerde boektitels naast Arabisch.",
       "authorTransliteration": "Auteur Transliteraties",
       "authorTransliterationInfo": "Toon getranslitereerde auteursnamen naast Arabisch.",
-      "hadithTranslation": "Hadithvertaling",
-      "hadithTranslationInfo": "Toon Engelse vertaling naast Arabische tekst in hadith-zoekresultaten. Bron: Turath-edities.",
       "sourcesTitle": "Vertaalbronnen",
       "sourcesQuran": "Koran: Officiële vertalingen van gepubliceerd wetenschappelijk werk.",
-      "sourcesHadith": "Hadith: Menselijke vertalingen van bronsites waar beschikbaar, aangevuld met AI-vertaling waar hiaten bestaan.",
+      "sourcesHadith": "Hadith: Menselijke vertalingen waar beschikbaar, aangevuld met AI-gegenereerde vertalingen.",
       "sourcesBooks": "Boeken: AI-gegenereerde vertaling.",
       "sourcesDisclaimer": "Vertalingen worden verstrekt als hulpmiddel bij begrip en geven mogelijk niet volledig de betekenis van het originele Arabisch weer. Ze mogen niet op zichzelf worden vertrouwd."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Vorige pagina",
     "next": "Volgende",
     "prev": "Vorige",
-    "translate": "Vertalen",
-    "translating": "Vertalen",
-    "hideTranslation": "Verberg Vertaling",
-    "llmTranslationLabel": "[AI Vertaling]",
-    "llmTranslationWarning": "Deze vertaling is automatisch gegenereerd en geeft mogelijk niet nauwkeurig de beoogde betekenis van de auteur weer.",
-    "translationFailed": "Vertaling mislukt. Probeer het opnieuw.",
+    "showTranslation": "Vertaling",
+    "translationNotAvailable": "Vertaling niet beschikbaar voor dit boek",
+    "aiTranslationDisclaimer": "Deze vertaling is automatisch gegenereerd en geeft mogelijk niet nauwkeurig de bedoelde betekenis van de auteur weer.",
+    "translating": "Vertalen...",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Auteur",
@@ -366,6 +368,8 @@
     "loading": "Pagina laden...",
     "viewFullSurah": "Volledige Surah bekijken",
     "ayah": "Ayah",
+    "nextAyah": "Volgende ayah",
+    "prevAyah": "Vorige ayah",
     "tafsir": "Tafsir"
   },
   "common": {

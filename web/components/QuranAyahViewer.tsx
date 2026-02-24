@@ -140,6 +140,12 @@ export function QuranAyahViewer({
     ).then(() => setFontsLoaded(new Set(loaded)));
   }, [mushafPages]);
 
+  // Prefetch adjacent ayah routes for instant navigation
+  useEffect(() => {
+    if (canGoPrev) router.prefetch(`/quran/${surahNumber}/${targetAyah - 1}`);
+    if (canGoNext) router.prefetch(`/quran/${surahNumber}/${targetAyah + 1}`);
+  }, [surahNumber, targetAyah, canGoPrev, canGoNext, router]);
+
   // Load surah name font
   useEffect(() => {
     const font = new FontFace("SurahNameV2", "url(/fonts/mushaf/surah-name-v2.woff2)");
@@ -164,6 +170,18 @@ export function QuranAyahViewer({
     ).then(() => { if (!cancelled) setTranslations(results); });
     return () => { cancelled = true; };
   }, [surahNumber, targetAyah, locale]);
+
+  // Pre-warm HTTP cache for translations 2 ayahs ahead/behind
+  useEffect(() => {
+    if (locale === "ar") return;
+    const edition = PREFERRED_EDITIONS[locale] || PREFERRED_EDITIONS.en;
+    const adjacentAyahs: number[] = [];
+    if (targetAyah > 2) adjacentAyahs.push(targetAyah - 2);
+    if (targetAyah < totalAyahs - 1) adjacentAyahs.push(targetAyah + 2);
+    for (const num of adjacentAyahs) {
+      fetch(`/api/quran/translations/${surahNumber}/${num}?editionId=${edition.id}`).catch(() => {});
+    }
+  }, [surahNumber, targetAyah, locale, totalAyahs]);
 
   // Fetch available tafsir editions
   useEffect(() => {
@@ -268,10 +286,30 @@ export function QuranAyahViewer({
 
   return (
     <div className="ayah-view flex flex-col h-full min-h-0">
-      {/* Mushaf content — identical structure to MushafPageClient */}
+      {/* Header bar */}
+      <div className="ayah-header flex items-center px-3 py-2 border-b bg-card shrink-0 gap-2">
+        <button
+          onClick={() => router.back()}
+          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+          aria-label={t("common.close")}
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <span className="flex-1 text-sm font-medium truncate">
+          {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
+        </span>
+        <button
+          onClick={() => router.push(`/mushaf/pdf?page=${mushafPages[0]?.pageNumber ?? 1}`)}
+          className="px-3 py-1.5 rounded-lg text-xs bg-foreground/[0.06] hover:bg-foreground/[0.1] transition-colors text-muted-foreground font-medium"
+        >
+          {t("mushaf.viewFullSurah")}
+        </button>
+      </div>
+
+      {/* Mushaf content */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto flex justify-center mushaf-bg"
+        className="flex-1 min-h-0 overflow-auto flex justify-center mushaf-bg"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -283,16 +321,13 @@ export function QuranAyahViewer({
             transition: "opacity 0.15s ease-in",
           }}
         >
-          {/* Title: surah name, ayah range, page */}
-          <div className="mushaf-ayah-title">
-            <span className="mushaf-ayah-title-surah">{locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}</span>
-            <span className="mushaf-ayah-title-detail" dir="ltr">
-              {ayahNumbers.length > 1
-                ? `${surahNumber}:${ayahNumbers[0]}–${ayahNumbers[ayahNumbers.length - 1]}`
-                : `${surahNumber}:${targetAyah}`}
-              {" · "}
-              {t("mushaf.page")} {mushafPages.map((p) => p.pageNumber).join("–")}
-            </span>
+          {/* Ayah range and page info */}
+          <div className="mushaf-ayah-title" dir="ltr">
+            {ayahNumbers.length > 1
+              ? `${surahNumber}:${ayahNumbers[0]}–${ayahNumbers[ayahNumbers.length - 1]}`
+              : `${surahNumber}:${targetAyah}`}
+            {" · "}
+            {t("mushaf.page")} {mushafPages.map((p) => p.pageNumber).join("–")}
           </div>
 
           {filteredLines.map(({ pageNumber, line }) => {
@@ -421,36 +456,37 @@ export function QuranAyahViewer({
         </div>
       </div>
 
-      {/* Bottom nav — same as mushaf */}
-      <div className="flex items-center justify-center px-3 py-2 border-t bg-card shrink-0 gap-4 text-sm">
-        <button
-          onClick={() => canGoNext && router.push(`/quran/${surahNumber}/${targetAyah + 1}`)}
-          disabled={!canGoNext}
-          className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors"
-          aria-label={t("mushaf.nextPage")}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+      {/* Bottom nav — card-style buttons */}
+      <div
+        className="shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+        style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
+        dir="ltr"
+      >
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => canGoPrev && router.push(`/quran/${surahNumber}/${targetAyah - 1}`)}
+            disabled={!canGoPrev}
+            className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
+            aria-label={t("mushaf.prevAyah")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+            {t("mushaf.prevAyah")}
+          </button>
 
-        <span className="text-muted-foreground">
-          {t("mushaf.ayah")} {targetAyah} / {totalAyahs}
-        </span>
+          <span className="text-sm text-muted-foreground tabular-nums">
+            {t("mushaf.ayah")} {targetAyah} / {totalAyahs}
+          </span>
 
-        <button
-          onClick={() => canGoPrev && router.push(`/quran/${surahNumber}/${targetAyah - 1}`)}
-          disabled={!canGoPrev}
-          className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors"
-          aria-label={t("mushaf.prevPage")}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-
-        <button
-          onClick={() => router.push("/mushaf/pdf")}
-          className="px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 transition-colors text-muted-foreground hidden sm:block"
-        >
-          {t("mushaf.viewFullSurah") || "View Full Surah"}
-        </button>
+          <button
+            onClick={() => canGoNext && router.push(`/quran/${surahNumber}/${targetAyah + 1}`)}
+            disabled={!canGoNext}
+            className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
+            aria-label={t("mushaf.nextAyah")}
+          >
+            {t("mushaf.nextAyah")}
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <style jsx global>{`
@@ -465,18 +501,9 @@ export function QuranAyahViewer({
 
         .mushaf-ayah-title {
           text-align: center;
-          margin-bottom: 0.75rem;
-        }
-        .mushaf-ayah-title-surah {
-          display: block;
-          font-size: 1rem;
-          font-weight: 600;
-        }
-        .mushaf-ayah-title-detail {
-          display: block;
           font-size: 0.75rem;
           opacity: 0.5;
-          margin-top: 0.125rem;
+          margin-bottom: 0.75rem;
         }
 
         .ayah-view .mushaf-page-frame {

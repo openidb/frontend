@@ -155,7 +155,13 @@
     "pagination": "(ukurasa {page} wa {totalPages})",
     "previous": "Iliyotangulia",
     "next": "Inayofuata",
-    "publication": "(uchapishaji)"
+    "publication": "(uchapishaji)",
+    "features": {
+      "title": "Vipengele",
+      "hasPdf": "Ina PDF",
+      "isIndexed": "Imeonyeshwa",
+      "isTranslated": "Imetafsiriwa"
+    }
   },
   "authors": {
     "title": "Waandishi",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Onyesha vichwa vya vitabu vilivyotafsiriwa au vilivyoandikwa pamoja na Kiarabu.",
       "authorTransliteration": "Maandiko ya Majina ya Waandishi",
       "authorTransliterationInfo": "Onyesha majina ya waandishi yaliyoandikwa pamoja na Kiarabu.",
-      "hadithTranslation": "Tafsiri ya Hadith",
-      "hadithTranslationInfo": "Onyesha tafsiri ya Kiingereza pamoja na maandishi ya Kiarabu katika matokeo ya utafutaji wa hadith. Chanzo: toleo za Turath.",
       "sourcesTitle": "Vyanzo vya Tafsiri",
       "sourcesQuran": "Qur'an: Tafsiri rasmi kutoka kazi za kielimu zilizochapishwa.",
-      "sourcesHadith": "Hadith: Tafsiri za binadamu kutoka tovuti za chanzo ambapo zinapatikana, zikiongezwa na tafsiri ya AI ambapo kuna mapungufu.",
+      "sourcesHadith": "Hadithi: Tafsiri za binadamu inapopatikana, zikijazwa na tafsiri zilizozalishwa na AI.",
       "sourcesBooks": "Vitabu: Tafsiri iliyoundwa na AI.",
       "sourcesDisclaimer": "Tafsiri zinatolewa kama msaada wa kuelewa na zinaweza zisipate kikamilifu maana ya Kiarabu cha asili. Hazipaswi kutegemewa peke yake."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Ukurasa uliotangulia",
     "next": "Inayofuata",
     "prev": "Iliyotangulia",
-    "translate": "Tafsiri",
-    "translating": "Inatafsiri",
-    "hideTranslation": "Ficha Tafsiri",
-    "llmTranslationLabel": "[Tafsiri ya AI]",
-    "llmTranslationWarning": "Tafsiri hii imeundwa kiotomatiki na inaweza isieleze kwa usahihi maana iliyokusudiwa na mwandishi.",
-    "translationFailed": "Tafsiri imeshindwa. Tafadhali jaribu tena.",
+    "showTranslation": "Tafsiri",
+    "translationNotAvailable": "Tafsiri haipatikani kwa kitabu hiki",
+    "aiTranslationDisclaimer": "Tafsiri hii imetolewa kiotomatiki na huenda isionyeshe kwa usahihi maana iliyokusudiwa na mwandishi.",
+    "translating": "Inatafsiri...",
     "pdf": "PDF",
     "volume": "Jil.",
     "author": "Mwandishi",
@@ -366,6 +368,8 @@
     "loading": "Inapakia ukurasa...",
     "viewFullSurah": "Tazama Sura Kamili",
     "ayah": "Aya",
+    "nextAyah": "Aya inayofuata",
+    "prevAyah": "Aya iliyotangulia",
     "tafsir": "Tafsiri"
   },
   "common": {

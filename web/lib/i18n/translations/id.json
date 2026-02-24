@@ -9,7 +9,7 @@
   "search": {
     "title": "Cari",
     "subtitle": "\"...dan katakanlah, 'Ya Tuhanku, tambahkanlah ilmu kepadaku.'\" — Surah Taha, 20:114",
-    "disclaimer": "Al-Qur\u2019an dan hadis harus dipelajari di bawah bimbingan ulama yang berkompeten, karena hukum agama bergantung pada konteks yang lebih luas. Terjemahan mungkin tidak sepenuhnya menangkap makna teks Arab asli dan tidak boleh dijadikan satu-satunya rujukan.",
+    "disclaimer": "Al-Qur’an dan hadis harus dipelajari di bawah bimbingan ulama yang berkompeten, karena hukum agama bergantung pada konteks yang lebih luas. Terjemahan mungkin tidak sepenuhnya menangkap makna teks Arab asli dan tidak boleh dijadikan satu-satunya rujukan.",
     "placeholder": "Cari di Al-Qur'an dan Hadis...",
     "refineSearch": "Pencarian Mendalam",
     "refining": "Memperbaiki...",
@@ -155,7 +155,13 @@
     "pagination": "(halaman {page} dari {totalPages})",
     "previous": "Sebelumnya",
     "next": "Selanjutnya",
-    "publication": "(terbit)"
+    "publication": "(terbit)",
+    "features": {
+      "title": "Fitur",
+      "hasPdf": "Ada PDF",
+      "isIndexed": "Terindeks",
+      "isTranslated": "Diterjemahkan"
+    }
   },
   "authors": {
     "title": "Penulis",
@@ -204,15 +210,9 @@
       "bookTitleDisplayInfo": "Tampilkan judul buku yang diterjemahkan atau ditransliterasi.",
       "authorTransliteration": "Transliterasi Penulis",
       "authorTransliterationInfo": "Tampilkan nama penulis yang ditransliterasi di samping Arab.",
-      "hadithTranslation": "Terjemahan Hadis",
-      "hadithTranslationInfo": "Tampilkan terjemahan bahasa Inggris di samping teks Arab dalam hasil pencarian hadits. Source: edisi Turath.",
       "sourcesTitle": "Sumber Terjemahan",
       "sourcesQuran": "Al-Qur'an: Terjemahan resmi dari karya akademis yang diterbitkan.",
-      "sourcesHadith": "Hadis: Terjemahan manusia dari situs sumber di mana tersedia, dilengkapi dengan terjemahan AI di mana ada celah.",
-      "sourcesBooks": "Buku: Terjemahan yang dihasilkan oleh AI.",
-      "sourcesDisclaimer": "Terjemahan disediakan sebagai bantuan untuk pemahaman dan mungkin tidak sepenuhnya menyampaikan makna dari teks Arab asli. Mereka tidak boleh diandalkan secara terpisah.",
-      "sourcesQuran": "Al-Qur'an: Terjemahan resmi dari karya akademis yang diterbitkan.",
-      "sourcesHadith": "Hadis: Terjemahan manusia dari situs sumber di mana tersedia, dilengkapi dengan terjemahan AI di mana ada celah.",
+      "sourcesHadith": "Hadith: Terjemahan manusia jika tersedia, dilengkapi dengan terjemahan yang dihasilkan AI.",
       "sourcesBooks": "Buku: Terjemahan yang dihasilkan oleh AI.",
       "sourcesDisclaimer": "Terjemahan disediakan sebagai bantuan untuk pemahaman dan mungkin tidak sepenuhnya menyampaikan makna dari teks Arab asli. Mereka tidak boleh diandalkan secara terpisah."
     },
@@ -335,12 +335,10 @@
     "prevPage": "Halaman sebelumnya",
     "next": "Lanjut",
     "prev": "Kembali",
-    "translate": "Terjemahkan",
-    "translating": "Menerjemahkan",
-    "hideTranslation": "Sembunyikan terjemahan",
-    "llmTranslationLabel": "[Terjemahan AI]",
-    "llmTranslationWarning": "Terjemahan ini dibuat secara otomatis dan mungkin tidak mencerminkan makna yang dimaksud penulis.",
-    "translationFailed": "Terjemahan gagal. Silakan coba lagi.",
+    "showTranslation": "Terjemahan",
+    "translationNotAvailable": "Terjemahan tidak tersedia untuk buku ini",
+    "aiTranslationDisclaimer": "Terjemahan ini dibuat secara otomatis dan mungkin tidak mencerminkan makna yang dimaksud penulis secara akurat.",
+    "translating": "Menerjemahkan...",
     "pdf": "PDF",
     "volume": "Jil.",
     "author": "Penulis",
@@ -370,6 +368,8 @@
     "loading": "Memuat halaman...",
     "viewFullSurah": "Lihat Surah Lengkap",
     "ayah": "Ayah",
+    "nextAyah": "Ayat berikutnya",
+    "prevAyah": "Ayat sebelumnya",
     "tafsir": "Tafsir"
   },
   "common": {

@@ -3,14 +3,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, Languages, X } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, X, Languages } from "lucide-react";
 import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme";
 import { useAppConfig } from "@/lib/config";
 import { WordDefinitionPopover } from "./WordDefinitionPopover";
 import { trackBookEvent } from "@/lib/analytics";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -45,6 +43,11 @@ interface TocEntry {
   page: number;
 }
 
+interface TranslationParagraph {
+  index: number;
+  translation: string;
+}
+
 interface HtmlReaderProps {
   bookMetadata: BookMetadata;
   initialPageNumber?: string;
@@ -53,6 +56,7 @@ interface HtmlReaderProps {
   maxPrintedPage: number;
   volumeStartPages?: Record<string, number>;
   toc?: TocEntry[];
+  translatedLanguages?: string[];
 }
 
 /**
@@ -104,12 +108,8 @@ function expandHonorifics(text: string): string {
 function formatContentHtml(
   html: string,
   enableWordWrap = true,
-  translations?: { index: number; translation: string }[],
-  translationStyle?: string,
+  translationParagraphs?: TranslationParagraph[],
 ): string {
-  // Build translation lookup by line index
-  const tlMap = translations ? new Map(translations.map(t => [t.index, t.translation])) : undefined;
-
   // Expand honorific ligatures into readable Arabic text
   html = expandHonorifics(html);
 
@@ -123,11 +123,8 @@ function formatContentHtml(
   const lines = html.split(/\n/);
   const formatted: string[] = [];
   let inFootnotes = false;
-  let lineIndex = 0;
 
   for (const line of lines) {
-    const currentLineIndex = lineIndex;
-    lineIndex++;
 
     const trimmed = line.trim();
     if (!trimmed) continue;
@@ -181,11 +178,6 @@ function formatContentHtml(
     } else {
       formatted.push(`<p style="margin:0.5em 0 0.6em">${withMarkers}</p>`);
     }
-
-    // Insert translation placeholder after the corresponding line
-    if (tlMap?.has(currentLineIndex)) {
-      formatted.push(`%%TL_${currentLineIndex}%%`);
-    }
   }
 
   // Close footnotes div if opened
@@ -193,17 +185,25 @@ function formatContentHtml(
     formatted.push('</div>');
   }
 
+  // Interleave translation paragraphs if provided
+  if (translationParagraphs && translationParagraphs.length > 0) {
+    const translationMap = new Map(translationParagraphs.map((p) => [p.index, p.translation]));
+    const interleaved: string[] = [];
+    for (let i = 0; i < formatted.length; i++) {
+      interleaved.push(formatted[i]);
+      const translation = translationMap.get(i);
+      if (translation) {
+        interleaved.push(
+          `<p dir="ltr" style="margin:0.3em 0 0.8em;padding:0.5em 0.8em;border-inline-start:3px solid hsl(var(--brand));opacity:0.85;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${translation}</p>`
+        );
+      }
+    }
+    formatted.length = 0;
+    formatted.push(...interleaved);
+  }
+
   let result = formatted.join('\n');
   if (enableWordWrap) result = wrapWords(result);
-
-  // Replace translation placeholders with actual HTML (after wrapWords to avoid wrapping translation text)
-  if (tlMap && translationStyle) {
-    result = result.replace(/%%TL_(\d+)%%/g, (_, idx) => {
-      const text = tlMap.get(parseInt(idx));
-      if (!text) return '';
-      return `<p dir="auto" class="tl-para" style="${translationStyle}">${text}</p>`;
-    });
-  }
 
   return result;
 }
@@ -228,15 +228,23 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, toc = [] }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
-  const { resolvedTheme } = useTheme();
   const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [fontSize, setFontSize] = useState(1.15);
   const [wordTapEnabled, setWordTapEnabled] = useState(true);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [translationResult, setTranslationResult] = useState<TranslationParagraph[] | null>(null);
+  const [isTranslationLoading, setIsTranslationLoading] = useState(false);
+  const translationCacheRef = useRef<Map<string, TranslationParagraph[]>>(new Map());
+  const TRANSLATION_CACHE_MAX = 50;
+
+  // Determine translation language and availability
+  const translationLang = locale === "ar" ? "en" : locale;
+  const hasTranslation = translatedLanguages?.includes(translationLang) ?? false;
 
   const [currentPage, setCurrentPage] = useState<number>(
     initialPageNumber ? parseInt(initialPageNumber, 10) : 0
@@ -249,19 +257,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   );
   const [volumeInputValue, setVolumeInputValue] = useState("");
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
-  // Single tagged state: null = idle, data: null = loading, data: [...] = ready
-  const [translateResult, setTranslateResult] = useState<{
-    page: number;
-    data: { index: number; translation: string }[] | null;
-  } | null>(null);
-  const [autoTranslate, setAutoTranslate] = useState(false);
-  const translationCacheRef = useRef<Map<string, { index: number; translation: string }[]>>(new Map());
-  const TRANSLATION_CACHE_MAX = 50;
-  const fetchTranslationRef = useRef<(page: number, signal?: AbortSignal) => Promise<{ index: number; translation: string }[]>>(null!);
-
-  // Derived from tagged state — always correct, no stale closures possible
-  const translation = translateResult?.page === currentPage ? translateResult.data : null;
-  const isTranslating = translateResult?.page === currentPage && translateResult.data === null;
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
   // Hydrate reader preferences from localStorage after mount
@@ -271,7 +266,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       const v = JSON.parse(localStorage.getItem("readerPrefs") || "{}");
       if (v.fontSize != null) setFontSize(v.fontSize);
       if (v.wordTapEnabled != null) setWordTapEnabled(v.wordTapEnabled);
-      if (v.autoTranslate != null) setAutoTranslate(v.autoTranslate);
+      if (v.showTranslation != null) setShowTranslation(v.showTranslation);
     } catch {}
     prefsHydrated.current = true;
   }, []);
@@ -279,8 +274,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   // Persist reader preferences to localStorage on change
   useEffect(() => {
     if (!prefsHydrated.current) return;
-    try { localStorage.setItem("readerPrefs", JSON.stringify({ fontSize, wordTapEnabled, autoTranslate })); } catch {}
-  }, [fontSize, wordTapEnabled, autoTranslate]);
+    try { localStorage.setItem("readerPrefs", JSON.stringify({ fontSize, wordTapEnabled, showTranslation })); } catch {}
+  }, [fontSize, wordTapEnabled, showTranslation]);
 
   // Analytics: page view duration tracking
   const pageViewStartRef = useRef<number>(Date.now());
@@ -471,6 +466,53 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   }, [isLoading, pageData, currentPage, prefetchPage]);
 
+  // Fetch translation when toggle is on
+  useEffect(() => {
+    if (!showTranslation || !hasTranslation) {
+      setTranslationResult(null);
+      setIsTranslationLoading(false);
+      return;
+    }
+
+    const cacheKey = `${currentPage}:${translationLang}`;
+    const cached = translationCacheRef.current.get(cacheKey);
+    if (cached) {
+      setTranslationResult(cached);
+      setIsTranslationLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setTranslationResult(null);
+    setIsTranslationLoading(true);
+
+    fetch(`/api/books/${bookMetadata.id}/pages/${currentPage}/translation?lang=${encodeURIComponent(translationLang)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("not found");
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        const paragraphs = data.paragraphs as TranslationParagraph[];
+        // Cache with LRU eviction
+        translationCacheRef.current.delete(cacheKey);
+        translationCacheRef.current.set(cacheKey, paragraphs);
+        if (translationCacheRef.current.size > TRANSLATION_CACHE_MAX) {
+          const oldest = translationCacheRef.current.keys().next().value;
+          if (oldest !== undefined) translationCacheRef.current.delete(oldest);
+        }
+        setTranslationResult(paragraphs);
+      })
+      .catch(() => {
+        if (!cancelled) setTranslationResult(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsTranslationLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [showTranslation, hasTranslation, currentPage, translationLang, bookMetadata.id]);
+
   // Update URL when page changes
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -626,90 +668,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   }, [bookMetadata.id, currentPage, pdfLoading]);
 
-  // Clear translation cache when locale changes
-  useEffect(() => {
-    translationCacheRef.current.clear();
-  }, [locale]);
-
-  // Shared translation fetch helper (used for current page + prefetch)
-  const fetchTranslation = useCallback(async (page: number, signal?: AbortSignal) => {
-    const cacheKey = `${page}:${locale}`;
-    const cached = translationCacheRef.current.get(cacheKey);
-    if (cached) return cached;
-
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
-    const lang = locale === "ar" ? "en" : locale;
-    const res = await fetch(`/api/pages/${bookMetadata.id}/${page}/translate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-      body: JSON.stringify({ lang, model: "gemini-flash" }),
-      signal,
-    });
-    if (!res.ok) throw new Error("Translation failed");
-    const data = await res.json();
-    if (!data.paragraphs || data.paragraphs.length === 0) throw new Error("No translatable content");
-    // LRU eviction
-    const cache = translationCacheRef.current;
-    cache.delete(cacheKey); // refresh position
-    cache.set(cacheKey, data.paragraphs);
-    if (cache.size > TRANSLATION_CACHE_MAX) {
-      const oldest = cache.keys().next().value;
-      if (oldest !== undefined) cache.delete(oldest);
-    }
-    return data.paragraphs;
-  }, [locale, bookMetadata.id]);
-
-  // Keep ref in sync so the effect below doesn't depend on fetchTranslation identity
-  fetchTranslationRef.current = fetchTranslation;
-
-  // Auto-translate: tagged state ensures stale results are never displayed.
-  useEffect(() => {
-    if (!autoTranslate) {
-      setTranslateResult(null);
-      return;
-    }
-
-    const page = currentPage;
-    const cacheKey = `${page}:${locale}`;
-
-    // Cache hit — instant
-    const cached = translationCacheRef.current.get(cacheKey);
-    if (cached) {
-      setTranslateResult({ page, data: cached });
-      return;
-    }
-
-    // Cache miss — show loading, fetch immediately
-    setTranslateResult({ page, data: null });
-    let cancelled = false;
-
-    fetchTranslationRef.current(page)
-      .then((result) => {
-        if (!cancelled) {
-          setTranslateResult({ page, data: result });
-        }
-      })
-      .catch((err) => {
-        console.error("[auto-translate]", err);
-        if (!cancelled) {
-          setTranslateResult(null);
-          toast.error(t("reader.translationFailed"));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currentPage, autoTranslate, locale, t]);
-
-  const isDark = resolvedTheme === "dark";
   const prefersReducedMotion = useReducedMotion();
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
-      {autoTranslate && <style>{`.tl-para { transition: opacity 0.3s ease; }`}</style>}
       {/* Header */}
       <div
         className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
@@ -732,13 +696,13 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
-          {isTranslating && (
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full animate-in fade-in">
+          {/* Translation loading indicator */}
+          {isTranslationLoading && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-medium">
               <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="hidden sm:inline">{t("reader.translating")}…</span>
-            </span>
+              <span className="hidden sm:inline">{t("reader.translating")}</span>
+            </div>
           )}
-
           {/* Desktop page controls — hidden on mobile (moved to bottom bar) */}
           <div className="hidden sm:flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
             <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
@@ -925,25 +889,31 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             </div>
           </button>
 
-          {/* Auto-translate toggle */}
-          <button
-            onClick={() => setAutoTranslate((v) => !v)}
-            className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              {isTranslating
-                ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                : <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />}
-              {t("reader.translate")}
-            </span>
-            <div
-              className={`w-11 h-6 rounded-full transition-colors relative ${autoTranslate ? "bg-primary" : "bg-muted-foreground/20"}`}
+          {/* Translation toggle */}
+          {hasTranslation ? (
+            <button
+              onClick={() => setShowTranslation((v) => !v)}
+              className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
             >
+              <span className="flex items-center gap-2">
+                <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />
+                {t("reader.showTranslation")}
+              </span>
               <div
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${autoTranslate ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`}
-              />
+                className={`w-11 h-6 rounded-full transition-colors relative ${showTranslation ? "bg-primary" : "bg-muted-foreground/20"}`}
+              >
+                <div
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${showTranslation ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`}
+                />
+              </div>
+            </button>
+          ) : (
+            <div className="w-full px-4 py-3 text-sm flex items-center gap-2 text-muted-foreground">
+              <Languages className="h-4 w-4 shrink-0" />
+              <span>{t("reader.translationNotAvailable")}</span>
             </div>
-          </button>
+          )}
+
         </div>
 
         {/* Table of Contents section */}
@@ -1033,15 +1003,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 color: 'hsl(var(--reader-fg))',
               }}
             >
-              {/* AI translation disclaimer — always visible when translate is on */}
-              {autoTranslate && (
-                <div dir="auto" style={{ fontFamily: 'system-ui,-apple-system,sans-serif', fontSize: '0.8rem', color: '#e67e22', lineHeight: 1.5, margin: '0 0 0.75em', padding: '0.5em 0.75em', borderRadius: '4px', background: 'rgba(230,126,34,0.08)' }}>
-                  <strong>{t('reader.llmTranslationLabel')}</strong> {t('reader.llmTranslationWarning')}
-                  {isTranslating && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35em', marginInlineStart: '0.5em', opacity: 0.8 }}>
-                      — <Loader2 className="h-3 w-3 animate-spin" style={{ display: 'inline' }} /> {t('reader.translating')}…
-                    </span>
-                  )}
+              {showTranslation && translationResult && (
+                <div
+                  dir={dir}
+                  className="mb-4 px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-sm leading-relaxed"
+                  style={{ fontFamily: 'system-ui, sans-serif', fontSize: '0.85rem', lineHeight: 1.5 }}
+                >
+                  <span className="font-semibold">[{t("reader.showTranslation")}]</span>{" "}
+                  {t("reader.aiTranslationDisclaimer")}
                 </div>
               )}
               <div
@@ -1049,8 +1018,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                   __html: formatContentHtml(
                     pageData.contentHtml,
                     wordTapEnabled,
-                    autoTranslate && translation && translation.length > 0 ? translation : undefined,
-                    `font-family:system-ui,-apple-system,sans-serif;font-size:${fontSize * 0.85}rem;color:${isDark ? "#b0b0b0" : "#555"};line-height:1.7;margin:0.2em 0 0.8em;border-inline-start:3px solid ${isDark ? "#444" : "#ddd"};padding-inline-start:0.75em`,
+                    showTranslation && translationResult ? translationResult : undefined,
                   ),
                 }}
               />

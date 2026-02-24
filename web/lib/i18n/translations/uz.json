@@ -155,7 +155,13 @@
     "pagination": "({totalPages} sahifadan {page} sahifa)",
     "previous": "Oldingi",
     "next": "Keyingi",
-    "publication": "(nashr)"
+    "publication": "(nashr)",
+    "features": {
+      "title": "Xususiyatlar",
+      "hasPdf": "PDF mavjud",
+      "isIndexed": "Indekslangan",
+      "isTranslated": "Tarjima qilingan"
+    }
   },
   "authors": {
     "title": "Mualliflar",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Arabcha bilan birga tarjima qilingan yoki transliteratsiya qilingan kitob sarlavhalarini ko'rsatish.",
       "authorTransliteration": "Muallif transliteratsiyalari",
       "authorTransliterationInfo": "Arabcha bilan birga transliteratsiya qilingan muallif nomlarini ko'rsatish.",
-      "hadithTranslation": "Hadis tarjimasi",
-      "hadithTranslationInfo": "Hadis qidiruv natijalarida arabcha matn bilan birga inglizcha tarjimani ko'rsatish. Manba: Turath nashriyotlari.",
       "sourcesTitle": "Tarjima manbalari",
       "sourcesQuran": "Qur'on: Nashr etilgan ilmiy asarlardan rasmiy tarjimalar.",
-      "sourcesHadith": "Hadis: Mavjud bo'lgan manba saytlaridan insoniy tarjimalar, bo'shliqlar mavjud bo'lgan joyda AI tarjimasi bilan to'ldirilgan.",
+      "sourcesHadith": "Hadis: Mavjud bo'lganda inson tarjimalari, sun'iy intellekt tomonidan yaratilgan tarjimalar bilan to'ldirilgan.",
       "sourcesBooks": "Kitoblar: AI tomonidan yaratilgan tarjima.",
       "sourcesDisclaimer": "Tarjimalar tushunishga yordam sifatida taqdim etiladi va asl arabcha mazmunini to'liq ifodalay olmasligi mumkin. Ularni yakka holda ishlatmaslik kerak."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Oldingi sahifa",
     "next": "Keyingi",
     "prev": "Oldingi",
-    "translate": "Tarjima qilish",
-    "translating": "Tarjima qilinmoqda",
-    "hideTranslation": "Tarjimani yashirish",
-    "llmTranslationLabel": "[AI tarjimasi]",
-    "llmTranslationWarning": "Bu tarjima avtomatik ravishda yaratilgan va muallifning mo'ljallangan ma'nosini aniq aks ettirmasligi mumkin.",
-    "translationFailed": "Tarjima amalga oshmadi. Iltimos, qaytadan urinib ko'ring.",
+    "showTranslation": "Tarjima",
+    "translationNotAvailable": "Bu kitob uchun tarjima mavjud emas",
+    "aiTranslationDisclaimer": "Ushbu tarjima avtomatik ravishda yaratilgan bo'lib, muallif nazarda tutgan ma'noni to'g'ri aks ettirmasligi mumkin.",
+    "translating": "Tarjima qilinmoqda...",
     "pdf": "PDF",
     "volume": "Jild",
     "author": "Muallif",
@@ -366,6 +368,8 @@
     "loading": "Sahifa yuklanmoqda...",
     "viewFullSurah": "To'liq Surani ko'rish",
     "ayah": "Oyat",
+    "nextAyah": "Keyingi oyat",
+    "prevAyah": "Oldingi oyat",
     "tafsir": "Tafsir"
   },
   "common": {

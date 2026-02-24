@@ -13,7 +13,12 @@ FROM oven/bun:1.3.5-debian AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG OPENIDB_URL=http://localhost:4000
 ENV NODE_ENV=production
+ENV OPENIDB_URL=$OPENIDB_URL
+# Ensure no stale .env leaks override the build arg
+RUN rm -f .env .env.local .env.production .env.production.local && \
+    echo "OPENIDB_URL=${OPENIDB_URL}" > .env.production.local
 RUN bun run build
 
 # Stage 3: Production runner

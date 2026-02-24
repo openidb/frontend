@@ -4,8 +4,6 @@ export type EmbeddingModelType = "gemini" | "jina";
 
 export type QueryExpansionModelType = "gpt-oss-120b" | "gemini-flash";
 
-export type PageTranslationModelType = "gemini-flash" | "gpt-oss-120b";
-
 export type DateCalendarType = "hijri" | "gregorian" | "both";
 
 export type TranslationDisplayOption = "none" | "transliteration" | "translation";
@@ -95,13 +93,10 @@ export interface SearchConfig {
   bookTitleDisplay: TranslationDisplayOption;
   showAuthorTransliteration: boolean;
   showPublicationDates: boolean;
-  autoTranslation: boolean;
   quranTranslation: string;
   hadithTranslation: string;
   embeddingModel: EmbeddingModelType;
   queryExpansionModel: QueryExpansionModelType;
-  pageTranslationModel: PageTranslationModelType;
-  bookContentTranslation: string;
   refineOriginalWeight: number;
   refineExpandedWeight: number;
   refineBookPerQuery: number;
@@ -130,13 +125,10 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   bookTitleDisplay: "none",
   showAuthorTransliteration: true,
   showPublicationDates: true,
-  autoTranslation: true,
   quranTranslation: "en",
   hadithTranslation: "en",
   embeddingModel: "gemini",
   queryExpansionModel: "gpt-oss-120b",
-  pageTranslationModel: "gemini-flash",
-  bookContentTranslation: "auto",
   refineOriginalWeight: 1.0,
   refineExpandedWeight: 1.0,
   refineBookPerQuery: 30,
@@ -160,9 +152,6 @@ export const INTERNAL_CONFIG_KEYS: (keyof SearchConfig)[] = [
   "postRerankLimit",
   "includeBooks",
   "queryExpansionModel",
-  "autoTranslation",
-  "bookContentTranslation",
-  "pageTranslationModel",
   "refineOriginalWeight",
   "refineExpandedWeight",
   "refineBookPerQuery",

@@ -155,7 +155,13 @@
     "pagination": "({totalPages}페이지 중 {page}페이지)",
     "previous": "이전",
     "next": "다음",
-    "publication": "(출판)"
+    "publication": "(출판)",
+    "features": {
+      "title": "기능",
+      "hasPdf": "PDF 있음",
+      "isIndexed": "색인됨",
+      "isTranslated": "번역됨"
+    }
   },
   "authors": {
     "title": "저자",
@@ -204,15 +210,9 @@
       "bookTitleDisplayInfo": "아랍어와 함께 번역 또는 음역된 제목을 표시합니다.",
       "authorTransliteration": "저자 음역",
       "authorTransliterationInfo": "아랍어 옆에 음역된 저자 이름을 표시합니다.",
-      "hadithTranslation": "하디스 번역",
-      "hadithTranslationInfo": "하디스 검색 결과에서 아랍어 텍스트 옆에 영어 번역을 표시합니다. Source: Turath editions.",
       "sourcesTitle": "번역 출처",
       "sourcesQuran": "꾸란: 출판된 학술 저작의 공식 번역.",
-      "sourcesHadith": "하디스: 이용 가능한 경우 출처 사이트의 인간 번역, 격차가 있을 때는 AI 번역으로 보완.",
-      "sourcesBooks": "책: AI 생성 번역.",
-      "sourcesDisclaimer": "번역은 이해를 돕기 위해 제공되며 아랍어 원문의 의미를 완전히 전달하지 못할 수 있습니다. 단독으로 의존해서는 안 됩니다.",
-      "sourcesQuran": "꾸란: 출판된 학술 저작의 공식 번역.",
-      "sourcesHadith": "하디스: 이용 가능한 경우 출처 사이트의 인간 번역, 격차가 있을 때는 AI 번역으로 보완.",
+      "sourcesHadith": "하디스: 가능한 경우 인간 번역, AI 생성 번역으로 보완.",
       "sourcesBooks": "책: AI 생성 번역.",
       "sourcesDisclaimer": "번역은 이해를 돕기 위해 제공되며 아랍어 원문의 의미를 완전히 전달하지 못할 수 있습니다. 단독으로 의존해서는 안 됩니다."
     },
@@ -335,12 +335,10 @@
     "prevPage": "이전 페이지",
     "next": "다음",
     "prev": "이전",
-    "translate": "번역",
-    "translating": "번역 중",
-    "hideTranslation": "번역 숨기기",
-    "llmTranslationLabel": "[AI 번역]",
-    "llmTranslationWarning": "이 번역은 자동으로 생성되었으며 저자의 의도를 정확히 반영하지 못할 수 있습니다.",
-    "translationFailed": "번역에 실패했습니다. 다시 시도해 주세요.",
+    "showTranslation": "번역",
+    "translationNotAvailable": "이 책의 번역을 사용할 수 없습니다",
+    "aiTranslationDisclaimer": "이 번역은 자동으로 생성되었으며 저자가 의도한 의미를 정확하게 반영하지 못할 수 있습니다.",
+    "translating": "번역 중...",
     "pdf": "PDF",
     "volume": "권",
     "author": "저자",
@@ -370,6 +368,8 @@
     "loading": "페이지 로딩 중...",
     "viewFullSurah": "전체 수라 보기",
     "ayah": "아야",
+    "nextAyah": "다음 아야",
+    "prevAyah": "이전 아야",
     "tafsir": "타프시르"
   },
   "common": {

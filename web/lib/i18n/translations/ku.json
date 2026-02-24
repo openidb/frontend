@@ -155,7 +155,13 @@
     "pagination": "(rûpela {page} ji {totalPages})",
     "previous": "Pêşî",
     "next": "Paşî",
-    "publication": "(weş.)"
+    "publication": "(weş.)",
+    "features": {
+      "title": "Taybetmendî",
+      "hasPdf": "PDF heye",
+      "isIndexed": "Îndekskirin",
+      "isTranslated": "Wergerandin"
+    }
   },
   "authors": {
     "title": "Nivîskar",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Sernavên pirtûkên wergerkirî an transliterated li kêleka erebî nîşan bide.",
       "authorTransliteration": "Transliterasyona Nivîskaran",
       "authorTransliterationInfo": "Navên nivîskarên transliterated li kêleka erebî nîşan bide.",
-      "hadithTranslation": "Wergera Hedîsê",
-      "hadithTranslationInfo": "Werger li kêleka nivîsa erebî di encamên lêgerîna hedîsê de nîşan bide. Çavkanî: weşanên Turath.",
       "sourcesTitle": "Çavkaniyên Wergerê",
       "sourcesQuran": "Qur'an: Wergerên fermî ji karên alimên weşandî.",
-      "sourcesHadith": "Hedîs: Wergerên mirovî ji malperên çavkaniyê ku hene, bi wergera AI ya ku cihên vala tijî dike pêve.",
+      "sourcesHadith": "Hedîs: Wergerên mirovan li ku peyda dibin, bi wergerên AI-ê hatine çêkirin temam kirin.",
       "sourcesBooks": "Pirtûk: Wergera ji hêla AI ve çêkirî.",
       "sourcesDisclaimer": "Werger wekî alîkariyekê ji bo têgihiştinê têne peyda kirin û dibe ku wateya erebî ya resen bi tevahî nîşan nedin. Divê tenê ji bo têgihiştinê neyên bikar anîn."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Rûpela pêşîn",
     "next": "Paşî",
     "prev": "Pêşî",
-    "translate": "Werger bike",
-    "translating": "Werger dike",
-    "hideTranslation": "Wergerê Veşêre",
-    "llmTranslationLabel": "[Wergera AI]",
-    "llmTranslationWarning": "Ev werger ji hêla xweber ve hatiye çêkirin û dibe ku wateya ku nivîskar armanca xwe bûye rast neyê nîşandan.",
-    "translationFailed": "Werger serneket. Ji kerema xwe dîsa biceribîne.",
+    "showTranslation": "Werger",
+    "translationNotAvailable": "Wergera vi kitebe ne heye",
+    "aiTranslationDisclaimer": "Ev werger bi awayekî otomatîk hatiye çêkirin û dibe ku bi rastî wateya ku nivîskar mebest kiriye nîşan nede.",
+    "translating": "Werger dibe...",
     "pdf": "PDF",
     "volume": "Cild",
     "author": "Nivîskar",
@@ -366,6 +368,8 @@
     "loading": "Rûpel tê barkirin...",
     "viewFullSurah": "Sûreyê tevahî bibîne",
     "ayah": "Ayet",
+    "nextAyah": "Ayeta paşîn",
+    "prevAyah": "Ayeta berê",
     "tafsir": "Tefsîr"
   },
   "common": {

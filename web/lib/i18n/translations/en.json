@@ -155,7 +155,13 @@
     "pagination": "(page {page} of {totalPages})",
     "previous": "Previous",
     "next": "Next",
-    "publication": "(pub.)"
+    "publication": "(pub.)",
+    "features": {
+      "title": "Features",
+      "hasPdf": "Has PDF",
+      "isIndexed": "Indexed",
+      "isTranslated": "Translated"
+    }
   },
   "authors": {
     "title": "Authors",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Show translated or transliterated book titles alongside Arabic.",
       "authorTransliteration": "Author Transliterations",
       "authorTransliterationInfo": "Show transliterated author names alongside Arabic.",
-      "hadithTranslation": "Hadith Translation",
-      "hadithTranslationInfo": "Display English translation alongside Arabic text in hadith search results. Source: Turath editions.",
       "sourcesTitle": "Translation Sources",
       "sourcesQuran": "Quran: Official translations from published scholarly works.",
-      "sourcesHadith": "Hadith: Human translations from source sites where available, supplemented with AI translation where gaps exist.",
+      "sourcesHadith": "Hadith: Human translations where available, supplemented with AI-generated translations.",
       "sourcesBooks": "Books: AI-generated translation.",
       "sourcesDisclaimer": "Translations are provided as an aid to understanding and may not fully convey the meaning of the original Arabic. They should not be relied upon in isolation."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Previous page",
     "next": "Next",
     "prev": "Prev",
-    "translate": "Translate",
-    "translating": "Translating",
-    "hideTranslation": "Hide Translation",
-    "llmTranslationLabel": "[AI Translation]",
-    "llmTranslationWarning": "This translation is automatically generated and may not accurately reflect the author\u2019s intended meaning.",
-    "translationFailed": "Translation failed. Please try again.",
+    "showTranslation": "Translation",
+    "translationNotAvailable": "Translation not available for this book",
+    "aiTranslationDisclaimer": "This translation is automatically generated and may not accurately reflect the author's intended meaning.",
+    "translating": "Translating...",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Author",
@@ -366,6 +368,8 @@
     "loading": "Loading page...",
     "viewFullSurah": "View Full Surah",
     "ayah": "Ayah",
+    "nextAyah": "Next ayah",
+    "prevAyah": "Previous ayah",
     "tafsir": "Tafsir"
   },
   "common": {

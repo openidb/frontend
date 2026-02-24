@@ -155,7 +155,13 @@
     "pagination": "(مخ {page} د {totalPages})",
     "previous": "مخکینی",
     "next": "بل",
-    "publication": "(خپرول)"
+    "publication": "(خپرول)",
+    "features": {
+      "title": "ځانګړتیاوې",
+      "hasPdf": "PDF لري",
+      "isIndexed": "لیست شوی",
+      "isTranslated": "ژباړل شوی"
+    }
   },
   "authors": {
     "title": "مؤلفین",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "د عربي سره ګډ ژباړل شوي یا لاتین لیکل شوي د کتاب سرلیکونه وښایاست.",
       "authorTransliteration": "د مؤلفینو لاتین لیکنه",
       "authorTransliterationInfo": "د عربي سره ګډ لاتین لیکل شوي د مؤلفینو نومونه وښایاست.",
-      "hadithTranslation": "د حدیث ژباړه",
-      "hadithTranslationInfo": "د حدیث د لټون پایلو کې د عربي متن سره ګډ انګلیسي ژباړه وښایاست. سرچینه: د تراث نسخې.",
       "sourcesTitle": "د ژباړې سرچینې",
       "sourcesQuran": "قرآن: د خپرو شویو علمي کارونو څخه رسمي ژباړې.",
-      "sourcesHadith": "حدیث: د انساني ژباړې د سرچینې ویب پاڼو څخه چیرې چې شتون لري، د AI ژباړې سره بشپړ شوي چیرې چې خلاء شتون لري.",
+      "sourcesHadith": "حدیث: چیرته چې شتون ولري انساني ژباړې، د AI لخوا جوړ شوي ژباړو سره بشپړ شوي.",
       "sourcesBooks": "کتابونه: د AI لخوا تولید شوې ژباړه.",
       "sourcesDisclaimer": "ژباړې د پوهیدو لپاره د مرستې په توګه وړاندې کیږي او ممکن د اصلي عربي معنی په بشپړه توګه نه وړاندې کړي. دوی نباید په ګوتو کې تکیه وشي."
     },
@@ -331,12 +335,10 @@
     "prevPage": "مخکینی مخ",
     "next": "بل",
     "prev": "مخکینی",
-    "translate": "ژباړه وکړئ",
-    "translating": "ژباړه کېږي",
-    "hideTranslation": "ژباړه پټه کړئ",
-    "llmTranslationLabel": "[د AI ژباړه]",
-    "llmTranslationWarning": "دا ژباړه په اتومات ډول تولید شوې او ممکن د مؤلف مطلوب معنی په دقیقه توګه نه وړاندې کړي.",
-    "translationFailed": "ژباړه ناکامه شوه. مهرباني وکړئ بیا هڅه وکړئ.",
+    "showTranslation": "ژباړه",
+    "translationNotAvailable": "د دې کتاب لپاره ژباړه شتون نلري",
+    "aiTranslationDisclaimer": "دا ژباړه په اوتومات ډول جوړه شوې او ممکن د لیکوال مطلوب معنی په سمه توګه منعکس نه کړي.",
+    "translating": "ژباړه کیږي...",
     "pdf": "PDF",
     "volume": "ټوک",
     "author": "مؤلف",
@@ -366,6 +368,8 @@
     "loading": "مخ لوډیږي...",
     "viewFullSurah": "بشپړه سوره وګورئ",
     "ayah": "آیت",
+    "nextAyah": "بل آیت",
+    "prevAyah": "مخکینی آیت",
     "tafsir": "تفسیر"
   },
   "common": {

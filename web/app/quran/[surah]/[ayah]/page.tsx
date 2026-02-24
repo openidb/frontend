@@ -92,7 +92,7 @@ export default async function QuranAyahPage({
   const surahInfo = data.ayahs.find((a) => a.ayahNumber === ayahNum)?.surah || data.ayahs[0].surah;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-screen">
+    <div className="flex flex-col h-screen">
       <QuranAyahViewer
         ayahs={data.ayahs}
         targetAyah={ayahNum}

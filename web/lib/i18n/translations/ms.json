@@ -155,7 +155,13 @@
     "pagination": "(halaman {page} daripada {totalPages})",
     "previous": "Sebelumnya",
     "next": "Seterusnya",
-    "publication": "(terbit)"
+    "publication": "(terbit)",
+    "features": {
+      "title": "Ciri",
+      "hasPdf": "Ada PDF",
+      "isIndexed": "Diindeks",
+      "isTranslated": "Diterjemah"
+    }
   },
   "authors": {
     "title": "Penulis",
@@ -204,11 +210,9 @@
       "bookTitleDisplayInfo": "Tunjukkan tajuk buku diterjemah atau diromanisasi bersama Arab.",
       "authorTransliteration": "Transliterasi Penulis",
       "authorTransliterationInfo": "Tunjukkan nama penulis diromanisasi bersama Arab.",
-      "hadithTranslation": "Terjemahan Hadis",
-      "hadithTranslationInfo": "Paparkan terjemahan Inggeris bersama teks Arab dalam hasil carian hadis. Sumber: edisi Turath.",
       "sourcesTitle": "Sumber Terjemahan",
       "sourcesQuran": "Al-Quran: Terjemahan rasmi daripada karya ilmiah yang diterbitkan.",
-      "sourcesHadith": "Hadis: Terjemahan manusia dari laman sumber di mana tersedia, ditambah dengan terjemahan AI di mana terdapat jurang.",
+      "sourcesHadith": "Hadis: Terjemahan manusia jika tersedia, dilengkapkan dengan terjemahan yang dijana AI.",
       "sourcesBooks": "Buku: Terjemahan dijana AI.",
       "sourcesDisclaimer": "Terjemahan disediakan sebagai bantuan untuk memahami dan mungkin tidak sepenuhnya menyampaikan makna bahasa Arab asal. Ia tidak boleh dipercayai secara bersendirian."
     },
@@ -331,12 +335,10 @@
     "prevPage": "Halaman sebelumnya",
     "next": "Seterusnya",
     "prev": "Sebelumnya",
-    "translate": "Terjemah",
-    "translating": "Menterjemah",
-    "hideTranslation": "Sembunyikan Terjemahan",
-    "llmTranslationLabel": "[Terjemahan AI]",
-    "llmTranslationWarning": "Terjemahan ini dijana secara automatik dan mungkin tidak mencerminkan dengan tepat maksud yang dimaksudkan oleh penulis.",
-    "translationFailed": "Terjemahan gagal. Sila cuba lagi.",
+    "showTranslation": "Terjemahan",
+    "translationNotAvailable": "Terjemahan tidak tersedia untuk buku ini",
+    "aiTranslationDisclaimer": "Terjemahan ini dijana secara automatik dan mungkin tidak mencerminkan makna yang dimaksudkan oleh penulis dengan tepat.",
+    "translating": "Menterjemah...",
     "pdf": "PDF",
     "volume": "Jilid",
     "author": "Penulis",
@@ -366,6 +368,8 @@
     "loading": "Memuatkan halaman...",
     "viewFullSurah": "Lihat Surah Penuh",
     "ayah": "Ayat",
+    "nextAyah": "Ayat berikutnya",
+    "prevAyah": "Ayat sebelumnya",
     "tafsir": "Tafsir"
   },
   "common": {

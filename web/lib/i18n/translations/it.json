@@ -9,7 +9,7 @@
   "search": {
     "title": "Cerca",
     "subtitle": "\"...ma di': « Signor mio, accresci la mia scienza »\" — Sura Ta Ha, 20:114",
-    "disclaimer": "Il Corano e gli hadith vanno studiati sotto la guida di studiosi qualificati, poiché le norme religiose dipendono da un contesto più ampio. Le traduzioni potrebbero non cogliere appieno il significato dell\u2019arabo originale e non dovrebbero essere utilizzate isolatamente.",
+    "disclaimer": "Il Corano e gli hadith vanno studiati sotto la guida di studiosi qualificati, poiché le norme religiose dipendono da un contesto più ampio. Le traduzioni potrebbero non cogliere appieno il significato dell’arabo originale e non dovrebbero essere utilizzate isolatamente.",
     "placeholder": "Cerca nel Corano e negli Hadith...",
     "refineSearch": "Ricerca approfondita",
     "refining": "Affinamento...",
@@ -155,7 +155,13 @@
     "pagination": "(pagina {page} di {totalPages})",
     "previous": "Precedente",
     "next": "Successivo",
-    "publication": "(pub.)"
+    "publication": "(pub.)",
+    "features": {
+      "title": "Funzionalità",
+      "hasPdf": "Con PDF",
+      "isIndexed": "Indicizzato",
+      "isTranslated": "Tradotto"
+    }
   },
   "authors": {
     "title": "Autori",
@@ -204,15 +210,9 @@
       "bookTitleDisplayInfo": "Mostra i titoli tradotti o traslitterati accanto all'arabo.",
       "authorTransliteration": "Traslitterazione autori",
       "authorTransliterationInfo": "Mostra i nomi traslitterati degli autori accanto all'arabo.",
-      "hadithTranslation": "Traduzione Hadith",
-      "hadithTranslationInfo": "Mostra la traduzione inglese accanto al testo arabo nei risultati di ricerca del hadith. Source: edizioni Turath.",
       "sourcesTitle": "Fonti di Traduzione",
       "sourcesQuran": "Corano: Traduzioni ufficiali da opere accademiche pubblicate.",
-      "sourcesHadith": "Hadith: Traduzioni umane da siti di origine dove disponibili, integrate con traduzione AI dove mancano.",
-      "sourcesBooks": "Libri: Traduzione generata da IA.",
-      "sourcesDisclaimer": "Le traduzioni sono fornite come aiuto alla comprensione e potrebbero non trasmettere completamente il significato dell'arabo originale. Non dovrebbero essere utilizzate isolatamente.",
-      "sourcesQuran": "Corano: Traduzioni ufficiali da opere accademiche pubblicate.",
-      "sourcesHadith": "Hadith: Traduzioni umane da siti di origine dove disponibili, integrate con traduzione AI dove mancano.",
+      "sourcesHadith": "Hadith: Traduzioni umane ove disponibili, integrate con traduzioni generate dall'IA.",
       "sourcesBooks": "Libri: Traduzione generata da IA.",
       "sourcesDisclaimer": "Le traduzioni sono fornite come aiuto alla comprensione e potrebbero non trasmettere completamente il significato dell'arabo originale. Non dovrebbero essere utilizzate isolatamente."
     },
@@ -335,12 +335,10 @@
     "prevPage": "Pagina precedente",
     "next": "Avanti",
     "prev": "Indietro",
-    "translate": "Traduci",
-    "translating": "Traduzione in corso",
-    "hideTranslation": "Nascondi traduzione",
-    "llmTranslationLabel": "[Traduzione IA]",
-    "llmTranslationWarning": "Questa traduzione è generata automaticamente e potrebbe non riflettere accuratamente il pensiero dell\u2019autore.",
-    "translationFailed": "Traduzione non riuscita. Riprova.",
+    "showTranslation": "Traduzione",
+    "translationNotAvailable": "Traduzione non disponibile per questo libro",
+    "aiTranslationDisclaimer": "Questa traduzione è generata automaticamente e potrebbe non riflettere accuratamente il significato inteso dall'autore.",
+    "translating": "Traduzione in corso...",
     "pdf": "PDF",
     "volume": "Vol.",
     "author": "Autore",
@@ -370,6 +368,8 @@
     "loading": "Caricamento pagina...",
     "viewFullSurah": "Visualizza Surah Completa",
     "ayah": "Ayah",
+    "nextAyah": "Ayah successivo",
+    "prevAyah": "Ayah precedente",
     "tafsir": "Tafsir"
   },
   "common": {

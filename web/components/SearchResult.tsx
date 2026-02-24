@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { PrefetchLink } from "./PrefetchLink";
-import { BookOpen, FileText, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/lib/config/search-defaults";
@@ -89,7 +89,6 @@ export interface HadithResultData {
   matn?: string | null;
   translation?: string;
   translationSource?: string;
-  translationPending?: boolean;
   isnadTranslation?: string | null;
   matnTranslation?: string | null;
   footnotesTranslation?: string | null;
@@ -428,14 +427,6 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
           <span className="text-foreground">{hadith.text}</span>
         )}
       </div>
-
-      {/* Pending Translation Indicator */}
-      {hadith.translationPending && !hadith.translation && (
-        <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5 italic">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Translating...
-        </div>
-      )}
 
       {/* Structured Translation (isnad/matn/footnotes) — mirrors Arabic styling */}
       {hadith.translation && (hadith.isnadTranslation || hadith.matnTranslation) ? (
