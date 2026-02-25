@@ -528,7 +528,7 @@ export function QuranAyahViewer({
           align-items: baseline;
           direction: rtl;
           line-height: 3.4;
-          font-size: 1.55rem;
+          font-size: clamp(1.05rem, 4.3vw, 1.55rem);
           min-height: 2.8rem;
         }
         @media (min-width: 640px) {
@@ -540,7 +540,7 @@ export function QuranAyahViewer({
 
         /* Force ayah-view lines to same compressed height as full mushaf */
         .ayah-view .mushaf-line {
-          height: 3.2rem;
+          height: clamp(2.2rem, 8.5vw, 3.2rem);
           overflow: visible;
         }
         @media (min-width: 640px) {
@@ -567,7 +567,7 @@ export function QuranAyahViewer({
 
         .mushaf-surah-name {
           font-family: "SurahNameV2", serif;
-          font-size: 2.8rem;
+          font-size: clamp(2rem, 7vw, 2.8rem);
           line-height: 1.4;
           display: block;
           width: 100%;

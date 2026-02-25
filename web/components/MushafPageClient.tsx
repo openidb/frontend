@@ -321,7 +321,7 @@ export function MushafPageClient({ initialData }: Props) {
           align-items: baseline;
           direction: rtl;
           line-height: 3.4;
-          font-size: 1.55rem;
+          font-size: clamp(1.05rem, 4.3vw, 1.55rem);
           min-height: 2.8rem;
         }
 
