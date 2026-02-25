@@ -2,125 +2,43 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import * as pdfjsLib from "pdfjs-dist";
+import { ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-
-// The PDF has extra pages at the start (cover, title, index) before mushaf page 1
-const PDF_PAGE_OFFSET = 3;
 const TOTAL_MUSHAF_PAGES = 604;
 
 export function MushafPdfClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // mushafPage is the Quran page number (1-604)
   const initialPage = Math.min(Math.max(Number(searchParams.get("page")) || 1, 1), TOTAL_MUSHAF_PAGES);
   const [mushafPage, setMushafPage] = useState(initialPage);
   const [loading, setLoading] = useState(true);
-  const [pdfReady, setPdfReady] = useState(false);
   const [pageInput, setPageInput] = useState("");
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pdfDocRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const renderIdRef = useRef(0);
 
-  // PDF page = mushaf page + offset
-  const pdfPage = mushafPage + PDF_PAGE_OFFSET;
+  const imageUrl = `/api/quran/mushaf/page-image/${mushafPage}`;
 
-  // Load PDF
+  // Prefetch adjacent pages
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const doc = await pdfjsLib.getDocument({
-          url: "/api/quran/mushaf/pdf/stream",
-          disableAutoFetch: true,
-          disableStream: true,
-          cMapUrl: "/cmaps/",
-          cMapPacked: true,
-          enableXfa: false,
-        }).promise;
-        if (cancelled) return;
-        pdfDocRef.current = doc;
-        setPdfReady(true);
-      } catch {
-        // fail silently
+    const prefetch = (p: number) => {
+      if (p >= 1 && p <= TOTAL_MUSHAF_PAGES) {
+        const img = new Image();
+        img.src = `/api/quran/mushaf/page-image/${p}`;
       }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // Render current page
-  useEffect(() => {
-    if (!pdfReady) return;
-    const id = ++renderIdRef.current;
-
-    const render = async () => {
-      const doc = pdfDocRef.current;
-      const canvas = canvasRef.current;
-      const container = containerRef.current;
-      if (!doc || !canvas || !container) return;
-      if (pdfPage < 1 || pdfPage > doc.numPages) return;
-      setLoading(true);
-
-      try {
-        const page = await doc.getPage(pdfPage);
-        if (id !== renderIdRef.current) return;
-
-        const containerHeight = container.clientHeight - 32;
-        const containerWidth = container.clientWidth - 32;
-        const viewport = page.getViewport({ scale: 1 });
-
-        const scaleH = containerHeight / viewport.height;
-        const scaleW = containerWidth / viewport.width;
-        const scale = Math.min(scaleH, scaleW);
-        const scaled = page.getViewport({ scale });
-        const dpr = window.devicePixelRatio || 1;
-
-        canvas.width = scaled.width * dpr;
-        canvas.height = scaled.height * dpr;
-        canvas.style.width = `${scaled.width}px`;
-        canvas.style.height = `${scaled.height}px`;
-
-        const ctx = canvas.getContext("2d")!;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        await page.render({
-          canvas,
-          canvasContext: ctx,
-          viewport: scaled,
-        } as any).promise;
-      } catch {
-        // render error
-      }
-
-      if (id === renderIdRef.current) setLoading(false);
     };
-
-    render();
-  }, [pdfPage, pdfReady]);
-
-  // Re-render on resize
-  useEffect(() => {
-    if (!pdfReady) return;
-    const handler = () => {
-      renderIdRef.current++;
-      setLoading(true);
-      setTimeout(() => setMushafPage((p) => p), 100);
-    };
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, [pdfReady]);
+    prefetch(mushafPage + 1);
+    prefetch(mushafPage - 1);
+  }, [mushafPage]);
 
   // Navigation
   const goNext = useCallback(() => {
     setMushafPage((p) => (p < TOTAL_MUSHAF_PAGES ? p + 1 : p));
+    setLoading(true);
   }, []);
 
   const goPrev = useCallback(() => {
     setMushafPage((p) => (p > 1 ? p - 1 : p));
+    setLoading(true);
   }, []);
 
   // Keyboard (RTL: left = forward/higher page, right = back/lower page)
@@ -150,7 +68,7 @@ export function MushafPdfClient() {
         else goPrev();
       }
     },
-    [goNext, goPrev]
+    [goNext, goPrev],
   );
 
   const handlePageSubmit = useCallback(
@@ -159,10 +77,11 @@ export function MushafPdfClient() {
       const target = Number(pageInput);
       if (target >= 1 && target <= TOTAL_MUSHAF_PAGES) {
         setMushafPage(target);
+        setLoading(true);
         setPageInput("");
       }
     },
-    [pageInput]
+    [pageInput],
   );
 
   const canGoNext = mushafPage < TOTAL_MUSHAF_PAGES;
@@ -187,9 +106,9 @@ export function MushafPdfClient() {
         onTouchEnd={handleTouchEnd}
       >
         {/* Loading spinner */}
-        {(loading || !pdfReady) && (
+        {loading && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <div className="w-10 h-10 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+            <Loader2 className="w-10 h-10 text-white/60 animate-spin" />
           </div>
         )}
 
@@ -213,14 +132,16 @@ export function MushafPdfClient() {
           <ChevronRight className="h-6 w-6" />
         </button>
 
-        {/* Canvas */}
-        <canvas
-          ref={canvasRef}
-          className="bg-white shadow-lg"
-          style={{
-            opacity: loading ? 0.3 : 1,
-            transition: "opacity 0.15s",
-          }}
+        {/* Page image */}
+        <img
+          key={mushafPage}
+          src={imageUrl}
+          alt={`Mushaf page ${mushafPage}`}
+          className="max-h-full max-w-full object-contain shadow-lg transition-opacity duration-150"
+          style={{ opacity: loading ? 0.3 : 1 }}
+          onLoad={() => setLoading(false)}
+          onError={() => setLoading(false)}
+          draggable={false}
         />
       </div>
 
