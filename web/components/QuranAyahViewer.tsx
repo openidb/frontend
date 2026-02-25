@@ -540,19 +540,11 @@ export function QuranAyahViewer({
 
         /* Force ayah-view lines to same compressed height as full mushaf */
         .ayah-view .mushaf-line {
-          height: clamp(2.2rem, 8.5vw, 3.2rem);
+          height: 3.2rem;
           overflow: visible;
-        }
-        @media (min-width: 640px) {
-          .ayah-view .mushaf-line {
-            height: 3.2rem;
-          }
         }
 
         .mushaf-line-justify { justify-content: space-between; }
-        @media (max-width: 639px) {
-          .mushaf-line-justify { justify-content: flex-start; gap: 0.12em; }
-        }
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
         .mushaf-word { cursor: default; }
 
