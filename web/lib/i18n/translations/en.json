@@ -368,8 +368,8 @@
     "loading": "Loading page...",
     "viewFullSurah": "View Full Surah",
     "ayah": "Ayah",
-    "nextAyah": "Next ayah",
-    "prevAyah": "Previous ayah",
+    "nextAyah": "Next",
+    "prevAyah": "Prev",
     "tafsir": "Tafsir"
   },
   "common": {
