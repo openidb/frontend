@@ -648,25 +648,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   };
 
-  const [pdfLoading, setPdfLoading] = useState(false);
 
-  const handleOpenPdf = useCallback(async () => {
-    if (pdfLoading) return;
-    setPdfLoading(true);
-    try {
-      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${currentPage}/pdf`);
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.url) {
-        window.open(data.url, "_blank", "noopener");
-        trackBookEvent(bookMetadata.id, "pdf_open", currentPage);
-      }
-    } catch {
-      // Silent failure — button just stops loading
-    } finally {
-      setPdfLoading(false);
-    }
-  }, [bookMetadata.id, currentPage, pdfLoading]);
+  const handleOpenPdf = useCallback(() => {
+    window.open(`/api/books/${bookMetadata.id}/pages/${currentPage}/pdf`, "_blank", "noopener");
+    trackBookEvent(bookMetadata.id, "pdf_open", currentPage);
+  }, [bookMetadata.id, currentPage]);
 
   const prefersReducedMotion = useReducedMotion();
 
@@ -836,12 +822,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 handleOpenPdf();
                 setShowSidebar(false);
               }}
-              disabled={pdfLoading}
               className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
             >
-              {pdfLoading
-                ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                : <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
               <span>{t("reader.openPdf")}</span>
             </button>
           ) : (
