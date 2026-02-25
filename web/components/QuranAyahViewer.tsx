@@ -550,6 +550,9 @@ export function QuranAyahViewer({
         }
 
         .mushaf-line-justify { justify-content: space-between; }
+        @media (max-width: 639px) {
+          .mushaf-line-justify { justify-content: flex-start; gap: 0.12em; }
+        }
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
         .mushaf-word { cursor: default; }
 
