@@ -107,70 +107,71 @@ export default function BooksClient({
 
   const effectiveBookTitleDisplay = bookTitleDisplay;
 
-  // Fetch feature counts on mount (not part of SSR to avoid blocking on slow queries)
+  // Fetch feature counts on mount and re-fetch all facets when any filter changes
   const [initialFeatures, setInitialFeatures] = useState<FeatureCounts | null>(null);
-  useEffect(() => {
-    const featuresLang = locale === "ar" ? "en" : locale;
-    fetch(`/api/features?lang=${featuresLang}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.features) {
-          setFeatureCounts(data.features);
-          setInitialFeatures(data.features);
-        }
-      })
-      .catch(() => {});
-  }, [locale]);
 
-  // Re-fetch facet counts when filters change (interdependent filters)
   useEffect(() => {
-    if (selectedCategories.length === 0 && selectedCenturies.length === 0) {
-      setCategories(initialCategories);
-      setCenturies(initialCenturies);
-      if (initialFeatures) setFeatureCounts(initialFeatures);
-      return;
-    }
+    const hasAnyFilter = selectedCategories.length > 0 || selectedCenturies.length > 0 || selectedFeatures.length > 0;
+
+    // Build shared feature filter params
+    const featureFilterParams = new URLSearchParams();
+    if (selectedFeatures.includes("hasPdf")) featureFilterParams.set("hasPdf", "true");
+    if (selectedFeatures.includes("isIndexed")) featureFilterParams.set("isIndexed", "true");
+    const featureQS = featureFilterParams.toString();
 
     const controller = new AbortController();
 
     const fetchFacets = async () => {
       const featuresLang = locale === "ar" ? "en" : locale;
-      const featureParams = new URLSearchParams();
-      featureParams.set("lang", featuresLang);
-      if (selectedCategories.length > 0) featureParams.set("categoryId", selectedCategories.join(","));
-      if (selectedCenturies.length > 0) featureParams.set("century", selectedCenturies.join(","));
+
+      // Build params for each endpoint
+      const catParams = new URLSearchParams({ flat: "true" });
+      if (selectedCenturies.length > 0) catParams.set("century", selectedCenturies.join(","));
+      if (featureQS) featureQS.split("&").forEach((kv) => { const [k, v] = kv.split("="); catParams.set(k, v); });
+
+      const cenParams = new URLSearchParams();
+      if (selectedCategories.length > 0) cenParams.set("categoryId", selectedCategories.join(","));
+      if (featureQS) featureQS.split("&").forEach((kv) => { const [k, v] = kv.split("="); cenParams.set(k, v); });
+
+      const featParams = new URLSearchParams({ lang: featuresLang });
+      if (selectedCategories.length > 0) featParams.set("categoryId", selectedCategories.join(","));
+      if (selectedCenturies.length > 0) featParams.set("century", selectedCenturies.join(","));
+      if (selectedFeatures.includes("hasPdf")) featParams.set("hasPdf", "true");
+      if (selectedFeatures.includes("isIndexed")) featParams.set("isIndexed", "true");
 
       const [catRes, cenRes, featRes] = await Promise.all([
-        // Fetch categories filtered by selected centuries
-        selectedCenturies.length > 0
-          ? fetch(`/api/categories?flat=true&century=${selectedCenturies.join(",")}`, { signal: controller.signal }).then((r) => r.json())
+        // Fetch categories filtered by centuries + features
+        (selectedCenturies.length > 0 || selectedFeatures.length > 0)
+          ? fetch(`/api/categories?${catParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
           : null,
-        // Fetch centuries filtered by selected categories
-        selectedCategories.length > 0
-          ? fetch(`/api/centuries?categoryId=${selectedCategories.join(",")}`, { signal: controller.signal }).then((r) => r.json())
+        // Fetch centuries filtered by categories + features
+        (selectedCategories.length > 0 || selectedFeatures.length > 0)
+          ? fetch(`/api/centuries?${cenParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
           : null,
-        // Fetch feature counts filtered by selected categories/centuries
-        fetch(`/api/features?${featureParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
+        // Fetch feature counts filtered by categories + centuries + other features
+        fetch(`/api/features?${featParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
       ]);
 
       if (controller.signal.aborted) return;
 
       if (catRes?.categories) {
         setCategories(catRes.categories);
-      } else {
+      } else if (!hasAnyFilter || selectedCenturies.length === 0 && selectedFeatures.length === 0) {
         setCategories(initialCategories);
       }
 
       if (cenRes?.centuries) {
         setCenturies(cenRes.centuries);
-      } else {
+      } else if (!hasAnyFilter || selectedCategories.length === 0 && selectedFeatures.length === 0) {
         setCenturies(initialCenturies);
       }
 
       if (featRes?.features) {
         setFeatureCounts(featRes.features);
-      } else if (initialFeatures) {
-        setFeatureCounts(initialFeatures);
+        // Store unfiltered features as baseline
+        if (!hasAnyFilter) {
+          setInitialFeatures(featRes.features);
+        }
       }
     };
 
@@ -179,8 +180,7 @@ export default function BooksClient({
     });
 
     return () => controller.abort();
-  }, [selectedCategories, selectedCenturies, initialCategories, initialCenturies, initialFeatures, locale]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialFeatures is state, not prop
+  }, [selectedCategories, selectedCenturies, selectedFeatures, initialCategories, initialCenturies, locale]);
 
   // Build category options for MultiSelectDropdown (locale-aware via i18n)
   const categoryOptions = useMemo(() =>
