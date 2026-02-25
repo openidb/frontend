@@ -650,9 +650,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
 
   const handleOpenPdf = useCallback(() => {
-    window.open(`/api/books/${bookMetadata.id}/pages/${currentPage}/pdf`, "_blank", "noopener");
+    let url = `/api/books/${bookMetadata.id}/pages/${currentPage}/pdf`;
+    const printedPage = pageData?.printedPageNumber;
+    if (printedPage != null && printedPage >= 1) {
+      url += `#page=${printedPage}`;
+    }
+    window.open(url, "_blank", "noopener");
     trackBookEvent(bookMetadata.id, "pdf_open", currentPage);
-  }, [bookMetadata.id, currentPage]);
+  }, [bookMetadata.id, currentPage, pageData?.printedPageNumber]);
 
   const prefersReducedMotion = useReducedMotion();
 
