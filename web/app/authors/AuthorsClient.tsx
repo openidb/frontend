@@ -98,7 +98,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
           params.set("century", selectedCenturies.join(","));
         }
 
-        const response = await fetch(`/api/authors?${params}`, { signal: controller.signal });
+        const response = await fetch(`/api/books/authors?${params}`, { signal: controller.signal });
         if (controller.signal.aborted) return;
         const data = await response.json();
 

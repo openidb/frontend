@@ -142,14 +142,14 @@ export default function BooksClient({
       const [catRes, cenRes, featRes] = await Promise.all([
         // Fetch categories filtered by centuries + features
         (selectedCenturies.length > 0 || selectedFeatures.length > 0)
-          ? fetch(`/api/categories?${catParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
+          ? fetch(`/api/books/categories?${catParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
           : null,
         // Fetch centuries filtered by categories + features
         (selectedCategories.length > 0 || selectedFeatures.length > 0)
-          ? fetch(`/api/centuries?${cenParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
+          ? fetch(`/api/books/centuries?${cenParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
           : null,
         // Fetch feature counts filtered by categories + centuries + other features
-        fetch(`/api/features?${featParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
+        fetch(`/api/books/features?${featParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
       ]);
 
       if (controller.signal.aborted) return;
