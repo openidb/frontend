@@ -46,7 +46,7 @@ interface AuthorsClientProps {
 
 export default function AuthorsClient({ initialAuthors, initialPagination, initialCenturies }: AuthorsClientProps) {
   const { t, locale } = useTranslation();
-  const { config, isLoaded } = useAppConfig();
+  const { config } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [authors, setAuthors] = useState<Author[]>(initialAuthors);
@@ -142,27 +142,6 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
       setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
     }
   };
-
-  // Show loading skeleton until config is loaded
-  if (!isLoaded) {
-    return (
-      <div className="p-4 md:p-8">
-        <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="h-8 w-32 bg-muted animate-shimmer rounded" />
-          <div className="h-10 w-64 bg-muted animate-shimmer rounded" />
-        </div>
-        <div className="space-y-1">
-          <div className="h-10 rounded-lg" />
-          {[...Array(10)].map((_, i) => (
-            <div key={i} className="h-14 bg-muted/25 rounded-lg flex items-center gap-4 px-4">
-              <div className="h-4 w-48 bg-muted animate-shimmer rounded" />
-              <div className="h-4 w-24 bg-muted animate-shimmer rounded" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-4 md:p-8" suppressHydrationWarning>

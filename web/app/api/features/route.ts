@@ -9,7 +9,7 @@ export async function GET(request: Request) {
       status: res.status,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+        "Cache-Control": "public, max-age=86400, stale-while-revalidate=86400",
       },
     });
   } catch {

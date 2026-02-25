@@ -72,7 +72,6 @@ interface BooksClientProps {
   };
   initialCategories: CategoryItem[];
   initialCenturies: CenturyItem[];
-  initialFeatures: FeatureCounts;
 }
 
 // Get year display for a book using centralized utility
@@ -88,7 +87,6 @@ export default function BooksClient({
   initialPagination,
   initialCategories,
   initialCenturies,
-  initialFeatures,
 }: BooksClientProps) {
   const { t, locale } = useTranslation();
   const { config } = useAppConfig();
@@ -102,19 +100,34 @@ export default function BooksClient({
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
   const [centuries, setCenturies] = useState<CenturyItem[]>(initialCenturies);
-  const [featureCounts, setFeatureCounts] = useState<FeatureCounts>(initialFeatures);
+  const [featureCounts, setFeatureCounts] = useState<FeatureCounts>({ hasPdf: 0, isIndexed: 0, isTranslated: 0 });
 
   // Extract config values
   const { showPublicationDates, bookTitleDisplay, dateCalendar } = config;
 
   const effectiveBookTitleDisplay = bookTitleDisplay;
 
+  // Fetch feature counts on mount (not part of SSR to avoid blocking on slow queries)
+  const [initialFeatures, setInitialFeatures] = useState<FeatureCounts | null>(null);
+  useEffect(() => {
+    const featuresLang = locale === "ar" ? "en" : locale;
+    fetch(`/api/features?lang=${featuresLang}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.features) {
+          setFeatureCounts(data.features);
+          setInitialFeatures(data.features);
+        }
+      })
+      .catch(() => {});
+  }, [locale]);
+
   // Re-fetch facet counts when filters change (interdependent filters)
   useEffect(() => {
     if (selectedCategories.length === 0 && selectedCenturies.length === 0) {
       setCategories(initialCategories);
       setCenturies(initialCenturies);
-      setFeatureCounts(initialFeatures);
+      if (initialFeatures) setFeatureCounts(initialFeatures);
       return;
     }
 
@@ -156,7 +169,7 @@ export default function BooksClient({
 
       if (featRes?.features) {
         setFeatureCounts(featRes.features);
-      } else {
+      } else if (initialFeatures) {
         setFeatureCounts(initialFeatures);
       }
     };
@@ -167,6 +180,7 @@ export default function BooksClient({
 
     return () => controller.abort();
   }, [selectedCategories, selectedCenturies, initialCategories, initialCenturies, initialFeatures, locale]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialFeatures is state, not prop
 
   // Build category options for MultiSelectDropdown (locale-aware via i18n)
   const categoryOptions = useMemo(() =>
