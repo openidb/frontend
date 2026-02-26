@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { PrefetchLink } from "@/components/PrefetchLink";
 import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, HadithResultData } from "@/components/SearchResult";
 import { SearchFiltersPanel } from "@/components/SearchFiltersPanel";
-import { QURAN_TRANSLATIONS } from "@/lib/config/search-defaults";
 import { useAppConfig, type SearchConfig } from "@/lib/config";
+import { parseSearchResults, buildSearchParams } from "@/lib/search-utils";
 import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import { RefiningCarousel } from "@/components/RefiningCarousel";
@@ -70,66 +70,6 @@ function SearchResultSkeleton() {
 
 type ActiveTab = "results" | "deep" | "filters";
 type DeepSearchStatus = "idle" | "loading" | "done" | "error";
-
-/** Parse search response into sorted, limited UnifiedResult[] */
-function parseSearchResults(data: SearchResponse, limit: number): UnifiedResult[] {
-  const unified: UnifiedResult[] = [];
-  for (const ayah of data.ayahs || []) {
-    unified.push({ type: "quran", data: ayah, score: ayah.score });
-  }
-  for (const hadith of data.hadiths || []) {
-    unified.push({ type: "hadith", data: hadith, score: hadith.score });
-  }
-  unified.sort((a, b) => b.score - a.score);
-  const limited = unified.slice(0, limit);
-  limited.forEach((result, index) => { result.data.rank = index + 1; });
-  return limited;
-}
-
-/** Build URLSearchParams for a search request */
-function buildSearchParams(searchQuery: string, config: SearchConfig, locale: string, isRefine: boolean): URLSearchParams {
-  const effectiveReranker = isRefine ? config.reranker : "none";
-  const effectiveBookTitleLang = config.bookTitleDisplay === "translation"
-    ? (locale === "ar" ? "en" : locale)
-    : config.bookTitleDisplay;
-
-  const params = new URLSearchParams({
-    q: searchQuery,
-    mode: "hybrid",
-    limit: "20",
-    includeQuran: String(config.includeQuran),
-    includeHadith: String(config.includeHadith),
-    includeBooks: String(config.includeBooks),
-    reranker: effectiveReranker,
-    similarityCutoff: String(config.similarityCutoff),
-    refineSimilarityCutoff: String(config.refineSimilarityCutoff),
-    preRerankLimit: String(config.preRerankLimit),
-    postRerankLimit: String(config.postRerankLimit),
-    fuzzy: String(config.fuzzyEnabled),
-    embeddingModel: config.embeddingModel || "gemini",
-    quranTranslation: config.quranTranslation !== "none"
-      ? (QURAN_TRANSLATIONS.find(t => t.code === config.quranTranslation)?.edition || "eng-mustafakhattaba")
-      : "none",
-    hadithTranslation: config.hadithTranslation || "none",
-    bookTitleLang: effectiveBookTitleLang,
-    ...(config.hadithCollections.length > 0 && {
-      hadithCollections: config.hadithCollections.join(","),
-    }),
-    ...(isRefine && {
-      refine: "true",
-      refineOriginalWeight: String(config.refineOriginalWeight),
-      refineExpandedWeight: String(config.refineExpandedWeight),
-      refineBookPerQuery: String(config.refineBookPerQuery),
-      refineAyahPerQuery: String(config.refineAyahPerQuery),
-      refineHadithPerQuery: String(config.refineHadithPerQuery),
-      refineBookRerank: String(config.refineBookRerank),
-      refineAyahRerank: String(config.refineAyahRerank),
-      refineHadithRerank: String(config.refineHadithRerank),
-      queryExpansionModel: config.queryExpansionModel,
-    }),
-  });
-  return params;
-}
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
@@ -290,7 +230,7 @@ export default function SearchClient() {
       }
 
       const data: SearchResponse = await response.json();
-      const limitedUnified = parseSearchResults(data, config.postRerankLimit);
+      const limitedUnified = parseSearchResults(data, config.postRerankLimit) as UnifiedResult[];
 
       setQuickResults(limitedUnified);
       setQuickAuthors(data.authors || []);
@@ -371,7 +311,7 @@ export default function SearchClient() {
       }
 
       const data: SearchResponse = await response.json();
-      const limitedUnified = parseSearchResults(data, config.postRerankLimit);
+      const limitedUnified = parseSearchResults(data, config.postRerankLimit) as UnifiedResult[];
 
       setDeepResults(limitedUnified);
       setDeepAuthors(data.authors || []);

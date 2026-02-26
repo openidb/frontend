@@ -18,6 +18,17 @@ jobs:
       - name: Build
         run: cd web && bun run build
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: cd web && bun install --frozen-lockfile
+      - name: Run tests
+        run: cd web && bun run test
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
