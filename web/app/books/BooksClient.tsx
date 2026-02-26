@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { PrefetchLink } from "@/components/PrefetchLink";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -90,17 +90,41 @@ export default function BooksClient({
 }: BooksClientProps) {
   const { t, locale } = useTranslation();
   const { config } = useAppConfig();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Restore persisted filter state from sessionStorage
+  const saved = useRef<{ search: string; categories: string[]; centuries: string[]; features: string[]; page: number } | null>(null);
+  if (saved.current === null) {
+    try {
+      const raw = sessionStorage.getItem("books_filters");
+      if (raw) saved.current = JSON.parse(raw);
+    } catch {}
+    if (!saved.current) saved.current = { search: "", categories: [], centuries: [], features: [], page: 1 };
+  }
+
+  const [searchQuery, setSearchQuery] = useState(saved.current.search);
+  const [debouncedSearch, setDebouncedSearch] = useState(saved.current.search);
   const [books, setBooks] = useState<Book[]>(initialBooks);
-  const [pagination, setPagination] = useState(initialPagination);
+  const [pagination, setPagination] = useState({ ...initialPagination, page: saved.current.page });
   const [loading, setLoading] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(saved.current.categories);
+  const [selectedCenturies, setSelectedCenturies] = useState<string[]>(saved.current.centuries);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(saved.current.features);
   const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
   const [centuries, setCenturies] = useState<CenturyItem[]>(initialCenturies);
   const [featureCounts, setFeatureCounts] = useState<FeatureCounts>({ hasPdf: 0, isIndexed: 0, isTranslated: 0 });
+
+  // Persist filter state to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("books_filters", JSON.stringify({
+        search: searchQuery,
+        categories: selectedCategories,
+        centuries: selectedCenturies,
+        features: selectedFeatures,
+        page: pagination.page,
+      }));
+    } catch {}
+  }, [searchQuery, selectedCategories, selectedCenturies, selectedFeatures, pagination.page]);
 
   // Extract config values
   const { showPublicationDates, bookTitleDisplay, dateCalendar } = config;

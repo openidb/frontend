@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { PrefetchLink } from "@/components/PrefetchLink";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -47,12 +47,34 @@ interface AuthorsClientProps {
 export default function AuthorsClient({ initialAuthors, initialPagination, initialCenturies }: AuthorsClientProps) {
   const { t, locale } = useTranslation();
   const { config } = useAppConfig();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Restore persisted filter state from sessionStorage
+  const saved = useRef<{ search: string; centuries: string[]; page: number } | null>(null);
+  if (saved.current === null) {
+    try {
+      const raw = sessionStorage.getItem("authors_filters");
+      if (raw) saved.current = JSON.parse(raw);
+    } catch {}
+    if (!saved.current) saved.current = { search: "", centuries: [], page: 1 };
+  }
+
+  const [searchQuery, setSearchQuery] = useState(saved.current.search);
+  const [debouncedSearch, setDebouncedSearch] = useState(saved.current.search);
   const [authors, setAuthors] = useState<Author[]>(initialAuthors);
-  const [pagination, setPagination] = useState(initialPagination);
+  const [pagination, setPagination] = useState({ ...initialPagination, page: saved.current.page });
   const [loading, setLoading] = useState(false);
-  const [selectedCenturies, setSelectedCenturies] = useState<string[]>([]);
+  const [selectedCenturies, setSelectedCenturies] = useState<string[]>(saved.current.centuries);
+
+  // Persist filter state to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("authors_filters", JSON.stringify({
+        search: searchQuery,
+        centuries: selectedCenturies,
+        page: pagination.page,
+      }));
+    } catch {}
+  }, [searchQuery, selectedCenturies, pagination.page]);
 
   // Build century options for MultiSelectDropdown (locale-aware via i18n)
   const centuryOptions = useMemo(() =>
