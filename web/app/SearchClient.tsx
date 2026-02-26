@@ -186,6 +186,28 @@ export default function SearchClient() {
     fetchQuickResults(query, searchConfig);
   }, [searchConfig.quranTranslation]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Try to restore query + cached results from sessionStorage
+  const restoreFromCache = useCallback((q: string) => {
+    const restoreCollectionKey = searchConfig.hadithCollections.length > 0 ? searchConfig.hadithCollections.join(",") : "all";
+    const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${restoreCollectionKey}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const { quickResults: cachedResults, quickAuthors: cachedAuthors } = JSON.parse(cached);
+        setQuery(q);
+        setQuickResults(cachedResults || []);
+        setQuickAuthors(cachedAuthors || []);
+        setHasSearched(true);
+        restoredQueryRef.current = q;
+        window.history.replaceState({}, "", `/?q=${encodeURIComponent(q)}`);
+        return true;
+      } catch {
+        // Cache parse failed
+      }
+    }
+    return false;
+  }, [searchConfig.hadithCollections, searchConfig.quranTranslation]);
+
   // Initialize query and restore cached results on mount only
   const initializedRef = useRef(false);
   useEffect(() => {
@@ -195,21 +217,18 @@ export default function SearchClient() {
     const q = searchParams.get("q");
     if (q) {
       setQuery(q);
-      // Try to restore cached results
-      const restoreCollectionKey = searchConfig.hadithCollections.length > 0 ? searchConfig.hadithCollections.join(",") : "all";
-      const cacheKey = `search_${q}_${searchConfig.quranTranslation}_${restoreCollectionKey}`;
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        try {
-          const { quickResults: cachedResults, quickAuthors: cachedAuthors } = JSON.parse(cached);
-          setQuickResults(cachedResults || []);
-          setQuickAuthors(cachedAuthors || []);
-          setHasSearched(true);
-          restoredQueryRef.current = q;
-        } catch {
-          // Cache parse failed, will re-fetch
-        }
+      restoreFromCache(q);
+      return;
+    }
+
+    // No ?q= in URL — try restoring last search from sessionStorage
+    try {
+      const lastQuery = sessionStorage.getItem("search_last_query");
+      if (lastQuery && lastQuery.length >= 2) {
+        restoreFromCache(lastQuery);
       }
+    } catch {
+      // Ignore storage errors
     }
   }, [searchParams]);
 
@@ -387,6 +406,8 @@ export default function SearchClient() {
       fetchQuickResults(searchQuery, config);
       // Update URL without navigation
       window.history.replaceState({}, "", `/?q=${encodeURIComponent(searchQuery)}`);
+      // Persist last query for cross-navigation restore
+      try { sessionStorage.setItem("search_last_query", searchQuery); } catch {}
     }
   }, [fetchQuickResults]);
 
@@ -437,6 +458,7 @@ export default function SearchClient() {
       setDeepSearchStatus("idle");
       setActiveTab("results");
       window.history.replaceState({}, "", "/");
+      try { sessionStorage.removeItem("search_last_query"); } catch {}
     }
   }, [triggerSearch, searchConfig]);
 
@@ -496,6 +518,7 @@ export default function SearchClient() {
     setHasSearched(false);
     setShowDebugStats(false);
     window.history.replaceState({}, "", "/");
+    try { sessionStorage.removeItem("search_last_query"); } catch {}
   };
 
   // Handle voice transcription result
