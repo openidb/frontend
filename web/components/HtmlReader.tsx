@@ -224,7 +224,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     setError(null);
 
     try {
-      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`, {
+      const res = await fetch(`/api/books/${encodeURIComponent(bookMetadata.id)}/pages/${pageNumber}`, {
         signal: controller.signal,
       });
 
@@ -267,7 +267,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const prefetchPage = useCallback(async (pageNumber: number, signal?: AbortSignal) => {
     if (pageNumber < 0 || pageNumber >= totalPages || cacheRef.current.has(pageNumber)) return;
     try {
-      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`, { signal });
+      const res = await fetch(`/api/books/${encodeURIComponent(bookMetadata.id)}/pages/${pageNumber}`, { signal });
       if (res.ok) {
         const data = await res.json();
         cacheSet(pageNumber, data.page);
@@ -322,7 +322,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     setTranslationResult(null);
     setIsTranslationLoading(true);
 
-    fetch(`/api/books/${bookMetadata.id}/pages/${currentPage}/translation?lang=${encodeURIComponent(translationLang)}`)
+    fetch(`/api/books/${encodeURIComponent(bookMetadata.id)}/pages/${currentPage}/translation?lang=${encodeURIComponent(translationLang)}`)
       .then((res) => {
         if (!res.ok) throw new Error("not found");
         return res.json();
@@ -491,7 +491,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
 
   const handleOpenPdf = useCallback(() => {
-    let url = `/api/books/${bookMetadata.id}/pages/${currentPage}/pdf`;
+    let url = `/api/books/${encodeURIComponent(bookMetadata.id)}/pages/${currentPage}/pdf`;
     const printedPage = pageData?.printedPageNumber;
     if (printedPage != null && printedPage >= 1) {
       url += `#page=${printedPage}`;

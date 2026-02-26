@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PrefetchLink } from "@/components/PrefetchLink";
+import { buildReaderUrl } from "@/lib/reader-url";
 import type { RootFamilyData, DerivedForm, Definition } from "@/lib/types/dictionary";
 
 type DictionaryEntry = Omit<Definition, "matchType">;
@@ -173,7 +174,7 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
                       {entry.bookId && entry.startPage && (
                         <div className="mt-3 text-sm text-gray-500">
                           <PrefetchLink
-                            href={`/reader/${entry.bookId}?page=${entry.startPage}`}
+                            href={buildReaderUrl(entry.bookId, entry.startPage)}
                             className="hover:underline text-blue-600 dark:text-blue-400"
                           >
                             View in reader (p. {entry.startPage}

@@ -14,6 +14,7 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { formatAuthorDates, formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
+import { buildReaderUrl } from "@/lib/reader-url";
 
 interface Book {
   id: string;
@@ -198,7 +199,7 @@ export default function AuthorDetailClient({
                   <TableRow key={book.id}>
                     <TableCell>
                       <PrefetchLink
-                        href={`/reader/${book.id}`}
+                        href={buildReaderUrl(book.id)}
                         className="font-medium hover:underline"
                       >
                         <div>{book.title}</div>

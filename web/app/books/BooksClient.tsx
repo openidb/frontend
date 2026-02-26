@@ -16,6 +16,7 @@ import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
 import { formatBookYear, type DateCalendar } from "@/lib/dates";
 import { useAppConfig } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
+import { buildReaderUrl } from "@/lib/reader-url";
 
 interface Author {
   id: string;
@@ -408,7 +409,7 @@ export default function BooksClient({
             return (
               <PrefetchLink
                 key={book.id}
-                href={`/reader/${book.id}`}
+                href={buildReaderUrl(book.id)}
                 className="block p-2.5 rounded-lg bg-muted/25 hover:bg-muted/70 transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
@@ -479,7 +480,7 @@ export default function BooksClient({
                     </TableCell>
                     <TableCell className="overflow-hidden">
                       <PrefetchLink
-                        href={`/reader/${book.id}`}
+                        href={buildReaderUrl(book.id)}
                         className="font-medium hover:underline"
                       >
                         <div className="truncate">{book.titleArabic}</div>

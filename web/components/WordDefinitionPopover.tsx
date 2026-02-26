@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Copy, Loader2, BookOpen } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { PrefetchLink } from "./PrefetchLink";
+import { buildReaderUrl } from "@/lib/reader-url";
 import type { LookupResult } from "@/lib/types/dictionary";
 
 interface WordDefinitionPopoverProps {
@@ -198,7 +199,7 @@ export function WordDefinitionPopover({
                 </p>
                 {def.bookId && def.startPage != null && (
                   <PrefetchLink
-                    href={`/reader/${def.bookId}?pn=${def.startPage}`}
+                    href={buildReaderUrl(def.bookId, def.startPage)}
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                     onClick={onClose}
                   >

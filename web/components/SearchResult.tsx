@@ -7,6 +7,7 @@ import { useTranslation } from "@/lib/i18n";
 import { sanitizeHighlight } from "@/lib/utils";
 import type { TranslationDisplayOption } from "@/lib/config/search-defaults";
 import { trackClick } from "@/lib/analytics";
+import { buildReaderUrl } from "@/lib/reader-url";
 
 // Format translation source/model names for display
 const SOURCE_LABELS: Record<string, string> = {
@@ -118,7 +119,7 @@ function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransl
 
   // Build the reader URL with pn (page number) parameter - uses unique sequential page number
   // that maps directly to EPUB file names like page_0967.xhtml
-  const readerUrl = `/reader/${book.id}?pn=${pageNumber}`;
+  const readerUrl = buildReaderUrl(book.id, pageNumber);
 
   // Determine secondary title based on bookTitleDisplay setting
   const getSecondaryTitle = (): string | null => {
