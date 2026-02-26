@@ -593,7 +593,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   }, [goToNextPage, goToPrevPage, dir]);
 
   const goBack = () => {
-    router.back();
+    // If we have browser history, go back; otherwise navigate to home
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
   };
 
   // Handle clicks on [data-page] links and word taps in content
@@ -662,7 +667,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-background">
+    <div className="fixed inset-0 z-40 flex flex-col bg-background">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
       {/* Header */}

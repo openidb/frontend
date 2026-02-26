@@ -44,7 +44,7 @@ export function DesktopNavigation() {
   }, [pathname, router]);
 
   // Hide desktop sidebar on full-screen pages
-  if (pathname === "/mushaf/pdf") return null;
+  if (pathname === "/mushaf/pdf" || pathname.startsWith("/reader/")) return null;
 
   return (
     <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">

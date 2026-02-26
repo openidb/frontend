@@ -502,9 +502,18 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
     );
   }
 
+  // No valid link — render as a non-clickable card
+  if (!hadith.sourceUrl) {
+    return (
+      <div className={cardClassName}>
+        {cardContent}
+      </div>
+    );
+  }
+
   return (
     <a
-      href={hadith.sourceUrl || "#"}
+      href={hadith.sourceUrl}
       target="_blank"
       rel="noopener noreferrer"
       className={cardClassName}
