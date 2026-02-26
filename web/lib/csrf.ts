@@ -45,10 +45,14 @@ export function validateCsrfToken(token: string | null): boolean {
     .update(timestamp)
     .digest("hex");
 
-  // Timing-safe comparison
-  if (providedHmac.length !== expectedHmac.length) return false;
-  return crypto.timingSafeEqual(
-    Buffer.from(providedHmac),
-    Buffer.from(expectedHmac)
-  );
+  // Timing-safe comparison — always run timingSafeEqual on equal-length
+  // buffers so the length check doesn't leak timing information.
+  const providedBuf = Buffer.from(providedHmac);
+  const expectedBuf = Buffer.from(expectedHmac);
+  const maxLen = Math.max(providedBuf.length, expectedBuf.length, 1);
+  const a = Buffer.alloc(maxLen);
+  const b = Buffer.alloc(maxLen);
+  providedBuf.copy(a);
+  expectedBuf.copy(b);
+  return providedBuf.length === expectedBuf.length && crypto.timingSafeEqual(a, b);
 }

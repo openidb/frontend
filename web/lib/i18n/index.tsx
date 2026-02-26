@@ -95,20 +95,7 @@ interface I18nContextType {
 // Create context
 const I18nContext = createContext<I18nContextType | null>(null);
 
-// Helper to get nested value from object by dot-notation path
-function getNestedValue(obj: unknown, path: string): string | undefined {
-  const keys = path.split(".");
-  let current: unknown = obj;
-
-  for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== "object") {
-      return undefined;
-    }
-    current = (current as Record<string, unknown>)[key];
-  }
-
-  return typeof current === "string" ? current : undefined;
-}
+import { getNestedValue, interpolate } from "./utils";
 
 // Provider component
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -180,14 +167,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       return key;
     }
 
-    // Interpolate params
-    if (params) {
-      for (const [paramKey, paramValue] of Object.entries(params)) {
-        value = value.replace(new RegExp(`\\{${paramKey}\\}`, "g"), String(paramValue));
-      }
-    }
-
-    return value;
+    return params ? interpolate(value, params) : value;
   }, [locale, loadedTranslations]);
 
   // Direction based on locale

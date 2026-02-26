@@ -6,8 +6,8 @@ import {
   type TranslationDisplayOption,
   type DateCalendarType,
   DEFAULT_SEARCH_CONFIG,
-  INTERNAL_CONFIG_KEYS,
 } from "@/lib/config/search-defaults";
+import { applyInternalDefaults, syncTranslationsToLocale, migrateStoredConfig } from "@/lib/config/utils";
 import { useTranslation } from "@/lib/i18n";
 
 interface AppConfigContextType {
@@ -20,47 +20,6 @@ interface AppConfigContextType {
 const AppConfigContext = createContext<AppConfigContextType | null>(null);
 const STORAGE_KEY = "searchConfig";
 const LOCALE_STORAGE_KEY = "locale";
-
-/** Force internal (non-user-facing) config keys back to centralized defaults. */
-function applyInternalDefaults(config: SearchConfig): SearchConfig {
-  const patched = { ...config };
-  for (const key of INTERNAL_CONFIG_KEYS) {
-    (patched as Record<string, unknown>)[key] = DEFAULT_SEARCH_CONFIG[key];
-  }
-  return patched;
-}
-
-/** Sync translation settings to match the given locale. */
-function syncTranslationsToLocale(cfg: SearchConfig, currentLocale: string): SearchConfig {
-  // Arabic users don't need translations/transliterations — content is already in Arabic
-  if (currentLocale === "ar") {
-    const updates: Partial<SearchConfig> = {};
-    let changed = false;
-    if (cfg.quranTranslation !== "none") { updates.quranTranslation = "none"; changed = true; }
-    if (cfg.hadithTranslation !== "none") { updates.hadithTranslation = "none"; changed = true; }
-    if (cfg.bookTitleDisplay !== "none") { updates.bookTitleDisplay = "none" as TranslationDisplayOption; changed = true; }
-    if (cfg.showAuthorTransliteration !== false) { updates.showAuthorTransliteration = false; changed = true; }
-    return changed ? { ...cfg, ...updates } : cfg;
-  }
-
-  // Non-Arabic: enable translations in the user's language, and author transliteration
-  const target = currentLocale;
-  let changed = false;
-  const updates: Partial<SearchConfig> = {};
-  if (cfg.quranTranslation !== target) {
-    updates.quranTranslation = target;
-    changed = true;
-  }
-  if (cfg.hadithTranslation !== target) {
-    updates.hadithTranslation = target;
-    changed = true;
-  }
-  if (cfg.showAuthorTransliteration !== true) {
-    updates.showAuthorTransliteration = true;
-    changed = true;
-  }
-  return changed ? { ...cfg, ...updates } : cfg;
-}
 
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfigState] = useState<SearchConfig>(DEFAULT_SEARCH_CONFIG);
@@ -85,25 +44,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored);
-          // Handle backward compatibility: migrate showTransliterations to bookTitleDisplay
-          if (parsed.showTransliterations !== undefined && !parsed.bookTitleDisplay) {
-            parsed.bookTitleDisplay = parsed.showTransliterations ? "transliteration" : "none";
-            delete parsed.showTransliterations;
-          }
-          // Clean up removed tocDisplay field
-          delete parsed.tocDisplay;
-          // Validate embedding model (default to gemini if invalid)
-          if (parsed.embeddingModel !== "gemini" && parsed.embeddingModel !== "jina") {
-            parsed.embeddingModel = "gemini";
-          }
-          // Migrate hadithCollections: empty array used to mean "all",
-          // now we use an explicit list; apply the new default
-          if (Array.isArray(parsed.hadithCollections) && parsed.hadithCollections.length === 0) {
-            delete parsed.hadithCollections;
-          }
-          // Merge stored values with defaults, then force-reset internal keys
-          loaded = applyInternalDefaults({ ...DEFAULT_SEARCH_CONFIG, ...parsed });
+          const migrated = migrateStoredConfig(JSON.parse(stored));
+          loaded = applyInternalDefaults({ ...DEFAULT_SEARCH_CONFIG, ...migrated } as SearchConfig);
         }
       } catch {
         // Invalid JSON, use defaults
