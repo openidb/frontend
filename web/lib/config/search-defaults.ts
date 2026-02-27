@@ -34,7 +34,6 @@ export const HADITH_COLLECTIONS: HadithCollectionInfo[] = [
   { slug: "mujam-kabir", nameEnglish: "Al-Mu'jam al-Kabir", nameArabic: "المعجم الكبير", group: "other" },
   { slug: "sunan-kubra-bayhaqi", nameEnglish: "Sunan al-Kubra (Bayhaqi)", nameArabic: "السنن الكبرى للبيهقي", group: "other" },
   { slug: "sunan-kubra-nasai", nameEnglish: "Sunan al-Kubra (Nasa'i)", nameArabic: "السنن الكبرى للنسائي", group: "other" },
-  { slug: "suyuti", nameEnglish: "Al-Jami' al-Saghir (Suyuti)", nameArabic: "الجامع الصغير للسيوطي", group: "other" },
   { slug: "ahmad-zuhd", nameEnglish: "Al-Zuhd (Ahmad)", nameArabic: "الزهد لأحمد", group: "other" },
   { slug: "riyadussalihin", nameEnglish: "Riyad al-Salihin", nameArabic: "رياض الصالحين", group: "other" },
   { slug: "adab", nameEnglish: "Al-Adab al-Mufrad", nameArabic: "الأدب المفرد", group: "other" },
@@ -109,7 +108,7 @@ export interface SearchConfig {
 }
 
 /** Collections excluded from search by default (still selectable by users) */
-const DEFAULT_EXCLUDED_COLLECTIONS = new Set(["mustadrak", "mujam-kabir", "suyuti", "sunan-kubra-bayhaqi"]);
+const DEFAULT_EXCLUDED_COLLECTIONS = new Set(["mustadrak", "mujam-kabir", "sunan-kubra-bayhaqi"]);
 
 export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   includeQuran: true,
