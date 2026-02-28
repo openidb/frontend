@@ -287,7 +287,7 @@ export function QuranAyahViewer({
   return (
     <div className="ayah-view flex flex-col h-full min-h-0">
       {/* Header bar */}
-      <div className="ayah-header flex items-center px-3 py-2 border-b bg-card shrink-0 gap-2">
+      <div className="ayah-header flex items-center px-3 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-2">
         <button
           onClick={() => router.back()}
           className="p-1.5 rounded-lg hover:bg-muted transition-colors"
