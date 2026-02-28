@@ -47,7 +47,7 @@ export function DesktopNavigation() {
   if (pathname === "/mushaf/pdf" || pathname.startsWith("/reader/")) return null;
 
   return (
-    <aside className="hidden md:flex w-48 border-e bg-background p-4 shrink-0 flex-col">
+    <aside className="hidden md:flex w-48 border-e bg-muted p-4 shrink-0 flex-col">
       {/* Logo */}
       <Link href="/" dir="ltr" className="flex items-center justify-center gap-2 mb-4">
         <span
