@@ -955,17 +955,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           </div>
 
           {/* Menu button — bigger on mobile */}
-          <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSidebar(!showSidebar)}
-              title={t("reader.chapters")}
-              className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
-            >
-              <EllipsisVertical className="h-6 w-6 sm:h-5 sm:w-5" />
-            </Button>
-          </motion.div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSidebar(!showSidebar)}
+            title={t("reader.chapters")}
+            className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
+          >
+            <EllipsisVertical className="h-6 w-6 sm:h-5 sm:w-5" />
+          </Button>
         </div>
       </div>
 
@@ -989,12 +987,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       <AnimatePresence>
       {showSidebar && (
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.8 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
         dir={dir}
-        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col`}
+        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
       >
         {/* Mobile close header — X positioned to match the options menu button */}
         <div className="sm:hidden flex items-center border-b px-2 py-2">
@@ -1010,7 +1008,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         </div>
 
         {/* Links section */}
-        <div className="p-3 sm:p-3 space-y-1">
+        <div className="p-3 sm:p-3 space-y-1 touch-manipulation">
           <PrefetchLink
             href={`/authors/${bookMetadata.authorId}`}
             className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
@@ -1110,7 +1108,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
             </div>
 
-            <div className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)]">
+            <div className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
               <div className="space-y-1">
                 {toc.map((entry, index) => {
                   const depth = entry.level;
@@ -1202,7 +1200,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
       {/* Mobile bottom page navigation */}
       <div
-        className="sm:hidden shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+        className="sm:hidden shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] touch-manipulation"
         style={{ backgroundColor: 'hsl(var(--background))' }}
         dir="ltr"
       >
