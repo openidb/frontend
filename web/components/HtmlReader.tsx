@@ -205,6 +205,12 @@ function formatContentHtml(
         }
       }
 
+      // Include the heading immediately before the first TOC entry (e.g. "فهرس الكتاب")
+      const firstTocIdx = Math.min(...tocFormattedIndices);
+      if (firstTocIdx > 0 && !tocFormattedIndices.has(firstTocIdx - 1)) {
+        tocFormattedIndices.add(firstTocIdx - 1);
+      }
+
       // Helper: map a translation's raw line index to the formatted index
       const resolveFormatted = (rawIndex: number) => rawToFormatted.get(rawIndex);
 
