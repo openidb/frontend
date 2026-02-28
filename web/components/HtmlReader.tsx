@@ -281,14 +281,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   // Current volume's max printed page (falls back to global maxPrintedPage)
   const currentVolumeMaxPage = useMemo(() => {
     if (totalVolumes <= 1) return maxPrintedPage;
-    // Prefer pageData's volume, fall back to the dropdown value
-    const vol = pageData?.volumeNumber ?? (volumeInputValue ? Number(volumeInputValue) : 0);
+    // Only trust pageData's volume when it matches the current page (avoids stale data after volume switch)
+    const vol = (pageData && pageData.pageNumber === currentPage)
+      ? pageData.volumeNumber
+      : (volumeInputValue ? Number(volumeInputValue) : 0);
     if (vol > 0) {
       const perVol = volumeMaxPrintedPages[String(vol)];
       if (perVol != null) return perVol;
     }
     return maxPrintedPage;
-  }, [pageData?.volumeNumber, volumeInputValue, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
+  }, [pageData, currentPage, volumeInputValue, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
 
   // Handle volume dropdown change
   const handleVolumeChange = useCallback((vol: string) => {
@@ -296,6 +298,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     const startPage = volumeStartPages[vol];
     if (startPage != null) {
       setCurrentPage(startPage);
+      // Reset page input to avoid showing stale printed page from previous volume
+      setPageInputValue("1");
     }
   }, [volumeStartPages]);
 
