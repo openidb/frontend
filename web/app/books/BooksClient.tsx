@@ -403,7 +403,7 @@ export default function BooksClient({
         ) : (
           books.map((book) => {
             const secondaryTitle = getSecondaryTitle(book);
-            const secondaryAuthor = getSecondaryAuthorName(book.author);
+            const secondaryAuthor = book.author ? getSecondaryAuthorName(book.author) : null;
             const year = getBookYear(book, showPublicationDates, dateCalendar, t("books.publication"));
             return (
               <PrefetchLink
@@ -412,7 +412,7 @@ export default function BooksClient({
                 className="block p-2.5 rounded-lg bg-muted/25 hover:bg-muted/70 transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
-                <div className="text-xs text-muted-foreground truncate mt-0.5" dir="rtl">{book.author.nameArabic}</div>
+                {book.author && <div className="text-xs text-muted-foreground truncate mt-0.5" dir="rtl">{book.author.nameArabic}</div>}
                 {secondaryTitle && (
                   <div className="text-xs text-muted-foreground truncate mt-1">{secondaryTitle}</div>
                 )}
@@ -468,7 +468,7 @@ export default function BooksClient({
             ) : (
               books.map((book) => {
                 const secondaryTitle = getSecondaryTitle(book);
-                const secondaryAuthor = getSecondaryAuthorName(book.author);
+                const secondaryAuthor = book.author ? getSecondaryAuthorName(book.author) : null;
                 return (
                   <TableRow key={book.id}>
                     <TableCell className="overflow-hidden py-3">
@@ -485,7 +485,7 @@ export default function BooksClient({
                       </PrefetchLink>
                     </TableCell>
                     <TableCell className="overflow-hidden py-3">
-                      <div className="truncate">{book.author.nameArabic}</div>
+                      <div className="truncate">{book.author?.nameArabic}</div>
                       {secondaryAuthor && (
                         <div className="truncate text-sm text-muted-foreground mt-0.5">
                           {secondaryAuthor}
