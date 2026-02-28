@@ -179,8 +179,9 @@ function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransl
 
       {/* Text Snippet with Highlights */}
       <div
-        className="text-sm line-clamp-3 text-foreground"
+        className="text-base leading-loose line-clamp-3 text-foreground"
         dir="rtl"
+        style={{ fontFamily: 'var(--font-noto-naskh), sans-serif' }}
         dangerouslySetInnerHTML={{ __html: sanitizeHighlight(highlightedSnippet) }}
       />
 
@@ -294,8 +295,9 @@ function AyahResultInner({ ayah, searchEventId }: AyahResultProps) {
       {/* Ayah Text - hide for full surah results */}
       {!isFullSurah && (
         <div
-          className="text-sm line-clamp-3 text-foreground"
+          className="text-base leading-loose line-clamp-3 text-foreground"
           dir="rtl"
+          style={{ fontFamily: 'var(--font-noto-naskh), sans-serif' }}
         >
           {ayah.text}
         </div>
@@ -413,9 +415,9 @@ function HadithResultInner({ hadith, searchEventId }: HadithResultProps) {
       {/* Hadith Text — isnad greyed, matn clear */}
       <div
         ref={textRef}
-        className={`text-sm leading-relaxed${expanded ? "" : " line-clamp-3"}`}
+        className={`text-base leading-loose${expanded ? "" : " line-clamp-3"}`}
         dir="rtl"
-        style={{ fontFamily: 'var(--font-noto-naskh), "Noto Naskh Arabic", sans-serif' }}
+        style={{ fontFamily: 'var(--font-noto-naskh), sans-serif' }}
       >
         {hadith.isnad && hadith.matn ? (
           <>

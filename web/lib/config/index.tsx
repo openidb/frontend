@@ -59,6 +59,10 @@ function syncTranslationsToLocale(cfg: SearchConfig, currentLocale: string): Sea
     updates.showAuthorTransliteration = true;
     changed = true;
   }
+  if (cfg.bookTitleDisplay === "none") {
+    updates.bookTitleDisplay = "translation" as TranslationDisplayOption;
+    changed = true;
+  }
   return changed ? { ...cfg, ...updates } : cfg;
 }
 

@@ -121,7 +121,7 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   postRerankLimit: 10,
   fuzzyEnabled: true,
   dateCalendar: "gregorian",
-  bookTitleDisplay: "none",
+  bookTitleDisplay: "translation",
   showAuthorTransliteration: true,
   showPublicationDates: true,
   quranTranslation: "en",

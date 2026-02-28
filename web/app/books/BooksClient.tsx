@@ -419,10 +419,11 @@ export default function BooksClient({
                 {secondaryAuthor && (
                   <div className="text-xs text-muted-foreground truncate">{secondaryAuthor}</div>
                 )}
-                <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground/70">
-                  <span className="tabular-nums">#{book.id}</span>
-                  {year && <><span>·</span><span>{year}</span></>}
-                </div>
+                {year && (
+                  <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground/70">
+                    <span>{year}</span>
+                  </div>
+                )}
               </PrefetchLink>
             );
           })
@@ -434,7 +435,6 @@ export default function BooksClient({
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">ID</TableHead>
               <TableHead>{t("books.tableHeaders.name")}</TableHead>
               <TableHead className="w-1/4">{t("books.tableHeaders.author")}</TableHead>
               <TableHead className="w-24 md:w-40">{t("books.tableHeaders.year")}</TableHead>
@@ -444,9 +444,6 @@ export default function BooksClient({
             {loading ? (
               [...Array(10)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    <div className="h-4 w-10 bg-muted animate-shimmer rounded" />
-                  </TableCell>
                   <TableCell>
                     <div className="h-4 w-48 bg-muted animate-shimmer rounded mb-2" />
                     <div className="h-3 w-32 bg-muted animate-shimmer rounded" />
@@ -462,7 +459,7 @@ export default function BooksClient({
             ) : books.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={3}
                   className="text-center text-muted-foreground"
                 >
                   {t("books.noBooks")}
@@ -474,31 +471,28 @@ export default function BooksClient({
                 const secondaryAuthor = getSecondaryAuthorName(book.author);
                 return (
                   <TableRow key={book.id}>
-                    <TableCell className="text-muted-foreground tabular-nums">
-                      {book.id}
-                    </TableCell>
-                    <TableCell className="overflow-hidden">
+                    <TableCell className="overflow-hidden py-3">
                       <PrefetchLink
                         href={`/reader/${book.id}`}
                         className="font-medium hover:underline"
                       >
-                        <div className="truncate">{book.titleArabic}</div>
+                        <div className="truncate text-[15px]">{book.titleArabic}</div>
                         {secondaryTitle && (
-                          <div className="truncate text-sm text-muted-foreground">
+                          <div className="truncate text-sm text-muted-foreground mt-0.5">
                             {secondaryTitle}
                           </div>
                         )}
                       </PrefetchLink>
                     </TableCell>
-                    <TableCell className="overflow-hidden">
+                    <TableCell className="overflow-hidden py-3">
                       <div className="truncate">{book.author.nameArabic}</div>
                       {secondaryAuthor && (
-                        <div className="truncate text-sm text-muted-foreground">
+                        <div className="truncate text-sm text-muted-foreground mt-0.5">
                           {secondaryAuthor}
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3">
                       {getBookYear(book, showPublicationDates, dateCalendar, t("books.publication"))}
                     </TableCell>
                   </TableRow>

@@ -222,8 +222,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
                   <div className="text-xs text-muted-foreground truncate mt-0.5">{author.nameLatin}</div>
                 )}
                 <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-muted-foreground/70">
-                  <span className="tabular-nums">#{author.id}</span>
-                  {deathYear && <><span>·</span><span>{deathYear}</span></>}
+                  {deathYear && <><span>{deathYear}</span></>}
                   {author._count?.books != null && (
                     <><span>·</span><span>{author._count.books} {author._count.books === 1 ? t("authors.bookSingular") : t("authors.bookPlural")}</span></>
                   )}
@@ -239,7 +238,6 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">ID</TableHead>
               <TableHead>{t("authors.tableHeaders.name")}</TableHead>
               <TableHead className="w-24 md:w-40">{t("authors.tableHeaders.deathYear")}</TableHead>
             </TableRow>
@@ -248,9 +246,6 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
             {loading ? (
               [...Array(10)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    <div className="h-4 w-10 bg-muted animate-shimmer rounded" />
-                  </TableCell>
                   <TableCell>
                     <div className="h-4 w-48 bg-muted animate-shimmer rounded mb-2" />
                     <div className="h-3 w-32 bg-muted animate-shimmer rounded" />
@@ -262,16 +257,13 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
               ))
             ) : authors.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                <TableCell colSpan={2} className="text-center text-muted-foreground">
                   {t("authors.noAuthors")}
                 </TableCell>
               </TableRow>
             ) : (
               authors.map((author) => (
                 <TableRow key={author.id}>
-                  <TableCell className="text-muted-foreground tabular-nums">
-                    {author.id}
-                  </TableCell>
                   <TableCell className="overflow-hidden">
                     <PrefetchLink
                       href={`/authors/${author.id}`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, X, Languages } from "lucide-react";
@@ -55,6 +55,7 @@ interface HtmlReaderProps {
   totalVolumes: number;
   maxPrintedPage: number;
   volumeStartPages?: Record<string, number>;
+  volumeMaxPrintedPages?: Record<string, number>;
   toc?: TocEntry[];
   translatedLanguages?: string[];
 }
@@ -228,7 +229,7 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { config } = useAppConfig();
@@ -258,6 +259,31 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [volumeInputValue, setVolumeInputValue] = useState("");
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
+
+  // Sorted volume keys for dropdown
+  const volumeKeys = useMemo(
+    () => Object.keys(volumeStartPages).sort((a, b) => Number(a) - Number(b)),
+    [volumeStartPages]
+  );
+
+  // Current volume's max printed page (falls back to global maxPrintedPage)
+  const currentVolumeMaxPage = useMemo(() => {
+    if (totalVolumes <= 1) return maxPrintedPage;
+    const vol = pageData?.volumeNumber;
+    if (vol != null && vol > 0) {
+      const perVol = volumeMaxPrintedPages[String(vol)];
+      if (perVol != null) return perVol;
+    }
+    return maxPrintedPage;
+  }, [pageData?.volumeNumber, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
+
+  // Handle volume dropdown change
+  const handleVolumeChange = useCallback((vol: string) => {
+    const startPage = volumeStartPages[vol];
+    if (startPage != null) {
+      setCurrentPage(startPage);
+    }
+  }, [volumeStartPages]);
 
   // Hydrate reader preferences from localStorage after mount
   const prefsHydrated = useRef(false);
@@ -520,7 +546,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     window.history.replaceState({}, "", url.toString());
     setPageInputValue(displayPageNumber(pageData, currentPage));
     if (pageData && totalVolumes > 1) {
-      setVolumeInputValue(pageData.volumeNumber > 0 ? String(pageData.volumeNumber) : "");
+      setVolumeInputValue(pageData.volumeNumber > 0 ? String(pageData.volumeNumber) : volumeKeys[0] || "1");
     }
   }, [currentPage, pageData, totalVolumes]);
 
@@ -642,16 +668,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   };
 
-  const handleVolumeInputSubmit = (e: React.FormEvent | React.FocusEvent) => {
-    e.preventDefault();
-    const vol = parseInt(volumeInputValue, 10);
-    const startPage = volumeStartPages[String(vol)];
-    if (startPage != null) {
-      setCurrentPage(startPage);
-    } else {
-      setVolumeInputValue(pageData?.volumeNumber?.toString() || "");
-    }
-  };
 
 
   const handleOpenPdf = useCallback(() => {
@@ -714,21 +730,22 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               </Button>
             </motion.div>
             <div className="flex items-center gap-1">
-              {totalVolumes > 1 && (
-                <form onSubmit={handleVolumeInputSubmit} className="flex items-center gap-0.5">
+              {totalVolumes > 1 && volumeKeys.length > 0 && (
+                <div className="flex items-center gap-0.5">
                   <span className="text-sm text-muted-foreground">
                     {t("reader.volume")}
                   </span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
+                  <select
                     value={volumeInputValue}
-                    onChange={(e) => setVolumeInputValue(e.target.value)}
-                    onBlur={handleVolumeInputSubmit}
-                    className="w-8 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
-                  />
+                    onChange={(e) => handleVolumeChange(e.target.value)}
+                    className="text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums cursor-pointer appearance-none px-1"
+                  >
+                    {volumeKeys.map((vol) => (
+                      <option key={vol} value={vol}>{vol}</option>
+                    ))}
+                  </select>
                   <span className="text-sm text-muted-foreground mx-0.5">·</span>
-                </form>
+                </div>
               )}
               <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
                 <span className="text-sm text-muted-foreground">
@@ -743,7 +760,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                   className="w-12 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
                 />
                 <span className="text-xs text-muted-foreground hidden md:inline">
-                  / {maxPrintedPage}
+                  / {currentVolumeMaxPage}
                 </span>
               </form>
             </div>
@@ -989,8 +1006,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             <div
               className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-28 sm:pb-10"
               style={{
-                fontFamily:
-                  '"Naskh", "Amiri", "Scheherazade New", "Traditional Arabic", "Arabic Typesetting", "Geeza Pro", sans-serif',
+                fontFamily: 'var(--font-noto-naskh), sans-serif',
                 lineHeight: 2.0,
                 fontSize: `${fontSize}rem`,
                 color: 'hsl(var(--reader-fg))',
@@ -1037,19 +1053,20 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           </button>
 
           <div className="flex flex-col items-center gap-0.5">
-            {totalVolumes > 1 && (
-              <form onSubmit={handleVolumeInputSubmit} className="flex items-center gap-1 text-[11px]">
+            {totalVolumes > 1 && volumeKeys.length > 0 && (
+              <div className="flex items-center gap-1 text-[11px]">
                 <span className="text-muted-foreground/70">{t("reader.volume")}</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
+                <select
                   value={volumeInputValue}
-                  onChange={(e) => setVolumeInputValue(e.target.value)}
-                  onBlur={handleVolumeInputSubmit}
-                  className="w-6 text-[11px] text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
-                />
+                  onChange={(e) => handleVolumeChange(e.target.value)}
+                  className="text-[11px] text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums cursor-pointer appearance-none px-0.5"
+                >
+                  {volumeKeys.map((vol) => (
+                    <option key={vol} value={vol}>{vol}</option>
+                  ))}
+                </select>
                 <span className="text-muted-foreground/70">/ {totalVolumes}</span>
-              </form>
+              </div>
             )}
             <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1.5 text-sm">
               <span className="text-muted-foreground">{t("reader.page")}</span>
@@ -1061,7 +1078,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                 onBlur={handlePageInputSubmit}
                 className="w-10 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
               />
-              <span className="text-muted-foreground text-xs">/ {maxPrintedPage}</span>
+              <span className="text-muted-foreground text-xs">/ {currentVolumeMaxPage}</span>
             </form>
           </div>
 

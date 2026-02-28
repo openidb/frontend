@@ -3,38 +3,6 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: "Naskh";
-  src: url("/fonts/UthmanTN1-Regular.woff2") format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Naskh";
-  src: url("/fonts/UthmanTN1-Bold.woff2") format("woff2");
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Amiri";
-  src: url("/fonts/Amiri-Regular.woff2") format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Scheherazade New";
-  src: url("/fonts/ScheherazadeNew-Regular.woff2") format("woff2");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: "QPC Hafs";
   src: url("/fonts/mushaf/UthmanicHafs_V22.woff2") format("woff2");
   font-weight: normal;

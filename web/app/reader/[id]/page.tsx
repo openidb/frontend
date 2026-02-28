@@ -33,6 +33,7 @@ interface BookData {
     totalPages: number | null;
     maxPrintedPage: number | null;
     volumeStartPages?: Record<string, number>;
+    volumeMaxPrintedPages?: Record<string, number>;
     tableOfContents?: TocEntry[] | null;
     translatedLanguages?: string[];
     publicationYearGregorian: string | null;
@@ -104,6 +105,7 @@ export default async function ReaderPage({
       totalVolumes={book.totalVolumes || 1}
       maxPrintedPage={book.maxPrintedPage ?? book.totalPages ?? 0}
       volumeStartPages={book.volumeStartPages || {}}
+      volumeMaxPrintedPages={book.volumeMaxPrintedPages || {}}
       toc={book.tableOfContents || []}
       translatedLanguages={book.translatedLanguages}
     />
