@@ -267,6 +267,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       if (volumeStartPages[k] <= initPage) vol = k;
       else break;
     }
+    // If we landed on volume 0 (front matter/cover) and it has no printed pages,
+    // default to the first volume that has printed page data
+    if (vol === "0" && volumeMaxPrintedPages["0"] == null) {
+      const firstReal = keys.find(k => k !== "0" && volumeMaxPrintedPages[k] != null);
+      if (firstReal) vol = firstReal;
+    }
     return vol;
   });
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
@@ -285,10 +291,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     const vol = (pageData && pageData.pageNumber === currentPage)
       ? pageData.volumeNumber
       : (volumeInputValue ? Number(volumeInputValue) : 0);
-    if (vol > 0) {
-      const perVol = volumeMaxPrintedPages[String(vol)];
-      if (perVol != null) return perVol;
-    }
+    const perVol = volumeMaxPrintedPages[String(vol)];
+    if (perVol != null) return perVol;
     return maxPrintedPage;
   }, [pageData, currentPage, volumeInputValue, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
 
