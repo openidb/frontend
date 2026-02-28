@@ -559,22 +559,26 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   }, [bookMetadata.id, cacheGet, cacheSet]);
 
-  // Prefetch a single page (with abort signal support)
-  const prefetchPage = useCallback(async (pageNumber: number, signal?: AbortSignal) => {
-    if (pageNumber < 0 || pageNumber >= totalPages || cacheRef.current.has(pageNumber)) return;
+  // Track in-flight prefetches to avoid duplicate requests
+  const prefetchingRef = useRef<Set<number>>(new Set());
+
+  // Prefetch a single page (no abort — let requests complete to populate cache)
+  const prefetchPage = useCallback(async (pageNumber: number) => {
+    if (pageNumber < 0 || pageNumber >= totalPages) return;
+    if (cacheRef.current.has(pageNumber) || prefetchingRef.current.has(pageNumber)) return;
+    prefetchingRef.current.add(pageNumber);
     try {
-      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`, { signal });
+      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(pageNumber, data.page);
       }
     } catch {
-      // Silent prefetch failure (including AbortError)
+      // Silent prefetch failure
+    } finally {
+      prefetchingRef.current.delete(pageNumber);
     }
   }, [bookMetadata.id, totalPages, cacheSet]);
-
-  // Abort controller for prefetch batch — cancelled on every navigation
-  const prefetchAbortRef = useRef<AbortController | null>(null);
 
   // Fetch current page
   useEffect(() => {
@@ -584,16 +588,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   // Prefetch 5 ahead + 2 behind after current page loads
   useEffect(() => {
     if (!isLoading && pageData) {
-      // Cancel previous prefetch batch
-      prefetchAbortRef.current?.abort();
-      const controller = new AbortController();
-      prefetchAbortRef.current = controller;
-
       for (let i = 1; i <= 5; i++) {
-        prefetchPage(currentPage + i, controller.signal);
+        prefetchPage(currentPage + i);
       }
       for (let i = 1; i <= 2; i++) {
-        prefetchPage(currentPage - i, controller.signal);
+        prefetchPage(currentPage - i);
       }
     }
   }, [isLoading, pageData, currentPage, prefetchPage]);
