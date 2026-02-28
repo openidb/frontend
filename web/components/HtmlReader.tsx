@@ -192,16 +192,62 @@ function formatContentHtml(
   if (translationParagraphs && translationParagraphs.length > 0) {
     const translationMap = new Map(translationParagraphs.map((p) => [p.index, p.translation]));
     if (isTocPage) {
-      // TOC: group all translations in a single block after the Arabic content
-      const translationBlock = translationParagraphs
-        .sort((a, b) => a.index - b.index)
-        .map((p) => `<p dir="ltr" style="margin:0.3em 0;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${p.translation}</p>`)
-        .join('\n');
-      formatted.push(
-        '<div style="margin-top:2em;padding-top:1.5em;border-top:2px solid hsl(var(--brand));opacity:0.85">',
-        translationBlock,
-        '</div>'
-      );
+      // Split formatted entries into description (no data-page) and TOC (has data-page)
+      const tocIndices = new Set<number>();
+      const tocDataPages = new Map<number, string>();
+      for (let i = 0; i < formatted.length; i++) {
+        const match = formatted[i].match(/data-page=['"](\d+)['"]/);
+        if (match) {
+          tocIndices.add(i);
+          tocDataPages.set(i, match[1]);
+        }
+      }
+
+      const descEntries: string[] = [];
+      const tocEntries: string[] = [];
+      for (let i = 0; i < formatted.length; i++) {
+        if (tocIndices.has(i)) {
+          tocEntries.push(formatted[i]);
+        } else {
+          descEntries.push(formatted[i]);
+        }
+      }
+
+      // Layout: Arabic description → English description → Arabic TOC → English TOC
+      const reordered: string[] = [];
+      reordered.push(...descEntries);
+
+      const descTranslations = translationParagraphs
+        .filter(p => !tocIndices.has(p.index))
+        .sort((a, b) => a.index - b.index);
+      if (descTranslations.length > 0) {
+        reordered.push('<div style="margin-top:1.5em;padding-top:1em;border-top:2px solid hsl(var(--brand));opacity:0.85">');
+        for (const p of descTranslations) {
+          reordered.push(`<p dir="ltr" style="margin:0.3em 0;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${p.translation}</p>`);
+        }
+        reordered.push('</div>');
+      }
+
+      reordered.push(...tocEntries);
+
+      const tocTranslations = translationParagraphs
+        .filter(p => tocIndices.has(p.index))
+        .sort((a, b) => a.index - b.index);
+      if (tocTranslations.length > 0) {
+        reordered.push('<div style="margin-top:1.5em;padding-top:1em;border-top:2px solid hsl(var(--brand));opacity:0.85">');
+        for (const p of tocTranslations) {
+          const dataPage = tocDataPages.get(p.index);
+          if (dataPage) {
+            reordered.push(`<p style="margin:0.4em 0"><a data-page="${dataPage}" style="cursor:pointer" dir="ltr"><span style="font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${p.translation}</span></a></p>`);
+          } else {
+            reordered.push(`<p dir="ltr" style="margin:0.3em 0;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${p.translation}</p>`);
+          }
+        }
+        reordered.push('</div>');
+      }
+
+      formatted.length = 0;
+      formatted.push(...reordered);
     } else {
       // Normal pages: interleave translations after each paragraph
       const interleaved: string[] = [];
