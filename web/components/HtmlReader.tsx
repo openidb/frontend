@@ -56,6 +56,7 @@ interface HtmlReaderProps {
   maxPrintedPage: number;
   volumeStartPages?: Record<string, number>;
   volumeMaxPrintedPages?: Record<string, number>;
+  volumeMinPrintedPages?: Record<string, number>;
   toc?: TocEntry[];
   translatedLanguages?: string[];
 }
@@ -229,7 +230,7 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { config } = useAppConfig();
@@ -693,21 +694,26 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       return;
     }
 
-    // Interpret input as a printed page number: estimate the internal page
-    // by offsetting from the current volume's start page
-    const currentVol = pageData?.volumeNumber;
-    const volStart = currentVol != null && currentVol > 0
-      ? volumeStartPages[String(currentVol)] ?? 0
-      : 0;
-    // Internal page = volume start + printed page (printed pages are 1-based, but some start at 0)
-    const estimated = volStart + Math.max(0, num);
-    if (estimated >= 0 && estimated < totalPages) {
+    // Use the selected volume (dropdown), not pageData which may be stale
+    const vol = volumeInputValue || (pageData?.volumeNumber != null ? String(pageData.volumeNumber) : "");
+    const volStart = vol ? (volumeStartPages[vol] ?? 0) : 0;
+    const minPrinted = vol ? (volumeMinPrintedPages[vol] ?? 0) : 0;
+
+    // Compute the next volume's start page to determine this volume's end
+    const sortedKeys = Object.keys(volumeStartPages).sort((a, b) => Number(a) - Number(b));
+    const volIdx = sortedKeys.indexOf(vol);
+    const volEnd = volIdx >= 0 && volIdx < sortedKeys.length - 1
+      ? volumeStartPages[sortedKeys[volIdx + 1]] - 1
+      : totalPages - 1;
+
+    // Internal page = volume start + (printed page - first printed page in this volume)
+    const estimated = volStart + (num - minPrinted);
+    if (estimated >= volStart && estimated <= volEnd) {
       setCurrentPage(estimated);
-    } else if (num >= 0 && num < totalPages) {
-      // Fallback: treat as internal page index
-      setCurrentPage(num);
     } else {
-      setPageInputValue(displayPageNumber(pageData, currentPage));
+      // Clamp to volume bounds
+      const clamped = Math.max(volStart, Math.min(volEnd, estimated));
+      setCurrentPage(clamped);
     }
   };
 
