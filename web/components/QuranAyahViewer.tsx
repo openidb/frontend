@@ -253,8 +253,8 @@ export function QuranAyahViewer({
     const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
     touchStartRef.current = null;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      if (dx < 0 && canGoNext) router.push(`/quran/${surahNumber}/${targetAyah + 1}`);
-      else if (dx > 0 && canGoPrev) router.push(`/quran/${surahNumber}/${targetAyah - 1}`);
+      if (dx < 0 && canGoNext) router.replace(`/quran/${surahNumber}/${targetAyah + 1}`);
+      else if (dx > 0 && canGoPrev) router.replace(`/quran/${surahNumber}/${targetAyah - 1}`);
     }
   }, [targetAyah, surahNumber, canGoPrev, canGoNext, router]);
 
@@ -464,7 +464,7 @@ export function QuranAyahViewer({
       >
         <div className="flex items-center justify-between">
           <button
-            onClick={() => canGoPrev && router.push(`/quran/${surahNumber}/${targetAyah - 1}`)}
+            onClick={() => canGoPrev && router.replace(`/quran/${surahNumber}/${targetAyah - 1}`)}
             disabled={!canGoPrev}
             className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
             aria-label={t("mushaf.prevAyah")}
@@ -478,7 +478,7 @@ export function QuranAyahViewer({
           </span>
 
           <button
-            onClick={() => canGoNext && router.push(`/quran/${surahNumber}/${targetAyah + 1}`)}
+            onClick={() => canGoNext && router.replace(`/quran/${surahNumber}/${targetAyah + 1}`)}
             disabled={!canGoNext}
             className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
             aria-label={t("mushaf.nextAyah")}
