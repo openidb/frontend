@@ -732,7 +732,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       {/* Header */}
       <div
         className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
-        style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
+        style={{ backgroundColor: 'hsl(var(--background))' }}
       >
         {/* Back button — bigger on mobile */}
         <Button variant="ghost" size="icon" onClick={goBack} className="shrink-0 h-10 w-10 sm:h-9 sm:w-9">
@@ -861,7 +861,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         exit={{ opacity: 0, scale: 0.98 }}
         transition={{ type: "spring", stiffness: 300, damping: 28, mass: 0.8 }}
         dir={dir}
-        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--reader-bg))] z-30 flex flex-col`}
+        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col`}
       >
         {/* Mobile close header — X positioned to match the options menu button */}
         <div className="sm:hidden flex items-center border-b px-2 py-2">
@@ -1016,7 +1016,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         className="flex-1 overflow-y-auto"
         dir="rtl"
         onClick={handleContentClick}
-        style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
+        style={{ backgroundColor: 'hsl(var(--background))' }}
       >
         <AnimatePresence>
           {isLoading && (
@@ -1082,7 +1082,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       {/* Mobile bottom page navigation */}
       <div
         className="sm:hidden shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
-        style={{ backgroundColor: 'hsl(var(--reader-bg))' }}
+        style={{ backgroundColor: 'hsl(var(--background))' }}
         dir="ltr"
       >
         <div className="flex items-center justify-between">
