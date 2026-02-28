@@ -409,7 +409,7 @@ export default function BooksClient({
               <PrefetchLink
                 key={book.id}
                 href={`/reader/${book.id}`}
-                className="block p-4 rounded-lg bg-card/50 hover:bg-card transition-colors"
+                className="block p-4 rounded-lg border border-border/30 bg-card/50 hover:bg-card transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
                 {book.author && <div className="text-xs text-muted-foreground truncate mt-0.5" dir="rtl">{book.author.nameArabic}</div>}

@@ -215,7 +215,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
               <PrefetchLink
                 key={author.id}
                 href={`/authors/${author.id}`}
-                className="block p-4 rounded-lg bg-card/50 hover:bg-card transition-colors"
+                className="block p-4 rounded-lg border border-border/30 bg-card/50 hover:bg-card transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{author.nameArabic}</div>
                 {config.showAuthorTransliteration && (
