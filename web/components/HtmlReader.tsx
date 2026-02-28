@@ -256,7 +256,19 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [pageInputValue, setPageInputValue] = useState(
     initialPageNumber || "0"
   );
-  const [volumeInputValue, setVolumeInputValue] = useState("");
+  const [volumeInputValue, setVolumeInputValue] = useState(() => {
+    if (totalVolumes <= 1) return "";
+    const keys = Object.keys(volumeStartPages).sort((a, b) => Number(a) - Number(b));
+    if (!keys.length) return "1";
+    // Find which volume the initial page belongs to
+    const initPage = initialPageNumber ? parseInt(initialPageNumber, 10) : 0;
+    let vol = keys[0];
+    for (const k of keys) {
+      if (volumeStartPages[k] <= initPage) vol = k;
+      else break;
+    }
+    return vol;
+  });
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
 
@@ -269,16 +281,18 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   // Current volume's max printed page (falls back to global maxPrintedPage)
   const currentVolumeMaxPage = useMemo(() => {
     if (totalVolumes <= 1) return maxPrintedPage;
-    const vol = pageData?.volumeNumber;
-    if (vol != null && vol > 0) {
+    // Prefer pageData's volume, fall back to the dropdown value
+    const vol = pageData?.volumeNumber ?? (volumeInputValue ? Number(volumeInputValue) : 0);
+    if (vol > 0) {
       const perVol = volumeMaxPrintedPages[String(vol)];
       if (perVol != null) return perVol;
     }
     return maxPrintedPage;
-  }, [pageData?.volumeNumber, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
+  }, [pageData?.volumeNumber, volumeInputValue, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
 
   // Handle volume dropdown change
   const handleVolumeChange = useCallback((vol: string) => {
+    setVolumeInputValue(vol);
     const startPage = volumeStartPages[vol];
     if (startPage != null) {
       setCurrentPage(startPage);
@@ -544,11 +558,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     const url = new URL(window.location.href);
     url.searchParams.set("pn", currentPage.toString());
     window.history.replaceState({}, "", url.toString());
+  }, [currentPage]);
+
+  // Update displayed page/volume values only when pageData matches currentPage
+  useEffect(() => {
+    if (!pageData || pageData.pageNumber !== currentPage) return;
     setPageInputValue(displayPageNumber(pageData, currentPage));
-    if (pageData && totalVolumes > 1) {
+    if (totalVolumes > 1) {
       setVolumeInputValue(pageData.volumeNumber > 0 ? String(pageData.volumeNumber) : volumeKeys[0] || "1");
     }
-  }, [currentPage, pageData, totalVolumes]);
+  }, [pageData, currentPage, totalVolumes, volumeKeys]);
 
   // Scroll to top on page change
   useEffect(() => {
@@ -661,7 +680,23 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const handlePageInputSubmit = (e: React.FormEvent | React.FocusEvent) => {
     e.preventDefault();
     const num = parseInt(pageInputValue, 10);
-    if (!isNaN(num) && num >= 0 && num < totalPages) {
+    if (isNaN(num)) {
+      setPageInputValue(displayPageNumber(pageData, currentPage));
+      return;
+    }
+
+    // Interpret input as a printed page number: estimate the internal page
+    // by offsetting from the current volume's start page
+    const currentVol = pageData?.volumeNumber;
+    const volStart = currentVol != null && currentVol > 0
+      ? volumeStartPages[String(currentVol)] ?? 0
+      : 0;
+    // Internal page = volume start + printed page (printed pages are 1-based, but some start at 0)
+    const estimated = volStart + Math.max(0, num);
+    if (estimated >= 0 && estimated < totalPages) {
+      setCurrentPage(estimated);
+    } else if (num >= 0 && num < totalPages) {
+      // Fallback: treat as internal page index
       setCurrentPage(num);
     } else {
       setPageInputValue(displayPageNumber(pageData, currentPage));
