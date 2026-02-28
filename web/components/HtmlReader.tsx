@@ -111,6 +111,7 @@ function formatContentHtml(
   html: string,
   enableWordWrap = true,
   translationParagraphs?: TranslationParagraph[],
+  isTocPage = false,
 ): string {
   // Expand honorific ligatures into readable Arabic text
   html = expandHonorifics(html);
@@ -187,21 +188,35 @@ function formatContentHtml(
     formatted.push('</div>');
   }
 
-  // Interleave translation paragraphs if provided
+  // Append or interleave translation paragraphs if provided
   if (translationParagraphs && translationParagraphs.length > 0) {
     const translationMap = new Map(translationParagraphs.map((p) => [p.index, p.translation]));
-    const interleaved: string[] = [];
-    for (let i = 0; i < formatted.length; i++) {
-      interleaved.push(formatted[i]);
-      const translation = translationMap.get(i);
-      if (translation) {
-        interleaved.push(
-          `<p dir="ltr" style="margin:0.3em 0 0.8em;padding:0.5em 0.8em;border-inline-start:3px solid hsl(var(--brand));opacity:0.85;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${translation}</p>`
-        );
+    if (isTocPage) {
+      // TOC: group all translations in a single block after the Arabic content
+      const translationBlock = translationParagraphs
+        .sort((a, b) => a.index - b.index)
+        .map((p) => `<p dir="ltr" style="margin:0.3em 0;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${p.translation}</p>`)
+        .join('\n');
+      formatted.push(
+        '<div style="margin-top:2em;padding-top:1.5em;border-top:2px solid hsl(var(--brand));opacity:0.85">',
+        translationBlock,
+        '</div>'
+      );
+    } else {
+      // Normal pages: interleave translations after each paragraph
+      const interleaved: string[] = [];
+      for (let i = 0; i < formatted.length; i++) {
+        interleaved.push(formatted[i]);
+        const translation = translationMap.get(i);
+        if (translation) {
+          interleaved.push(
+            `<p dir="ltr" style="margin:0.3em 0 0.8em;padding:0.5em 0.8em;border-inline-start:3px solid hsl(var(--brand));opacity:0.85;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${translation}</p>`
+          );
+        }
       }
+      formatted.length = 0;
+      formatted.push(...interleaved);
     }
-    formatted.length = 0;
-    formatted.push(...interleaved);
   }
 
   let result = formatted.join('\n');
@@ -1077,6 +1092,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
                     pageData.contentHtml,
                     wordTapEnabled,
                     showTranslation && translationResult ? translationResult : undefined,
+                    pageData.pageNumber === 0,
                   ),
                 }}
               />
