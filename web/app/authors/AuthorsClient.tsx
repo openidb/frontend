@@ -196,7 +196,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
       <div className="sm:hidden space-y-1">
         {loading ? (
           [...Array(6)].map((_, i) => (
-            <div key={i} className="p-4 border rounded-lg bg-card animate-pulse">
+            <div key={i} className="p-4 rounded-lg bg-card animate-pulse">
               <div className="h-4 w-3/4 bg-muted rounded mb-2" />
               <div className="h-3 w-1/2 bg-muted rounded mb-2" />
               <div className="h-3 w-1/3 bg-muted rounded" />
@@ -215,7 +215,7 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
               <PrefetchLink
                 key={author.id}
                 href={`/authors/${author.id}`}
-                className="block p-4 border rounded-lg bg-card hover:border-muted-foreground hover:shadow-sm transition-all"
+                className="block p-4 rounded-lg bg-card hover:bg-muted/70 transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{author.nameArabic}</div>
                 {config.showAuthorTransliteration && (
