@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, EllipsisVertical, FileText, User, Minus, Plus, X, Languages } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, EllipsisVertical, FileText, User, Minus, Plus, X, Languages } from "lucide-react";
 import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
@@ -323,7 +323,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [wordTapEnabled, setWordTapEnabled] = useState(true);
   const [showTranslation, setShowTranslation] = useState(false);
   const [translationResult, setTranslationResult] = useState<TranslationParagraph[] | null>(null);
-  const [isTranslationLoading, setIsTranslationLoading] = useState(false);
   const translationCacheRef = useRef<Map<string, TranslationParagraph[]>>(new Map());
   const TRANSLATION_CACHE_MAX = 50;
 
@@ -580,12 +579,39 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     }
   }, [bookMetadata.id, totalPages, cacheSet]);
 
+  // Track in-flight translation prefetches
+  const prefetchingTranslationsRef = useRef<Set<string>>(new Set());
+
+  // Prefetch a single translation (no abort — let it complete)
+  const prefetchTranslation = useCallback(async (pageNumber: number, lang: string) => {
+    if (pageNumber < 0 || pageNumber >= totalPages) return;
+    const key = `${pageNumber}:${lang}`;
+    if (translationCacheRef.current.has(key) || prefetchingTranslationsRef.current.has(key)) return;
+    prefetchingTranslationsRef.current.add(key);
+    try {
+      const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}/translation?lang=${encodeURIComponent(lang)}`);
+      if (res.ok) {
+        const data = await res.json();
+        translationCacheRef.current.delete(key);
+        translationCacheRef.current.set(key, data.paragraphs);
+        if (translationCacheRef.current.size > TRANSLATION_CACHE_MAX) {
+          const oldest = translationCacheRef.current.keys().next().value;
+          if (oldest !== undefined) translationCacheRef.current.delete(oldest);
+        }
+      }
+    } catch {
+      // Silent prefetch failure
+    } finally {
+      prefetchingTranslationsRef.current.delete(key);
+    }
+  }, [bookMetadata.id, totalPages]);
+
   // Fetch current page
   useEffect(() => {
     fetchPage(currentPage);
   }, [currentPage, fetchPage]);
 
-  // Prefetch 5 ahead + 2 behind after current page loads
+  // Prefetch 5 ahead + 2 behind after current page loads (pages + translations)
   useEffect(() => {
     if (!isLoading && pageData) {
       for (let i = 1; i <= 5; i++) {
@@ -594,14 +620,21 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       for (let i = 1; i <= 2; i++) {
         prefetchPage(currentPage - i);
       }
+      // Prefetch translations for nearby pages when translation is active
+      if (showTranslation && hasTranslation && translationLang) {
+        for (let i = 1; i <= 3; i++) {
+          prefetchTranslation(currentPage + i, translationLang);
+        }
+        prefetchTranslation(currentPage - 1, translationLang);
+      }
     }
-  }, [isLoading, pageData, currentPage, prefetchPage]);
+  }, [isLoading, pageData, currentPage, prefetchPage, showTranslation, hasTranslation, translationLang, prefetchTranslation]);
 
   // Fetch translation when toggle is on
   useEffect(() => {
     if (!showTranslation || !hasTranslation) {
       setTranslationResult(null);
-      setIsTranslationLoading(false);
+
       return;
     }
 
@@ -609,13 +642,13 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     const cached = translationCacheRef.current.get(cacheKey);
     if (cached) {
       setTranslationResult(cached);
-      setIsTranslationLoading(false);
+
       return;
     }
 
     let cancelled = false;
     setTranslationResult(null);
-    setIsTranslationLoading(true);
+
 
     fetch(`/api/books/${bookMetadata.id}/pages/${currentPage}/translation?lang=${encodeURIComponent(translationLang)}`)
       .then((res) => {
@@ -637,9 +670,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       .catch(() => {
         if (!cancelled) setTranslationResult(null);
       })
-      .finally(() => {
-        if (!cancelled) setIsTranslationLoading(false);
-      });
+      ;
 
     return () => { cancelled = true; };
   }, [showTranslation, hasTranslation, currentPage, translationLang, bookMetadata.id]);
@@ -859,13 +890,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
-          {/* Translation loading indicator */}
-          {isTranslationLoading && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-medium">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="hidden sm:inline">{t("reader.translating")}</span>
-            </div>
-          )}
+          {/* Translation loading indicator removed for smooth transitions */}
           {/* Desktop page controls — hidden on mobile (moved to bottom bar) */}
           <div className="hidden sm:flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
             <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
@@ -1127,20 +1152,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         style={{ backgroundColor: 'hsl(var(--background))' }}
       >
         <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex items-center justify-center h-full"
-            >
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </motion.div>
-          )}
-
-          {error && !isLoading && (
+          {error && !pageData && (
             <motion.div
               key="error"
               initial={{ opacity: 0, y: 8 }}
@@ -1153,7 +1165,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
             </motion.div>
           )}
 
-          {pageData && !isLoading && (
+          {pageData && (
             <div
               className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-28 sm:pb-10"
               style={{
