@@ -125,12 +125,14 @@ function formatContentHtml(
 
   const lines = html.split(/\n/);
   const formatted: string[] = [];
+  const rawToFormatted = new Map<number, number>();
   let inFootnotes = false;
 
-  for (const line of lines) {
-
+  for (let rawIdx = 0; rawIdx < lines.length; rawIdx++) {
+    const line = lines[rawIdx];
     const trimmed = line.trim();
     if (!trimmed) continue;
+    rawToFormatted.set(rawIdx, formatted.length);
 
     // Section separator: * * * * *
     if (/^[\s*]+$/.test(trimmed) && trimmed.includes('*')) {
@@ -192,21 +194,24 @@ function formatContentHtml(
   if (translationParagraphs && translationParagraphs.length > 0) {
     const translationMap = new Map(translationParagraphs.map((p) => [p.index, p.translation]));
     if (isTocPage) {
-      // Split formatted entries into description (no data-page) and TOC (has data-page)
-      const tocIndices = new Set<number>();
-      const tocDataPages = new Map<number, string>();
+      // Build set of formatted indices that are TOC entries (have data-page)
+      const tocFormattedIndices = new Set<number>();
+      const formattedDataPages = new Map<number, string>();
       for (let i = 0; i < formatted.length; i++) {
         const match = formatted[i].match(/data-page=['"](\d+)['"]/);
         if (match) {
-          tocIndices.add(i);
-          tocDataPages.set(i, match[1]);
+          tocFormattedIndices.add(i);
+          formattedDataPages.set(i, match[1]);
         }
       }
+
+      // Helper: map a translation's raw line index to the formatted index
+      const resolveFormatted = (rawIndex: number) => rawToFormatted.get(rawIndex);
 
       const descEntries: string[] = [];
       const tocEntries: string[] = [];
       for (let i = 0; i < formatted.length; i++) {
-        if (tocIndices.has(i)) {
+        if (tocFormattedIndices.has(i)) {
           tocEntries.push(formatted[i]);
         } else {
           descEntries.push(formatted[i]);
@@ -218,7 +223,10 @@ function formatContentHtml(
       reordered.push(...descEntries);
 
       const descTranslations = translationParagraphs
-        .filter(p => !tocIndices.has(p.index))
+        .filter(p => {
+          const fi = resolveFormatted(p.index);
+          return fi === undefined || !tocFormattedIndices.has(fi);
+        })
         .sort((a, b) => a.index - b.index);
       if (descTranslations.length > 0) {
         reordered.push('<div style="margin-top:1.5em;padding-top:1em;border-top:2px solid hsl(var(--brand));opacity:0.85">');
@@ -231,12 +239,16 @@ function formatContentHtml(
       reordered.push(...tocEntries);
 
       const tocTranslations = translationParagraphs
-        .filter(p => tocIndices.has(p.index))
+        .filter(p => {
+          const fi = resolveFormatted(p.index);
+          return fi !== undefined && tocFormattedIndices.has(fi);
+        })
         .sort((a, b) => a.index - b.index);
       if (tocTranslations.length > 0) {
         reordered.push('<div style="margin-top:1.5em;padding-top:1em;border-top:2px solid hsl(var(--brand));opacity:0.85">');
         for (const p of tocTranslations) {
-          const dataPage = tocDataPages.get(p.index);
+          const fi = resolveFormatted(p.index);
+          const dataPage = fi !== undefined ? formattedDataPages.get(fi) : undefined;
           if (dataPage) {
             reordered.push(`<p style="margin:0.4em 0"><a data-page="${dataPage}" style="cursor:pointer" dir="ltr"><span style="font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${p.translation}</span></a></p>`);
           } else {
@@ -250,10 +262,14 @@ function formatContentHtml(
       formatted.push(...reordered);
     } else {
       // Normal pages: interleave translations after each paragraph
+      // Build reverse map: formatted index → raw line index
+      const formattedToRaw = new Map<number, number>();
+      for (const [raw, fmt] of rawToFormatted) formattedToRaw.set(fmt, raw);
       const interleaved: string[] = [];
       for (let i = 0; i < formatted.length; i++) {
         interleaved.push(formatted[i]);
-        const translation = translationMap.get(i);
+        const rawIdx = formattedToRaw.get(i);
+        const translation = rawIdx !== undefined ? translationMap.get(rawIdx) : undefined;
         if (translation) {
           interleaved.push(
             `<p dir="ltr" style="margin:0.3em 0 0.8em;padding:0.5em 0.8em;border-inline-start:3px solid hsl(var(--brand));opacity:0.85;font-size:0.88em;line-height:1.7;font-family:system-ui,sans-serif">${translation}</p>`
