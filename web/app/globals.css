@@ -22,9 +22,9 @@
   :root {
     --background: 36 33% 97%;
     --foreground: 0 0% 9%;
-    --card: 20 43% 99%;
+    --card: 40 12% 91%;
     --card-foreground: 0 0% 9%;
-    --popover: 20 43% 99%;
+    --popover: 40 12% 91%;
     --popover-foreground: 0 0% 9%;
     --primary: 0 0% 9%;
     --primary-foreground: 36 33% 97%;
@@ -34,8 +34,8 @@
     --muted-foreground: 0 0% 45%;
     --accent: 40 19% 94%;
     --accent-foreground: 0 0% 9%;
-    --border: 40 12% 91%;
-    --input: 40 12% 91%;
+    --border: 40 10% 86%;
+    --input: 40 10% 86%;
     --ring: 0 0% 9%;
     --radius: 0.5rem;
     --brand: 186 62% 49%;
@@ -46,9 +46,9 @@
   .dark {
     --background: 30 5% 9%;
     --foreground: 0 0% 93%;
-    --card: 30 3% 11%;
+    --card: 30 2% 16%;
     --card-foreground: 0 0% 93%;
-    --popover: 30 3% 11%;
+    --popover: 30 2% 16%;
     --popover-foreground: 0 0% 93%;
     --primary: 0 0% 93%;
     --primary-foreground: 30 5% 9%;
@@ -58,8 +58,8 @@
     --muted-foreground: 0 0% 55%;
     --accent: 30 2% 16%;
     --accent-foreground: 0 0% 93%;
-    --border: 30 2% 16%;
-    --input: 30 2% 16%;
+    --border: 30 2% 20%;
+    --input: 30 2% 20%;
     --ring: 0 0% 80%;
     --brand: 186 62% 55%;
     --reader-bg: 30 5% 9%;
