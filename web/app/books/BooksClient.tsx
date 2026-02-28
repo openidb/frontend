@@ -390,7 +390,7 @@ export default function BooksClient({
       <div className="sm:hidden space-y-1">
         {loading ? (
           [...Array(6)].map((_, i) => (
-            <div key={i} className="p-2.5 rounded-lg bg-muted/25 animate-pulse">
+            <div key={i} className="p-4 border rounded-lg bg-card animate-pulse">
               <div className="h-4 w-3/4 bg-muted rounded mb-2" />
               <div className="h-3 w-1/2 bg-muted rounded mb-2" />
               <div className="h-3 w-1/3 bg-muted rounded" />
@@ -409,7 +409,7 @@ export default function BooksClient({
               <PrefetchLink
                 key={book.id}
                 href={`/reader/${book.id}`}
-                className="block p-2.5 rounded-lg bg-muted/25 hover:bg-muted/70 transition-colors"
+                className="block p-4 border rounded-lg bg-card hover:border-muted-foreground hover:shadow-sm transition-all"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
                 {book.author && <div className="text-xs text-muted-foreground truncate mt-0.5" dir="rtl">{book.author.nameArabic}</div>}
