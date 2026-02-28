@@ -738,9 +738,29 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     const pageTarget = (e.target as HTMLElement).closest("[data-page]") as HTMLElement | null;
     if (pageTarget) {
       e.preventDefault();
-      const page = parseInt(pageTarget.dataset.page || "", 10);
-      if (!isNaN(page) && page >= 0 && page < totalPages) {
-        setCurrentPage(page);
+      const printedPage = parseInt(pageTarget.dataset.page || "", 10);
+      if (!isNaN(printedPage)) {
+        // data-page contains a printed page number — convert to internal page index.
+        // Find which volume this printed page belongs to by checking each volume's
+        // printed page range (minPrinted..maxPrinted).
+        const sortedVols = Object.keys(volumeStartPages).sort((a, b) => Number(a) - Number(b));
+        let targetVol = sortedVols[0] || "1";
+        for (const vol of sortedVols) {
+          const minP = volumeMinPrintedPages[vol] ?? 0;
+          const maxP = volumeMaxPrintedPages[vol] ?? Infinity;
+          if (printedPage >= minP && printedPage <= maxP) {
+            targetVol = vol;
+            break;
+          }
+        }
+
+        const volStart = volumeStartPages[targetVol] ?? 0;
+        const minPrinted = volumeMinPrintedPages[targetVol] ?? 0;
+        const internalPage = volStart + (printedPage - minPrinted);
+
+        // Clamp to valid range
+        const clamped = Math.max(0, Math.min(totalPages - 1, internalPage));
+        setCurrentPage(clamped);
       }
       return;
     }
@@ -761,7 +781,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
     // Click on empty area → close popover
     setSelectedWord(null);
-  }, [totalPages, bookMetadata.id, currentPage]);
+  }, [totalPages, bookMetadata.id, currentPage, volumeStartPages, volumeMinPrintedPages, volumeMaxPrintedPages]);
 
   const handlePageInputSubmit = (e: React.FormEvent | React.FocusEvent) => {
     e.preventDefault();
