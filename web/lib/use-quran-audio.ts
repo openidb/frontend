@@ -152,6 +152,7 @@ export function useQuranAudio(
   mushafPages: MushafPageData[],
   router: AppRouterInstance,
   initialAudioMode: boolean,
+  onNavigate?: (ayah: number) => void,
 ): UseQuranAudioReturn {
   const [isAudioMode, setIsAudioMode] = useState(initialAudioMode);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -216,9 +217,16 @@ export function useQuranAudio(
   }, [isAudioMode, surahNumber, targetAyah, totalAyahs]);
 
   // Navigation helpers
+  const onNavigateRef = useRef(onNavigate);
+  onNavigateRef.current = onNavigate;
+
   const navigateToAyah = useCallback(
     (ayah: number) => {
-      router.replace(`/quran/${surahNumber}/${ayah}?audio=1`);
+      if (onNavigateRef.current) {
+        onNavigateRef.current(ayah);
+      } else {
+        router.replace(`/quran/${surahNumber}/${ayah}?audio=1`);
+      }
     },
     [router, surahNumber],
   );
