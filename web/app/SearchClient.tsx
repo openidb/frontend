@@ -2,16 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef, KeyboardEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, X, Loader2, User, BookOpen, Bug } from "lucide-react";
+import { Search, X, Loader2, Bug } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { PrefetchLink } from "@/components/PrefetchLink";
 import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, HadithResultData } from "@/components/SearchResult";
 import { SearchFiltersPanel } from "@/components/SearchFiltersPanel";
 import { QURAN_TRANSLATIONS } from "@/lib/config/search-defaults";
 import { useAppConfig, type SearchConfig } from "@/lib/config";
-import { formatYear } from "@/lib/dates";
 import { useTranslation } from "@/lib/i18n";
 import { RefiningCarousel } from "@/components/RefiningCarousel";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -21,15 +19,6 @@ const SearchDebugPanel = dynamic(() => import("./SearchDebugPanel").then(m => ({
 import type { DebugStats } from "./SearchDebugPanel";
 import { SearchErrorState } from "./SearchErrorState";
 import { getSessionId } from "@/lib/analytics";
-
-interface AuthorResultData {
-  id: number;
-  nameArabic: string;
-  nameLatin: string;
-  deathDateHijri: string | null;
-  deathDateGregorian: string | null;
-  booksCount: number;
-}
 
 interface ExpandedQueryData {
   query: string;
@@ -41,7 +30,6 @@ interface SearchResponse {
   mode: string;
   count: number;
   results: BookResultData[];
-  authors: AuthorResultData[];
   ayahs: AyahResultData[];
   hadiths: HadithResultData[];
   refined?: boolean;
@@ -140,7 +128,6 @@ export default function SearchClient() {
 
   // Quick search state
   const [quickResults, setQuickResults] = useState<UnifiedResult[]>([]);
-  const [quickAuthors, setQuickAuthors] = useState<AuthorResultData[]>([]);
   const [quickDebugStats, setQuickDebugStats] = useState<DebugStats | null>(null);
   const [quickGraphContext, setQuickGraphContext] = useState<GraphContext | null>(null);
   const [quickSearchEventId, setQuickSearchEventId] = useState<string | null>(null);
@@ -150,7 +137,6 @@ export default function SearchClient() {
 
   // Deep search state
   const [deepResults, setDeepResults] = useState<UnifiedResult[]>([]);
-  const [deepAuthors, setDeepAuthors] = useState<AuthorResultData[]>([]);
   const [deepDebugStats, setDeepDebugStats] = useState<DebugStats | null>(null);
   const [deepGraphContext, setDeepGraphContext] = useState<GraphContext | null>(null);
   const [deepExpandedQueries, setDeepExpandedQueries] = useState<ExpandedQueryData[]>([]);
@@ -193,10 +179,9 @@ export default function SearchClient() {
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
       try {
-        const { quickResults: cachedResults, quickAuthors: cachedAuthors } = JSON.parse(cached);
+        const { quickResults: cachedResults } = JSON.parse(cached);
         setQuery(q);
         setQuickResults(cachedResults || []);
-        setQuickAuthors(cachedAuthors || []);
         setHasSearched(true);
         restoredQueryRef.current = q;
         window.history.replaceState({}, "", `/?q=${encodeURIComponent(q)}`);
@@ -236,7 +221,6 @@ export default function SearchClient() {
   const fetchQuickResults = useCallback(async (searchQuery: string, config: SearchConfig) => {
     if (searchQuery.length < 2) {
       setQuickResults([]);
-      setQuickAuthors([]);
       setHasSearched(false);
       return;
     }
@@ -260,7 +244,6 @@ export default function SearchClient() {
 
     // Reset deep search state
     setDeepResults([]);
-    setDeepAuthors([]);
     setDeepDebugStats(null);
     setDeepGraphContext(null);
     setDeepExpandedQueries([]);
@@ -293,7 +276,6 @@ export default function SearchClient() {
       const limitedUnified = parseSearchResults(data, config.postRerankLimit);
 
       setQuickResults(limitedUnified);
-      setQuickAuthors(data.authors || []);
       setQuickDebugStats(data.debugStats || null);
       setQuickGraphContext(data.graphContext || null);
       setQuickSearchEventId(eventId);
@@ -304,7 +286,6 @@ export default function SearchClient() {
         const cacheKey = `search_${searchQuery}_${config.quranTranslation}_${collectionKey}`;
         sessionStorage.setItem(cacheKey, JSON.stringify({
           quickResults: limitedUnified,
-          quickAuthors: data.authors || [],
         }));
       } catch {
         // Ignore storage quota errors
@@ -324,7 +305,6 @@ export default function SearchClient() {
       setError(errorMessage);
       toast.error("Search failed", { description: errorMessage });
       setQuickResults([]);
-      setQuickAuthors([]);
       setQuickDebugStats(null);
     } finally {
       clearTimeout(timeoutId);
@@ -374,7 +354,6 @@ export default function SearchClient() {
       const limitedUnified = parseSearchResults(data, config.postRerankLimit);
 
       setDeepResults(limitedUnified);
-      setDeepAuthors(data.authors || []);
       setDeepDebugStats(data.debugStats || null);
       setDeepGraphContext(data.graphContext || null);
       setDeepExpandedQueries(data.expandedQueries || []);
@@ -450,12 +429,10 @@ export default function SearchClient() {
       }, 300);
     } else if (newQuery.length === 0) {
       setQuickResults([]);
-      setQuickAuthors([]);
       setHasSearched(false);
       // Reset deep state too
       setDeepResults([]);
-      setDeepAuthors([]);
-      setDeepSearchStatus("idle");
+        setDeepSearchStatus("idle");
       setActiveTab("results");
       window.history.replaceState({}, "", "/");
       try { sessionStorage.removeItem("search_last_query"); } catch {}
@@ -504,11 +481,9 @@ export default function SearchClient() {
   const handleClear = () => {
     setQuery("");
     setQuickResults([]);
-    setQuickAuthors([]);
     setQuickDebugStats(null);
     setQuickGraphContext(null);
     setDeepResults([]);
-    setDeepAuthors([]);
     setDeepDebugStats(null);
     setDeepGraphContext(null);
     setDeepExpandedQueries([]);
@@ -560,7 +535,7 @@ export default function SearchClient() {
                   <Input
                     type="text"
                     placeholder={t("search.placeholder")}
-                    className="text-base h-11 px-2 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+                    className={`text-base h-11 px-2 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60${query ? " pr-8" : ""}`}
                     dir="auto"
                     value={query}
                     onChange={handleInputChange}
@@ -702,7 +677,7 @@ export default function SearchClient() {
           )}
 
           {/* No Results */}
-          {hasSearched && !isLoading && !error && activeTab === "results" && quickResults.length === 0 && quickAuthors.length === 0 && query.length >= 2 && (
+          {hasSearched && !isLoading && !error && activeTab === "results" && quickResults.length === 0 && query.length >= 2 && (
             <motion.div
               key="no-results"
               layout
@@ -723,7 +698,7 @@ export default function SearchClient() {
           )}
 
           {/* Deep Search — No Results */}
-          {activeTab === "deep" && deepSearchStatus === "done" && deepResults.length === 0 && deepAuthors.length === 0 && (
+          {activeTab === "deep" && deepSearchStatus === "done" && deepResults.length === 0 && (
             <motion.div
               key="deep-no-results"
               layout
@@ -744,7 +719,7 @@ export default function SearchClient() {
           )}
 
           {/* Results (either tab, when not loading) */}
-          {!isLoading && !error && activeTab === "results" && (quickResults.length > 0 || quickAuthors.length > 0) && (
+          {!isLoading && !error && activeTab === "results" && (quickResults.length > 0) && (
             <motion.div
               key={`results-${quickResults.length}-${quickResults[0]?.data?.score ?? 0}`}
               initial={{ opacity: 0 }}
@@ -752,45 +727,6 @@ export default function SearchClient() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              {/* Authors Section */}
-              {quickAuthors.length > 0 && (
-                <div className="mb-6">
-                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("search.authorsSection")}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {quickAuthors.map((author) => (
-                      <PrefetchLink
-                        key={author.id}
-                        href={`/authors/${encodeURIComponent(author.nameLatin)}`}
-                        className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-background"
-                      >
-                        <User className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium" dir="rtl">{author.nameArabic}</div>
-                          <div className="text-sm sm:text-xs text-muted-foreground flex items-center gap-2">
-                            {searchConfig.showAuthorTransliteration && (
-                              <span>{author.nameLatin}</span>
-                            )}
-                            {(author.deathDateHijri || author.deathDateGregorian) && (
-                              <>
-                                {searchConfig.showAuthorTransliteration && <span className="text-border">|</span>}
-                                <span>{formatYear(author.deathDateHijri, author.deathDateGregorian, searchConfig.dateCalendar)}</span>
-                              </>
-                            )}
-                            {(searchConfig.showAuthorTransliteration || author.deathDateHijri || author.deathDateGregorian) && (
-                              <span className="text-border">|</span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <BookOpen className="h-3 w-3" />
-                              {author.booksCount}
-                            </span>
-                          </div>
-                        </div>
-                      </PrefetchLink>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Entity Knowledge Panel */}
               {quickGraphContext && quickGraphContext.entities.length > 0 && (
                 <EntityPanel
@@ -875,7 +811,7 @@ export default function SearchClient() {
           )}
 
           {/* Deep Search Results (when tab is "deep" and status is "done") */}
-          {activeTab === "deep" && deepSearchStatus === "done" && (deepResults.length > 0 || deepAuthors.length > 0) && (
+          {activeTab === "deep" && deepSearchStatus === "done" && (deepResults.length > 0) && (
             <motion.div
               key={`deep-results-${deepResults.length}-${deepResults[0]?.data?.score ?? 0}`}
               initial={{ opacity: 0 }}
@@ -883,45 +819,6 @@ export default function SearchClient() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              {/* Authors Section */}
-              {deepAuthors.length > 0 && (
-                <div className="mb-6">
-                  <h2 className="text-sm font-medium text-muted-foreground mb-3">{t("search.authorsSection")}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {deepAuthors.map((author) => (
-                      <PrefetchLink
-                        key={author.id}
-                        href={`/authors/${encodeURIComponent(author.nameLatin)}`}
-                        className="flex items-center gap-2 px-4 py-3 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-background"
-                      >
-                        <User className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium" dir="rtl">{author.nameArabic}</div>
-                          <div className="text-sm sm:text-xs text-muted-foreground flex items-center gap-2">
-                            {searchConfig.showAuthorTransliteration && (
-                              <span>{author.nameLatin}</span>
-                            )}
-                            {(author.deathDateHijri || author.deathDateGregorian) && (
-                              <>
-                                {searchConfig.showAuthorTransliteration && <span className="text-border">|</span>}
-                                <span>{formatYear(author.deathDateHijri, author.deathDateGregorian, searchConfig.dateCalendar)}</span>
-                              </>
-                            )}
-                            {(searchConfig.showAuthorTransliteration || author.deathDateHijri || author.deathDateGregorian) && (
-                              <span className="text-border">|</span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <BookOpen className="h-3 w-3" />
-                              {author.booksCount}
-                            </span>
-                          </div>
-                        </div>
-                      </PrefetchLink>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Entity Knowledge Panel */}
               {deepGraphContext && deepGraphContext.entities.length > 0 && (
                 <EntityPanel
