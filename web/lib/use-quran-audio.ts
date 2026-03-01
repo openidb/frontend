@@ -34,26 +34,26 @@ function audioUrl(surah: number, ayah: number): string {
   return `/api/quran/audio/${surah}/${ayah}?reciter=${encodeURIComponent(DEFAULT_RECITER)}`;
 }
 
-// --- Silent WAV for iOS audio activation (from voice app pattern) ---
+// --- Silent WAV for iOS audio activation (from voice app) ---
 
 function generateSilentWavDataUrl(): string {
   const sampleRate = 8000;
   const numSamples = sampleRate; // 1 second
-  const dataSize = numSamples * 2; // 16-bit mono
+  const dataSize = numSamples * 2;
   const buffer = new ArrayBuffer(44 + dataSize);
   const view = new DataView(buffer);
-  view.setUint32(0, 0x52494646, false); // "RIFF"
+  view.setUint32(0, 0x52494646, false);
   view.setUint32(4, 36 + dataSize, true);
-  view.setUint32(8, 0x57415645, false); // "WAVE"
-  view.setUint32(12, 0x666d7420, false); // "fmt "
+  view.setUint32(8, 0x57415645, false);
+  view.setUint32(12, 0x666d7420, false);
   view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true); // PCM
-  view.setUint16(22, 1, true); // mono
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, sampleRate * 2, true);
   view.setUint16(32, 2, true);
   view.setUint16(34, 16, true);
-  view.setUint32(36, 0x64617461, false); // "data"
+  view.setUint32(36, 0x64617461, false);
   view.setUint32(40, dataSize, true);
   const bytes = new Uint8Array(buffer);
   let binary = "";
@@ -67,70 +67,86 @@ function getSilentWavUrl(): string {
   return silentWavUrl;
 }
 
-// --- Module-level audio engine (persists across Next.js navigations) ---
+// --- Module-level audio engine ---
 
 let audioCtx: AudioContext | null = null;
 let gainNode: GainNode | null = null;
+let mediaStreamDest: MediaStreamAudioDestinationNode | null = null;
 const bufferCache = new Map<string, AudioBuffer>();
 const rawCache = new Map<string, ArrayBuffer>();
 const fetchingUrls = new Set<string>();
-let audioActivated = false;
 
-// Currently playing session — survives component re-mounts on navigation
 let activeAyah: number | null = null;
 let activeSource: AudioBufferSourceNode | null = null;
 let activeStartTime = 0;
 let activeSurah: number | null = null;
 
 /**
- * Activate audio on iOS by playing a silent WAV through the <audio> element.
- * This unlocks both HTMLMediaElement and AudioContext for future programmatic playback.
- * Must be called from a user gesture.
+ * Create AudioContext + MediaStreamDestination (voice app pattern).
+ * Sources connect to gainNode → mediaStreamDest.
+ * The <audio> element plays mediaStreamDest.stream → triggers iOS media center.
  */
-function activateAudio(audioEl: HTMLAudioElement | null): void {
-  if (!audioEl) return;
-  // Only activate if no track is playing
-  if (!audioEl.srcObject && !audioEl.currentSrc) {
-    audioEl.volume = 0;
-    audioEl.src = getSilentWavUrl();
-    audioEl.play().then(() => {
-      audioEl.pause();
-      audioEl.currentTime = 0;
-      audioEl.volume = 1;
-    }).catch(() => {
-      audioEl.volume = 1;
-    });
-  }
-  audioActivated = true;
-}
-
-/**
- * Create AudioContext, handling iOS-specific states.
- * On iOS, suspended/interrupted contexts can't resume synchronously —
- * we close and recreate in the user gesture.
- */
-function ensureAudioContext(): AudioContext {
+function ensureAudioGraph(): AudioContext {
   if (audioCtx && (audioCtx.state === "suspended" || (audioCtx.state as string) === "interrupted")) {
-    audioCtx.close().catch(() => {});
+    try { audioCtx.close().catch(() => {}); } catch {}
     audioCtx = null;
     gainNode = null;
+    mediaStreamDest = null;
   }
   if (!audioCtx || audioCtx.state === "closed") {
     audioCtx = new (window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    mediaStreamDest = null;
+    gainNode = null;
+  }
+  if (!mediaStreamDest) {
+    mediaStreamDest = audioCtx.createMediaStreamDestination();
     gainNode = audioCtx.createGain();
+    gainNode.connect(mediaStreamDest);
+    // Also connect to destination directly as fallback (desktop browsers)
     gainNode.connect(audioCtx.destination);
   }
   return audioCtx;
 }
 
 function getGainNode(): GainNode {
-  ensureAudioContext();
-  if (!gainNode) {
-    gainNode = audioCtx!.createGain();
-    gainNode.connect(audioCtx!.destination);
+  ensureAudioGraph();
+  return gainNode!;
+}
+
+/**
+ * Bridge: pipe AudioContext output through <audio> element.
+ * This is what makes iOS show the media center controls.
+ */
+function bridgeToAudioElement(el: HTMLAudioElement | null): void {
+  if (!el || !mediaStreamDest) return;
+  if (el.srcObject !== mediaStreamDest.stream) {
+    el.srcObject = mediaStreamDest.stream;
   }
-  return gainNode;
+  if (el.paused) {
+    el.play().catch(() => {});
+  }
+}
+
+/**
+ * Activate audio on iOS: play silent WAV through <audio> element.
+ * Must be called from user gesture.
+ */
+function activateAudio(el: HTMLAudioElement | null): void {
+  if (!el) return;
+  if (!el.srcObject && !el.currentSrc) {
+    el.volume = 0;
+    el.src = getSilentWavUrl();
+    el.play().then(() => {
+      el.pause();
+      el.currentTime = 0;
+      el.volume = 1;
+    }).catch(() => {
+      el.volume = 1;
+    });
+  } else if (el.srcObject && el.paused) {
+    el.play().catch(() => {});
+  }
 }
 
 async function fetchRawAudio(url: string): Promise<ArrayBuffer | null> {
@@ -212,8 +228,6 @@ function collectRecitedWordPositions(
   return Array.from(wps).sort((a, b) => a - b);
 }
 
-// --- Gapless transition helper ---
-
 function startNextAyahGapless(surah: number, nextAyah: number): void {
   const url = audioUrl(surah, nextAyah);
   const buffer = bufferCache.get(url);
@@ -259,15 +273,13 @@ export function useQuranAudio(
   const recitedPositionsRef = useRef(recitedPositions);
   recitedPositionsRef.current = recitedPositions;
 
-  // Fetch segments for the surah
+  // Fetch segments
   useEffect(() => {
     if (!isAudioMode || !surahNumber) return;
     const cacheKey = `${DEFAULT_RECITER}:${surahNumber}`;
     if (segmentCacheRef.current.has(cacheKey) || fetchingSegmentsRef.current.has(cacheKey)) return;
-
     fetchingSegmentsRef.current.add(cacheKey);
     const controller = new AbortController();
-
     fetch(
       `/api/quran/segments?reciter=${encodeURIComponent(DEFAULT_RECITER)}&surah=${surahNumber}`,
       { signal: controller.signal },
@@ -283,11 +295,10 @@ export function useQuranAudio(
       })
       .catch(() => {})
       .finally(() => fetchingSegmentsRef.current.delete(cacheKey));
-
     return () => controller.abort();
   }, [isAudioMode, surahNumber]);
 
-  // Prefetch adjacent ayah audio buffers
+  // Prefetch adjacent ayah audio
   useEffect(() => {
     if (!isAudioMode || !surahNumber) return;
     for (let i = 1; i <= PRELOAD_AHEAD; i++) {
@@ -306,11 +317,8 @@ export function useQuranAudio(
 
   const navigateToAyah = useCallback(
     (ayah: number) => {
-      if (onNavigateRef.current) {
-        onNavigateRef.current(ayah);
-      } else {
-        router.replace(`/quran/${surahNumber}/${ayah}?audio=1`);
-      }
+      if (onNavigateRef.current) onNavigateRef.current(ayah);
+      else router.replace(`/quran/${surahNumber}/${ayah}?audio=1`);
     },
     [router, surahNumber],
   );
@@ -322,7 +330,7 @@ export function useQuranAudio(
     if (targetAyah < totalAyahs && !navigatingRef.current) {
       navigatingRef.current = true;
       if (isPlayingRef.current) {
-        ensureAudioContext();
+        ensureAudioGraph();
         startNextAyahGapless(surahNumber, targetAyah + 1);
       }
       navigateToAyah(targetAyah + 1);
@@ -335,7 +343,7 @@ export function useQuranAudio(
       const wasPlaying = isPlayingRef.current;
       stopActiveSource();
       if (wasPlaying) {
-        ensureAudioContext();
+        ensureAudioGraph();
         startNextAyahGapless(surahNumber, targetAyah - 1);
       }
       navigateToAyah(targetAyah - 1);
@@ -351,16 +359,17 @@ export function useQuranAudio(
   const totalAyahsRef = useRef(totalAyahs);
   totalAyahsRef.current = totalAyahs;
 
-  // Reset navigation guard when ayah changes
   useEffect(() => { navigatingRef.current = false; }, [targetAyah]);
 
-  // Audio lifecycle: reconnect UI to already-playing source or prefetch
+  // Audio lifecycle: reconnect to gapless source or prefetch
   useEffect(() => {
     if (!isAudioMode) return;
     let cancelled = false;
 
     if (activeSurah === surahNumber && activeAyah === targetAyah && activeSource) {
       setIsPlaying(true);
+      // Re-bridge audio element for the new component mount
+      bridgeToAudioElement(audioRef.current);
       activeSource.onended = () => {
         if (cancelled || navigatingRef.current) return;
         const ayah = targetAyahRef.current;
@@ -383,7 +392,16 @@ export function useQuranAudio(
     return () => { cancelled = true; if (activeSource) activeSource.onended = null; };
   }, [isAudioMode, surahNumber, targetAyah, totalAyahs]);
 
-  // rAF loop for word highlighting
+  // Keep bridge alive: periodically ensure <audio> element is playing the stream
+  useEffect(() => {
+    if (!isAudioMode || !isPlaying) return;
+    const interval = setInterval(() => {
+      bridgeToAudioElement(audioRef.current);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isAudioMode, isPlaying]);
+
+  // rAF word highlighting
   useEffect(() => {
     if (!isAudioMode || !isPlaying) {
       if (prevHighlightRef.current !== null) {
@@ -392,21 +410,16 @@ export function useQuranAudio(
       }
       return;
     }
-
     const cacheKey = `${DEFAULT_RECITER}:${surahNumber}`;
-
     const tick = () => {
       const segMap = segmentCacheRef.current.get(cacheKey);
       const segData = segMap?.get(targetAyah);
       const positions = recitedPositionsRef.current;
-
       let timeMs = 0;
       if (audioCtx && activeAyah === targetAyah) {
         timeMs = (audioCtx.currentTime - activeStartTime) * 1000;
       }
-
       let newHighlight: number | null = null;
-
       if (segData?.segments && segData.segments.length > 0 && timeMs > 0) {
         const segs = segData.segments;
         const len = segs.length;
@@ -433,23 +446,19 @@ export function useQuranAudio(
           }
         }
       }
-
       if (newHighlight !== prevHighlightRef.current) {
         prevHighlightRef.current = newHighlight;
         setHighlightedPosition(newHighlight);
       }
-
       rafIdRef.current = requestAnimationFrame(tick);
     };
-
     rafIdRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafIdRef.current);
   }, [isAudioMode, isPlaying, surahNumber, targetAyah]);
 
-  // Cleanup on unmount
   useEffect(() => () => cancelAnimationFrame(rafIdRef.current), []);
 
-  // --- MediaSession API: lock screen controls ---
+  // --- MediaSession: lock screen controls ---
   useEffect(() => {
     if (!("mediaSession" in navigator) || !isAudioMode) {
       if ("mediaSession" in navigator) {
@@ -458,14 +467,11 @@ export function useQuranAudio(
       }
       return;
     }
-
     navigator.mediaSession.metadata = new MediaMetadata({
       title: `Surah ${surahNumber} — Ayah ${targetAyah}`,
       artist: "Al-Afasy",
       album: "Quran",
     });
-
-    // Clear position state so iOS shows skip buttons instead of seek
     try { navigator.mediaSession.setPositionState(); } catch {}
   }, [isAudioMode, surahNumber, targetAyah]);
 
@@ -474,12 +480,10 @@ export function useQuranAudio(
     navigator.mediaSession.playbackState = !isAudioMode ? "none" : isPlaying ? "playing" : "paused";
   }, [isAudioMode, isPlaying]);
 
-  // MediaSession action handlers
   useEffect(() => {
     if (!("mediaSession" in navigator) || !isAudioMode) return;
     const ms = navigator.mediaSession;
     let lastActionTime = 0;
-
     const debounced = (fn: () => void) => () => {
       const now = Date.now();
       if (now - lastActionTime < MEDIA_SESSION_DEBOUNCE_MS) return;
@@ -488,7 +492,8 @@ export function useQuranAudio(
     };
 
     ms.setActionHandler("play", debounced(() => {
-      ensureAudioContext();
+      ensureAudioGraph();
+      bridgeToAudioElement(audioRef.current);
       const url = audioUrl(surahNumber, targetAyah);
       const cached = bufferCache.get(url);
       if (cached) {
@@ -519,30 +524,18 @@ export function useQuranAudio(
         };
       }
     }));
-
-    ms.setActionHandler("pause", debounced(() => {
-      stopActiveSource();
-      setIsPlaying(false);
-    }));
-
-    // iOS fires "stop" on background — treat as pause
-    ms.setActionHandler("stop", debounced(() => {
-      stopActiveSource();
-      setIsPlaying(false);
-    }));
-
+    ms.setActionHandler("pause", debounced(() => { stopActiveSource(); setIsPlaying(false); }));
+    ms.setActionHandler("stop", debounced(() => { stopActiveSource(); setIsPlaying(false); }));
     ms.setActionHandler("nexttrack", debounced(() => skipForwardRef.current()));
     ms.setActionHandler("previoustrack", debounced(() => {
       if (targetAyahRef.current > 1) {
         navigatingRef.current = true;
         stopActiveSource();
-        ensureAudioContext();
+        ensureAudioGraph();
         startNextAyahGapless(surahNumber, targetAyahRef.current - 1);
         navigateRef.current(targetAyahRef.current - 1);
       }
     }));
-
-    // NULL out seek handlers so iOS shows skip buttons
     ms.setActionHandler("seekforward", null);
     ms.setActionHandler("seekbackward", null);
 
@@ -555,17 +548,22 @@ export function useQuranAudio(
     };
   }, [isAudioMode, surahNumber, targetAyah]);
 
+  // --- User actions ---
+
   const toggleAudioMode = useCallback(() => {
     setIsAudioMode((prev) => {
       if (prev) {
         stopActiveSource();
         setIsPlaying(false);
         setHighlightedPosition(null);
+        // Disconnect bridge
+        const el = audioRef.current;
+        if (el) { el.srcObject = null; el.pause(); }
         router.replace(`/quran/${surahNumber}/${targetAyah}`);
       } else {
-        // Activate audio via <audio> element (iOS unlock) + create AudioContext
+        // Activate audio (iOS unlock) + create AudioContext in user gesture
         activateAudio(audioRef.current);
-        ensureAudioContext();
+        ensureAudioGraph();
         router.replace(`/quran/${surahNumber}/${targetAyah}?audio=1`);
       }
       return !prev;
@@ -573,7 +571,7 @@ export function useQuranAudio(
   }, [router, surahNumber, targetAyah]);
 
   const playFromBuffer = useCallback((buffer: AudioBuffer) => {
-    const ctx = ensureAudioContext();
+    const ctx = ensureAudioGraph();
     const gain = getGainNode();
 
     stopActiveSource();
@@ -589,6 +587,9 @@ export function useQuranAudio(
     activeSurah = surahNumber;
     setIsPlaying(true);
 
+    // Bridge to <audio> element for iOS media center
+    bridgeToAudioElement(audioRef.current);
+
     source.onended = () => {
       if (navigatingRef.current) return;
       const ayah = targetAyahRef.current;
@@ -602,26 +603,26 @@ export function useQuranAudio(
       } else {
         setIsPlaying(false);
         setHighlightedPosition(null);
+        // Stop bridge when playback ends
+        const el = audioRef.current;
+        if (el) { el.srcObject = null; el.pause(); }
       }
     };
   }, [surahNumber, targetAyah]);
 
-  // Play: activate audio + play synchronously if cached, async otherwise
   const play = useCallback(() => {
-    // Re-activate audio on every play gesture (iOS can revoke after idle)
+    // Re-activate on every play gesture (iOS can revoke after idle)
     activateAudio(audioRef.current);
-    ensureAudioContext();
+    ensureAudioGraph();
+    // Bridge immediately so iOS associates this gesture with audio element
+    bridgeToAudioElement(audioRef.current);
 
     const url = audioUrl(surahNumber, targetAyah);
-
-    // Synchronous path: buffer already cached from prefetch
     const cached = bufferCache.get(url);
     if (cached) {
       playFromBuffer(cached);
       return;
     }
-
-    // Async fallback: fetch, decode, then play
     getBuffer(url).then((buffer) => {
       if (buffer) playFromBuffer(buffer);
     });
