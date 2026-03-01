@@ -717,7 +717,9 @@ export function QuranAyahViewer({
       </div>
 
       {/* Hidden audio element */}
-      {isAudioMode && <audio ref={audioRef} preload="auto" />}
+      {/* Audio element always rendered so iOS activation works on first tap */}
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      <audio ref={audioRef} preload="none" playsInline webkit-playsinline="" />
 
       <style jsx global>{`
         .mushaf-bg {
