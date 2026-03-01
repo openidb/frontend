@@ -1057,7 +1057,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
 
           {/* Audio reader link */}
           <PrefetchLink
-            href={`/audio/${bookMetadata.id}?pn=${currentPage}`}
+            href={`/audiobook/${bookMetadata.id}?pn=${currentPage}`}
             className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
             onClick={() => setShowSidebar(false)}
           >
