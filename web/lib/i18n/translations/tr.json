@@ -370,7 +370,11 @@
     "ayah": "Ayet",
     "nextAyah": "Sonraki",
     "prevAyah": "Önceki",
-    "tafsir": "Tefsir"
+    "tafsir": "Tefsir",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "Yükleniyor...",

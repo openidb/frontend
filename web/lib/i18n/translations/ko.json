@@ -370,7 +370,11 @@
     "ayah": "아야",
     "nextAyah": "다음",
     "prevAyah": "이전",
-    "tafsir": "타프시르"
+    "tafsir": "타프시르",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "로딩 중...",

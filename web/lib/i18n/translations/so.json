@@ -370,7 +370,11 @@
     "ayah": "Aayad",
     "nextAyah": "Xiga",
     "prevAyah": "Hore",
-    "tafsir": "Tafsiir"
+    "tafsir": "Tafsiir",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "Waa la soo rarayaa...",

@@ -370,7 +370,11 @@
     "ayah": "Ayet",
     "nextAyah": "Paşîn",
     "prevAyah": "Berê",
-    "tafsir": "Tefsîr"
+    "tafsir": "Tefsîr",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "Tê barkirin...",

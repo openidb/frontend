@@ -370,7 +370,11 @@
     "ayah": "Aya",
     "nextAyah": "Na gaba",
     "prevAyah": "Baya",
-    "tafsir": "Tafsiri"
+    "tafsir": "Tafsiri",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "Ana ɗorawa...",

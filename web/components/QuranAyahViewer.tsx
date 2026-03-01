@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Headphones, Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { useQuranAudio } from "@/lib/use-quran-audio";
 import type { MushafPageData } from "./MushafPageClient";
 
 interface TafsirEdition {
@@ -29,6 +30,7 @@ interface Props {
   surahNameArabic: string;
   totalAyahs: number;
   mushafPages: MushafPageData[];
+  initialAudioMode?: boolean;
 }
 
 const PREFERRED_EDITIONS: Record<string, { id: string; name: string }> = {
@@ -101,9 +103,21 @@ export function QuranAyahViewer({
   surahNameArabic,
   totalAyahs,
   mushafPages,
+  initialAudioMode = false,
 }: Props) {
   const { t, locale } = useTranslation();
   const router = useRouter();
+  const {
+    isAudioMode,
+    isPlaying,
+    toggleAudioMode,
+    play,
+    pause,
+    skipForward,
+    skipBack,
+    highlightedPosition,
+    audioRef,
+  } = useQuranAudio(surahNumber, targetAyah, totalAyahs, mushafPages, router, initialAudioMode);
   const [fontsLoaded, setFontsLoaded] = useState<Set<number>>(new Set());
   const [surahFontLoaded, setSurahFontLoaded] = useState(false);
   const [translations, setTranslations] = useState<Record<number, string>>({});
@@ -253,8 +267,9 @@ export function QuranAyahViewer({
     const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
     touchStartRef.current = null;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      if (dx < 0 && canGoNext) router.replace(`/quran/${surahNumber}/${targetAyah + 1}`);
-      else if (dx > 0 && canGoPrev) router.replace(`/quran/${surahNumber}/${targetAyah - 1}`);
+      const audioSuffix = isAudioMode ? "?audio=1" : "";
+      if (dx < 0 && canGoNext) router.replace(`/quran/${surahNumber}/${targetAyah + 1}${audioSuffix}`);
+      else if (dx > 0 && canGoPrev) router.replace(`/quran/${surahNumber}/${targetAyah - 1}${audioSuffix}`);
     }
   }, [targetAyah, surahNumber, canGoPrev, canGoNext, router]);
 
@@ -298,6 +313,17 @@ export function QuranAyahViewer({
         <span className="flex-1 text-sm font-medium truncate">
           {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
         </span>
+        <button
+          onClick={toggleAudioMode}
+          className={`p-1.5 rounded-lg transition-colors ${
+            isAudioMode
+              ? "bg-primary text-primary-foreground"
+              : "hover:bg-muted text-muted-foreground"
+          }`}
+          aria-label={isAudioMode ? t("mushaf.stopListening") : t("mushaf.listenToAyah")}
+        >
+          <Headphones className="h-5 w-5" />
+        </button>
         <button
           onClick={() => router.push(`/mushaf/pdf?page=${mushafPages[0]?.pageNumber ?? 1}`)}
           className="px-3 py-1.5 rounded-lg text-xs bg-foreground/[0.06] hover:bg-foreground/[0.1] transition-colors text-muted-foreground font-medium"
@@ -379,10 +405,11 @@ export function QuranAyahViewer({
                 {line.words.map((w) => {
                   const isOurAyah = w.surahNumber === surahNumber && ayahSet.has(w.ayahNumber);
                   const isTarget = w.surahNumber === surahNumber && w.ayahNumber === targetAyah;
+                  const isHighlighted = isAudioMode && w.position === highlightedPosition;
                   return (
                     <span
                       key={w.position}
-                      className="mushaf-word"
+                      className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`}
                       style={{ opacity: !isOurAyah ? 0.15 : isTarget ? 1 : 0.4 }}
                     >
                       {w.glyph || w.text}
@@ -463,31 +490,71 @@ export function QuranAyahViewer({
         dir="ltr"
       >
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => canGoPrev && router.replace(`/quran/${surahNumber}/${targetAyah - 1}`)}
-            disabled={!canGoPrev}
-            className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
-            aria-label={t("mushaf.prevAyah")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-            {t("mushaf.prevAyah")}
-          </button>
+          {isAudioMode ? (
+            <>
+              <button
+                onClick={skipBack}
+                disabled={targetAyah <= 1}
+                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
+                aria-label={t("mushaf.skipBack")}
+              >
+                <SkipBack className="h-5 w-5" />
+              </button>
 
-          <span className="text-sm text-muted-foreground tabular-nums">
-            {t("mushaf.ayah")} {targetAyah} / {totalAyahs}
-          </span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground tabular-nums">
+                  {t("mushaf.ayah")} {targetAyah} / {totalAyahs}
+                </span>
+                <button
+                  onClick={isPlaying ? pause : play}
+                  className="h-11 w-11 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 flex items-center justify-center transition-colors"
+                  aria-label={isPlaying ? t("audio.pause") : t("audio.play")}
+                >
+                  {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+                </button>
+              </div>
 
-          <button
-            onClick={() => canGoNext && router.replace(`/quran/${surahNumber}/${targetAyah + 1}`)}
-            disabled={!canGoNext}
-            className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
-            aria-label={t("mushaf.nextAyah")}
-          >
-            {t("mushaf.nextAyah")}
-            <ChevronRight className="h-5 w-5" />
-          </button>
+              <button
+                onClick={skipForward}
+                disabled={targetAyah >= totalAyahs}
+                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
+                aria-label={t("mushaf.skipForward")}
+              >
+                <SkipForward className="h-5 w-5" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => canGoPrev && router.replace(`/quran/${surahNumber}/${targetAyah - 1}`)}
+                disabled={!canGoPrev}
+                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
+                aria-label={t("mushaf.prevAyah")}
+              >
+                <ChevronLeft className="h-5 w-5" />
+                {t("mushaf.prevAyah")}
+              </button>
+
+              <span className="text-sm text-muted-foreground tabular-nums">
+                {t("mushaf.ayah")} {targetAyah} / {totalAyahs}
+              </span>
+
+              <button
+                onClick={() => canGoNext && router.replace(`/quran/${surahNumber}/${targetAyah + 1}`)}
+                disabled={!canGoNext}
+                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
+                aria-label={t("mushaf.nextAyah")}
+              >
+                {t("mushaf.nextAyah")}
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Hidden audio element */}
+      {isAudioMode && <audio ref={audioRef} preload="auto" />}
 
       <style jsx global>{`
         .mushaf-bg {
@@ -546,7 +613,8 @@ export function QuranAyahViewer({
 
         .mushaf-line-justify { justify-content: space-between; }
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
-        .mushaf-word { cursor: default; }
+        .mushaf-word { cursor: default; transition: color 0.15s ease; }
+        .mushaf-word-highlight { color: hsl(var(--primary)); }
 
         .mushaf-surah-header {
           display: flex;

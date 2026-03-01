@@ -370,7 +370,11 @@
     "ayah": "ਆਇਤ",
     "nextAyah": "ਅਗਲੀ",
     "prevAyah": "ਪਿਛਲੀ",
-    "tafsir": "ਤਫ਼ਸੀਰ"
+    "tafsir": "ਤਫ਼ਸੀਰ",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",

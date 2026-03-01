@@ -46,10 +46,13 @@ export async function generateMetadata({
 
 export default async function QuranAyahPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ surah: string; ayah: string }>;
+  searchParams: Promise<{ audio?: string }>;
 }) {
   const { surah, ayah } = await params;
+  const { audio } = await searchParams;
   const surahNum = Number(surah);
   const ayahNum = Number(ayah);
 
@@ -101,6 +104,7 @@ export default async function QuranAyahPage({
         surahNameArabic={surahInfo.nameArabic}
         totalAyahs={data.total}
         mushafPages={mushafPages}
+        initialAudioMode={audio === "1"}
       />
     </div>
   );

@@ -370,7 +370,11 @@
     "ayah": "アーヤ",
     "nextAyah": "次へ",
     "prevAyah": "前へ",
-    "tafsir": "タフスィール"
+    "tafsir": "タフスィール",
+    "listenToAyah": "Listen",
+    "stopListening": "Stop listening",
+    "skipBack": "Previous ayah",
+    "skipForward": "Next ayah"
   },
   "common": {
     "loading": "読み込み中...",
