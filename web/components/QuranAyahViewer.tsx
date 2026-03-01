@@ -329,10 +329,13 @@ export function QuranAyahViewer({
     }
   }, [tafsirLang, tafsirLangs]);
 
-  // Tafsir: read synchronously from module-level cache (zero flicker)
-  const currentTafsir = tafsirEditionId
+  // Tafsir: read synchronously from cache; keep previous until new arrives
+  const lastTafsirRef = useRef<string | null>(null);
+  const freshTafsir = tafsirEditionId
     ? tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`) || null
     : null;
+  if (freshTafsir !== null) lastTafsirRef.current = freshTafsir;
+  const currentTafsir = freshTafsir ?? lastTafsirRef.current;
 
   // Background fetch: populate cache, bump tick to trigger re-render when done
   useEffect(() => {
