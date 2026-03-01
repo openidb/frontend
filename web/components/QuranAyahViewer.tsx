@@ -89,6 +89,7 @@ const CENTER_ALIGNED_PAGES = [1, 2];
 const loadedFonts = new Set<string>();
 const translationCache = new Map<string, string>(); // "surah:ayah:edition" → text
 const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
+const tafsirFetching = new Set<string>(); // dedup in-flight tafsir fetches
 
 const CENTER_ALIGNED_LINES: Record<number, number[]> = {
   255: [2], 528: [9], 534: [6], 545: [6], 586: [1], 593: [2], 594: [5],
@@ -259,7 +260,7 @@ export function QuranAyahViewer({
   // Background fetch: populate cache, bump tick to trigger re-render when done
   useEffect(() => {
     if (locale === "ar") return;
-    const warmRange = isAudioMode ? 5 : 2;
+    const warmRange = isAudioMode ? 20 : 2;
     const toFetch: number[] = [];
     for (let i = -warmRange; i <= warmRange; i++) {
       const a = clientAyah + i;
@@ -329,40 +330,46 @@ export function QuranAyahViewer({
     }
   }, [tafsirLang, tafsirLangs]);
 
-  // Tafsir: read synchronously from cache; keep previous until new arrives
-  const lastTafsirRef = useRef<string | null>(null);
-  const freshTafsir = tafsirEditionId
-    ? tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`) || null
+  // Tafsir: read synchronously from cache
+  const currentTafsir = tafsirEditionId
+    ? tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`) ?? null
     : null;
-  if (freshTafsir !== null) lastTafsirRef.current = freshTafsir;
-  const currentTafsir = freshTafsir ?? lastTafsirRef.current;
 
-  // Background fetch: populate cache, bump tick to trigger re-render when done
+  // Helper: fetch a single tafsir into cache (deduped)
+  const fetchTafsir = useCallback((surah: number, ayah: number, editionId: string, onDone?: () => void) => {
+    const key = `${surah}:${ayah}:${editionId}`;
+    if (tafsirCache.has(key) || tafsirFetching.has(key)) return;
+    tafsirFetching.add(key);
+    fetch(`/api/quran/tafsir/${surah}/${ayah}?editionId=${editionId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.tafsirs?.[0]?.text) tafsirCache.set(key, d.tafsirs[0].text);
+        onDone?.();
+      })
+      .catch(() => {})
+      .finally(() => tafsirFetching.delete(key));
+  }, []);
+
+  // Fetch current ayah tafsir + bump tick when it arrives
   useEffect(() => {
     if (!tafsirEditionId) return;
-    const warmRange = isAudioMode ? 5 : 0;
-    const toFetch: number[] = [];
-    for (let i = 0; i <= warmRange; i++) {
-      const a = clientAyah + i;
-      if (a <= totalAyahs && !tafsirCache.has(`${surahNumber}:${a}:${tafsirEditionId}`)) {
-        toFetch.push(a);
-      }
-    }
-    if (toFetch.length === 0) return;
+    const key = `${surahNumber}:${clientAyah}:${tafsirEditionId}`;
+    if (tafsirCache.has(key)) return; // already cached
     let cancelled = false;
-    for (const num of toFetch) {
-      fetch(`/api/quran/tafsir/${surahNumber}/${num}?editionId=${tafsirEditionId}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => {
-          if (d?.tafsirs?.[0]?.text) {
-            tafsirCache.set(`${surahNumber}:${num}:${tafsirEditionId}`, d.tafsirs[0].text);
-          }
-          if (!cancelled && num === clientAyah) setTafsirTick((t) => t + 1);
-        })
-        .catch(() => {});
-    }
+    fetchTafsir(surahNumber, clientAyah, tafsirEditionId, () => {
+      if (!cancelled) setTafsirTick((t) => t + 1);
+    });
     return () => { cancelled = true; };
-  }, [surahNumber, clientAyah, tafsirEditionId, isAudioMode, totalAyahs]);
+  }, [surahNumber, clientAyah, tafsirEditionId, fetchTafsir]);
+
+  // Aggressively pre-warm tafsir: +20 ayahs ahead in audio mode
+  useEffect(() => {
+    if (!isAudioMode || !tafsirEditionId) return;
+    for (let i = 1; i <= 20; i++) {
+      const a = clientAyah + i;
+      if (a <= totalAyahs) fetchTafsir(surahNumber, a, tafsirEditionId);
+    }
+  }, [isAudioMode, surahNumber, clientAyah, tafsirEditionId, totalAyahs, fetchTafsir]);
 
   // Swipe navigation
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
