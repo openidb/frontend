@@ -405,7 +405,7 @@ export function QuranAyahViewer({
                 {line.words.map((w) => {
                   const isOurAyah = w.surahNumber === surahNumber && ayahSet.has(w.ayahNumber);
                   const isTarget = w.surahNumber === surahNumber && w.ayahNumber === targetAyah;
-                  const isHighlighted = isAudioMode && isTarget && w.position === highlightedPosition;
+                  const isHighlighted = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
                   return (
                     <span
                       key={w.position}

@@ -116,15 +116,16 @@ function stopActiveSource(): void {
 }
 
 /**
- * Collect mushaf word positions for the target ayah (charType "word").
- * Includes bismillah lines for surah 1 where bismillah IS ayah 1.
+ * Collect wordPosition values for the target ayah (charType "word").
+ * wordPosition is unique within an ayah (unlike position which resets per line).
+ * Returns sorted array that maps 1:1 with audio segments by index.
  */
 function collectRecitedWordPositions(
   mushafPages: MushafPageData[],
   surahNumber: number,
   targetAyah: number,
 ): number[] {
-  const positions: { wordPosition: number; position: number }[] = [];
+  const wps = new Set<number>();
 
   for (const page of mushafPages) {
     for (const line of page.lines) {
@@ -135,14 +136,13 @@ function collectRecitedWordPositions(
           w.ayahNumber === targetAyah &&
           w.charType === "word"
         ) {
-          positions.push({ wordPosition: w.wordPosition, position: w.position });
+          wps.add(w.wordPosition);
         }
       }
     }
   }
 
-  positions.sort((a, b) => a.wordPosition - b.wordPosition);
-  return positions.map((p) => p.position);
+  return Array.from(wps).sort((a, b) => a - b);
 }
 
 export function useQuranAudio(
