@@ -262,6 +262,19 @@ export function AudioReader({
     const sortedPages = [...loadedPages.entries()].sort(([a], [b]) => a - b);
 
     for (const [pageNum, page] of sortedPages) {
+      // Build set of title line indices from HTML to skip headings
+      const htmlLines = page.contentHtml.split("\n");
+      const titleLineIndices = new Set<number>();
+      let plainIdx = 0;
+      for (let h = 0; h < htmlLines.length; h++) {
+        const trimmed = htmlLines[h].trim();
+        if (!trimmed) continue;
+        if (trimmed.includes("data-type")) {
+          titleLineIndices.add(plainIdx);
+        }
+        plainIdx++;
+      }
+
       const lines = expandHonorifics(page.contentPlain)
         .split("\n")
         .filter((l) => l.trim().length > 0);
@@ -271,6 +284,8 @@ export function AudioReader({
         : null;
 
       for (let i = 0; i < lines.length; i++) {
+        // Skip title/heading lines (table of contents entries)
+        if (titleLineIndices.has(i)) continue;
         result.push({
           pageNumber: pageNum,
           paragraphIndex: i,
@@ -458,6 +473,8 @@ export function AudioReader({
     }
   }, [currentParagraphIdx]);
 
+  const currentPageNum = allParagraphs[currentParagraphIdx]?.pageNumber ?? centerPage;
+
   // ─── Sync page input value ──────────────────────────────────────────
   useEffect(() => {
     setPageInputValue(String(currentPageNum + 1));
@@ -553,7 +570,6 @@ export function AudioReader({
   );
 
   // ─── Progress display ──────────────────────────────────────────────
-  const currentPageNum = allParagraphs[currentParagraphIdx]?.pageNumber ?? centerPage;
   const progress = totalPages > 0 ? ((currentPageNum + 1) / totalPages) * 100 : 0;
 
   const displayTitle = expandHonorifics(bookMetadata.title);
