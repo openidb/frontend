@@ -176,6 +176,7 @@ export function AudioReader({
 
   // ─── UI state ──────────────────────────────────────────────────────
   const [showOptions, setShowOptions] = useState(false);
+  const [pageInputValue, setPageInputValue] = useState(String(centerPage + 1));
   const scrollRef = useRef<HTMLDivElement>(null);
   const paragraphRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
@@ -449,6 +450,34 @@ export function AudioReader({
     }
   }, [currentParagraphIdx]);
 
+  // ─── Sync page input value ──────────────────────────────────────────
+  useEffect(() => {
+    setPageInputValue(String(currentPageNum + 1));
+  }, [currentPageNum]);
+
+  // ─── Go to page ───────────────────────────────────────────────────
+  const handlePageInputSubmit = useCallback(
+    (e?: React.FormEvent) => {
+      e?.preventDefault();
+      const page = parseInt(pageInputValue, 10) - 1;
+      if (isNaN(page) || page < 0 || page >= totalPages) {
+        setPageInputValue(String(currentPageNum + 1));
+        return;
+      }
+      if (page !== centerPage) {
+        setCenterPage(page);
+        // Find first paragraph on this page and jump to it
+        const idx = allParagraphs.findIndex((p) => p.pageNumber === page);
+        if (idx >= 0) {
+          speechSynthesis?.cancel();
+          setCurrentParagraphIdx(idx);
+          if (isPlaying) speakParagraph(idx);
+        }
+      }
+    },
+    [pageInputValue, totalPages, centerPage, currentPageNum, allParagraphs, isPlaying, speakParagraph],
+  );
+
   // ─── Click to jump ─────────────────────────────────────────────────
   const jumpToParagraph = useCallback(
     (idx: number) => {
@@ -507,40 +536,62 @@ export function AudioReader({
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[hsl(var(--background))]" dir={dir}>
-      {/* ─── Top bar ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b shrink-0">
+      {/* ─── Top bar — matches book reader header ─────────────────── */}
+      <div
+        className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
+        style={{ backgroundColor: "hsl(var(--background))" }}
+      >
         <Button
           variant="ghost"
           size="icon"
           onClick={() => router.back()}
-          className="h-9 w-9 shrink-0"
+          className="shrink-0 h-10 w-10 sm:h-9 sm:w-9"
           aria-label={t("common.close")}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-6 w-6 sm:h-5 sm:w-5 rtl:scale-x-[-1]" />
         </Button>
 
-        <div className="flex-1 min-w-0 text-center">
-          <p
-            className="text-sm font-medium truncate"
+        <div className="min-w-0 flex-1">
+          <h1
+            className="truncate font-semibold text-base"
             dir="rtl"
             title={displayTitle}
           >
             {displayTitle}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("audio.page")} {currentPageNum + 1} {t("reader.of")} {totalPages}
-          </p>
+          </h1>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowOptions(!showOptions)}
-          className="h-9 w-9 shrink-0"
-          aria-label={t("audio.options")}
-        >
-          <EllipsisVertical className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
+          {/* Page selector */}
+          <div className="flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
+            <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
+              <span className="text-sm text-muted-foreground">
+                {t("reader.page")}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={pageInputValue}
+                onChange={(e) => setPageInputValue(e.target.value)}
+                onBlur={() => handlePageInputSubmit()}
+                className="w-12 text-sm text-center bg-transparent border-b border-border focus:border-primary focus:outline-none tabular-nums"
+              />
+              <span className="text-xs text-muted-foreground hidden md:inline">
+                / {totalPages}
+              </span>
+            </form>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowOptions(!showOptions)}
+            className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
+            aria-label={t("audio.options")}
+          >
+            <EllipsisVertical className="h-6 w-6 sm:h-5 sm:w-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Reading progress bar */}
