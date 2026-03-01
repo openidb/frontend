@@ -3,6 +3,12 @@ import { notFound } from "next/navigation";
 import { fetchAPI } from "@/lib/api-client";
 import { AudioReader } from "@/components/AudioReader";
 
+interface TocEntry {
+  title: string;
+  level: number;
+  page: number;
+}
+
 interface BookData {
   book: {
     id: string;
@@ -11,6 +17,7 @@ interface BookData {
     titleTranslated?: string | null;
     filename: string;
     totalPages: number | null;
+    tableOfContents?: TocEntry[] | null;
     translatedLanguages?: string[];
     author: {
       id: string;
@@ -71,6 +78,7 @@ export default async function AudioPage({
       }}
       initialPageNumber={pn}
       totalPages={book.totalPages || 0}
+      toc={book.tableOfContents || []}
       translatedLanguages={book.translatedLanguages}
     />
   );

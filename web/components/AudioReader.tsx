@@ -57,10 +57,17 @@ interface ReadableParagraph {
 
 type ReadingMode = "arabic" | "translation" | "both";
 
+interface TocEntry {
+  title: string;
+  level: number;
+  page: number;
+}
+
 interface AudioReaderProps {
   bookMetadata: AudioBookMetadata;
   initialPageNumber?: string;
   totalPages: number;
+  toc?: TocEntry[];
   translatedLanguages?: string[];
 }
 
@@ -138,6 +145,7 @@ export function AudioReader({
   bookMetadata,
   initialPageNumber,
   totalPages,
+  toc = [],
   translatedLanguages,
 }: AudioReaderProps) {
   const router = useRouter();
@@ -478,6 +486,22 @@ export function AudioReader({
     [pageInputValue, totalPages, centerPage, currentPageNum, allParagraphs, isPlaying, speakParagraph],
   );
 
+  // ─── Go to a specific page (used by TOC) ────────────────────────────
+  const goToPage = useCallback(
+    (page: number) => {
+      if (page < 0 || page >= totalPages) return;
+      setCenterPage(page);
+      setPageInputValue(String(page + 1));
+      const idx = allParagraphs.findIndex((p) => p.pageNumber === page);
+      if (idx >= 0) {
+        speechSynthesis?.cancel();
+        setCurrentParagraphIdx(idx);
+        if (isPlaying) speakParagraph(idx);
+      }
+    },
+    [totalPages, allParagraphs, isPlaying, speakParagraph],
+  );
+
   // ─── Click to jump ─────────────────────────────────────────────────
   const jumpToParagraph = useCallback(
     (idx: number) => {
@@ -737,6 +761,43 @@ export function AudioReader({
                 </PrefetchLink>
               </div>
             </div>
+
+            {/* Table of Contents */}
+            {toc.length > 0 && (
+              <>
+                <div className="px-3 pb-1">
+                  <div className="border-t" />
+                  <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
+                </div>
+
+                <div className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
+                  <div className="space-y-1">
+                    {toc.map((entry, index) => {
+                      const depth = entry.level;
+                      const bullets = ["●", "○", "▪", "◦", "▸"];
+                      const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
+                      const isActive = entry.page <= currentPageNum &&
+                        (index === toc.length - 1 || toc[index + 1].page > currentPageNum);
+
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            goToPage(entry.page);
+                            setShowOptions(false);
+                          }}
+                          className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
+                          style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+                        >
+                          {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
+                          <span>{entry.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -820,29 +881,29 @@ export function AudioReader({
 
       {/* ─── Bottom controls ──────────────────────────────────────── */}
       <div className="border-t shrink-0 bg-[hsl(var(--background))] pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-center gap-4 px-4 py-3">
+        <div className="flex items-center justify-center gap-6 px-4 py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={skipPrev}
             disabled={currentParagraphIdx === 0}
-            className="h-10 w-10"
+            className="h-14 w-14 rounded-full"
             aria-label={t("audio.prevParagraph")}
           >
-            <SkipBack className="h-5 w-5" />
+            <SkipBack className="h-7 w-7" />
           </Button>
 
           <Button
             variant="default"
             size="icon"
             onClick={togglePlayback}
-            className="h-12 w-12 rounded-full"
+            className="h-16 w-16 rounded-full"
             aria-label={isPlaying ? t("audio.pause") : t("audio.play")}
           >
             {isPlaying ? (
-              <Pause className="h-6 w-6" />
+              <Pause className="h-8 w-8" />
             ) : (
-              <Play className="h-6 w-6 ms-0.5" />
+              <Play className="h-8 w-8 ms-0.5" />
             )}
           </Button>
 
@@ -851,10 +912,10 @@ export function AudioReader({
             size="icon"
             onClick={skipNext}
             disabled={currentParagraphIdx >= allParagraphs.length - 1}
-            className="h-10 w-10"
+            className="h-14 w-14 rounded-full"
             aria-label={t("audio.nextParagraph")}
           >
-            <SkipForward className="h-5 w-5" />
+            <SkipForward className="h-7 w-7" />
           </Button>
         </div>
       </div>
