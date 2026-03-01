@@ -467,17 +467,11 @@ export function useQuranAudio(
     el.pause();
     el.srcObject = null;
 
-    // 3. Set new source
+    // 3. Set new source — always use direct URL (browser HTTP cache handles repeats;
+    //    blob URLs were blocked by CSP media-src which only had 'self')
     el.loop = false;
     revokeElementObjectUrl();
-    const raw = bufferCache.getRaw(url);
-    if (raw) {
-      const objectUrl = URL.createObjectURL(new Blob([raw], { type: "audio/mpeg" }));
-      elementObjectUrlRef.current = objectUrl;
-      el.src = objectUrl;
-    } else {
-      el.src = url;
-    }
+    el.src = url;
     el.volume = 1;
     if (el.muted) el.muted = false;
 
@@ -496,11 +490,14 @@ export function useQuranAudio(
       targetAyahRef.current + 1,
       surahRef.current,
     );
-    el.onerror = () => playViaElementRef.current(
-      audioUrl(surahRef.current, targetAyahRef.current + 1),
-      targetAyahRef.current + 1,
-      surahRef.current,
-    );
+    el.onerror = (e) => {
+      console.error("[quran-audio] element error", el.error, e);
+      playViaElementRef.current(
+        audioUrl(surahRef.current, targetAyahRef.current + 1),
+        targetAyahRef.current + 1,
+        surahRef.current,
+      );
+    };
 
     // 5. Play
     el.play().catch(() => {
