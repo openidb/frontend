@@ -144,6 +144,8 @@ export function useQuranAudio(
   router: AppRouterInstance,
   initialAudioMode: boolean,
   onNavigate?: (ayah: number) => void,
+  surahNameEnglish?: string,
+  surahNameArabic?: string,
 ): UseQuranAudioReturn {
   const [isAudioMode, setIsAudioMode] = useState(initialAudioMode);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -447,6 +449,8 @@ export function useQuranAudio(
   // Web Audio scheduling is used only when element mode is not active.
   // ====================================================================
 
+  const playViaElementRef = useRef<(url: string, ayah: number, surah: number) => void>(() => {});
+
   const playViaElement = useCallback((url: string, ayah: number, surah: number) => {
     const el = audioRef.current;
     if (!el) return;
@@ -454,10 +458,18 @@ export function useQuranAudio(
     elementModeRef.current = true;
     stopActiveSource(); // stop any Web Audio source
 
+    // 1. Clear old event handlers first (voice app pattern: stopElementMode)
+    el.onended = null;
+    el.onerror = null;
+    el.onplaying = null;
+
+    // 2. Clear bridge stream BEFORE setting src (critical ordering!)
+    el.pause();
+    el.srcObject = null;
+
+    // 3. Set new source
     el.loop = false;
     revokeElementObjectUrl();
-
-    // Use cached raw data as object URL if available (avoids re-fetch)
     const raw = bufferCache.getRaw(url);
     if (raw) {
       const objectUrl = URL.createObjectURL(new Blob([raw], { type: "audio/mpeg" }));
@@ -466,10 +478,8 @@ export function useQuranAudio(
     } else {
       el.src = url;
     }
-
     el.volume = 1;
     if (el.muted) el.muted = false;
-    el.srcObject = null; // clear any bridge stream
 
     activeAyahRef.current = ayah;
     activeSurahRef.current = surah;
@@ -477,49 +487,23 @@ export function useQuranAudio(
     isPlayingRef.current = true;
     setIsPlaying(true);
 
+    // 4. Set event handlers (voice app pattern: use stable ref for callbacks)
     el.onplaying = () => {
       activeStartTimeRef.current = performance.now() / 1000;
     };
+    el.onended = () => playViaElementRef.current(
+      audioUrl(surahRef.current, targetAyahRef.current + 1),
+      targetAyahRef.current + 1,
+      surahRef.current,
+    );
+    el.onerror = () => playViaElementRef.current(
+      audioUrl(surahRef.current, targetAyahRef.current + 1),
+      targetAyahRef.current + 1,
+      surahRef.current,
+    );
 
-    el.onended = () => {
-      revokeElementObjectUrl();
-      if (navigatingRef.current) return;
-      const curAyah = targetAyahRef.current;
-      const total = totalAyahsRef.current;
-      if (curAyah < total) {
-        navigatingRef.current = true;
-        // Start next ayah immediately
-        const nextUrl = audioUrl(surah, curAyah + 1);
-        playViaElement(nextUrl, curAyah + 1, surah);
-        navigateRef.current(curAyah + 1);
-      } else {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        elementModeRef.current = false;
-      }
-    };
-
-    el.onerror = () => {
-      // Skip to next on error
-      revokeElementObjectUrl();
-      if (navigatingRef.current) return;
-      const curAyah = targetAyahRef.current;
-      const total = totalAyahsRef.current;
-      if (curAyah < total) {
-        navigatingRef.current = true;
-        const nextUrl = audioUrl(surah, curAyah + 1);
-        playViaElement(nextUrl, curAyah + 1, surah);
-        navigateRef.current(curAyah + 1);
-      } else {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-        elementModeRef.current = false;
-      }
-    };
-
+    // 5. Play
     el.play().catch(() => {
-      // Retry once
       setTimeout(() => {
         el.play().catch(() => {
           isPlayingRef.current = false;
@@ -528,6 +512,25 @@ export function useQuranAudio(
       }, 100);
     });
   }, [stopActiveSource, revokeElementObjectUrl]);
+
+  // Keep ref in sync (voice app pattern: playNextElementRef.current = playNextElement)
+  playViaElementRef.current = (url: string, ayah: number, surah: number) => {
+    // Guard: don't advance past end of surah
+    const total = totalAyahsRef.current;
+    const curAyah = targetAyahRef.current;
+    if (curAyah >= total) {
+      revokeElementObjectUrl();
+      isPlayingRef.current = false;
+      setIsPlaying(false);
+      setHighlightedPosition(null);
+      elementModeRef.current = false;
+      return;
+    }
+    if (navigatingRef.current) return;
+    navigatingRef.current = true;
+    playViaElement(url, ayah, surah);
+    navigateRef.current(ayah);
+  };
 
   // ====================================================================
   // Play ayah via Web Audio API (for word highlighting precision)
@@ -592,9 +595,6 @@ export function useQuranAudio(
           // No cached buffer — fall back to element mode for next ayah
           playViaElement(nextUrl, curAyah + 1, surah);
         }
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-        setHighlightedPosition(null);
         navigateRef.current(curAyah + 1);
       } else {
         isPlayingRef.current = false;
@@ -737,13 +737,17 @@ export function useQuranAudio(
       }
       return;
     }
+    // Voice app pattern: "English (Arabic) — Ayah N"
+    const nameEn = surahNameEnglish || `Surah ${surahNumber}`;
+    const surahDisplay = surahNameArabic ? `${nameEn} (${surahNameArabic})` : nameEn;
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: `Surah ${surahNumber} — Ayah ${targetAyah}`,
+      title: `${surahDisplay} — Ayah ${targetAyah}`,
       artist: "Al-Afasy",
       album: "Quran",
     });
+    // Clear position state — prevents iOS from showing seek buttons instead of skip
     try { navigator.mediaSession.setPositionState(); } catch {}
-  }, [isAudioMode, surahNumber, targetAyah]);
+  }, [isAudioMode, surahNumber, targetAyah, surahNameEnglish, surahNameArabic]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
@@ -792,12 +796,17 @@ export function useQuranAudio(
     ms.setActionHandler("seekforward", null);
     ms.setActionHandler("seekbackward", null);
 
+    // Clear position state — having position/duration makes iOS show seek UI
+    try { ms.setPositionState(); } catch {}
+
     return () => {
       ms.setActionHandler("play", null);
       ms.setActionHandler("pause", null);
       ms.setActionHandler("stop", null);
       ms.setActionHandler("nexttrack", null);
       ms.setActionHandler("previoustrack", null);
+      ms.setActionHandler("seekforward", null);
+      ms.setActionHandler("seekbackward", null);
     };
   }, [isAudioMode, stopActiveSource, playViaElement]);
 

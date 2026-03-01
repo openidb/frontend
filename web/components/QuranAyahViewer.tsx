@@ -163,7 +163,7 @@ export function QuranAyahViewer({
     skipBack,
     highlightedPosition,
     audioRef,
-  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, clientMushafPages, router, initialAudioMode, handleAudioNavigate);
+  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, clientMushafPages, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic);
 
   // Pre-fetch upcoming mushaf pages in audio mode
   useEffect(() => {
