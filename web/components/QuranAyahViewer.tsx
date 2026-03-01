@@ -181,12 +181,10 @@ export function QuranAyahViewer({
 
   const [fontsLoaded, setFontsLoaded] = useState<Set<number>>(new Set());
   const [surahFontLoaded, setSurahFontLoaded] = useState(false);
-  const [translations, setTranslations] = useState<Record<number, string>>({});
-  const [translatorName, setTranslatorName] = useState<string>("");
   const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
   const [tafsirLang, setTafsirLang] = useState<string>("");
   const [tafsirEditionId, setTafsirEditionId] = useState<string>("");
-  const [tafsirTexts, setTafsirTexts] = useState<Record<number, string>>({});
+  const [tafsirTick, setTafsirTick] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -243,56 +241,46 @@ export function QuranAyahViewer({
     font.load().then((f) => { document.fonts.add(f); setSurahFontLoaded(true); }).catch(() => {});
   }, []);
 
-  // Fetch translations using module-level cache for instant display
+  // Translations: read synchronously from module-level cache (zero flicker)
   const ayahNumbers = Array.from(ayahSet).sort((a, b) => a - b);
   const translationEdition = PREFERRED_EDITIONS[locale] || PREFERRED_EDITIONS.en;
-  useEffect(() => {
-    if (locale === "ar") { setTranslations({}); setTranslatorName(""); return; }
-    setTranslatorName(translationEdition.name);
+  const [translationTick, setTranslationTick] = useState(0);
 
-    // Immediately show cached translations (synchronous)
-    const cached: Record<number, string> = {};
-    const toFetch: number[] = [];
+  // Synchronous read from cache — available on the SAME render frame
+  const translations: Record<number, string> = {};
+  if (locale !== "ar") {
     for (const num of ayahNumbers) {
-      const key = `${surahNumber}:${num}:${translationEdition.id}`;
-      const val = translationCache.get(key);
-      if (val) cached[num] = val;
-      else toFetch.push(num);
+      const val = translationCache.get(`${surahNumber}:${num}:${translationEdition.id}`);
+      if (val) translations[num] = val;
     }
-    if (Object.keys(cached).length > 0) setTranslations(cached);
+  }
+  const translatorName = locale !== "ar" ? translationEdition.name : "";
 
-    // Fetch missing + pre-warm ±5 ahead for audio mode
-    let cancelled = false;
+  // Background fetch: populate cache, bump tick to trigger re-render when done
+  useEffect(() => {
+    if (locale === "ar") return;
     const warmRange = isAudioMode ? 5 : 2;
-    const allToFetch = new Set(toFetch);
+    const toFetch: number[] = [];
     for (let i = -warmRange; i <= warmRange; i++) {
       const a = clientAyah + i;
       if (a >= 1 && a <= totalAyahs && !translationCache.has(`${surahNumber}:${a}:${translationEdition.id}`)) {
-        allToFetch.add(a);
+        toFetch.push(a);
       }
     }
-    if (allToFetch.size > 0) {
-      Promise.all(
-        [...allToFetch].map((num) =>
-          fetch(`/api/quran/translations/${surahNumber}/${num}?editionId=${translationEdition.id}`)
-            .then((r) => (r.ok ? r.json() : null))
-            .then((d) => {
-              if (d?.translations?.[0]?.text) {
-                translationCache.set(`${surahNumber}:${num}:${translationEdition.id}`, d.translations[0].text);
-              }
-            })
-            .catch(() => {})
-        )
-      ).then(() => {
-        if (cancelled) return;
-        const updated: Record<number, string> = {};
-        for (const num of ayahNumbers) {
-          const val = translationCache.get(`${surahNumber}:${num}:${translationEdition.id}`);
-          if (val) updated[num] = val;
-        }
-        setTranslations(updated);
-      });
-    }
+    if (toFetch.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      toFetch.map((num) =>
+        fetch(`/api/quran/translations/${surahNumber}/${num}?editionId=${translationEdition.id}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d?.translations?.[0]?.text) {
+              translationCache.set(`${surahNumber}:${num}:${translationEdition.id}`, d.translations[0].text);
+            }
+          })
+          .catch(() => {})
+      )
+    ).then(() => { if (!cancelled) setTranslationTick((t) => t + 1); });
     return () => { cancelled = true; };
   }, [surahNumber, clientAyah, locale, isAudioMode, totalAyahs]);
 
@@ -341,17 +329,14 @@ export function QuranAyahViewer({
     }
   }, [tafsirLang, tafsirLangs]);
 
-  // Fetch tafsir using module-level cache for instant display
+  // Tafsir: read synchronously from module-level cache (zero flicker)
+  const currentTafsir = tafsirEditionId
+    ? tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`) || null
+    : null;
+
+  // Background fetch: populate cache, bump tick to trigger re-render when done
   useEffect(() => {
-    if (!tafsirEditionId) { setTafsirTexts({}); return; }
-
-    // Immediately show cached tafsir (synchronous)
-    const cacheKey = `${surahNumber}:${clientAyah}:${tafsirEditionId}`;
-    const cached = tafsirCache.get(cacheKey);
-    if (cached) { setTafsirTexts({ [clientAyah]: cached }); }
-
-    // Fetch current + pre-warm ahead
-    let cancelled = false;
+    if (!tafsirEditionId) return;
     const warmRange = isAudioMode ? 5 : 0;
     const toFetch: number[] = [];
     for (let i = 0; i <= warmRange; i++) {
@@ -360,6 +345,8 @@ export function QuranAyahViewer({
         toFetch.push(a);
       }
     }
+    if (toFetch.length === 0) return;
+    let cancelled = false;
     for (const num of toFetch) {
       fetch(`/api/quran/tafsir/${surahNumber}/${num}?editionId=${tafsirEditionId}`)
         .then((r) => (r.ok ? r.json() : null))
@@ -367,11 +354,7 @@ export function QuranAyahViewer({
           if (d?.tafsirs?.[0]?.text) {
             tafsirCache.set(`${surahNumber}:${num}:${tafsirEditionId}`, d.tafsirs[0].text);
           }
-          // Update display for current ayah
-          if (!cancelled && num === clientAyah) {
-            const val = tafsirCache.get(cacheKey);
-            setTafsirTexts(val ? { [clientAyah]: val } : {});
-          }
+          if (!cancelled && num === clientAyah) setTafsirTick((t) => t + 1);
         })
         .catch(() => {});
     }
@@ -628,12 +611,12 @@ export function QuranAyahViewer({
                 </select>
               </div>
 
-              {tafsirTexts[clientAyah] && (
+              {currentTafsir && (
                 <div className="mushaf-tafsir-content">
                   <div
                     className="mushaf-tafsir-text"
                     dir={tafsirEditions.find((e) => e.id === tafsirEditionId)?.direction || "ltr"}
-                    dangerouslySetInnerHTML={{ __html: tafsirTexts[clientAyah] }}
+                    dangerouslySetInnerHTML={{ __html: currentTafsir }}
                   />
                 </div>
               )}
@@ -759,14 +742,15 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Compressed line height for ayah viewer */
+        /* Ayah viewer: larger font, tighter lines */
         .ayah-view .mushaf-line {
-          line-height: 2.6;
-          min-height: 2.4rem;
+          font-size: clamp(1.3rem, 5.5vw, 1.8rem);
+          line-height: 1.8;
+          min-height: 1.6rem;
         }
         @media (min-width: 640px) {
           .ayah-view .mushaf-line {
-            line-height: 2.8;
+            line-height: 2.0;
           }
         }
 
