@@ -267,21 +267,35 @@ export function useQuranAudio(
     [router, surahNumber],
   );
 
+  const isPlayingRef = useRef(isPlaying);
+  isPlayingRef.current = isPlaying;
+
   const skipForward = useCallback(() => {
     if (targetAyah < totalAyahs && !navigatingRef.current) {
       navigatingRef.current = true;
+      const wasPlaying = isPlayingRef.current;
+      // Start next ayah audio immediately if currently playing
+      if (wasPlaying) {
+        ensureAudioContext();
+        startNextAyahGapless(surahNumber, targetAyah + 1);
+      }
       navigateToAyah(targetAyah + 1);
     }
-  }, [targetAyah, totalAyahs, navigateToAyah]);
+  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber]);
 
   const skipBack = useCallback(() => {
     if (targetAyah > 1 && !navigatingRef.current) {
       navigatingRef.current = true;
-      // Stop current audio when going back (no gapless needed)
+      const wasPlaying = isPlayingRef.current;
       stopActiveSource();
+      if (wasPlaying) {
+        // Start prev ayah audio if it's cached
+        ensureAudioContext();
+        startNextAyahGapless(surahNumber, targetAyah - 1);
+      }
       navigateToAyah(targetAyah - 1);
     }
-  }, [targetAyah, navigateToAyah]);
+  }, [targetAyah, navigateToAyah, surahNumber]);
 
   const skipForwardRef = useRef(skipForward);
   skipForwardRef.current = skipForward;
@@ -433,14 +447,9 @@ export function useQuranAudio(
     });
   }, [router, surahNumber, targetAyah]);
 
-  const play = useCallback(async () => {
-    // Ensure AudioContext in user gesture (required for iOS/Safari)
+  const playFromBuffer = useCallback((buffer: AudioBuffer) => {
     const ctx = ensureAudioContext();
     const gain = getGainNode();
-
-    const url = audioUrl(surahNumber, targetAyah);
-    const buffer = await getBuffer(url);
-    if (!buffer) return;
 
     stopActiveSource();
 
@@ -470,7 +479,28 @@ export function useQuranAudio(
         setHighlightedPosition(null);
       }
     };
-  }, [surahNumber, targetAyah, totalAyahs]);
+  }, [surahNumber, targetAyah]);
+
+  // Play must be synchronous from user gesture for iOS/Safari.
+  // If buffer is cached, play immediately. Otherwise fetch then play.
+  const play = useCallback(() => {
+    // Create/resume AudioContext synchronously in user gesture (required for iOS)
+    ensureAudioContext();
+
+    const url = audioUrl(surahNumber, targetAyah);
+
+    // Synchronous path: buffer already cached from prefetch
+    const cached = bufferCache.get(url);
+    if (cached) {
+      playFromBuffer(cached);
+      return;
+    }
+
+    // Async fallback: fetch, decode, then play
+    getBuffer(url).then((buffer) => {
+      if (buffer) playFromBuffer(buffer);
+    });
+  }, [surahNumber, targetAyah, playFromBuffer]);
 
   const pause = useCallback(() => {
     stopActiveSource();
