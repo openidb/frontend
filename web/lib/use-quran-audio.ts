@@ -297,14 +297,15 @@ export function useQuranAudio(
     navigatingRef.current = false;
   }, [targetAyah]);
 
-  // Audio lifecycle: fetch buffer, play via Web Audio API, handle ended
+  // Audio lifecycle: reconnect UI to already-playing source (gapless transition),
+  // or prefetch the current ayah's buffer (no auto-play).
   useEffect(() => {
     if (!isAudioMode) return;
 
     let cancelled = false;
 
-    // Check if this ayah is already playing (started by previous component instance
-    // for gapless transition). If so, just reconnect UI state.
+    // Check if this ayah is already playing (started by gapless transition).
+    // If so, reconnect UI state.
     if (activeSurah === surahNumber && activeAyah === targetAyah && activeSource) {
       setIsPlaying(true);
 
@@ -331,51 +332,12 @@ export function useQuranAudio(
       };
     }
 
-    const startPlayback = async () => {
-      const url = audioUrl(surahNumber, targetAyah);
-      const buffer = await getBuffer(url);
-      if (!buffer || cancelled) return;
-
-      const ctx = ensureAudioContext();
-      const gain = getGainNode();
-
-      // Stop any previous source
-      stopActiveSource();
-
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.connect(gain);
-      source.start(ctx.currentTime);
-
-      activeSource = source;
-      activeStartTime = ctx.currentTime;
-      activeAyah = targetAyah;
-      activeSurah = surahNumber;
-      setIsPlaying(true);
-
-      source.onended = () => {
-        if (cancelled || navigatingRef.current) return;
-        const ayah = targetAyahRef.current;
-        const total = totalAyahsRef.current;
-        if (ayah < total) {
-          navigatingRef.current = true;
-          startNextAyahGapless(surahNumber, ayah + 1);
-          setIsPlaying(false);
-          setHighlightedPosition(null);
-          navigateRef.current(ayah + 1);
-        } else {
-          setIsPlaying(false);
-          setHighlightedPosition(null);
-        }
-      };
-    };
-
-    startPlayback();
+    // Just prefetch the current ayah's audio — don't auto-play.
+    // User presses the play button to start.
+    prefetchBuffer(audioUrl(surahNumber, targetAyah));
 
     return () => {
       cancelled = true;
-      // Don't stop audio here — let it keep playing during navigation
-      // Only clear the onended handler to prevent stale callbacks
       if (activeSource) activeSource.onended = null;
     };
   }, [isAudioMode, surahNumber, targetAyah, totalAyahs]);
