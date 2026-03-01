@@ -464,5 +464,23 @@
     "13": "Abad ke-13 Hijriah",
     "14": "Abad ke-14 Hijriah",
     "15": "Abad ke-15 Hijriah"
+  },
+  "audio": {
+    "title": "Audio Reader",
+    "readingMode": "Reading Mode",
+    "modeArabic": "Arabic",
+    "modeTranslation": "Translation",
+    "modeBoth": "Both",
+    "translationLanguage": "Translation Language",
+    "playbackSpeed": "Speed",
+    "backToReader": "Back to Reader",
+    "play": "Play",
+    "pause": "Pause",
+    "prevParagraph": "Previous paragraph",
+    "nextParagraph": "Next paragraph",
+    "noArabicVoice": "No Arabic voice available on this device",
+    "options": "Options",
+    "page": "Page",
+    "listenToBook": "Listen to Book"
   }
 }

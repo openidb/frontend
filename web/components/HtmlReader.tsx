@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, ChevronLeft, EllipsisVertical, FileText, User, Minus, Plus, X, Languages } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronLeft, EllipsisVertical, FileText, User, Minus, Plus, X, Languages, Headphones } from "lucide-react";
 import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
@@ -1054,6 +1054,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
               </button>
             </div>
           </div>
+
+          {/* Audio reader link */}
+          <PrefetchLink
+            href={`/audio/${bookMetadata.id}?pn=${currentPage}`}
+            className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            onClick={() => setShowSidebar(false)}
+          >
+            <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>{t("audio.listenToBook")}</span>
+          </PrefetchLink>
 
           {/* Word definitions toggle */}
           <button

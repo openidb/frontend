@@ -464,5 +464,23 @@
     "13": "১৩তম হিজরি শতাব্দী",
     "14": "১৪তম হিজরি শতাব্দী",
     "15": "১৫তম হিজরি শতাব্দী"
+  },
+  "audio": {
+    "title": "Audio Reader",
+    "readingMode": "Reading Mode",
+    "modeArabic": "Arabic",
+    "modeTranslation": "Translation",
+    "modeBoth": "Both",
+    "translationLanguage": "Translation Language",
+    "playbackSpeed": "Speed",
+    "backToReader": "Back to Reader",
+    "play": "Play",
+    "pause": "Pause",
+    "prevParagraph": "Previous paragraph",
+    "nextParagraph": "Next paragraph",
+    "noArabicVoice": "No Arabic voice available on this device",
+    "options": "Options",
+    "page": "Page",
+    "listenToBook": "Listen to Book"
   }
 }

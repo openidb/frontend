@@ -464,5 +464,23 @@
     "13": "히즈라력 13세기",
     "14": "히즈라력 14세기",
     "15": "히즈라력 15세기"
+  },
+  "audio": {
+    "title": "Audio Reader",
+    "readingMode": "Reading Mode",
+    "modeArabic": "Arabic",
+    "modeTranslation": "Translation",
+    "modeBoth": "Both",
+    "translationLanguage": "Translation Language",
+    "playbackSpeed": "Speed",
+    "backToReader": "Back to Reader",
+    "play": "Play",
+    "pause": "Pause",
+    "prevParagraph": "Previous paragraph",
+    "nextParagraph": "Next paragraph",
+    "noArabicVoice": "No Arabic voice available on this device",
+    "options": "Options",
+    "page": "Page",
+    "listenToBook": "Listen to Book"
   }
 }

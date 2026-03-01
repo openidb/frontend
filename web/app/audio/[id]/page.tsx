@@ -1,0 +1,77 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { fetchAPI } from "@/lib/api-client";
+import { AudioReader } from "@/components/AudioReader";
+
+interface BookData {
+  book: {
+    id: string;
+    titleArabic: string;
+    titleLatin: string;
+    titleTranslated?: string | null;
+    filename: string;
+    totalPages: number | null;
+    translatedLanguages?: string[];
+    author: {
+      id: string;
+      nameArabic: string;
+      nameLatin: string;
+    };
+  };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`, { revalidate: 3600 });
+    const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
+    return {
+      title: `Audio - ${title} - OpenIDB`,
+      description: `Listen to ${title} by ${data.book?.author?.nameArabic || ""}`,
+    };
+  } catch {
+    return { title: "Audio Reader - OpenIDB" };
+  }
+}
+
+export default async function AudioPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ pn?: string; lang?: string }>;
+}) {
+  const { id } = await params;
+  const { pn, lang } = await searchParams;
+
+  let bookData: BookData;
+  try {
+    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&bookTitleLang=${encodeURIComponent(lang)}` : "";
+    bookData = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}?${langParam}`, { revalidate: 3600 });
+  } catch {
+    notFound();
+  }
+
+  const book = bookData.book;
+  if (!book) notFound();
+
+  return (
+    <AudioReader
+      bookMetadata={{
+        id: book.id,
+        title: book.titleArabic,
+        titleLatin: book.titleLatin,
+        titleTranslated: book.titleTranslated || null,
+        author: book.author.nameArabic,
+        authorId: book.author.id,
+      }}
+      initialPageNumber={pn}
+      totalPages={book.totalPages || 0}
+      translatedLanguages={book.translatedLanguages}
+    />
+  );
+}

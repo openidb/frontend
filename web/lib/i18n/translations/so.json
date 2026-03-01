@@ -464,5 +464,23 @@
     "13": "Qarnigii 13aad Hijri",
     "14": "Qarnigii 14aad Hijri",
     "15": "Qarnigii 15aad Hijri"
+  },
+  "audio": {
+    "title": "Audio Reader",
+    "readingMode": "Reading Mode",
+    "modeArabic": "Arabic",
+    "modeTranslation": "Translation",
+    "modeBoth": "Both",
+    "translationLanguage": "Translation Language",
+    "playbackSpeed": "Speed",
+    "backToReader": "Back to Reader",
+    "play": "Play",
+    "pause": "Pause",
+    "prevParagraph": "Previous paragraph",
+    "nextParagraph": "Next paragraph",
+    "noArabicVoice": "No Arabic voice available on this device",
+    "options": "Options",
+    "page": "Page",
+    "listenToBook": "Listen to Book"
   }
 }

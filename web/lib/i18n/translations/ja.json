@@ -464,5 +464,23 @@
     "13": "ヒジュラ暦13世紀",
     "14": "ヒジュラ暦14世紀",
     "15": "ヒジュラ暦15世紀"
+  },
+  "audio": {
+    "title": "Audio Reader",
+    "readingMode": "Reading Mode",
+    "modeArabic": "Arabic",
+    "modeTranslation": "Translation",
+    "modeBoth": "Both",
+    "translationLanguage": "Translation Language",
+    "playbackSpeed": "Speed",
+    "backToReader": "Back to Reader",
+    "play": "Play",
+    "pause": "Pause",
+    "prevParagraph": "Previous paragraph",
+    "nextParagraph": "Next paragraph",
+    "noArabicVoice": "No Arabic voice available on this device",
+    "options": "Options",
+    "page": "Page",
+    "listenToBook": "Listen to Book"
   }
 }
