@@ -320,7 +320,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [fontSize, setFontSize] = useState(1.15);
-  const [wordTapEnabled, setWordTapEnabled] = useState(true);
+  const [wordTapEnabled, setWordTapEnabled] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [translationResult, setTranslationResult] = useState<TranslationParagraph[] | null>(null);
   const translationCacheRef = useRef<Map<string, TranslationParagraph[]>>(new Map());
@@ -397,7 +397,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       const v = JSON.parse(localStorage.getItem("readerPrefs") || "{}");
       if (v.fontSize != null) setFontSize(v.fontSize);
       if (v.wordTapEnabled != null) setWordTapEnabled(v.wordTapEnabled);
-      if (v.showTranslation != null) setShowTranslation(v.showTranslation);
+      // showTranslation intentionally not restored — default is off
     } catch {}
     prefsHydrated.current = true;
   }, []);
