@@ -84,6 +84,8 @@ export function useQuranAudio(
   const prevHighlightRef = useRef<number | null>(null);
   // Preloaded audio elements keyed by URL
   const preloadCacheRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+  // Guard: prevent double-navigation from stale ended events
+  const navigatingRef = useRef(false);
 
   // Recited word positions for the current target ayah
   const recitedPositions = useMemo(
@@ -168,13 +170,15 @@ export function useQuranAudio(
   );
 
   const skipForward = useCallback(() => {
-    if (targetAyah < totalAyahs) {
+    if (targetAyah < totalAyahs && !navigatingRef.current) {
+      navigatingRef.current = true;
       navigateToAyah(targetAyah + 1);
     }
   }, [targetAyah, totalAyahs, navigateToAyah]);
 
   const skipBack = useCallback(() => {
-    if (targetAyah > 1) {
+    if (targetAyah > 1 && !navigatingRef.current) {
+      navigatingRef.current = true;
       navigateToAyah(targetAyah - 1);
     }
   }, [targetAyah, navigateToAyah]);
@@ -183,10 +187,18 @@ export function useQuranAudio(
   const skipForwardRef = useRef(skipForward);
   skipForwardRef.current = skipForward;
 
-  // Set audio source and play when ready
+  // Reset navigation guard when ayah changes (navigation completed)
+  useEffect(() => {
+    navigatingRef.current = false;
+  }, [targetAyah]);
+
+  // Audio lifecycle: set source, play when ready, handle ended — all in one effect
+  // so cleanup runs on every ayah change and removes stale listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !isAudioMode) return;
+
+    let cancelled = false;
 
     const src = audioUrl(surahNumber, targetAyah);
     audio.src = src;
@@ -194,8 +206,20 @@ export function useQuranAudio(
 
     // Wait for enough data buffered before playing (eliminates stutter)
     const onCanPlay = () => {
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      if (cancelled) return;
+      audio.play().then(() => { if (!cancelled) setIsPlaying(true); }).catch(() => { if (!cancelled) setIsPlaying(false); });
     };
+
+    // Auto-advance when audio finishes
+    const onEnded = () => {
+      if (cancelled || navigatingRef.current) return;
+      navigatingRef.current = true;
+      setIsPlaying(false);
+      setHighlightedPosition(null);
+      skipForwardRef.current();
+    };
+
+    audio.addEventListener("ended", onEnded);
 
     // If already buffered (from preload cache), play immediately
     if (audio.readyState >= 3) {
@@ -205,26 +229,13 @@ export function useQuranAudio(
     }
 
     return () => {
+      cancelled = true;
       audio.removeEventListener("canplaythrough", onCanPlay);
+      audio.removeEventListener("ended", onEnded);
       audio.pause();
       setIsPlaying(false);
     };
   }, [isAudioMode, surahNumber, targetAyah]);
-
-  // Handle audio ended — auto-advance
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !isAudioMode) return;
-
-    const onEnded = () => {
-      setIsPlaying(false);
-      setHighlightedPosition(null);
-      skipForwardRef.current();
-    };
-
-    audio.addEventListener("ended", onEnded);
-    return () => audio.removeEventListener("ended", onEnded);
-  }, [isAudioMode]);
 
   // rAF loop for word highlighting
   useEffect(() => {
