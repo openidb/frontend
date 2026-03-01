@@ -480,7 +480,7 @@ export function AudioReader({
             return (
               <span
                 key={i}
-                className={isHighlighted ? "text-primary font-bold" : ""}
+                className={isHighlighted ? "text-primary transition-colors" : ""}
               >
                 {segment}
               </span>
@@ -681,7 +681,7 @@ export function AudioReader({
             "linear-gradient(transparent 0%, black 4%, black 96%, transparent 100%)",
         }}
       >
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-2">
+        <div className="max-w-xl mx-auto px-4 py-6 space-y-2 text-center">
           {allParagraphs.length === 0 && (
             <div className="text-center text-muted-foreground py-12">
               {t("common.loading")}
@@ -714,11 +714,7 @@ export function AudioReader({
                     else paragraphRefs.current.delete(idx);
                   }}
                   onClick={() => jumpToParagraph(idx)}
-                  className={`rounded-lg px-3 py-2 cursor-pointer transition-colors ${
-                    isActive
-                      ? "bg-primary/10 ring-1 ring-primary/20"
-                      : "hover:bg-muted/50"
-                  }`}
+                  className="py-2 cursor-pointer"
                 >
                   {/* Arabic text */}
                   {(readingMode === "arabic" || readingMode === "both") && (
