@@ -15,6 +15,8 @@ import {
   Plus,
   BookOpen,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
@@ -262,17 +264,20 @@ export function AudioReader({
     const sortedPages = [...loadedPages.entries()].sort(([a], [b]) => a - b);
 
     for (const [pageNum, page] of sortedPages) {
-      // Build set of title line indices from HTML to skip headings
-      const htmlLines = page.contentHtml.split("\n");
-      const titleLineIndices = new Set<number>();
-      let plainIdx = 0;
-      for (let h = 0; h < htmlLines.length; h++) {
-        const trimmed = htmlLines[h].trim();
-        if (!trimmed) continue;
-        if (trimmed.includes("data-type")) {
-          titleLineIndices.add(plainIdx);
-        }
-        plainIdx++;
+      // Extract title texts from HTML to skip them in plain text
+      const titleTexts = new Set<string>();
+      const titleRegex = /<span\s+data-type=['"]title['"][^>]*>([\s\S]*?)<\/span>/gi;
+      let match;
+      while ((match = titleRegex.exec(page.contentHtml)) !== null) {
+        // Strip any HTML tags inside the title span, normalize whitespace
+        const text = match[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+        if (text) titleTexts.add(text);
+      }
+      // Also extract text before <span data-type="title"> on the same line
+      const titleLineRegex = /^(.*?)<span\s+data-type=['"]title['"][^>]*>/gim;
+      while ((match = titleLineRegex.exec(page.contentHtml)) !== null) {
+        const prefix = match[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+        if (prefix) titleTexts.add(prefix);
       }
 
       const lines = expandHonorifics(page.contentPlain)
@@ -284,12 +289,13 @@ export function AudioReader({
         : null;
 
       for (let i = 0; i < lines.length; i++) {
-        // Skip title/heading lines (table of contents entries)
-        if (titleLineIndices.has(i)) continue;
+        const trimmed = lines[i].trim();
+        // Skip title/heading lines and separator lines
+        if (titleTexts.has(trimmed) || /^[\s*_]+$/.test(trimmed)) continue;
         result.push({
           pageNumber: pageNum,
           paragraphIndex: i,
-          arabicText: lines[i].trim(),
+          arabicText: trimmed,
           translationText: transMap?.get(i),
         });
       }
@@ -519,6 +525,14 @@ export function AudioReader({
     [totalPages, allParagraphs, isPlaying, speakParagraph],
   );
 
+  const goToNextPage = useCallback(() => {
+    goToPage(Math.min(currentPageNum + 1, totalPages - 1));
+  }, [goToPage, currentPageNum, totalPages]);
+
+  const goToPrevPage = useCallback(() => {
+    goToPage(Math.max(currentPageNum - 1, 0));
+  }, [goToPage, currentPageNum]);
+
   // ─── Click to jump ─────────────────────────────────────────────────
   const jumpToParagraph = useCallback(
     (idx: number) => {
@@ -576,34 +590,33 @@ export function AudioReader({
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[hsl(var(--background))]" dir={dir}>
-      {/* ─── Top bar — matches book reader header ─────────────────── */}
+      {/* ─── Header — matches book reader ─────────────────────────── */}
       <div
         className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
         style={{ backgroundColor: "hsl(var(--background))" }}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-          className="shrink-0 h-10 w-10 sm:h-9 sm:w-9"
-          aria-label={t("common.close")}
-        >
+        {/* Back button */}
+        <Button variant="ghost" size="icon" onClick={() => router.back()} className="shrink-0 h-10 w-10 sm:h-9 sm:w-9">
           <ArrowLeft className="h-6 w-6 sm:h-5 sm:w-5 rtl:scale-x-[-1]" />
         </Button>
-
         <div className="min-w-0 flex-1">
-          <h1
-            className="truncate font-semibold text-base"
-            dir="rtl"
-            title={displayTitle}
-          >
+          <h1 className="truncate font-semibold text-base">
             {displayTitle}
           </h1>
         </div>
-
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
-          {/* Page selector */}
-          <div className="flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
+          {/* Desktop page controls — hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToNextPage}
+              disabled={currentPageNum >= totalPages - 1}
+              title={t("reader.nextPage")}
+              className="h-8 w-8"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
             <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
               <span className="text-sm text-muted-foreground">
                 {t("reader.page")}
@@ -620,14 +633,25 @@ export function AudioReader({
                 / {totalPages}
               </span>
             </form>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToPrevPage}
+              disabled={currentPageNum <= 0}
+              title={t("reader.prevPage")}
+              className="h-8 w-8"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
           </div>
 
+          {/* Menu button */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setShowOptions(!showOptions)}
+            title={t("reader.chapters")}
             className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
-            aria-label={t("audio.options")}
           >
             <EllipsisVertical className="h-6 w-6 sm:h-5 sm:w-5" />
           </Button>
