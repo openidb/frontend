@@ -298,7 +298,10 @@ export function useQuranAudio(
     lastBridgePlayAttemptAtRef.current = now;
     el.play().then(() => {
       setDirectOutputEnabled(false);
-    }).catch(() => {});
+    }).catch(() => {
+      // Bridge failed — ensure direct output as fallback
+      setDirectOutputEnabled(true);
+    });
   }, [setDirectOutputEnabled]);
 
   // --- Activate (from voice app) ---
@@ -475,13 +478,61 @@ export function useQuranAudio(
 
   useEffect(() => { navigatingRef.current = false; }, [targetAyah]);
 
-  // --- Play a single ayah from buffer ---
+  // --- Wire onended: gapless advance to next ayah ---
+
+  const wireOnEnded = useCallback((source: AudioBufferSourceNode, surah: number, gain: GainNode) => {
+    source.onended = () => {
+      source.disconnect();
+      if (activeSourceRef.current !== source) return;
+      activeSourceRef.current = null;
+      if (navigatingRef.current) return;
+      const curAyah = targetAyahRef.current;
+      const total = totalAyahsRef.current;
+      if (curAyah < total) {
+        navigatingRef.current = true;
+        // Try gapless: start next ayah immediately if cached
+        const nextUrl = audioUrl(surah, curAyah + 1);
+        const nextBuf = bufferCache.get(nextUrl);
+        const ctx = audioCtxRef.current;
+        if (nextBuf && ctx && ctx.state === "running" && gain) {
+          const nextSource = ctx.createBufferSource();
+          nextSource.buffer = nextBuf;
+          nextSource.connect(gain);
+          nextSource.start(ctx.currentTime);
+          activeSourceRef.current = nextSource;
+          activeStartTimeRef.current = ctx.currentTime;
+          activeAyahRef.current = curAyah + 1;
+          activeSurahRef.current = surah;
+          nextSource.onended = () => {
+            nextSource.disconnect();
+            if (activeSourceRef.current !== nextSource) return;
+            activeSourceRef.current = null;
+          };
+        }
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        setHighlightedPosition(null);
+        navigateRef.current(curAyah + 1);
+      } else {
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        setHighlightedPosition(null);
+        const el = audioRef.current;
+        if (el) { el.srcObject = null; el.pause(); }
+      }
+    };
+  }, []);
+
+  // --- Play a single ayah from buffer (used for async fetch path + media session) ---
 
   const playBuffer = useCallback((buffer: AudioBuffer, ayah: number, surah: number) => {
     const ctx = ensureRunningAudioGraph();
     if (!ctx) return;
     const gain = gainNodeRef.current;
     if (!gain) return;
+
+    // Enable direct output as fallback
+    setDirectOutputEnabled(true);
 
     stopActiveSource();
 
@@ -501,48 +552,11 @@ export function useQuranAudio(
     isPlayingRef.current = true;
     setIsPlaying(true);
 
-    source.onended = () => {
-      source.disconnect();
-      if (activeSourceRef.current !== source) return;
-      activeSourceRef.current = null;
-      if (navigatingRef.current) return;
-      const curAyah = targetAyahRef.current;
-      const total = totalAyahsRef.current;
-      if (curAyah < total) {
-        navigatingRef.current = true;
-        // Try gapless: start next ayah immediately if cached
-        const nextUrl = audioUrl(surah, curAyah + 1);
-        const nextBuf = bufferCache.get(nextUrl);
-        if (nextBuf && ctx.state === "running" && gain) {
-          const nextSource = ctx.createBufferSource();
-          nextSource.buffer = nextBuf;
-          nextSource.connect(gain);
-          nextSource.start(ctx.currentTime);
-          activeSourceRef.current = nextSource;
-          activeStartTimeRef.current = ctx.currentTime;
-          activeAyahRef.current = curAyah + 1;
-          activeSurahRef.current = surah;
-          // Wire onended for the gapless source (will be replaced when component re-mounts)
-          nextSource.onended = () => {
-            nextSource.disconnect();
-            if (activeSourceRef.current !== nextSource) return;
-            activeSourceRef.current = null;
-          };
-        }
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        navigateRef.current(curAyah + 1);
-      } else {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        // Stop bridge when playback ends
-        const el = audioRef.current;
-        if (el) { el.srcObject = null; el.pause(); }
-      }
-    };
-  }, [ensureRunningAudioGraph, stopActiveSource]);
+    // Set up bridge
+    ensureMediaElementBridge(true, true);
+
+    wireOnEnded(source, surah, gain);
+  }, [ensureRunningAudioGraph, stopActiveSource, setDirectOutputEnabled, ensureMediaElementBridge, wireOnEnded]);
 
   const skipForward = useCallback(() => {
     if (targetAyah < totalAyahs && !navigatingRef.current) {
@@ -769,15 +783,10 @@ export function useQuranAudio(
     };
 
     ms.setActionHandler("play", debounced(() => {
-      // Resume playback
-      const ctx = ensureRunningAudioGraph();
-      if (!ctx) return;
-      ensureMediaElementBridge(true, true);
       const url = audioUrl(surahNumber, targetAyah);
       const cached = bufferCache.get(url);
       if (cached) {
         playBuffer(cached, targetAyah, surahNumber);
-        ensureMediaElementBridge(true, true);
       }
     }));
     ms.setActionHandler("pause", debounced(() => {
@@ -828,27 +837,42 @@ export function useQuranAudio(
   }, [router, surahNumber, targetAyah, activate, stopActiveSource]);
 
   const play = useCallback(() => {
-    // Re-activate on every play gesture (iOS can revoke after idle)
-    activate();
+    // Do NOT call activate() here — its .then(el.pause) races with the bridge
+    // el.play() below and kills the stream. activate() is called separately in
+    // toggleAudioMode() when entering audio mode.
 
+    // Ensure AudioContext is running (user gesture context)
     const ctx = ensureRunningAudioGraph();
     if (!ctx) return;
+    if (ctx.state !== "running") {
+      const recovered = hardResetAudioGraph();
+      if (recovered && recovered.state !== "running") {
+        recovered.resume().catch(() => {});
+      }
+    }
 
-    // Reset gain
+    // Enable direct output IMMEDIATELY so audio is guaranteed to play.
+    // The bridge will disable it once el.play() succeeds (voice app pattern).
+    setDirectOutputEnabled(true);
+
+    // Reset gain to full volume
     const gain = gainNodeRef.current;
     if (gain) {
       gain.gain.cancelScheduledValues(ctx.currentTime);
       gain.gain.setValueAtTime(1, ctx.currentTime);
     }
 
-    // Connect bridge immediately in user gesture context
+    // Set up bridge for iOS media center (voice app pattern)
     const el = audioRef.current;
     const dest = mediaStreamDestRef.current;
     if (el && dest) {
       el.muted = false;
       el.volume = 1;
-      el.srcObject = dest.stream;
+      if (el.srcObject !== dest.stream) {
+        el.srcObject = dest.stream;
+      }
       el.play().then(() => {
+        // Bridge works — disable direct output to avoid echo
         setDirectOutputEnabled(false);
       }).catch(() => {
         // Retry once after short delay (voice app pattern)
@@ -856,23 +880,35 @@ export function useQuranAudio(
           el.play().then(() => {
             setDirectOutputEnabled(false);
           }).catch(() => {
-            // Fall back to direct output
-            setDirectOutputEnabled(true);
+            // Bridge failed — keep direct output (already enabled above)
           });
         }, 100);
       });
     }
 
+    // Play the buffer
     const url = audioUrl(surahNumber, targetAyah);
     const cached = bufferCache.get(url);
     if (cached) {
-      playBuffer(cached, targetAyah, surahNumber);
+      // Inline playBuffer logic — don't call ensureRunningAudioGraph again
+      stopActiveSource();
+      const source = ctx.createBufferSource();
+      source.buffer = cached;
+      source.connect(gain!);
+      source.start(ctx.currentTime);
+      activeSourceRef.current = source;
+      activeStartTimeRef.current = ctx.currentTime;
+      activeAyahRef.current = targetAyah;
+      activeSurahRef.current = surahNumber;
+      isPlayingRef.current = true;
+      setIsPlaying(true);
+      wireOnEnded(source, surahNumber, gain!);
       return;
     }
     fetchBuffer(url).then((buffer) => {
       if (buffer) playBuffer(buffer, targetAyah, surahNumber);
     });
-  }, [surahNumber, targetAyah, activate, ensureRunningAudioGraph, setDirectOutputEnabled, playBuffer, fetchBuffer]);
+  }, [surahNumber, targetAyah, ensureRunningAudioGraph, hardResetAudioGraph, setDirectOutputEnabled, playBuffer, fetchBuffer, stopActiveSource]);
 
   const pause = useCallback(() => {
     const ctx = audioCtxRef.current;
