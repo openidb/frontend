@@ -397,7 +397,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
       const v = JSON.parse(localStorage.getItem("readerPrefs") || "{}");
       if (v.fontSize != null) setFontSize(v.fontSize);
       if (v.wordTapEnabled != null) setWordTapEnabled(v.wordTapEnabled);
-      // showTranslation intentionally not restored — default is off
+      if (v.showTranslation != null) setShowTranslation(v.showTranslation);
     } catch {}
     prefsHydrated.current = true;
   }, []);
