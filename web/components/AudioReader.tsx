@@ -14,10 +14,17 @@ import {
   Minus,
   Plus,
   BookOpen,
+  ChevronDown,
 } from "lucide-react";
 import { PrefetchLink } from "./PrefetchLink";
 import { useTranslation } from "@/lib/i18n";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -606,21 +613,34 @@ export function AudioReader({
               {readingMode !== "arabic" && hasTranslation && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t("audio.translationLanguage")}</label>
-                  <select
-                    value={effectiveLang}
-                    onChange={(e) => {
-                      updatePrefs({ translationLang: e.target.value });
-                      // Clear translation cache
-                      setLoadedTranslations(new Map());
-                    }}
-                    className="w-full rounded-md border bg-transparent px-3 py-2 text-sm"
-                  >
-                    {translatedLanguages?.map((lang) => (
-                      <option key={lang} value={lang}>
-                        {t(`language.${lang}` as `language.${string}`) || lang}
-                      </option>
-                    ))}
-                  </select>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="w-full flex items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-muted transition-colors">
+                        <span>{t(`language.${effectiveLang}` as `language.${string}`) || effectiveLang}</span>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="w-[var(--radix-dropdown-menu-trigger-width)] bg-popover/95 backdrop-blur-sm border border-border rounded-xl shadow-lg shadow-black/5 max-h-60 overflow-y-auto p-1"
+                      align="start"
+                    >
+                      {translatedLanguages?.map((lang) => (
+                        <DropdownMenuItem
+                          key={lang}
+                          onClick={() => {
+                            updatePrefs({ translationLang: lang });
+                            setLoadedTranslations(new Map());
+                          }}
+                          className={`cursor-pointer rounded-lg transition-colors duration-150 ${effectiveLang === lang ? "bg-accent" : ""}`}
+                        >
+                          <span className="flex-1">{t(`language.${lang}` as `language.${string}`) || lang}</span>
+                          {effectiveLang === lang && (
+                            <span className="text-primary text-xs">✓</span>
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
 
@@ -681,7 +701,7 @@ export function AudioReader({
             "linear-gradient(transparent 0%, black 4%, black 96%, transparent 100%)",
         }}
       >
-        <div className="max-w-xl mx-auto px-4 py-6 space-y-2 text-center">
+        <div className="max-w-xl mx-auto px-4 py-6 space-y-2">
           {allParagraphs.length === 0 && (
             <div className="text-center text-muted-foreground py-12">
               {t("common.loading")}
