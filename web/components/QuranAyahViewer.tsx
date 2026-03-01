@@ -330,12 +330,16 @@ export function QuranAyahViewer({
     }
   }, [tafsirLang, tafsirLangs]);
 
-  // Tafsir: read synchronously from cache
+  // Tafsir: read synchronously from cache, fallback to prev ayah's tafsir
+  // (adjacent ayahs often share the same tafsir text, so this avoids flicker)
   const currentTafsir = tafsirEditionId
-    ? tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`) ?? null
+    ? (tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`)
+       ?? tafsirCache.get(`${surahNumber}:${clientAyah - 1}:${tafsirEditionId}`)
+       ?? null)
     : null;
 
   // Helper: fetch a single tafsir into cache (deduped)
+  // When fetched text matches adjacent ayahs, propagate to neighbours
   const fetchTafsir = useCallback((surah: number, ayah: number, editionId: string, onDone?: () => void) => {
     const key = `${surah}:${ayah}:${editionId}`;
     if (tafsirCache.has(key) || tafsirFetching.has(key)) return;
@@ -343,7 +347,19 @@ export function QuranAyahViewer({
     fetch(`/api/quran/tafsir/${surah}/${ayah}?editionId=${editionId}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (d?.tafsirs?.[0]?.text) tafsirCache.set(key, d.tafsirs[0].text);
+        if (d?.tafsirs?.[0]?.text) {
+          const text = d.tafsirs[0].text;
+          tafsirCache.set(key, text);
+          // Propagate: if prev/next ayah has the same text, pre-fill adjacent keys
+          const prevKey = `${surah}:${ayah - 1}:${editionId}`;
+          const nextKey = `${surah}:${ayah + 1}:${editionId}`;
+          if (tafsirCache.get(prevKey) === text && !tafsirCache.has(nextKey)) {
+            tafsirCache.set(nextKey, text);
+          }
+          if (tafsirCache.get(nextKey) === text && !tafsirCache.has(prevKey)) {
+            tafsirCache.set(prevKey, text);
+          }
+        }
         onDone?.();
       })
       .catch(() => {})
