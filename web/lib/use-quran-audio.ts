@@ -26,10 +26,17 @@ export interface UseQuranAudioReturn {
 }
 
 const DEFAULT_RECITER = "tarteel/alafasy";
+const PRELOAD_AHEAD = 3;
+const PRELOAD_BEHIND = 1;
+
+function audioUrl(surah: number, ayah: number): string {
+  return `/api/quran/audio/${surah}/${ayah}?reciter=${encodeURIComponent(DEFAULT_RECITER)}`;
+}
 
 /**
- * Collect mushaf word positions for the target ayah (text lines only, charType "word").
- * Returns an ordered array of `position` values that map 1:1 with audio segments.
+ * Collect mushaf word positions for the target ayah (charType "word").
+ * Includes bismillah lines for surah 1 where bismillah IS ayah 1.
+ * Returns ordered positions that map 1:1 with audio segments by index.
  */
 function collectRecitedWordPositions(
   mushafPages: MushafPageData[],
@@ -40,7 +47,8 @@ function collectRecitedWordPositions(
 
   for (const page of mushafPages) {
     for (const line of page.lines) {
-      if (line.lineType !== "text") continue;
+      // Include text lines and bismillah lines (for surah 1 ayah 1)
+      if (line.lineType !== "text" && line.lineType !== "bismillah") continue;
       for (const w of line.words) {
         if (
           w.surahNumber === surahNumber &&
@@ -53,7 +61,6 @@ function collectRecitedWordPositions(
     }
   }
 
-  // Sort by wordPosition to ensure correct order
   positions.sort((a, b) => a.wordPosition - b.wordPosition);
   return positions.map((p) => p.position);
 }
@@ -75,6 +82,8 @@ export function useQuranAudio(
   const segmentCacheRef = useRef<Map<string, Map<number, SegmentData>>>(new Map());
   const fetchingSegmentsRef = useRef<Set<string>>(new Set());
   const prevHighlightRef = useRef<number | null>(null);
+  // Preloaded audio elements keyed by URL
+  const preloadCacheRef = useRef<Map<string, HTMLAudioElement>>(new Map());
 
   // Recited word positions for the current target ayah
   const recitedPositions = useMemo(
@@ -113,6 +122,43 @@ export function useQuranAudio(
     return () => controller.abort();
   }, [isAudioMode, surahNumber]);
 
+  // Preload adjacent ayah audio files into browser cache
+  useEffect(() => {
+    if (!isAudioMode || !surahNumber) return;
+
+    const cache = preloadCacheRef.current;
+    const toPreload: string[] = [];
+
+    // Preload ahead
+    for (let i = 1; i <= PRELOAD_AHEAD; i++) {
+      const a = targetAyah + i;
+      if (a <= totalAyahs) toPreload.push(audioUrl(surahNumber, a));
+    }
+    // Preload behind
+    for (let i = 1; i <= PRELOAD_BEHIND; i++) {
+      const a = targetAyah - i;
+      if (a >= 1) toPreload.push(audioUrl(surahNumber, a));
+    }
+
+    for (const url of toPreload) {
+      if (cache.has(url)) continue;
+      const el = new Audio();
+      el.preload = "auto";
+      el.src = url;
+      cache.set(url, el);
+    }
+
+    // Evict entries far from current position (keep cache bounded)
+    const keepUrls = new Set(toPreload);
+    keepUrls.add(audioUrl(surahNumber, targetAyah));
+    for (const [url, el] of cache) {
+      if (!keepUrls.has(url)) {
+        el.src = "";
+        cache.delete(url);
+      }
+    }
+  }, [isAudioMode, surahNumber, targetAyah, totalAyahs]);
+
   // Navigation helpers
   const navigateToAyah = useCallback(
     (ayah: number) => {
@@ -137,19 +183,29 @@ export function useQuranAudio(
   const skipForwardRef = useRef(skipForward);
   skipForwardRef.current = skipForward;
 
-  // Set audio source when ayah or audio mode changes
+  // Set audio source and play when ready
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !isAudioMode) return;
 
-    const src = `/api/quran/audio/${surahNumber}/${targetAyah}?reciter=${encodeURIComponent(DEFAULT_RECITER)}`;
+    const src = audioUrl(surahNumber, targetAyah);
     audio.src = src;
     audio.load();
 
-    // Auto-play when entering audio mode or navigating
-    audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    // Wait for enough data buffered before playing (eliminates stutter)
+    const onCanPlay = () => {
+      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    };
+
+    // If already buffered (from preload cache), play immediately
+    if (audio.readyState >= 3) {
+      onCanPlay();
+    } else {
+      audio.addEventListener("canplaythrough", onCanPlay, { once: true });
+    }
 
     return () => {
+      audio.removeEventListener("canplaythrough", onCanPlay);
       audio.pause();
       setIsPlaying(false);
     };
@@ -242,6 +298,11 @@ export function useQuranAudio(
     return () => {
       cancelAnimationFrame(rafIdRef.current);
       audioRef.current?.pause();
+      // Clean up preload cache
+      for (const [, el] of preloadCacheRef.current) {
+        el.src = "";
+      }
+      preloadCacheRef.current.clear();
     };
   }, []);
 
@@ -252,10 +313,8 @@ export function useQuranAudio(
         audioRef.current?.pause();
         setIsPlaying(false);
         setHighlightedPosition(null);
-        // Remove ?audio=1 from URL
         router.replace(`/quran/${surahNumber}/${targetAyah}`);
       } else {
-        // Entering audio mode — add ?audio=1
         router.replace(`/quran/${surahNumber}/${targetAyah}?audio=1`);
       }
       return !prev;

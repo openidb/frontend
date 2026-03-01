@@ -614,7 +614,8 @@ export function QuranAyahViewer({
         .mushaf-line-justify { justify-content: space-between; }
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
         .mushaf-word { cursor: default; transition: color 0.15s ease; }
-        .mushaf-word-highlight { color: hsl(var(--primary)); }
+        .mushaf-word-highlight { color: hsl(160 84% 39%); }
+        :is(.dark) .mushaf-word-highlight { color: hsl(158 64% 52%); }
 
         .mushaf-surah-header {
           display: flex;
