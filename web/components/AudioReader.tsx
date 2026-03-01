@@ -264,20 +264,24 @@ export function AudioReader({
     const sortedPages = [...loadedPages.entries()].sort(([a], [b]) => a - b);
 
     for (const [pageNum, page] of sortedPages) {
-      // Extract title texts from HTML to skip them in plain text
-      const titleTexts = new Set<string>();
-      const titleRegex = /<span\s+data-type=['"]title['"][^>]*>([\s\S]*?)<\/span>/gi;
-      let match;
-      while ((match = titleRegex.exec(page.contentHtml)) !== null) {
-        // Strip any HTML tags inside the title span, normalize whitespace
-        const text = match[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-        if (text) titleTexts.add(text);
-      }
-      // Also extract text before <span data-type="title"> on the same line
-      const titleLineRegex = /^(.*?)<span\s+data-type=['"]title['"][^>]*>/gim;
-      while ((match = titleLineRegex.exec(page.contentHtml)) !== null) {
-        const prefix = match[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-        if (prefix) titleTexts.add(prefix);
+      // Walk HTML lines to find which should be skipped from reading.
+      // HTML and contentPlain have the same non-empty lines in order.
+      const skipIndices = new Set<number>();
+      const htmlLines = page.contentHtml.split("\n");
+      let idx = 0;
+      let inFootnotes = false;
+      for (const hl of htmlLines) {
+        const trimmed = hl.trim();
+        if (!trimmed) continue;
+        if (/^_{3,}$/.test(trimmed)) {
+          inFootnotes = true;
+          skipIndices.add(idx); // skip the separator line itself
+        } else if (inFootnotes) {
+          skipIndices.add(idx); // skip all footnote lines
+        } else if (trimmed.includes("data-page")) {
+          skipIndices.add(idx); // skip TOC index entries
+        }
+        idx++;
       }
 
       const lines = expandHonorifics(page.contentPlain)
@@ -289,13 +293,11 @@ export function AudioReader({
         : null;
 
       for (let i = 0; i < lines.length; i++) {
-        const trimmed = lines[i].trim();
-        // Skip title/heading lines and separator lines
-        if (titleTexts.has(trimmed) || /^[\s*_]+$/.test(trimmed)) continue;
+        if (skipIndices.has(i)) continue;
         result.push({
           pageNumber: pageNum,
           paragraphIndex: i,
-          arabicText: trimmed,
+          arabicText: lines[i].trim(),
           translationText: transMap?.get(i),
         });
       }
