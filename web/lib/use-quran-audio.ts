@@ -241,6 +241,12 @@ export function useQuranAudio(
 
   const skipForwardRef = useRef(skipForward);
   skipForwardRef.current = skipForward;
+  const navigateRef = useRef(navigateToAyah);
+  navigateRef.current = navigateToAyah;
+  const targetAyahRef = useRef(targetAyah);
+  targetAyahRef.current = targetAyah;
+  const totalAyahsRef = useRef(totalAyahs);
+  totalAyahsRef.current = totalAyahs;
 
   // Reset navigation guard when ayah changes
   useEffect(() => {
@@ -261,16 +267,18 @@ export function useQuranAudio(
       // Set up onended for the already-playing source
       activeSource.onended = () => {
         if (cancelled || navigatingRef.current) return;
-        navigatingRef.current = true;
-
-        // Start next ayah immediately for gapless playback
-        if (targetAyah < totalAyahs) {
-          startNextAyahGapless(surahNumber, targetAyah + 1);
+        const ayah = targetAyahRef.current;
+        const total = totalAyahsRef.current;
+        if (ayah < total) {
+          navigatingRef.current = true;
+          startNextAyahGapless(surahNumber, ayah + 1);
+          setIsPlaying(false);
+          setHighlightedPosition(null);
+          navigateRef.current(ayah + 1);
+        } else {
+          setIsPlaying(false);
+          setHighlightedPosition(null);
         }
-
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        skipForwardRef.current();
       };
 
       return () => {
@@ -303,16 +311,18 @@ export function useQuranAudio(
 
       source.onended = () => {
         if (cancelled || navigatingRef.current) return;
-        navigatingRef.current = true;
-
-        // Start next ayah immediately for gapless playback
-        if (targetAyah < totalAyahs) {
-          startNextAyahGapless(surahNumber, targetAyah + 1);
+        const ayah = targetAyahRef.current;
+        const total = totalAyahsRef.current;
+        if (ayah < total) {
+          navigatingRef.current = true;
+          startNextAyahGapless(surahNumber, ayah + 1);
+          setIsPlaying(false);
+          setHighlightedPosition(null);
+          navigateRef.current(ayah + 1);
+        } else {
+          setIsPlaying(false);
+          setHighlightedPosition(null);
         }
-
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        skipForwardRef.current();
       };
     };
 
@@ -438,13 +448,18 @@ export function useQuranAudio(
 
     source.onended = () => {
       if (navigatingRef.current) return;
-      navigatingRef.current = true;
-      if (targetAyah < totalAyahs) {
-        startNextAyahGapless(surahNumber, targetAyah + 1);
+      const ayah = targetAyahRef.current;
+      const total = totalAyahsRef.current;
+      if (ayah < total) {
+        navigatingRef.current = true;
+        startNextAyahGapless(surahNumber, ayah + 1);
+        setIsPlaying(false);
+        setHighlightedPosition(null);
+        navigateRef.current(ayah + 1);
+      } else {
+        setIsPlaying(false);
+        setHighlightedPosition(null);
       }
-      setIsPlaying(false);
-      setHighlightedPosition(null);
-      skipForwardRef.current();
     };
   }, [surahNumber, targetAyah, totalAyahs]);
 
