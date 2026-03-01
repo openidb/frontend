@@ -29,6 +29,10 @@ const DEFAULT_RECITER = "tarteel/alafasy";
 const PRELOAD_AHEAD = 3;
 const PRELOAD_BEHIND = 1;
 const MEDIA_SESSION_DEBOUNCE_MS = 300;
+const SCHEDULE_INTERVAL_MS = 50;
+const DECODE_TIMEOUT_MS = 10000;
+const DECODE_CONCURRENT = 3;
+const FADE_SECS = 0.02;
 
 function audioUrl(surah: number, ayah: number): string {
   return `/api/quran/audio/${surah}/${ayah}?reciter=${encodeURIComponent(DEFAULT_RECITER)}`;
@@ -61,152 +65,77 @@ function generateSilentWavDataUrl(): string {
   return "data:audio/wav;base64," + btoa(binary);
 }
 
-let silentWavUrl: string | null = null;
-function getSilentWavUrl(): string {
-  if (!silentWavUrl) silentWavUrl = generateSilentWavDataUrl();
-  return silentWavUrl;
+let ACTIVATION_WAV_URL: string | null = null;
+function getActivationWavUrl(): string {
+  if (!ACTIVATION_WAV_URL) ACTIVATION_WAV_URL = generateSilentWavDataUrl();
+  return ACTIVATION_WAV_URL;
 }
 
-// --- Module-level audio engine ---
+// --- LRU Buffer Cache (from voice app) ---
 
-let audioCtx: AudioContext | null = null;
-let gainNode: GainNode | null = null;
-let mediaStreamDest: MediaStreamAudioDestinationNode | null = null;
-const bufferCache = new Map<string, AudioBuffer>();
-const rawCache = new Map<string, ArrayBuffer>();
-const fetchingUrls = new Set<string>();
+const CACHE_MAX = 96;
 
-let activeAyah: number | null = null;
-let activeSource: AudioBufferSourceNode | null = null;
-let activeStartTime = 0;
-let activeSurah: number | null = null;
+class LRUBufferCache {
+  private map = new Map<string, AudioBuffer>();
+  private rawMap = new Map<string, ArrayBuffer>();
+  private order: string[] = [];
+  private failed = new Set<string>();
 
-/**
- * Create AudioContext + MediaStreamDestination (voice app pattern).
- * Sources connect to gainNode → mediaStreamDest.
- * The <audio> element plays mediaStreamDest.stream → triggers iOS media center.
- */
-function ensureAudioGraph(): AudioContext {
-  if (audioCtx && (audioCtx.state === "suspended" || (audioCtx.state as string) === "interrupted")) {
-    try { audioCtx.close().catch(() => {}); } catch {}
-    audioCtx = null;
-    gainNode = null;
-    mediaStreamDest = null;
-  }
-  if (!audioCtx || audioCtx.state === "closed") {
-    audioCtx = new (window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    mediaStreamDest = null;
-    gainNode = null;
-  }
-  if (!mediaStreamDest) {
-    mediaStreamDest = audioCtx.createMediaStreamDestination();
-    gainNode = audioCtx.createGain();
-    gainNode.connect(mediaStreamDest);
-    // Also connect to destination directly as fallback (desktop browsers)
-    gainNode.connect(audioCtx.destination);
-  }
-  return audioCtx;
-}
-
-function getGainNode(): GainNode {
-  ensureAudioGraph();
-  return gainNode!;
-}
-
-/**
- * Bridge: pipe AudioContext output through <audio> element.
- * This is what makes iOS show the media center controls.
- */
-function bridgeToAudioElement(el: HTMLAudioElement | null): void {
-  if (!el || !mediaStreamDest) return;
-  if (el.srcObject !== mediaStreamDest.stream) {
-    el.srcObject = mediaStreamDest.stream;
-  }
-  if (el.paused) {
-    el.play().catch(() => {});
-  }
-}
-
-/**
- * Activate audio on iOS: play silent WAV through <audio> element.
- * Must be called from user gesture.
- */
-function activateAudio(el: HTMLAudioElement | null): void {
-  if (!el) return;
-  if (!el.srcObject && !el.currentSrc) {
-    el.volume = 0;
-    el.src = getSilentWavUrl();
-    el.play().then(() => {
-      el.pause();
-      el.currentTime = 0;
-      el.volume = 1;
-    }).catch(() => {
-      el.volume = 1;
-    });
-  } else if (el.srcObject && el.paused) {
-    el.play().catch(() => {});
-  }
-}
-
-async function fetchRawAudio(url: string): Promise<ArrayBuffer | null> {
-  if (rawCache.has(url)) return rawCache.get(url)!;
-  if (fetchingUrls.has(url)) {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (rawCache.has(url) || bufferCache.has(url)) resolve(rawCache.get(url) ?? null);
-        else if (!fetchingUrls.has(url)) resolve(null);
-        else setTimeout(check, 50);
-      };
-      check();
-    });
-  }
-  fetchingUrls.add(url);
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const ab = await res.arrayBuffer();
-    rawCache.set(url, ab);
-    return ab;
-  } catch {
-    return null;
-  } finally {
-    fetchingUrls.delete(url);
-  }
-}
-
-async function getBuffer(url: string): Promise<AudioBuffer | null> {
-  if (bufferCache.has(url)) return bufferCache.get(url)!;
-  const raw = rawCache.get(url) ?? await fetchRawAudio(url);
-  if (!raw || !audioCtx) return null;
-  try {
-    const buf = await audioCtx.decodeAudioData(raw.slice(0));
-    bufferCache.set(url, buf);
+  get(url: string): AudioBuffer | undefined {
+    const buf = this.map.get(url);
+    if (buf) {
+      const idx = this.order.indexOf(url);
+      if (idx !== -1) {
+        this.order.splice(idx, 1);
+        this.order.push(url);
+      }
+    }
     return buf;
-  } catch {
-    return null;
+  }
+
+  has(url: string): boolean {
+    return this.map.has(url);
+  }
+
+  set(url: string, buffer: AudioBuffer, raw?: ArrayBuffer): void {
+    if (this.map.has(url)) {
+      const idx = this.order.indexOf(url);
+      if (idx !== -1) this.order.splice(idx, 1);
+    } else if (this.map.size >= CACHE_MAX) {
+      const oldest = this.order.shift();
+      if (oldest) {
+        this.map.delete(oldest);
+        this.rawMap.delete(oldest);
+      }
+    }
+    this.map.set(url, buffer);
+    if (raw) this.rawMap.set(url, raw);
+    this.order.push(url);
+  }
+
+  markFailed(url: string): void {
+    this.failed.add(url);
+  }
+
+  isFailed(url: string): boolean {
+    return this.failed.has(url);
+  }
+
+  clearFailures(): void {
+    this.failed.clear();
   }
 }
 
-function prefetchBuffer(url: string): void {
-  if (bufferCache.has(url) || fetchingUrls.has(url)) return;
-  if (rawCache.has(url)) {
-    if (audioCtx && audioCtx.state !== "closed") getBuffer(url).catch(() => {});
-    return;
-  }
-  fetchRawAudio(url).then(() => {
-    if (audioCtx && audioCtx.state !== "closed") getBuffer(url).catch(() => {});
-  }).catch(() => {});
-}
+// Module-level cache (persists across component mounts)
+const bufferCache = new LRUBufferCache();
+const inflightFetches = new Map<string, Promise<AudioBuffer | null>>();
 
-function stopActiveSource(): void {
-  if (activeSource) {
-    try { activeSource.onended = null; activeSource.stop(); } catch {}
-    try { activeSource.disconnect(); } catch {}
-    activeSource = null;
-  }
-  activeAyah = null;
-  activeSurah = null;
+// --- Gain fade helpers (from voice app) ---
+
+function fadeGainTo(gain: GainNode, ctx: AudioContext, target: number, duration = FADE_SECS) {
+  gain.gain.cancelScheduledValues(ctx.currentTime);
+  gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(target, ctx.currentTime + duration);
 }
 
 function collectRecitedWordPositions(
@@ -226,22 +155,6 @@ function collectRecitedWordPositions(
     }
   }
   return Array.from(wps).sort((a, b) => a - b);
-}
-
-function startNextAyahGapless(surah: number, nextAyah: number): void {
-  const url = audioUrl(surah, nextAyah);
-  const buffer = bufferCache.get(url);
-  if (!buffer || !audioCtx || !gainNode) return;
-
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(gainNode);
-  source.start(audioCtx.currentTime);
-
-  activeSource = source;
-  activeStartTime = audioCtx.currentTime;
-  activeAyah = nextAyah;
-  activeSurah = surah;
 }
 
 // --- Hook ---
@@ -266,12 +179,242 @@ export function useQuranAudio(
   const prevHighlightRef = useRef<number | null>(null);
   const navigatingRef = useRef(false);
 
+  // --- Audio graph refs (voice app pattern: useRef, not module-level) ---
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const mediaStreamDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const directOutputEnabledRef = useRef(false);
+  const lastBridgePlayAttemptAtRef = useRef(0);
+  const decodeInFlightRef = useRef(0);
+  const decodeQueueRef = useRef<Array<() => void>>([]);
+
+  // Active playback state
+  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const activeStartTimeRef = useRef(0);
+  const activeAyahRef = useRef<number | null>(null);
+  const activeSurahRef = useRef<number | null>(null);
+  const isPlayingRef = useRef(false);
+  const scheduleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const recitedPositions = useMemo(
     () => collectRecitedWordPositions(mushafPages, surahNumber, targetAyah),
     [mushafPages, surahNumber, targetAyah],
   );
   const recitedPositionsRef = useRef(recitedPositions);
   recitedPositionsRef.current = recitedPositions;
+
+  // --- Three-tier AudioContext management (from voice app) ---
+
+  const ensureAudioGraph = useCallback((): AudioContext | null => {
+    let ctx = audioCtxRef.current;
+
+    if (!ctx || ctx.state === "closed") {
+      try {
+        ctx = new (window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      } catch {
+        return null;
+      }
+      audioCtxRef.current = ctx;
+      mediaStreamDestRef.current = null;
+      gainNodeRef.current = null;
+    }
+
+    if (!mediaStreamDestRef.current) {
+      const dest = ctx.createMediaStreamDestination();
+      const gain = ctx.createGain();
+      gain.connect(dest);
+      // NOTE: gain does NOT connect to ctx.destination here.
+      // Use setDirectOutputEnabled() as explicit fallback.
+      mediaStreamDestRef.current = dest;
+      gainNodeRef.current = gain;
+    }
+
+    return ctx;
+  }, []);
+
+  const hardResetAudioGraph = useCallback((): AudioContext | null => {
+    const existing = audioCtxRef.current;
+    if (existing) {
+      try { existing.close().catch(() => {}); } catch {}
+    }
+    audioCtxRef.current = null;
+    mediaStreamDestRef.current = null;
+    gainNodeRef.current = null;
+    directOutputEnabledRef.current = false;
+    return ensureAudioGraph();
+  }, [ensureAudioGraph]);
+
+  const ensureRunningAudioGraph = useCallback((): AudioContext | null => {
+    let ctx = ensureAudioGraph();
+    if (!ctx) return null;
+    if ((ctx.state as string) === "interrupted") {
+      ctx = hardResetAudioGraph();
+      if (!ctx) return null;
+    }
+    if (ctx.state !== "running") {
+      ctx.resume().catch(() => {});
+    }
+    return ctx;
+  }, [ensureAudioGraph, hardResetAudioGraph]);
+
+  const setDirectOutputEnabled = useCallback((enabled: boolean) => {
+    const ctx = ensureAudioGraph();
+    const gain = gainNodeRef.current;
+    if (!ctx || !gain) return;
+
+    if (enabled) {
+      if (directOutputEnabledRef.current) return;
+      try {
+        gain.connect(ctx.destination);
+        directOutputEnabledRef.current = true;
+      } catch {}
+      return;
+    }
+
+    if (!directOutputEnabledRef.current) return;
+    try {
+      gain.disconnect(ctx.destination);
+    } catch {}
+    directOutputEnabledRef.current = false;
+  }, [ensureAudioGraph]);
+
+  // --- Bridge pattern (from voice app) ---
+
+  const ensureMediaElementBridge = useCallback((attemptPlay: boolean, force = false) => {
+    const el = audioRef.current;
+    const dest = mediaStreamDestRef.current;
+    if (!el || !dest) return;
+
+    if (el.srcObject !== dest.stream) {
+      el.srcObject = dest.stream;
+    }
+    if (el.volume !== 1) el.volume = 1;
+    if (el.muted) el.muted = false;
+
+    if (!attemptPlay || !el.paused) return;
+    const now = Date.now();
+    if (!force && now - lastBridgePlayAttemptAtRef.current < 1000) return;
+    lastBridgePlayAttemptAtRef.current = now;
+    el.play().then(() => {
+      setDirectOutputEnabled(false);
+    }).catch(() => {});
+  }, [setDirectOutputEnabled]);
+
+  // --- Activate (from voice app) ---
+
+  const activate = useCallback(() => {
+    const el = audioRef.current;
+    if (el) {
+      const hasElementTrack = !el.srcObject && !!el.currentSrc;
+      if (hasElementTrack) {
+        // Element mode track already loaded; avoid replacing src
+      } else if (el.srcObject) {
+        if (el.paused) {
+          el.play().catch(() => {});
+        }
+      } else {
+        el.volume = 0;
+        el.src = getActivationWavUrl();
+        el.play().then(() => {
+          el.pause();
+          el.currentTime = 0;
+          el.volume = 1;
+        }).catch(() => {
+          el.volume = 1;
+        });
+      }
+    }
+    const ctx = ensureRunningAudioGraph();
+    if (ctx && ctx.state !== "running") {
+      const recovered = hardResetAudioGraph();
+      if (recovered && recovered.state !== "running") {
+        recovered.resume().catch(() => {});
+      }
+    }
+  }, [ensureRunningAudioGraph, hardResetAudioGraph]);
+
+  // --- Decode concurrency limiter (from voice app) ---
+
+  const withDecodeSlot = useCallback(async <T,>(fn: () => Promise<T>): Promise<T> => {
+    if (decodeInFlightRef.current >= DECODE_CONCURRENT) {
+      await new Promise<void>((resolve) => {
+        decodeQueueRef.current.push(resolve);
+      });
+    }
+    decodeInFlightRef.current += 1;
+    try {
+      return await fn();
+    } finally {
+      decodeInFlightRef.current = Math.max(0, decodeInFlightRef.current - 1);
+      const next = decodeQueueRef.current.shift();
+      if (next) next();
+    }
+  }, []);
+
+  // --- Fetch + decode (from voice app pattern) ---
+
+  const fetchBuffer = useCallback(async (url: string, signal?: AbortSignal): Promise<AudioBuffer | null> => {
+    if (bufferCache.has(url)) return bufferCache.get(url)!;
+    if (bufferCache.isFailed(url)) return null;
+    const existing = inflightFetches.get(url);
+    if (existing) return existing;
+
+    const promise = (async (): Promise<AudioBuffer | null> => {
+      try {
+        const ctx = ensureAudioGraph();
+        if (!ctx) return null;
+
+        const res = await fetch(url, { signal });
+        if (!res.ok) {
+          if (res.status === 400 || res.status === 404) {
+            bufferCache.markFailed(url);
+          }
+          return null;
+        }
+        const ab = await res.arrayBuffer();
+        const rawClone = ab.slice(0);
+
+        const buf = await withDecodeSlot(() =>
+          Promise.race([
+            ctx.decodeAudioData(ab),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("decodeAudioData timeout")), DECODE_TIMEOUT_MS)
+            ),
+          ])
+        );
+
+        bufferCache.set(url, buf, rawClone);
+        return buf;
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return null;
+        return null;
+      } finally {
+        inflightFetches.delete(url);
+      }
+    })();
+
+    inflightFetches.set(url, promise);
+    return promise;
+  }, [withDecodeSlot, ensureAudioGraph]);
+
+  const prefetchBuffer = useCallback((url: string) => {
+    if (bufferCache.has(url) || bufferCache.isFailed(url) || inflightFetches.has(url)) return;
+    fetchBuffer(url).catch(() => {});
+  }, [fetchBuffer]);
+
+  // --- Source management ---
+
+  const stopActiveSource = useCallback(() => {
+    const source = activeSourceRef.current;
+    if (source) {
+      try { source.onended = null; source.stop(); } catch {}
+      try { source.disconnect(); } catch {}
+      activeSourceRef.current = null;
+    }
+    activeAyahRef.current = null;
+    activeSurahRef.current = null;
+  }, []);
 
   // Fetch segments
   useEffect(() => {
@@ -309,7 +452,7 @@ export function useQuranAudio(
       const a = targetAyah - i;
       if (a >= 1) prefetchBuffer(audioUrl(surahNumber, a));
     }
-  }, [isAudioMode, surahNumber, targetAyah, totalAyahs]);
+  }, [isAudioMode, surahNumber, targetAyah, totalAyahs, prefetchBuffer]);
 
   // Navigation helpers
   const onNavigateRef = useRef(onNavigate);
@@ -323,35 +466,6 @@ export function useQuranAudio(
     [router, surahNumber],
   );
 
-  const isPlayingRef = useRef(isPlaying);
-  isPlayingRef.current = isPlaying;
-
-  const skipForward = useCallback(() => {
-    if (targetAyah < totalAyahs && !navigatingRef.current) {
-      navigatingRef.current = true;
-      if (isPlayingRef.current) {
-        ensureAudioGraph();
-        startNextAyahGapless(surahNumber, targetAyah + 1);
-      }
-      navigateToAyah(targetAyah + 1);
-    }
-  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber]);
-
-  const skipBack = useCallback(() => {
-    if (targetAyah > 1 && !navigatingRef.current) {
-      navigatingRef.current = true;
-      const wasPlaying = isPlayingRef.current;
-      stopActiveSource();
-      if (wasPlaying) {
-        ensureAudioGraph();
-        startNextAyahGapless(surahNumber, targetAyah - 1);
-      }
-      navigateToAyah(targetAyah - 1);
-    }
-  }, [targetAyah, navigateToAyah, surahNumber]);
-
-  const skipForwardRef = useRef(skipForward);
-  skipForwardRef.current = skipForward;
   const navigateRef = useRef(navigateToAyah);
   navigateRef.current = navigateToAyah;
   const targetAyahRef = useRef(targetAyah);
@@ -361,45 +475,207 @@ export function useQuranAudio(
 
   useEffect(() => { navigatingRef.current = false; }, [targetAyah]);
 
+  // --- Play a single ayah from buffer ---
+
+  const playBuffer = useCallback((buffer: AudioBuffer, ayah: number, surah: number) => {
+    const ctx = ensureRunningAudioGraph();
+    if (!ctx) return;
+    const gain = gainNodeRef.current;
+    if (!gain) return;
+
+    stopActiveSource();
+
+    // Reset gain to full volume
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setValueAtTime(1, ctx.currentTime);
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(gain);
+    source.start(ctx.currentTime);
+
+    activeSourceRef.current = source;
+    activeStartTimeRef.current = ctx.currentTime;
+    activeAyahRef.current = ayah;
+    activeSurahRef.current = surah;
+    isPlayingRef.current = true;
+    setIsPlaying(true);
+
+    source.onended = () => {
+      source.disconnect();
+      if (activeSourceRef.current !== source) return;
+      activeSourceRef.current = null;
+      if (navigatingRef.current) return;
+      const curAyah = targetAyahRef.current;
+      const total = totalAyahsRef.current;
+      if (curAyah < total) {
+        navigatingRef.current = true;
+        // Try gapless: start next ayah immediately if cached
+        const nextUrl = audioUrl(surah, curAyah + 1);
+        const nextBuf = bufferCache.get(nextUrl);
+        if (nextBuf && ctx.state === "running" && gain) {
+          const nextSource = ctx.createBufferSource();
+          nextSource.buffer = nextBuf;
+          nextSource.connect(gain);
+          nextSource.start(ctx.currentTime);
+          activeSourceRef.current = nextSource;
+          activeStartTimeRef.current = ctx.currentTime;
+          activeAyahRef.current = curAyah + 1;
+          activeSurahRef.current = surah;
+          // Wire onended for the gapless source (will be replaced when component re-mounts)
+          nextSource.onended = () => {
+            nextSource.disconnect();
+            if (activeSourceRef.current !== nextSource) return;
+            activeSourceRef.current = null;
+          };
+        }
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        setHighlightedPosition(null);
+        navigateRef.current(curAyah + 1);
+      } else {
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        setHighlightedPosition(null);
+        // Stop bridge when playback ends
+        const el = audioRef.current;
+        if (el) { el.srcObject = null; el.pause(); }
+      }
+    };
+  }, [ensureRunningAudioGraph, stopActiveSource]);
+
+  const skipForward = useCallback(() => {
+    if (targetAyah < totalAyahs && !navigatingRef.current) {
+      navigatingRef.current = true;
+      const wasPlaying = isPlayingRef.current;
+      stopActiveSource();
+      if (wasPlaying) {
+        const ctx = ensureRunningAudioGraph();
+        const gain = gainNodeRef.current;
+        const nextUrl = audioUrl(surahNumber, targetAyah + 1);
+        const nextBuf = bufferCache.get(nextUrl);
+        if (nextBuf && ctx && gain && ctx.state === "running") {
+          const source = ctx.createBufferSource();
+          source.buffer = nextBuf;
+          source.connect(gain);
+          source.start(ctx.currentTime);
+          activeSourceRef.current = source;
+          activeStartTimeRef.current = ctx.currentTime;
+          activeAyahRef.current = targetAyah + 1;
+          activeSurahRef.current = surahNumber;
+          source.onended = () => {
+            source.disconnect();
+            if (activeSourceRef.current !== source) return;
+            activeSourceRef.current = null;
+          };
+        }
+      }
+      navigateToAyah(targetAyah + 1);
+    }
+  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber, stopActiveSource, ensureRunningAudioGraph]);
+
+  const skipBack = useCallback(() => {
+    if (targetAyah > 1 && !navigatingRef.current) {
+      navigatingRef.current = true;
+      const wasPlaying = isPlayingRef.current;
+      stopActiveSource();
+      if (wasPlaying) {
+        const ctx = ensureRunningAudioGraph();
+        const gain = gainNodeRef.current;
+        const prevUrl = audioUrl(surahNumber, targetAyah - 1);
+        const prevBuf = bufferCache.get(prevUrl);
+        if (prevBuf && ctx && gain && ctx.state === "running") {
+          const source = ctx.createBufferSource();
+          source.buffer = prevBuf;
+          source.connect(gain);
+          source.start(ctx.currentTime);
+          activeSourceRef.current = source;
+          activeStartTimeRef.current = ctx.currentTime;
+          activeAyahRef.current = targetAyah - 1;
+          activeSurahRef.current = surahNumber;
+          source.onended = () => {
+            source.disconnect();
+            if (activeSourceRef.current !== source) return;
+            activeSourceRef.current = null;
+          };
+        }
+      }
+      navigateToAyah(targetAyah - 1);
+    }
+  }, [targetAyah, navigateToAyah, surahNumber, stopActiveSource, ensureRunningAudioGraph]);
+
+  const skipForwardRef = useRef(skipForward);
+  skipForwardRef.current = skipForward;
+  const skipBackRef = useRef(skipBack);
+  skipBackRef.current = skipBack;
+
   // Audio lifecycle: reconnect to gapless source or prefetch
   useEffect(() => {
     if (!isAudioMode) return;
     let cancelled = false;
 
-    if (activeSurah === surahNumber && activeAyah === targetAyah && activeSource) {
+    if (activeSurahRef.current === surahNumber && activeAyahRef.current === targetAyah && activeSourceRef.current) {
+      isPlayingRef.current = true;
       setIsPlaying(true);
       // Re-bridge audio element for the new component mount
-      bridgeToAudioElement(audioRef.current);
-      activeSource.onended = () => {
-        if (cancelled || navigatingRef.current) return;
+      ensureMediaElementBridge(true, true);
+      const source = activeSourceRef.current;
+      source.onended = () => {
+        source.disconnect();
+        if (cancelled || navigatingRef.current || activeSourceRef.current !== source) return;
+        activeSourceRef.current = null;
         const ayah = targetAyahRef.current;
         const total = totalAyahsRef.current;
         if (ayah < total) {
           navigatingRef.current = true;
-          startNextAyahGapless(surahNumber, ayah + 1);
+          // Gapless: start next if cached
+          const nextUrl = audioUrl(surahNumber, ayah + 1);
+          const nextBuf = bufferCache.get(nextUrl);
+          const ctx = audioCtxRef.current;
+          const gain = gainNodeRef.current;
+          if (nextBuf && ctx && gain && ctx.state === "running") {
+            const nextSource = ctx.createBufferSource();
+            nextSource.buffer = nextBuf;
+            nextSource.connect(gain);
+            nextSource.start(ctx.currentTime);
+            activeSourceRef.current = nextSource;
+            activeStartTimeRef.current = ctx.currentTime;
+            activeAyahRef.current = ayah + 1;
+            activeSurahRef.current = surahNumber;
+            nextSource.onended = () => {
+              nextSource.disconnect();
+              if (activeSourceRef.current !== nextSource) return;
+              activeSourceRef.current = null;
+            };
+          }
+          isPlayingRef.current = false;
           setIsPlaying(false);
           setHighlightedPosition(null);
           navigateRef.current(ayah + 1);
         } else {
+          isPlayingRef.current = false;
           setIsPlaying(false);
           setHighlightedPosition(null);
+          const el = audioRef.current;
+          if (el) { el.srcObject = null; el.pause(); }
         }
       };
-      return () => { cancelled = true; if (activeSource) activeSource.onended = null; };
+      return () => { cancelled = true; if (activeSourceRef.current === source) source.onended = null; };
     }
 
     prefetchBuffer(audioUrl(surahNumber, targetAyah));
-    return () => { cancelled = true; if (activeSource) activeSource.onended = null; };
-  }, [isAudioMode, surahNumber, targetAyah, totalAyahs]);
+    return () => { cancelled = true; };
+  }, [isAudioMode, surahNumber, targetAyah, totalAyahs, ensureMediaElementBridge, prefetchBuffer]);
 
   // Keep bridge alive: periodically ensure <audio> element is playing the stream
+  // Uses ensureMediaElementBridge with rate limiting (from voice app)
   useEffect(() => {
     if (!isAudioMode || !isPlaying) return;
-    const interval = setInterval(() => {
-      bridgeToAudioElement(audioRef.current);
-    }, 500);
-    return () => clearInterval(interval);
-  }, [isAudioMode, isPlaying]);
+    const timer = setInterval(() => {
+      ensureMediaElementBridge(true);
+    }, SCHEDULE_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [isAudioMode, isPlaying, ensureMediaElementBridge]);
 
   // rAF word highlighting
   useEffect(() => {
@@ -416,8 +692,9 @@ export function useQuranAudio(
       const segData = segMap?.get(targetAyah);
       const positions = recitedPositionsRef.current;
       let timeMs = 0;
-      if (audioCtx && activeAyah === targetAyah) {
-        timeMs = (audioCtx.currentTime - activeStartTime) * 1000;
+      const ctx = audioCtxRef.current;
+      if (ctx && activeAyahRef.current === targetAyah) {
+        timeMs = (ctx.currentTime - activeStartTimeRef.current) * 1000;
       }
       let newHighlight: number | null = null;
       if (segData?.segments && segData.segments.length > 0 && timeMs > 0) {
@@ -492,50 +769,30 @@ export function useQuranAudio(
     };
 
     ms.setActionHandler("play", debounced(() => {
-      ensureAudioGraph();
-      bridgeToAudioElement(audioRef.current);
+      // Resume playback
+      const ctx = ensureRunningAudioGraph();
+      if (!ctx) return;
+      ensureMediaElementBridge(true, true);
       const url = audioUrl(surahNumber, targetAyah);
       const cached = bufferCache.get(url);
       if (cached) {
-        stopActiveSource();
-        const source = audioCtx!.createBufferSource();
-        source.buffer = cached;
-        source.connect(getGainNode());
-        source.start(audioCtx!.currentTime);
-        activeSource = source;
-        activeStartTime = audioCtx!.currentTime;
-        activeAyah = targetAyah;
-        activeSurah = surahNumber;
-        setIsPlaying(true);
-        source.onended = () => {
-          if (navigatingRef.current) return;
-          const ayah = targetAyahRef.current;
-          const total = totalAyahsRef.current;
-          if (ayah < total) {
-            navigatingRef.current = true;
-            startNextAyahGapless(surahNumber, ayah + 1);
-            setIsPlaying(false);
-            setHighlightedPosition(null);
-            navigateRef.current(ayah + 1);
-          } else {
-            setIsPlaying(false);
-            setHighlightedPosition(null);
-          }
-        };
+        playBuffer(cached, targetAyah, surahNumber);
+        ensureMediaElementBridge(true, true);
       }
     }));
-    ms.setActionHandler("pause", debounced(() => { stopActiveSource(); setIsPlaying(false); }));
-    ms.setActionHandler("stop", debounced(() => { stopActiveSource(); setIsPlaying(false); }));
+    ms.setActionHandler("pause", debounced(() => {
+      stopActiveSource();
+      isPlayingRef.current = false;
+      setIsPlaying(false);
+    }));
+    // iOS fires "stop" on background — treat as pause
+    ms.setActionHandler("stop", debounced(() => {
+      stopActiveSource();
+      isPlayingRef.current = false;
+      setIsPlaying(false);
+    }));
     ms.setActionHandler("nexttrack", debounced(() => skipForwardRef.current()));
-    ms.setActionHandler("previoustrack", debounced(() => {
-      if (targetAyahRef.current > 1) {
-        navigatingRef.current = true;
-        stopActiveSource();
-        ensureAudioGraph();
-        startNextAyahGapless(surahNumber, targetAyahRef.current - 1);
-        navigateRef.current(targetAyahRef.current - 1);
-      }
-    }));
+    ms.setActionHandler("previoustrack", debounced(() => skipBackRef.current()));
     ms.setActionHandler("seekforward", null);
     ms.setActionHandler("seekbackward", null);
 
@@ -546,7 +803,7 @@ export function useQuranAudio(
       ms.setActionHandler("nexttrack", null);
       ms.setActionHandler("previoustrack", null);
     };
-  }, [isAudioMode, surahNumber, targetAyah]);
+  }, [isAudioMode, surahNumber, targetAyah, ensureRunningAudioGraph, ensureMediaElementBridge, playBuffer, stopActiveSource]);
 
   // --- User actions ---
 
@@ -554,6 +811,7 @@ export function useQuranAudio(
     setIsAudioMode((prev) => {
       if (prev) {
         stopActiveSource();
+        isPlayingRef.current = false;
         setIsPlaying(false);
         setHighlightedPosition(null);
         // Disconnect bridge
@@ -562,75 +820,87 @@ export function useQuranAudio(
         router.replace(`/quran/${surahNumber}/${targetAyah}`);
       } else {
         // Activate audio (iOS unlock) + create AudioContext in user gesture
-        activateAudio(audioRef.current);
-        ensureAudioGraph();
+        activate();
         router.replace(`/quran/${surahNumber}/${targetAyah}?audio=1`);
       }
       return !prev;
     });
-  }, [router, surahNumber, targetAyah]);
-
-  const playFromBuffer = useCallback((buffer: AudioBuffer) => {
-    const ctx = ensureAudioGraph();
-    const gain = getGainNode();
-
-    stopActiveSource();
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(gain);
-    source.start(ctx.currentTime);
-
-    activeSource = source;
-    activeStartTime = ctx.currentTime;
-    activeAyah = targetAyah;
-    activeSurah = surahNumber;
-    setIsPlaying(true);
-
-    // Bridge to <audio> element for iOS media center
-    bridgeToAudioElement(audioRef.current);
-
-    source.onended = () => {
-      if (navigatingRef.current) return;
-      const ayah = targetAyahRef.current;
-      const total = totalAyahsRef.current;
-      if (ayah < total) {
-        navigatingRef.current = true;
-        startNextAyahGapless(surahNumber, ayah + 1);
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        navigateRef.current(ayah + 1);
-      } else {
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        // Stop bridge when playback ends
-        const el = audioRef.current;
-        if (el) { el.srcObject = null; el.pause(); }
-      }
-    };
-  }, [surahNumber, targetAyah]);
+  }, [router, surahNumber, targetAyah, activate, stopActiveSource]);
 
   const play = useCallback(() => {
     // Re-activate on every play gesture (iOS can revoke after idle)
-    activateAudio(audioRef.current);
-    ensureAudioGraph();
-    // Bridge immediately so iOS associates this gesture with audio element
-    bridgeToAudioElement(audioRef.current);
+    activate();
+
+    const ctx = ensureRunningAudioGraph();
+    if (!ctx) return;
+
+    // Reset gain
+    const gain = gainNodeRef.current;
+    if (gain) {
+      gain.gain.cancelScheduledValues(ctx.currentTime);
+      gain.gain.setValueAtTime(1, ctx.currentTime);
+    }
+
+    // Connect bridge immediately in user gesture context
+    const el = audioRef.current;
+    const dest = mediaStreamDestRef.current;
+    if (el && dest) {
+      el.muted = false;
+      el.volume = 1;
+      el.srcObject = dest.stream;
+      el.play().then(() => {
+        setDirectOutputEnabled(false);
+      }).catch(() => {
+        // Retry once after short delay (voice app pattern)
+        setTimeout(() => {
+          el.play().then(() => {
+            setDirectOutputEnabled(false);
+          }).catch(() => {
+            // Fall back to direct output
+            setDirectOutputEnabled(true);
+          });
+        }, 100);
+      });
+    }
 
     const url = audioUrl(surahNumber, targetAyah);
     const cached = bufferCache.get(url);
     if (cached) {
-      playFromBuffer(cached);
+      playBuffer(cached, targetAyah, surahNumber);
       return;
     }
-    getBuffer(url).then((buffer) => {
-      if (buffer) playFromBuffer(buffer);
+    fetchBuffer(url).then((buffer) => {
+      if (buffer) playBuffer(buffer, targetAyah, surahNumber);
     });
-  }, [surahNumber, targetAyah, playFromBuffer]);
+  }, [surahNumber, targetAyah, activate, ensureRunningAudioGraph, setDirectOutputEnabled, playBuffer, fetchBuffer]);
 
   const pause = useCallback(() => {
-    stopActiveSource();
-    setIsPlaying(false);
+    const ctx = audioCtxRef.current;
+    const gain = gainNodeRef.current;
+    // Fade out to prevent click
+    if (gain && ctx) fadeGainTo(gain, ctx, 0);
+    // Stop source after fade
+    setTimeout(() => {
+      stopActiveSource();
+      isPlayingRef.current = false;
+      setIsPlaying(false);
+      // Pause <audio> element so OS state matches
+      const el = audioRef.current;
+      if (el && !el.paused) el.pause();
+    }, (FADE_SECS + 0.005) * 1000);
+  }, [stopActiveSource]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      const source = activeSourceRef.current;
+      if (source) { try { source.stop(); } catch {} }
+      if (scheduleTimerRef.current) clearInterval(scheduleTimerRef.current);
+      cancelAnimationFrame(rafIdRef.current);
+      const el = audioRef.current;
+      if (el) { el.onended = null; el.srcObject = null; el.pause(); }
+      if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
+    };
   }, []);
 
   return {
