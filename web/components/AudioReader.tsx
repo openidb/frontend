@@ -740,14 +740,6 @@ export function AudioReader({
                       </p>
                     )}
 
-                  {/* Translation loading indicator */}
-                  {readingMode !== "arabic" &&
-                    !para.translationText &&
-                    hasTranslation && (
-                      <p className="text-sm text-muted-foreground/50 italic" dir="ltr">
-                        {t("reader.translating")}
-                      </p>
-                    )}
                 </div>
               </div>
             );
