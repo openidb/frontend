@@ -146,7 +146,7 @@ function formatContentHtml(
     if (/^_{3,}$/.test(trimmed)) {
       inFootnotes = true;
       formatted.push(
-        '<div style="margin-top:2em;padding-top:1.5em;text-align:center"><span style="display:inline-block;width:3em;border-top:1px solid currentColor;opacity:0.4"></span></div><div style="opacity:0.85">'
+        '<div style="margin-top:2em;padding-top:1.5em;text-align:center"><span style="display:inline-block;width:60%;border-top:1px solid currentColor;opacity:0.3"></span></div><div style="opacity:0.55">'
       );
       continue;
     }
