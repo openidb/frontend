@@ -38,6 +38,7 @@ function audioUrl(surah: number, ayah: number): string {
 let audioCtx: AudioContext | null = null;
 let gainNode: GainNode | null = null;
 const bufferCache = new Map<string, AudioBuffer>();
+const rawCache = new Map<string, ArrayBuffer>(); // raw audio for deferred decode
 const fetchingUrls = new Set<string>();
 
 // Currently playing session — survives component re-mounts on navigation
@@ -46,7 +47,11 @@ let activeSource: AudioBufferSourceNode | null = null;
 let activeStartTime = 0; // ctx.currentTime when source started
 let activeSurah: number | null = null;
 
-function getAudioContext(): AudioContext {
+/**
+ * Create/resume AudioContext. MUST be called from a user gesture on iOS/Safari.
+ * Safe to call multiple times — only creates once.
+ */
+function ensureAudioContext(): AudioContext {
   if (!audioCtx || audioCtx.state === "closed") {
     audioCtx = new AudioContext();
     gainNode = audioCtx.createGain();
@@ -59,7 +64,7 @@ function getAudioContext(): AudioContext {
 }
 
 function getGainNode(): GainNode {
-  getAudioContext();
+  ensureAudioContext();
   if (!gainNode) {
     gainNode = audioCtx!.createGain();
     gainNode.connect(audioCtx!.destination);
@@ -67,29 +72,29 @@ function getGainNode(): GainNode {
   return gainNode;
 }
 
-async function fetchBuffer(url: string): Promise<AudioBuffer | null> {
-  if (bufferCache.has(url)) return bufferCache.get(url)!;
+/**
+ * Fetch raw audio data without requiring AudioContext.
+ * Decoding happens lazily when AudioContext is available.
+ */
+async function fetchRawAudio(url: string): Promise<ArrayBuffer | null> {
+  if (rawCache.has(url)) return rawCache.get(url)!;
   if (fetchingUrls.has(url)) {
-    // Wait for in-flight fetch
     return new Promise((resolve) => {
       const check = () => {
-        if (bufferCache.has(url)) resolve(bufferCache.get(url)!);
+        if (rawCache.has(url) || bufferCache.has(url)) resolve(rawCache.get(url) ?? null);
         else if (!fetchingUrls.has(url)) resolve(null);
         else setTimeout(check, 50);
       };
       check();
     });
   }
-
   fetchingUrls.add(url);
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
     const ab = await res.arrayBuffer();
-    const ctx = getAudioContext();
-    const buf = await ctx.decodeAudioData(ab);
-    bufferCache.set(url, buf);
-    return buf;
+    rawCache.set(url, ab);
+    return ab;
   } catch {
     return null;
   } finally {
@@ -97,9 +102,40 @@ async function fetchBuffer(url: string): Promise<AudioBuffer | null> {
   }
 }
 
+/**
+ * Get decoded AudioBuffer. Uses cache or decodes from raw data.
+ * Requires AudioContext to be initialized (call ensureAudioContext first).
+ */
+async function getBuffer(url: string): Promise<AudioBuffer | null> {
+  if (bufferCache.has(url)) return bufferCache.get(url)!;
+  const raw = rawCache.get(url) ?? await fetchRawAudio(url);
+  if (!raw || !audioCtx) return null;
+  try {
+    // decodeAudioData detaches the ArrayBuffer, so clone it
+    const buf = await audioCtx.decodeAudioData(raw.slice(0));
+    bufferCache.set(url, buf);
+    return buf;
+  } catch {
+    return null;
+  }
+}
+
+/** Prefetch audio data. Fetches raw data first (safe for useEffect), then decodes if AudioContext exists. */
 function prefetchBuffer(url: string): void {
   if (bufferCache.has(url) || fetchingUrls.has(url)) return;
-  fetchBuffer(url).catch(() => {});
+  if (rawCache.has(url)) {
+    // Raw data available — decode if AudioContext is ready
+    if (audioCtx && audioCtx.state !== "closed") {
+      getBuffer(url).catch(() => {});
+    }
+    return;
+  }
+  fetchRawAudio(url).then(() => {
+    // After fetching, try to decode if AudioContext is ready
+    if (audioCtx && audioCtx.state !== "closed") {
+      getBuffer(url).catch(() => {});
+    }
+  }).catch(() => {});
 }
 
 function stopActiveSource(): void {
@@ -297,10 +333,10 @@ export function useQuranAudio(
 
     const startPlayback = async () => {
       const url = audioUrl(surahNumber, targetAyah);
-      const buffer = await fetchBuffer(url);
+      const buffer = await getBuffer(url);
       if (!buffer || cancelled) return;
 
-      const ctx = getAudioContext();
+      const ctx = ensureAudioContext();
       const gain = getGainNode();
 
       // Stop any previous source
@@ -427,6 +463,8 @@ export function useQuranAudio(
         setHighlightedPosition(null);
         router.replace(`/quran/${surahNumber}/${targetAyah}`);
       } else {
+        // Create AudioContext in user gesture (required for iOS/Safari)
+        ensureAudioContext();
         router.replace(`/quran/${surahNumber}/${targetAyah}?audio=1`);
       }
       return !prev;
@@ -434,12 +472,13 @@ export function useQuranAudio(
   }, [router, surahNumber, targetAyah]);
 
   const play = useCallback(async () => {
-    const url = audioUrl(surahNumber, targetAyah);
-    const buffer = await fetchBuffer(url);
-    if (!buffer) return;
-
-    const ctx = getAudioContext();
+    // Ensure AudioContext in user gesture (required for iOS/Safari)
+    const ctx = ensureAudioContext();
     const gain = getGainNode();
+
+    const url = audioUrl(surahNumber, targetAyah);
+    const buffer = await getBuffer(url);
+    if (!buffer) return;
 
     stopActiveSource();
 
