@@ -565,6 +565,12 @@ export default function SearchClient() {
                 onError={(msg) => setVoiceError(msg)}
               />
             </div>
+            <ContentTypeSegment
+              includeQuran={searchConfig.includeQuran}
+              includeHadith={searchConfig.includeHadith}
+              onChange={handleContentTypeChange}
+              visible={showTabBar}
+            />
           </div>
           {voiceError && (
             <p className="text-sm text-red-500 mt-2 text-center">{voiceError}</p>
@@ -581,17 +587,6 @@ export default function SearchClient() {
 
       {/* Results Section */}
       <div className="max-w-3xl mx-auto">
-        {/* Content Type Segmented Control */}
-        {showTabBar && (
-          <div className="flex justify-center mb-4">
-            <ContentTypeSegment
-              includeQuran={searchConfig.includeQuran}
-              includeHadith={searchConfig.includeHadith}
-              onChange={handleContentTypeChange}
-            />
-          </div>
-        )}
-
         {/* Tab Bar */}
         {showTabBar && (
           <div className="flex gap-1 mb-4 border-b border-border/50">
