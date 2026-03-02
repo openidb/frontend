@@ -295,8 +295,11 @@ export function useQuranAudio(
         el.volume = 0;
         el.src = getActivationWavUrl();
         el.play().then(() => {
-          el.pause();
-          el.currentTime = 0;
+          // Only pause if bridge hasn't been connected yet
+          if (!el.srcObject) {
+            el.pause();
+            el.currentTime = 0;
+          }
           el.volume = 1;
         }).catch(() => { el.volume = 1; });
       }
@@ -854,7 +857,6 @@ export function useQuranAudio(
 
     ms.setActionHandler("play", debounced(() => {
       if (isPlayingRef.current) return;
-      // Resume: restart scheduling from current ayah
       const ayah = targetAyahRef.current;
       const surah = surahRef.current;
 
@@ -867,11 +869,15 @@ export function useQuranAudio(
         nextScheduleAyahRef.current = ayah;
         scheduledEndRef.current = 0;
         currentPlayingAyahRef.current = ayah;
+
+        // Resume bridge (was paused, srcObject still connected)
+        const el = audioRef.current;
+        if (el && el.paused) el.play().catch(() => { setDirectOutputEnabled(true); });
+
         scheduleFromCacheRef.current();
         if (!scheduleTimerRef.current) {
           scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
         }
-        ensureMediaElementBridge(true, true);
       } else {
         playViaElement(audioUrl(surah, ayah), ayah, surah);
       }
@@ -880,10 +886,11 @@ export function useQuranAudio(
       stopAllSources();
       stopScheduleTimer();
       const el = audioRef.current;
-      if (el && elementModeRef.current) el.pause();
+      if (el) el.pause(); // Don't null srcObject — keep bridge alive
       isPlayingRef.current = false;
       setIsPlaying(false);
     }));
+    // iOS fires "stop" on background — treat as pause (voice app pattern)
     ms.setActionHandler("stop", debounced(() => {
       stopAllSources();
       stopScheduleTimer();
@@ -959,26 +966,41 @@ export function useQuranAudio(
         gain.gain.setValueAtTime(1, ctx.currentTime);
       }
 
+      // CRITICAL: Set up bridge FIRST, in user gesture context, BEFORE scheduling.
+      // iOS only shows media center if <audio>.play() succeeds in user gesture.
+      const el = audioRef.current;
+      const dest = mediaStreamDestRef.current;
+      if (el && dest) {
+        el.srcObject = dest.stream;
+        el.volume = 1;
+        if (el.muted) el.muted = false;
+        // Synchronous el.play() call in user gesture context
+        el.play().then(() => {
+          setDirectOutputEnabled(false);
+        }).catch(() => {
+          // Bridge failed — fall back to direct output (audio still works, no media center)
+          setDirectOutputEnabled(true);
+        });
+      }
+
       // Start scheduling
       scheduleFromCache();
       stopScheduleTimer();
       scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
-
-      // Bridge for media session
-      ensureMediaElementBridge(true, true);
     } else {
       // Fallback: element mode
       playViaElement(audioUrl(surahNumber, targetAyah), targetAyah, surahNumber);
     }
-  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, ensureMediaElementBridge, playViaElement]);
+  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement]);
 
   const pause = useCallback(() => {
     stopAllSources();
     stopScheduleTimer();
     const el = audioRef.current;
     if (el) {
-      if (elementModeRef.current) el.pause();
-      else { el.srcObject = null; el.pause(); }
+      // Don't null srcObject on pause — keep bridge alive so media session
+      // stays visible and resume can reconnect without new user gesture
+      el.pause();
     }
     isPlayingRef.current = false;
     setIsPlaying(false);
