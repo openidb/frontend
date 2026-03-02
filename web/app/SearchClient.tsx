@@ -511,8 +511,8 @@ export default function SearchClient() {
 
   const isHeroState = !hasSearched && !isLoading && query.length < 2;
 
-  // Tab bar should show when we have quick results or deep search has been triggered
-  const showTabBar = hasSearched && !isLoading && (quickResults.length > 0 || deepSearchStatus !== "idle" || activeTab === "filters");
+  // Tab bar should show once we have results or deep search has been triggered — stays visible during loading
+  const showTabBar = hasSearched && (quickResults.length > 0 || deepSearchStatus !== "idle" || activeTab === "filters");
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
