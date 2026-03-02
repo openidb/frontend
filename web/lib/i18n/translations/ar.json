@@ -58,7 +58,10 @@
     "entityRelationships": "العلاقات",
     "sourceText": "المصادر",
     "graphCoverage": "تغطي شبكة المعرفة ٣ سور تجريبية (تغطية جزئية)",
-    "filters": "تصفية"
+    "filters": "تصفية",
+    "contentTypeAll": "الكل",
+    "contentTypeQuran": "القرآن",
+    "contentTypeHadith": "الحديث"
   },
   "algorithm": {
     "pipelineOverview": "نظرة عامة على مسار البحث",

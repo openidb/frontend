@@ -58,7 +58,10 @@
     "entityRelationships": "Mahusiano",
     "sourceText": "Vyanzo",
     "graphCoverage": "Grafu ya maarifa inafunika sura 3 za mtihani (kifuniko cha sehemu)",
-    "filters": "Vichujio"
+    "filters": "Vichujio",
+    "contentTypeAll": "Zote",
+    "contentTypeQuran": "Qur'an",
+    "contentTypeHadith": "Hadith"
   },
   "algorithm": {
     "pipelineOverview": "Maelezo ya Utafutaji wa Pipeline",

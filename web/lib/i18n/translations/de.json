@@ -58,7 +58,10 @@
     "entityRelationships": "Beziehungen",
     "sourceText": "Quellen",
     "graphCoverage": "Wissensgraph deckt 3 Pilot-Suren ab (teilweise Abdeckung)",
-    "filters": "Filter"
+    "filters": "Filter",
+    "contentTypeAll": "Alle",
+    "contentTypeQuran": "Koran",
+    "contentTypeHadith": "Hadith"
   },
   "algorithm": {
     "pipelineOverview": "Such-Pipeline Übersicht",

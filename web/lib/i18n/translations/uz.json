@@ -58,7 +58,10 @@
     "entityRelationships": "Munosabatlar",
     "sourceText": "Manbalar",
     "graphCoverage": "Bilim grafigi 3 ta sinov surasini qamrab oladi (qisman qamrov)",
-    "filters": "Filtrlar"
+    "filters": "Filtrlar",
+    "contentTypeAll": "Hammasi",
+    "contentTypeQuran": "Qur'on",
+    "contentTypeHadith": "Hadis"
   },
   "algorithm": {
     "pipelineOverview": "Qidiruv quvuri umumiy ko'rinishi",

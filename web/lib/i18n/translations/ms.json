@@ -58,7 +58,10 @@
     "entityRelationships": "Hubungan",
     "sourceText": "Sumber",
     "graphCoverage": "Graf pengetahuan meliputi 3 surah perintis (liputan separa)",
-    "filters": "Penapis"
+    "filters": "Penapis",
+    "contentTypeAll": "Semua",
+    "contentTypeQuran": "Al-Quran",
+    "contentTypeHadith": "Hadis"
   },
   "algorithm": {
     "pipelineOverview": "Gambaran Keseluruhan Saluran Carian",

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { UnifiedSearchResult, UnifiedResult, BookResultData, AyahResultData, HadithResultData } from "@/components/SearchResult";
 import { SearchFiltersPanel } from "@/components/SearchFiltersPanel";
+import { ContentTypeSegment } from "@/components/ContentTypeSegment";
 import { QURAN_TRANSLATIONS } from "@/lib/config/search-defaults";
 import { useAppConfig, type SearchConfig } from "@/lib/config";
 import { useTranslation } from "@/lib/i18n";
@@ -412,6 +413,11 @@ export default function SearchClient() {
     }
   }, [query, fetchQuickResults, setSearchConfig]);
 
+  // Handle content type segmented control change
+  const handleContentTypeChange = useCallback((includeQuran: boolean, includeHadith: boolean) => {
+    handleConfigChange({ ...searchConfig, includeQuran, includeHadith });
+  }, [searchConfig, handleConfigChange]);
+
   // Handle input change - trigger quick search with debounce
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
@@ -575,6 +581,17 @@ export default function SearchClient() {
 
       {/* Results Section */}
       <div className="max-w-3xl mx-auto">
+        {/* Content Type Segmented Control */}
+        {showTabBar && (
+          <div className="flex justify-center mb-4">
+            <ContentTypeSegment
+              includeQuran={searchConfig.includeQuran}
+              includeHadith={searchConfig.includeHadith}
+              onChange={handleContentTypeChange}
+            />
+          </div>
+        )}
+
         {/* Tab Bar */}
         {showTabBar && (
           <div className="flex gap-1 mb-4 border-b border-border/50">

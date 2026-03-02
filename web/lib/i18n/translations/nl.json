@@ -58,7 +58,10 @@
     "entityRelationships": "Relaties",
     "sourceText": "Bronnen",
     "graphCoverage": "Kennisgrafiek dekt 3 piloot-sura's (gedeeltelijke dekking)",
-    "filters": "Filters"
+    "filters": "Filters",
+    "contentTypeAll": "Alles",
+    "contentTypeQuran": "Koran",
+    "contentTypeHadith": "Hadith"
   },
   "algorithm": {
     "pipelineOverview": "Overzicht Zoekpijplijn",

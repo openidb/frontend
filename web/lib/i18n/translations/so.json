@@ -58,7 +58,10 @@
     "entityRelationships": "Xiriirrada",
     "sourceText": "Ilaha",
     "graphCoverage": "Garaafka aqoontu wuxuu daboolaa 3 suuro tijaabo ah (daboolid qayb ah)",
-    "filters": "Shaandhayno"
+    "filters": "Shaandhayno",
+    "contentTypeAll": "Dhammaan",
+    "contentTypeQuran": "Qur'aan",
+    "contentTypeHadith": "Xadiith"
   },
   "algorithm": {
     "pipelineOverview": "Dulmar Guud ee Habka Raadinta",

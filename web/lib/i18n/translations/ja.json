@@ -58,7 +58,10 @@
     "entityRelationships": "関係",
     "sourceText": "出典",
     "graphCoverage": "ナレッジグラフは3つのパイロット章をカバー（部分的カバレッジ）",
-    "filters": "フィルター"
+    "filters": "フィルター",
+    "contentTypeAll": "すべて",
+    "contentTypeQuran": "クルアーン",
+    "contentTypeHadith": "ハディース"
   },
   "algorithm": {
     "pipelineOverview": "検索パイプライン概要",

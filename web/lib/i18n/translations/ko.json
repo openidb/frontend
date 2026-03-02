@@ -58,7 +58,10 @@
     "entityRelationships": "관계",
     "sourceText": "출처",
     "graphCoverage": "지식 그래프는 3개 시범 수라를 포함합니다 (부분 적용)",
-    "filters": "필터"
+    "filters": "필터",
+    "contentTypeAll": "전체",
+    "contentTypeQuran": "꾸란",
+    "contentTypeHadith": "하디스"
   },
   "algorithm": {
     "pipelineOverview": "검색 파이프라인 개요",

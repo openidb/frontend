@@ -58,7 +58,10 @@
     "entityRelationships": "Àwọn ìbáṣepọ̀",
     "sourceText": "Àwọn orísun",
     "graphCoverage": "Gíráàfù ìmọ̀ bo àwọn sura mẹ́ta àpilọ́kọ́ (ìbòsí àpapọ̀)",
-    "filters": "Àwọn àyọ̀kà"
+    "filters": "Àwọn àyọ̀kà",
+    "contentTypeAll": "Gbogbo",
+    "contentTypeQuran": "Kùránì",
+    "contentTypeHadith": "Hadiṣi"
   },
   "algorithm": {
     "pipelineOverview": "Àkópọ̀ pípọ́ọ̀sì wíwá",

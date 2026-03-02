@@ -58,7 +58,10 @@
     "entityRelationships": "تعلقات",
     "sourceText": "مصادر",
     "graphCoverage": "علمی گراف ۳ تجرباتی سورتوں کا احاطہ کرتا ہے (جزوی کوریج)",
-    "filters": "فلٹرز"
+    "filters": "فلٹرز",
+    "contentTypeAll": "سب",
+    "contentTypeQuran": "قرآن",
+    "contentTypeHadith": "حدیث"
   },
   "algorithm": {
     "pipelineOverview": "تلاش پائپ لائن کا جائزہ",

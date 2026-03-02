@@ -58,7 +58,10 @@
     "entityRelationships": "Relacoes",
     "sourceText": "Fontes",
     "graphCoverage": "O grafo cobre 3 suras piloto (cobertura parcial)",
-    "filters": "Filtros"
+    "filters": "Filtros",
+    "contentTypeAll": "Todos",
+    "contentTypeQuran": "Alcorão",
+    "contentTypeHadith": "Hadith"
   },
   "algorithm": {
     "pipelineOverview": "Visao geral do pipeline de busca",

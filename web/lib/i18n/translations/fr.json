@@ -58,7 +58,10 @@
     "entityRelationships": "Relations",
     "sourceText": "Sources",
     "graphCoverage": "Le graphe couvre 3 sourates pilotes (couverture partielle)",
-    "filters": "Filtres"
+    "filters": "Filtres",
+    "contentTypeAll": "Tout",
+    "contentTypeQuran": "Coran",
+    "contentTypeHadith": "Hadith"
   },
   "algorithm": {
     "pipelineOverview": "Apercu du pipeline de recherche",

@@ -58,7 +58,10 @@
     "entityRelationships": "İlişkiler",
     "sourceText": "Kaynaklar",
     "graphCoverage": "Bilgi grafiği 3 pilot sureyi kapsar (kısmi kapsam)",
-    "filters": "Filtreler"
+    "filters": "Filtreler",
+    "contentTypeAll": "Tümü",
+    "contentTypeQuran": "Kuran",
+    "contentTypeHadith": "Hadis"
   },
   "algorithm": {
     "pipelineOverview": "Arama Hattı Genel Bakış",

@@ -58,7 +58,10 @@
     "entityRelationships": "Dangantaka",
     "sourceText": "Majiyoyi",
     "graphCoverage": "Jadawalin ilimi ya rufe surori 3 na gwaji (rufe wani bangare)",
-    "filters": "Tacewa"
+    "filters": "Tacewa",
+    "contentTypeAll": "Duka",
+    "contentTypeQuran": "Alƙur'ani",
+    "contentTypeHadith": "Hadisi"
   },
   "algorithm": {
     "pipelineOverview": "Bayyani na Binciken Pipeline",

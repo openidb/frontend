@@ -58,7 +58,10 @@
     "entityRelationships": "Связи",
     "sourceText": "Источники",
     "graphCoverage": "Граф знаний охватывает 3 пилотные суры (частичное покрытие)",
-    "filters": "Фильтры"
+    "filters": "Фильтры",
+    "contentTypeAll": "Все",
+    "contentTypeQuran": "Коран",
+    "contentTypeHadith": "Хадис"
   },
   "algorithm": {
     "pipelineOverview": "Обзор конвейера поиска",

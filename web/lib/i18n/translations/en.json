@@ -58,7 +58,10 @@
     "entityRelationships": "Relationships",
     "sourceText": "Sources",
     "graphCoverage": "Knowledge graph covers 3 pilot surahs (partial coverage)",
-    "filters": "Filters"
+    "filters": "Filters",
+    "contentTypeAll": "All",
+    "contentTypeQuran": "Quran",
+    "contentTypeHadith": "Hadith"
   },
   "algorithm": {
     "pipelineOverview": "Search Pipeline Overview",

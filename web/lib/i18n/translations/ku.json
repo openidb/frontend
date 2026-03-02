@@ -58,7 +58,10 @@
     "entityRelationships": "Peywendî",
     "sourceText": "Çavkanî",
     "graphCoverage": "Grafikê zanînê 3 sûreyên pîlot digire (şopandina parçeyî)",
-    "filters": "Parzûn"
+    "filters": "Parzûn",
+    "contentTypeAll": "Hemû",
+    "contentTypeQuran": "Qur'an",
+    "contentTypeHadith": "Hedîs"
   },
   "algorithm": {
     "pipelineOverview": "Pêşdîtina Boriya Lêgerînê",

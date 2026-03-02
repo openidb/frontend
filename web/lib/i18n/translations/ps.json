@@ -58,7 +58,10 @@
     "entityRelationships": "اړیکې",
     "sourceText": "سرچینې",
     "graphCoverage": "د پوهې ګراف 3 پیلوټ سورتونه پوښي (جزوي پوښښ)",
-    "filters": "فلټرونه"
+    "filters": "فلټرونه",
+    "contentTypeAll": "ټول",
+    "contentTypeQuran": "قرآن",
+    "contentTypeHadith": "حدیث"
   },
   "algorithm": {
     "pipelineOverview": "د لټون پایپ لاین لنډیز",

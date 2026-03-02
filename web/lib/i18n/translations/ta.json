@@ -58,7 +58,10 @@
     "entityRelationships": "உறவுகள்",
     "sourceText": "ஆதாரங்கள்",
     "graphCoverage": "அறிவு வரைபடம் 3 சோதனை சூராக்களை உள்ளடக்கியது (பகுதி கவரேஜ்)",
-    "filters": "வடிகட்டிகள்"
+    "filters": "வடிகட்டிகள்",
+    "contentTypeAll": "அனைத்தும்",
+    "contentTypeQuran": "குர்ஆன்",
+    "contentTypeHadith": "ஹதீஸ்"
   },
   "algorithm": {
     "pipelineOverview": "தேடல் குழாய் கண்ணோட்டம்",

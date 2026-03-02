@@ -58,7 +58,10 @@
     "entityRelationships": "روابط",
     "sourceText": "منابع",
     "graphCoverage": "نمودار دانش ۳ سوره آزمایشی را پوشش می‌دهد (پوشش جزئی)",
-    "filters": "فیلترها"
+    "filters": "فیلترها",
+    "contentTypeAll": "همه",
+    "contentTypeQuran": "قرآن",
+    "contentTypeHadith": "حدیث"
   },
   "algorithm": {
     "pipelineOverview": "مرور کلی خط لوله جستجو",
