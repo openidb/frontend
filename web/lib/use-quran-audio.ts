@@ -579,6 +579,8 @@ export function useQuranAudio(
             navigatingRef.current = true;
             navigateRef.current(ss.ayah);
           }
+          // Update media center title for new ayah (will be picked up after navigation too)
+          setMediaSessionMetadataNowRef.current();
         }
         return;
       }
@@ -947,6 +949,23 @@ export function useQuranAudio(
     });
   }, [router, surahNumber, targetAyah, activate, stopAllSources, stopScheduleTimer, revokeElementObjectUrl]);
 
+  // Helper: set media session metadata imperatively (called from play/skip/etc.)
+  const setMediaSessionMetadataNow = useCallback(() => {
+    if (!("mediaSession" in navigator)) return;
+    const nameEn = surahNameEnglish || `Surah ${surahNumber}`;
+    const surahDisplay = surahNameArabic ? `${nameEn} (${surahNameArabic})` : nameEn;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: `${surahDisplay} — Ayah ${targetAyah}`,
+      artist: "Al-Afasy",
+      album: "Quran",
+    });
+    navigator.mediaSession.playbackState = "playing";
+    try { navigator.mediaSession.setPositionState(); } catch {}
+  }, [surahNumber, targetAyah, surahNameEnglish, surahNameArabic]);
+
+  const setMediaSessionMetadataNowRef = useRef(setMediaSessionMetadataNow);
+  setMediaSessionMetadataNowRef.current = setMediaSessionMetadataNow;
+
   const play = useCallback(() => {
     isPlayingRef.current = true;
     setIsPlaying(true);
@@ -974,12 +993,24 @@ export function useQuranAudio(
         el.srcObject = dest.stream;
         el.volume = 1;
         if (el.muted) el.muted = false;
+        // Set metadata BEFORE el.play() so it's ready when audio session activates
+        setMediaSessionMetadataNow();
         // Synchronous el.play() call in user gesture context
         el.play().then(() => {
           setDirectOutputEnabled(false);
+          // Re-set metadata AFTER play succeeds — some browsers only register it then
+          setMediaSessionMetadataNowRef.current();
         }).catch(() => {
-          // Bridge failed — fall back to direct output (audio still works, no media center)
-          setDirectOutputEnabled(true);
+          // Retry once after short delay (voice app pattern)
+          setTimeout(() => {
+            el.play().then(() => {
+              setDirectOutputEnabled(false);
+              setMediaSessionMetadataNowRef.current();
+            }).catch(() => {
+              // Bridge failed — fall back to direct output (audio still works, no media center)
+              setDirectOutputEnabled(true);
+            });
+          }, 100);
         });
       }
 
@@ -991,7 +1022,7 @@ export function useQuranAudio(
       // Fallback: element mode
       playViaElement(audioUrl(surahNumber, targetAyah), targetAyah, surahNumber);
     }
-  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement]);
+  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
 
   const pause = useCallback(() => {
     stopAllSources();
