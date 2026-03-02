@@ -10,10 +10,9 @@ interface ContentTypeSegmentProps {
   includeQuran: boolean;
   includeHadith: boolean;
   onChange: (includeQuran: boolean, includeHadith: boolean) => void;
-  visible: boolean;
 }
 
-export function ContentTypeSegment({ includeQuran, includeHadith, onChange, visible }: ContentTypeSegmentProps) {
+export function ContentTypeSegment({ includeQuran, includeHadith, onChange }: ContentTypeSegmentProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Map<ContentType, HTMLButtonElement>>(new Map());
@@ -66,13 +65,7 @@ export function ContentTypeSegment({ includeQuran, includeHadith, onChange, visi
   ];
 
   return (
-    <motion.div
-      className="px-3 pb-2 pt-0.5"
-      initial={false}
-      animate={{ opacity: visible ? 1 : 0 }}
-      transition={{ duration: 0.15 }}
-      style={{ pointerEvents: visible ? "auto" : "none" }}
-    >
+    <div className="px-3 pb-2 pt-0.5">
       <div
         ref={containerRef}
         role="radiogroup"
@@ -93,8 +86,6 @@ export function ContentTypeSegment({ includeQuran, includeHadith, onChange, visi
             ref={(el) => { if (el) buttonRefs.current.set(value, el); }}
             role="radio"
             aria-checked={active === value}
-            aria-hidden={!visible}
-            tabIndex={visible ? 0 : -1}
             onClick={() => handleClick(value)}
             className={`relative z-10 px-3.5 py-1 text-xs font-medium rounded-md transition-colors duration-150 ${
               active === value
@@ -106,6 +97,6 @@ export function ContentTypeSegment({ includeQuran, includeHadith, onChange, visi
           </button>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

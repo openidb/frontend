@@ -569,7 +569,6 @@ export default function SearchClient() {
               includeQuran={searchConfig.includeQuran}
               includeHadith={searchConfig.includeHadith}
               onChange={handleContentTypeChange}
-              visible={showTabBar}
             />
           </div>
           {voiceError && (
