@@ -838,6 +838,10 @@ export function useQuranAudio(
       title: `${surahDisplay} — Ayah ${targetAyah}`,
       artist: "Al-Afasy",
       album: "Quran",
+      artwork: [
+        { src: "/favicon-128.png", sizes: "128x128", type: "image/png" },
+        { src: "/icon.png", sizes: "512x512", type: "image/png" },
+      ],
     });
     try { navigator.mediaSession.setPositionState(); } catch {}
   }, [isAudioMode, surahNumber, targetAyah, surahNameEnglish, surahNameArabic]);
@@ -971,6 +975,10 @@ export function useQuranAudio(
       title: `${surahDisplay} — Ayah ${targetAyah}`,
       artist: "Al-Afasy",
       album: "Quran",
+      artwork: [
+        { src: "/favicon-128.png", sizes: "128x128", type: "image/png" },
+        { src: "/icon.png", sizes: "512x512", type: "image/png" },
+      ],
     });
     navigator.mediaSession.playbackState = "playing";
     try { navigator.mediaSession.setPositionState(); } catch {}
