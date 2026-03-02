@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n";
 
 type ContentType = "all" | "quran" | "hadith";
@@ -66,50 +66,46 @@ export function ContentTypeSegment({ includeQuran, includeHadith, onChange, visi
   ];
 
   return (
-    <AnimatePresence initial={false}>
-      {visible && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 35 }}
-          className="overflow-hidden"
-        >
-          <div className="flex justify-center px-3 pb-2 pt-0.5">
-            <div
-              ref={containerRef}
-              role="radiogroup"
-              aria-label={t("searchConfig.contentTypes")}
-              className="relative inline-flex items-center bg-muted/80 p-0.5 rounded-full"
-            >
-              {indicator && (
-                <motion.div
-                  className="absolute top-0.5 bottom-0.5 rounded-full bg-brand"
-                  initial={false}
-                  animate={{ left: indicator.left, width: indicator.width }}
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                />
-              )}
-              {options.map(({ value, label }) => (
-                <button
-                  key={value}
-                  ref={(el) => { if (el) buttonRefs.current.set(value, el); }}
-                  role="radio"
-                  aria-checked={active === value}
-                  onClick={() => handleClick(value)}
-                  className={`relative z-10 px-3.5 py-1 text-xs font-medium rounded-full transition-colors duration-150 ${
-                    active === value
-                      ? "text-white"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div
+      className="px-3 pb-2 pt-0.5"
+      initial={false}
+      animate={{ opacity: visible ? 1 : 0 }}
+      transition={{ duration: 0.15 }}
+      style={{ pointerEvents: visible ? "auto" : "none" }}
+    >
+      <div
+        ref={containerRef}
+        role="radiogroup"
+        aria-label={t("searchConfig.contentTypes")}
+        className="relative inline-flex items-center bg-muted/80 p-0.5 rounded-lg"
+      >
+        {indicator && (
+          <motion.div
+            className="absolute top-0.5 bottom-0.5 rounded-md bg-brand"
+            initial={false}
+            animate={{ left: indicator.left, width: indicator.width }}
+            transition={{ type: "spring", stiffness: 500, damping: 35 }}
+          />
+        )}
+        {options.map(({ value, label }) => (
+          <button
+            key={value}
+            ref={(el) => { if (el) buttonRefs.current.set(value, el); }}
+            role="radio"
+            aria-checked={active === value}
+            aria-hidden={!visible}
+            tabIndex={visible ? 0 : -1}
+            onClick={() => handleClick(value)}
+            className={`relative z-10 px-3.5 py-1 text-xs font-medium rounded-md transition-colors duration-150 ${
+              active === value
+                ? "text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </motion.div>
   );
 }
