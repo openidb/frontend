@@ -515,7 +515,7 @@ export default function SearchClient() {
   const showTabBar = hasSearched && (quickResults.length > 0 || deepSearchStatus !== "idle" || activeTab === "filters");
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 pb-32">
+    <div className={`p-4 sm:p-6 md:p-8${hasSearched ? " pb-32" : ""}`}>
       {/* Header + Search Bar wrapper — centers vertically in hero state, collapses to top otherwise */}
       <div
         className={
