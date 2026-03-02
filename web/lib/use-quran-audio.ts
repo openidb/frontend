@@ -26,12 +26,14 @@ export interface UseQuranAudioReturn {
 }
 
 const DEFAULT_RECITER = "tarteel/alafasy";
-const PRELOAD_AHEAD = 3;
+const PRELOAD_AHEAD = 5;
 const PRELOAD_BEHIND = 1;
 const MEDIA_SESSION_DEBOUNCE_MS = 300;
 const DECODE_TIMEOUT_MS = 10000;
 const DECODE_CONCURRENT = 3;
 const CACHE_MAX = 96;
+const SCHEDULE_INTERVAL_MS = 50;
+const SCHEDULE_LOOKAHEAD_SECS = 2;
 
 function audioUrl(surah: number, ayah: number): string {
   return `/api/quran/audio/${surah}/${ayah}?reciter=${encodeURIComponent(DEFAULT_RECITER)}`;
@@ -70,7 +72,7 @@ function getActivationWavUrl(): string {
   return ACTIVATION_WAV_URL;
 }
 
-// --- LRU Buffer Cache (copied from voice app) ---
+// --- LRU Buffer Cache ---
 
 class LRUBufferCache {
   private map = new Map<string, AudioBuffer>();
@@ -134,6 +136,14 @@ function collectRecitedWordPositions(
   return Array.from(wps).sort((a, b) => a - b);
 }
 
+// --- Scheduled source tracking (voice app pattern) ---
+interface ScheduledSource {
+  source: AudioBufferSourceNode;
+  startTime: number;
+  duration: number;
+  ayah: number;
+}
+
 // --- Hook ---
 
 export function useQuranAudio(
@@ -158,7 +168,7 @@ export function useQuranAudio(
   const prevHighlightRef = useRef<number | null>(null);
   const navigatingRef = useRef(false);
 
-  // --- Audio graph refs (copied from voice app: useRef, not module-level) ---
+  // --- Audio graph refs (voice app: useRef, not module-level) ---
   const audioCtxRef = useRef<AudioContext | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
   const mediaStreamDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
@@ -169,14 +179,14 @@ export function useQuranAudio(
   const audioActivatedRef = useRef(false);
   const elementObjectUrlRef = useRef<string | null>(null);
 
-  // Active playback state
-  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const activeStartTimeRef = useRef(0);
-  const activeAyahRef = useRef<number | null>(null);
-  const activeSurahRef = useRef<number | null>(null);
+  // Scheduling state (voice app pattern)
+  const scheduledSourcesRef = useRef<ScheduledSource[]>([]);
+  const scheduledEndRef = useRef(0);
+  const nextScheduleAyahRef = useRef(0); // next ayah number to schedule
+  const scheduleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPlayingRef = useRef(false);
-  // Whether we're using <audio> element directly (fallback) vs Web Audio API
   const elementModeRef = useRef(false);
+  const currentPlayingAyahRef = useRef(0); // ayah currently audible
 
   const recitedPositions = useMemo(
     () => collectRecitedWordPositions(mushafPages, surahNumber, targetAyah),
@@ -186,7 +196,7 @@ export function useQuranAudio(
   recitedPositionsRef.current = recitedPositions;
 
   // ====================================================================
-  // Audio graph management — copied exactly from voice app
+  // Audio graph management — copied from voice app
   // ====================================================================
 
   const ensureAudioGraph = useCallback((): AudioContext | null => {
@@ -248,7 +258,7 @@ export function useQuranAudio(
   }, [ensureAudioGraph]);
 
   // ====================================================================
-  // Bridge pattern — copied exactly from voice app
+  // Bridge pattern — copied from voice app
   // ====================================================================
 
   const ensureMediaElementBridge = useCallback((attemptPlay: boolean, force = false) => {
@@ -265,13 +275,12 @@ export function useQuranAudio(
     el.play().then(() => {
       setDirectOutputEnabled(false);
     }).catch(() => {
-      // Bridge failed — ensure direct output as fallback
       setDirectOutputEnabled(true);
     });
   }, [setDirectOutputEnabled]);
 
   // ====================================================================
-  // Activate — copied exactly from voice app
+  // Activate — copied from voice app
   // ====================================================================
 
   const activate = useCallback(() => {
@@ -367,21 +376,25 @@ export function useQuranAudio(
   // Source management
   // ====================================================================
 
-  const stopActiveSource = useCallback(() => {
-    const source = activeSourceRef.current;
-    if (source) {
-      try { source.onended = null; source.stop(); } catch {}
-      try { source.disconnect(); } catch {}
-      activeSourceRef.current = null;
+  const stopAllSources = useCallback(() => {
+    for (const ss of scheduledSourcesRef.current) {
+      try { ss.source.onended = null; ss.source.stop(); ss.source.disconnect(); } catch {}
     }
-    activeAyahRef.current = null;
-    activeSurahRef.current = null;
+    scheduledSourcesRef.current = [];
+    scheduledEndRef.current = 0;
   }, []);
 
   const revokeElementObjectUrl = useCallback(() => {
     if (elementObjectUrlRef.current) {
       URL.revokeObjectURL(elementObjectUrlRef.current);
       elementObjectUrlRef.current = null;
+    }
+  }, []);
+
+  const stopScheduleTimer = useCallback(() => {
+    if (scheduleTimerRef.current) {
+      clearInterval(scheduleTimerRef.current);
+      scheduleTimerRef.current = null;
     }
   }, []);
 
@@ -412,7 +425,7 @@ export function useQuranAudio(
   // Prefetch adjacent ayah audio
   useEffect(() => {
     if (!isAudioMode || !surahNumber) return;
-    for (let i = 1; i <= PRELOAD_AHEAD; i++) {
+    for (let i = 0; i <= PRELOAD_AHEAD; i++) {
       const a = targetAyah + i;
       if (a <= totalAyahs) prefetchBuffer(audioUrl(surahNumber, a));
     }
@@ -444,9 +457,134 @@ export function useQuranAudio(
   useEffect(() => { navigatingRef.current = false; }, [targetAyah]);
 
   // ====================================================================
-  // Play ayah via <audio> element directly (element mode — from voice app)
-  // This is the MOST RELIABLE path on all platforms.
-  // Web Audio scheduling is used only when element mode is not active.
+  // Web Audio scheduling — gapless playback (voice app pattern)
+  //
+  // Buffers are pre-scheduled on the AudioContext timeline so each ayah
+  // starts the exact sample the previous one ends. The <audio> element
+  // bridge pipes this to the OS media session for lock screen controls.
+  // ====================================================================
+
+  const scheduleFromCacheRef = useRef<() => void>(() => {});
+
+  const scheduleFromCache = useCallback(() => {
+    let ctx = ensureAudioGraph();
+    if (!ctx || !isPlayingRef.current || elementModeRef.current) return;
+    if ((ctx.state as string) === "interrupted") {
+      ctx = hardResetAudioGraph();
+      if (!ctx) return;
+    }
+    if (ctx.state !== "running") {
+      ctx.resume().catch(() => {});
+    }
+
+    const gain = gainNodeRef.current;
+    if (!gain) return;
+
+    const surah = surahRef.current;
+    const total = totalAyahsRef.current;
+    let nextAyah = nextScheduleAyahRef.current;
+
+    while (nextAyah <= total) {
+      // Don't schedule too far ahead
+      if (scheduledEndRef.current - ctx.currentTime > SCHEDULE_LOOKAHEAD_SECS) break;
+
+      const url = audioUrl(surah, nextAyah);
+      if (bufferCache.isFailed(url)) { nextAyah++; nextScheduleAyahRef.current = nextAyah; continue; }
+
+      const buffer = bufferCache.get(url);
+      if (!buffer) {
+        // Buffer not decoded yet — fetch it and re-schedule when ready
+        if (!inflightFetches.has(url)) {
+          fetchBuffer(url).then(() => {
+            if (isPlayingRef.current && !elementModeRef.current) scheduleFromCacheRef.current();
+          });
+        }
+        break;
+      }
+
+      const startTime = Math.max(ctx.currentTime + 0.005, scheduledEndRef.current);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(gain);
+      try {
+        source.start(startTime);
+      } catch {
+        try { source.disconnect(); } catch {}
+        nextAyah++;
+        nextScheduleAyahRef.current = nextAyah;
+        continue;
+      }
+
+      const ayahNum = nextAyah;
+      const ss: ScheduledSource = {
+        source,
+        startTime,
+        duration: buffer.duration,
+        ayah: ayahNum,
+      };
+      scheduledSourcesRef.current.push(ss);
+      scheduledEndRef.current = startTime + buffer.duration;
+      nextAyah++;
+      nextScheduleAyahRef.current = nextAyah;
+
+      source.onended = () => {
+        source.disconnect();
+        const idx = scheduledSourcesRef.current.indexOf(ss);
+        if (idx !== -1) scheduledSourcesRef.current.splice(idx, 1);
+
+        if (!isPlayingRef.current) return;
+
+        // Update current playing ayah
+        updatePlayingAyah();
+
+        // Re-schedule more buffers
+        scheduleFromCacheRef.current();
+
+        // Check if playback is complete
+        if (nextScheduleAyahRef.current > totalAyahsRef.current &&
+            scheduledSourcesRef.current.length === 0) {
+          isPlayingRef.current = false;
+          setIsPlaying(false);
+          setHighlightedPosition(null);
+          stopScheduleTimer();
+          const el = audioRef.current;
+          if (el) { el.srcObject = null; el.pause(); }
+        }
+      };
+    }
+
+    // Also update current playing ayah on each schedule tick
+    updatePlayingAyah();
+
+    // Ensure bridge stays alive
+    ensureMediaElementBridge(true);
+  }, [ensureAudioGraph, hardResetAudioGraph, fetchBuffer, stopScheduleTimer, ensureMediaElementBridge]);
+
+  scheduleFromCacheRef.current = scheduleFromCache;
+
+  // Determine which ayah is currently audible based on AudioContext time
+  const updatePlayingAyah = useCallback(() => {
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    for (const ss of scheduledSourcesRef.current) {
+      if (now >= ss.startTime && now < ss.startTime + ss.duration) {
+        if (currentPlayingAyahRef.current !== ss.ayah) {
+          currentPlayingAyahRef.current = ss.ayah;
+          // Navigate to this ayah if different from current page
+          if (ss.ayah !== targetAyahRef.current) {
+            navigatingRef.current = true;
+            navigateRef.current(ss.ayah);
+          }
+        }
+        return;
+      }
+    }
+  }, []);
+
+  // ====================================================================
+  // Element mode fallback (voice app pattern: playNextElement)
+  // Used only when Web Audio scheduling fails.
   // ====================================================================
 
   const playViaElementRef = useRef<(url: string, ayah: number, surah: number) => void>(() => {});
@@ -456,35 +594,27 @@ export function useQuranAudio(
     if (!el) return;
 
     elementModeRef.current = true;
-    stopActiveSource(); // stop any Web Audio source
+    stopAllSources();
+    stopScheduleTimer();
 
-    // 1. Clear old event handlers first (voice app pattern: stopElementMode)
+    // Clear old handlers, pause, clear bridge (voice app stopElementMode pattern)
     el.onended = null;
     el.onerror = null;
     el.onplaying = null;
-
-    // 2. Clear bridge stream BEFORE setting src (critical ordering!)
     el.pause();
     el.srcObject = null;
 
-    // 3. Set new source — always use direct URL (browser HTTP cache handles repeats;
-    //    blob URLs were blocked by CSP media-src which only had 'self')
     el.loop = false;
     revokeElementObjectUrl();
     el.src = url;
     el.volume = 1;
     if (el.muted) el.muted = false;
 
-    activeAyahRef.current = ayah;
-    activeSurahRef.current = surah;
-    activeStartTimeRef.current = 0;
+    currentPlayingAyahRef.current = ayah;
     isPlayingRef.current = true;
     setIsPlaying(true);
 
-    // 4. Set event handlers (voice app pattern: use stable ref for callbacks)
-    el.onplaying = () => {
-      activeStartTimeRef.current = performance.now() / 1000;
-    };
+    el.onplaying = () => {};
     el.onended = () => playViaElementRef.current(
       audioUrl(surahRef.current, targetAyahRef.current + 1),
       targetAyahRef.current + 1,
@@ -499,7 +629,6 @@ export function useQuranAudio(
       );
     };
 
-    // 5. Play
     el.play().catch(() => {
       setTimeout(() => {
         el.play().catch(() => {
@@ -508,11 +637,9 @@ export function useQuranAudio(
         });
       }, 100);
     });
-  }, [stopActiveSource, revokeElementObjectUrl]);
+  }, [stopAllSources, stopScheduleTimer, revokeElementObjectUrl]);
 
-  // Keep ref in sync (voice app pattern: playNextElementRef.current = playNextElement)
   playViaElementRef.current = (url: string, ayah: number, surah: number) => {
-    // Guard: don't advance past end of surah
     const total = totalAyahsRef.current;
     const curAyah = targetAyahRef.current;
     if (curAyah >= total) {
@@ -530,80 +657,6 @@ export function useQuranAudio(
   };
 
   // ====================================================================
-  // Play ayah via Web Audio API (for word highlighting precision)
-  // Falls back to element mode if bridge fails.
-  // ====================================================================
-
-  const playViaWebAudio = useCallback((buffer: AudioBuffer, ayah: number, surah: number) => {
-    const ctx = audioCtxRef.current;
-    const gain = gainNodeRef.current;
-    if (!ctx || !gain || ctx.state === "closed") {
-      // Fall back to element mode
-      playViaElement(audioUrl(surah, ayah), ayah, surah);
-      return;
-    }
-
-    elementModeRef.current = false;
-    stopActiveSource();
-
-    // Reset gain
-    gain.gain.cancelScheduledValues(ctx.currentTime);
-    gain.gain.setValueAtTime(1, ctx.currentTime);
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(gain);
-    source.start(ctx.currentTime);
-
-    activeSourceRef.current = source;
-    activeStartTimeRef.current = ctx.currentTime;
-    activeAyahRef.current = ayah;
-    activeSurahRef.current = surah;
-    isPlayingRef.current = true;
-    setIsPlaying(true);
-
-    source.onended = () => {
-      source.disconnect();
-      if (activeSourceRef.current !== source) return;
-      activeSourceRef.current = null;
-      if (navigatingRef.current) return;
-      const curAyah = targetAyahRef.current;
-      const total = totalAyahsRef.current;
-      if (curAyah < total) {
-        navigatingRef.current = true;
-        // Gapless: start next immediately if cached
-        const nextUrl = audioUrl(surah, curAyah + 1);
-        const nextBuf = bufferCache.get(nextUrl);
-        if (nextBuf && ctx.state === "running") {
-          const nextSource = ctx.createBufferSource();
-          nextSource.buffer = nextBuf;
-          nextSource.connect(gain);
-          nextSource.start(ctx.currentTime);
-          activeSourceRef.current = nextSource;
-          activeStartTimeRef.current = ctx.currentTime;
-          activeAyahRef.current = curAyah + 1;
-          activeSurahRef.current = surah;
-          nextSource.onended = () => {
-            nextSource.disconnect();
-            if (activeSourceRef.current !== nextSource) return;
-            activeSourceRef.current = null;
-          };
-        } else {
-          // No cached buffer — fall back to element mode for next ayah
-          playViaElement(nextUrl, curAyah + 1, surah);
-        }
-        navigateRef.current(curAyah + 1);
-      } else {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-        setHighlightedPosition(null);
-        const el = audioRef.current;
-        if (el) { el.srcObject = null; el.pause(); }
-      }
-    };
-  }, [stopActiveSource, playViaElement]);
-
-  // ====================================================================
   // Skip helpers
   // ====================================================================
 
@@ -611,21 +664,63 @@ export function useQuranAudio(
     if (targetAyah >= totalAyahs || navigatingRef.current) return;
     navigatingRef.current = true;
     const wasPlaying = isPlayingRef.current;
+
+    // Stop current scheduling
+    stopAllSources();
+    stopScheduleTimer();
+
     if (wasPlaying) {
-      playViaElement(audioUrl(surahNumber, targetAyah + 1), targetAyah + 1, surahNumber);
+      const nextAyah = targetAyah + 1;
+      nextScheduleAyahRef.current = nextAyah;
+      scheduledEndRef.current = 0;
+      currentPlayingAyahRef.current = nextAyah;
+
+      if (!elementModeRef.current) {
+        // Restart Web Audio scheduling from new ayah
+        const ctx = ensureRunningAudioGraph();
+        if (ctx) {
+          scheduleFromCache();
+          scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
+          ensureMediaElementBridge(true, true);
+        } else {
+          playViaElement(audioUrl(surahNumber, nextAyah), nextAyah, surahNumber);
+        }
+      } else {
+        playViaElement(audioUrl(surahNumber, nextAyah), nextAyah, surahNumber);
+      }
     }
     navigateToAyah(targetAyah + 1);
-  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber, playViaElement]);
+  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, scheduleFromCache, ensureMediaElementBridge, playViaElement]);
 
   const skipBack = useCallback(() => {
     if (targetAyah <= 1 || navigatingRef.current) return;
     navigatingRef.current = true;
     const wasPlaying = isPlayingRef.current;
+
+    stopAllSources();
+    stopScheduleTimer();
+
     if (wasPlaying) {
-      playViaElement(audioUrl(surahNumber, targetAyah - 1), targetAyah - 1, surahNumber);
+      const prevAyah = targetAyah - 1;
+      nextScheduleAyahRef.current = prevAyah;
+      scheduledEndRef.current = 0;
+      currentPlayingAyahRef.current = prevAyah;
+
+      if (!elementModeRef.current) {
+        const ctx = ensureRunningAudioGraph();
+        if (ctx) {
+          scheduleFromCache();
+          scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
+          ensureMediaElementBridge(true, true);
+        } else {
+          playViaElement(audioUrl(surahNumber, prevAyah), prevAyah, surahNumber);
+        }
+      } else {
+        playViaElement(audioUrl(surahNumber, prevAyah), prevAyah, surahNumber);
+      }
     }
     navigateToAyah(targetAyah - 1);
-  }, [targetAyah, navigateToAyah, surahNumber, playViaElement]);
+  }, [targetAyah, navigateToAyah, surahNumber, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, scheduleFromCache, ensureMediaElementBridge, playViaElement]);
 
   const skipForwardRef = useRef(skipForward);
   skipForwardRef.current = skipForward;
@@ -633,22 +728,14 @@ export function useQuranAudio(
   skipBackRef.current = skipBack;
 
   // ====================================================================
-  // Audio lifecycle: reconnect to gapless source or prefetch
+  // Audio lifecycle
   // ====================================================================
 
   useEffect(() => {
     if (!isAudioMode) return;
-
-    // Check if element mode is already playing this ayah (from skip or auto-advance)
-    if (elementModeRef.current && activeAyahRef.current === targetAyah) {
-      isPlayingRef.current = true;
-      setIsPlaying(true);
-      return;
-    }
-
     // Prefetch current ayah's audio
     prefetchBuffer(audioUrl(surahNumber, targetAyah));
-  }, [isAudioMode, surahNumber, targetAyah, totalAyahs, prefetchBuffer]);
+  }, [isAudioMode, surahNumber, targetAyah, prefetchBuffer]);
 
   // ====================================================================
   // rAF word highlighting
@@ -670,16 +757,21 @@ export function useQuranAudio(
       let timeMs = 0;
 
       if (elementModeRef.current) {
-        // Element mode: use audio element currentTime
         const el = audioRef.current;
-        if (el && !el.paused && activeAyahRef.current === targetAyah) {
+        if (el && !el.paused && currentPlayingAyahRef.current === targetAyah) {
           timeMs = el.currentTime * 1000;
         }
       } else {
-        // Web Audio mode: use AudioContext timing
+        // Web Audio mode: find current source for this ayah
         const ctx = audioCtxRef.current;
-        if (ctx && activeAyahRef.current === targetAyah) {
-          timeMs = (ctx.currentTime - activeStartTimeRef.current) * 1000;
+        if (ctx && currentPlayingAyahRef.current === targetAyah) {
+          const now = ctx.currentTime;
+          for (const ss of scheduledSourcesRef.current) {
+            if (ss.ayah === targetAyah && now >= ss.startTime && now < ss.startTime + ss.duration) {
+              timeMs = (now - ss.startTime) * 1000;
+              break;
+            }
+          }
         }
       }
 
@@ -723,7 +815,7 @@ export function useQuranAudio(
   useEffect(() => () => cancelAnimationFrame(rafIdRef.current), []);
 
   // ====================================================================
-  // MediaSession: lock screen controls
+  // MediaSession: lock screen controls (voice app pattern)
   // ====================================================================
 
   useEffect(() => {
@@ -734,7 +826,6 @@ export function useQuranAudio(
       }
       return;
     }
-    // Voice app pattern: "English (Arabic) — Ayah N"
     const nameEn = surahNameEnglish || `Surah ${surahNumber}`;
     const surahDisplay = surahNameArabic ? `${nameEn} (${surahNameArabic})` : nameEn;
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -742,7 +833,6 @@ export function useQuranAudio(
       artist: "Al-Afasy",
       album: "Quran",
     });
-    // Clear position state — prevents iOS from showing seek buttons instead of skip
     try { navigator.mediaSession.setPositionState(); } catch {}
   }, [isAudioMode, surahNumber, targetAyah, surahNameEnglish, surahNameArabic]);
 
@@ -763,26 +853,40 @@ export function useQuranAudio(
     };
 
     ms.setActionHandler("play", debounced(() => {
-      const el = audioRef.current;
-      // If element is paused with a src, just resume
-      if (el && el.paused && el.currentSrc && elementModeRef.current) {
-        el.play().catch(() => {});
-        isPlayingRef.current = true;
-        setIsPlaying(true);
+      if (isPlayingRef.current) return;
+      // Resume: restart scheduling from current ayah
+      const ayah = targetAyahRef.current;
+      const surah = surahRef.current;
+
+      isPlayingRef.current = true;
+      setIsPlaying(true);
+
+      const ctx = ensureRunningAudioGraph();
+      if (ctx) {
+        elementModeRef.current = false;
+        nextScheduleAyahRef.current = ayah;
+        scheduledEndRef.current = 0;
+        currentPlayingAyahRef.current = ayah;
+        scheduleFromCacheRef.current();
+        if (!scheduleTimerRef.current) {
+          scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
+        }
+        ensureMediaElementBridge(true, true);
       } else {
-        // Start fresh
-        const url = audioUrl(surahRef.current, targetAyahRef.current);
-        playViaElement(url, targetAyahRef.current, surahRef.current);
+        playViaElement(audioUrl(surah, ayah), ayah, surah);
       }
     }));
     ms.setActionHandler("pause", debounced(() => {
+      stopAllSources();
+      stopScheduleTimer();
       const el = audioRef.current;
-      if (el) el.pause();
+      if (el && elementModeRef.current) el.pause();
       isPlayingRef.current = false;
       setIsPlaying(false);
     }));
-    // iOS fires "stop" on background — treat as pause (voice app pattern)
     ms.setActionHandler("stop", debounced(() => {
+      stopAllSources();
+      stopScheduleTimer();
       const el = audioRef.current;
       if (el) el.pause();
       isPlayingRef.current = false;
@@ -790,10 +894,9 @@ export function useQuranAudio(
     }));
     ms.setActionHandler("nexttrack", debounced(() => skipForwardRef.current()));
     ms.setActionHandler("previoustrack", debounced(() => skipBackRef.current()));
+    // null seek handlers → iOS shows skip buttons instead of 10s seek
     ms.setActionHandler("seekforward", null);
     ms.setActionHandler("seekbackward", null);
-
-    // Clear position state — having position/duration makes iOS show seek UI
     try { ms.setPositionState(); } catch {}
 
     return () => {
@@ -805,7 +908,7 @@ export function useQuranAudio(
       ms.setActionHandler("seekforward", null);
       ms.setActionHandler("seekbackward", null);
     };
-  }, [isAudioMode, stopActiveSource, playViaElement]);
+  }, [isAudioMode, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, ensureMediaElementBridge, playViaElement]);
 
   // ====================================================================
   // User actions
@@ -814,7 +917,8 @@ export function useQuranAudio(
   const toggleAudioMode = useCallback(() => {
     setIsAudioMode((prev) => {
       if (prev) {
-        stopActiveSource();
+        stopAllSources();
+        stopScheduleTimer();
         isPlayingRef.current = false;
         setIsPlaying(false);
         setHighlightedPosition(null);
@@ -829,35 +933,65 @@ export function useQuranAudio(
         revokeElementObjectUrl();
         router.replace(`/quran/${surahNumber}/${targetAyah}`);
       } else {
-        // Activate in user gesture context (iOS unlock)
         activate();
         router.replace(`/quran/${surahNumber}/${targetAyah}?audio=1`);
       }
       return !prev;
     });
-  }, [router, surahNumber, targetAyah, activate, stopActiveSource, revokeElementObjectUrl]);
+  }, [router, surahNumber, targetAyah, activate, stopAllSources, stopScheduleTimer, revokeElementObjectUrl]);
 
   const play = useCallback(() => {
-    // Use element mode (el.src = url) as the primary playback path.
-    // This is what triggers iOS media center / lock screen controls.
-    // Word highlighting works via el.currentTime.
-    const url = audioUrl(surahNumber, targetAyah);
-    playViaElement(url, targetAyah, surahNumber);
-  }, [surahNumber, targetAyah, playViaElement]);
+    isPlayingRef.current = true;
+    setIsPlaying(true);
+
+    // Try Web Audio scheduling (gapless) as primary path
+    const ctx = ensureRunningAudioGraph();
+    if (ctx) {
+      elementModeRef.current = false;
+      nextScheduleAyahRef.current = targetAyah;
+      scheduledEndRef.current = 0;
+      currentPlayingAyahRef.current = targetAyah;
+
+      // Reset gain
+      const gain = gainNodeRef.current;
+      if (gain) {
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(1, ctx.currentTime);
+      }
+
+      // Start scheduling
+      scheduleFromCache();
+      stopScheduleTimer();
+      scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
+
+      // Bridge for media session
+      ensureMediaElementBridge(true, true);
+    } else {
+      // Fallback: element mode
+      playViaElement(audioUrl(surahNumber, targetAyah), targetAyah, surahNumber);
+    }
+  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, ensureMediaElementBridge, playViaElement]);
 
   const pause = useCallback(() => {
+    stopAllSources();
+    stopScheduleTimer();
     const el = audioRef.current;
-    if (el) el.pause();
-    if (!elementModeRef.current) stopActiveSource();
+    if (el) {
+      if (elementModeRef.current) el.pause();
+      else { el.srcObject = null; el.pause(); }
+    }
     isPlayingRef.current = false;
     setIsPlaying(false);
-  }, [stopActiveSource]);
+  }, [stopAllSources, stopScheduleTimer]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      const source = activeSourceRef.current;
-      if (source) { try { source.stop(); } catch {} }
+      for (const ss of scheduledSourcesRef.current) {
+        try { ss.source.stop(); } catch {}
+      }
+      scheduledSourcesRef.current = [];
+      if (scheduleTimerRef.current) clearInterval(scheduleTimerRef.current);
       cancelAnimationFrame(rafIdRef.current);
       const el = audioRef.current;
       if (el) { el.onended = null; el.srcObject = null; el.pause(); }
