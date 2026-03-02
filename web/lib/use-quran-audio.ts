@@ -1040,16 +1040,13 @@ export function useQuranAudio(
     el.onended = () => {
       el.onended = null;
       el.onerror = null;
-      // Switch to MediaStream bridge
+      // Switch to MediaStream bridge for gapless Web Audio playback.
+      // Navigation to the next ayah is handled by updatePlayingAyah()
+      // when it detects the next buffer is actually audible.
       el.srcObject = dest.stream;
       el.play().catch(() => {
         setDirectOutputEnabled(true);
       });
-      // Navigate to next ayah
-      if (isPlayingRef.current && targetAyahRef.current < totalAyahsRef.current) {
-        navigatingRef.current = true;
-        navigateRef.current(targetAyahRef.current + 1);
-      }
     };
 
     // Schedule ayah+1 onwards via Web Audio (ayah 1 plays through element)
