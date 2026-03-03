@@ -435,8 +435,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       .catch(() => {});
   }, [config.bookTitleDisplay, bookMetadata.id, locale, translatedTitle]);
 
-  // Track "open" once on mount
+  // Reset parent scroll and track "open" once on mount
   useEffect(() => {
+    // Scroll parent <main> to top to prevent residual scroll offset
+    // from previous page affecting fixed-position reader layout
+    const main = document.querySelector("main");
+    if (main) main.scrollTop = 0;
+    window.scrollTo(0, 0);
+
     trackBookEvent(bookMetadata.id, "open", currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1003,8 +1009,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       {showSidebar && (
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        animate={{ opacity: 1, pointerEvents: "auto" as const }}
+        exit={{ opacity: 0, pointerEvents: "none" as const }}
         transition={{ duration: 0.15 }}
         dir={dir}
         className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
