@@ -13,7 +13,9 @@ export async function GET(
       status: res.status,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=600",
+        "Cache-Control": res.ok
+          ? "public, max-age=3600, stale-while-revalidate=600"
+          : "no-store",
       },
     });
   } catch {

@@ -1161,6 +1161,26 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         style={{ backgroundColor: 'hsl(var(--background))' }}
       >
         <AnimatePresence>
+          {isLoading && !pageData && !error && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 space-y-4"
+              dir="rtl"
+            >
+              {[85, 92, 78, 95, 70, 88, 74, 97, 82, 90, 76, 93].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-4 bg-muted rounded animate-shimmer"
+                  style={{ width: `${w}%` }}
+                />
+              ))}
+            </motion.div>
+          )}
+
           {error && !pageData && (
             <motion.div
               key="error"
