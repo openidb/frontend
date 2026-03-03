@@ -177,10 +177,9 @@ export function AudioReader({
   // ─── Playback state ────────────────────────────────────────────────
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentParagraphIdx, setCurrentParagraphIdx] = useState(0);
-  const [highlightedWordRange, setHighlightedWordRange] = useState<{
+  const [highlightedWordIdx, setHighlightedWordIdx] = useState<{
     paragraphIdx: number;
-    start: number;
-    end: number;
+    wordIndex: number;
   } | null>(null);
   const [noArabicVoice, setNoArabicVoice] = useState(false);
 
@@ -325,7 +324,7 @@ export function AudioReader({
   const stopSpeaking = useCallback(() => {
     isPlayingRef.current = false;
     setIsPlaying(false);
-    setHighlightedWordRange(null);
+    setHighlightedWordIdx(null);
     if (typeof window !== "undefined" && window.speechSynthesis) {
       speechSynthesis.cancel();
     }
@@ -333,7 +332,7 @@ export function AudioReader({
   }, []);
 
   const speakText = useCallback(
-    (text: string, lang: string, onEnd: () => void) => {
+    (text: string, lang: string, paragraphIdx: number, onEnd: () => void) => {
       if (!window.speechSynthesis) return;
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -344,6 +343,26 @@ export function AudioReader({
       const voices = speechSynthesis.getVoices();
       const match = voices.find((v) => v.lang.startsWith(lang.split("-")[0]));
       if (match) utterance.voice = match;
+
+      // Pre-compute word boundaries from the text so we can map charIndex → word index
+      // This avoids relying on charLength which is 0/undefined for Arabic in most browsers
+      const wordBoundaries: { start: number; end: number }[] = [];
+      const wordRe = /\S+/g;
+      let m: RegExpExecArray | null;
+      while ((m = wordRe.exec(text)) !== null) {
+        wordBoundaries.push({ start: m.index, end: m.index + m[0].length });
+      }
+
+      // Attach boundary listener directly on the utterance (no useEffect race)
+      utterance.addEventListener("boundary", (e: SpeechSynthesisEvent) => {
+        if (e.name !== "word") return;
+        const ci = e.charIndex;
+        // Find the word whose range contains charIndex
+        const idx = wordBoundaries.findIndex((wb) => ci >= wb.start && ci < wb.end);
+        if (idx !== -1) {
+          setHighlightedWordIdx({ paragraphIdx, wordIndex: idx });
+        }
+      });
 
       utteranceRef.current = utterance;
 
@@ -368,7 +387,7 @@ export function AudioReader({
 
       const para = allParagraphs[idx];
       setCurrentParagraphIdx(idx);
-      setHighlightedWordRange(null);
+      setHighlightedWordIdx(null);
 
       // Shift center page if needed
       if (Math.abs(para.pageNumber - centerPage) >= PAGE_WINDOW - 2) {
@@ -388,9 +407,9 @@ export function AudioReader({
         para.translationText;
 
       if (speakArabic && para.arabicText) {
-        speakText(para.arabicText, "ar", () => {
+        speakText(para.arabicText, "ar", idx, () => {
           if (speakTranslation) {
-            speakText(para.translationText!, effectiveLang, () => {
+            speakText(para.translationText!, effectiveLang, idx, () => {
               speakParagraph(idx + 1);
             });
           } else {
@@ -398,7 +417,7 @@ export function AudioReader({
           }
         });
       } else if (speakTranslation) {
-        speakText(para.translationText!, effectiveLang, () => {
+        speakText(para.translationText!, effectiveLang, idx, () => {
           speakParagraph(idx + 1);
         });
       } else {
@@ -408,25 +427,6 @@ export function AudioReader({
     },
     [allParagraphs, readingMode, centerPage, effectiveLang, speakText, stopSpeaking],
   );
-
-  // Word boundary tracking
-  useEffect(() => {
-    const utterance = utteranceRef.current;
-    if (!utterance) return;
-
-    const handler = (e: SpeechSynthesisEvent) => {
-      if (e.name === "word") {
-        setHighlightedWordRange({
-          paragraphIdx: currentParagraphIdx,
-          start: e.charIndex,
-          end: e.charIndex + (e.charLength || 0),
-        });
-      }
-    };
-
-    utterance.addEventListener("boundary", handler);
-    return () => utterance.removeEventListener("boundary", handler);
-  }, [utteranceRef.current, currentParagraphIdx]);
 
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
@@ -549,31 +549,26 @@ export function AudioReader({
 
   // ─── Word highlighting renderer ────────────────────────────────────
   const renderHighlightedText = useCallback(
-    (text: string, paraIdx: number, isArabic: boolean) => {
-      const isActive = highlightedWordRange?.paragraphIdx === paraIdx;
+    (text: string, paraIdx: number) => {
+      const isActive = highlightedWordIdx?.paragraphIdx === paraIdx;
       if (!isActive) {
         return <span>{text}</span>;
       }
 
-      const words = text.split(/(\s+)/);
-      let charPos = 0;
+      // Split into words and whitespace, track word index (skip whitespace)
+      const segments = text.split(/(\s+)/);
+      let wordIndex = 0;
       return (
         <>
-          {words.map((segment, i) => {
-            const segStart = charPos;
-            const segEnd = charPos + segment.length;
-            charPos = segEnd;
-
-            const isHighlighted =
-              highlightedWordRange &&
-              segStart < highlightedWordRange.end &&
-              segEnd > highlightedWordRange.start &&
-              segment.trim().length > 0;
+          {segments.map((segment, i) => {
+            const isWord = segment.trim().length > 0;
+            const isHighlighted = isWord && wordIndex === highlightedWordIdx.wordIndex;
+            if (isWord) wordIndex++;
 
             return (
               <span
                 key={i}
-                className={isHighlighted ? "text-primary transition-colors" : ""}
+                className={isHighlighted ? "audio-word-highlight" : ""}
               >
                 {segment}
               </span>
@@ -582,7 +577,7 @@ export function AudioReader({
         </>
       );
     },
-    [highlightedWordRange],
+    [highlightedWordIdx],
   );
 
   // ─── Progress display ──────────────────────────────────────────────
@@ -592,6 +587,16 @@ export function AudioReader({
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[hsl(var(--background))]" dir={dir}>
+      <style jsx global>{`
+        .audio-word-highlight {
+          color: hsl(160 84% 39%);
+          transition: color 0.15s ease;
+        }
+        :is(.dark) .audio-word-highlight {
+          color: hsl(158 64% 52%);
+        }
+      `}</style>
+
       {/* ─── Header — matches book reader ─────────────────────────── */}
       <div
         className="flex items-center gap-2 md:gap-3 border-b border-border/50 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shrink-0"
@@ -897,7 +902,7 @@ export function AudioReader({
                       dir="rtl"
                       lang="ar"
                     >
-                      {renderHighlightedText(para.arabicText, idx, true)}
+                      {renderHighlightedText(para.arabicText, idx)}
                     </p>
                   )}
 
@@ -910,7 +915,7 @@ export function AudioReader({
                         }`}
                         dir="ltr"
                       >
-                        {renderHighlightedText(para.translationText, idx, false)}
+                        {renderHighlightedText(para.translationText, idx)}
                       </p>
                     )}
 
