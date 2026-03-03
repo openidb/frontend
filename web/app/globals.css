@@ -110,19 +110,26 @@ html[dir="rtl"] .font-mono {
   animation: fadeIn 0.15s ease-out;
 }
 
-/* Loading shimmer */
+/* Loading shimmer — uses transform (GPU-composited) so animation
+   keeps running even when the main thread is busy rendering content */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent 25%, rgba(0,0,0,0.04) 50%, transparent 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
-.dark .animate-shimmer {
-  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.04) 50%, transparent 75%);
-  background-size: 200% 100%;
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
+  animation: shimmer 1.5s ease-in-out infinite;
+  will-change: transform;
+}
+.dark .animate-shimmer::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
 }
 
 /* Eliminate 300ms mobile tap delay on nav elements */
@@ -150,7 +157,7 @@ nav a, nav button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-shimmer,
+  .animate-shimmer::after,
   .animate-fade-in {
     animation: none;
   }

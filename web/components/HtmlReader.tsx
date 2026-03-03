@@ -377,6 +377,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   });
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
+  const activeTocRef = useRef<HTMLButtonElement>(null);
+  const tocScrollRef = useRef<HTMLDivElement>(null);
 
   // Sorted volume keys for dropdown
   const volumeKeys = useMemo(
@@ -722,6 +724,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     setSelectedWord(null);
   }, [currentPage]);
 
+  // Auto-scroll TOC to active chapter when sidebar opens
+  useEffect(() => {
+    if (showSidebar && activeTocRef.current) {
+      // Small delay to let the sidebar render/measure
+      requestAnimationFrame(() => {
+        activeTocRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
+      });
+    }
+  }, [showSidebar]);
+
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
   const rafRef = useRef<number>(0);
   const pendingPageRef = useRef<number | null>(null);
@@ -886,7 +898,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-background">
+    <div className="fixed inset-0 z-40 flex flex-col bg-background touch-manipulation">
       {/* Word hover styles (injected because content uses dangerouslySetInnerHTML) */}
       {wordTapEnabled && <style>{`.word { cursor: pointer; border-radius: 2px; } .word:hover { background-color: rgba(128, 128, 128, 0.15); }`}</style>}
       {/* Header */}
@@ -1005,12 +1017,15 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       )}
 
       {/* Options panel — full-screen on mobile, dropdown on desktop */}
+      {/* Wrapper ensures pointer-events are disabled immediately when sidebar closes,
+          preventing the exit animation from blocking clicks on header buttons */}
+      <div style={{ pointerEvents: showSidebar ? undefined : "none" }}>
       <AnimatePresence>
       {showSidebar && (
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, pointerEvents: "auto" as const }}
-        exit={{ opacity: 0, pointerEvents: "none" as const }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{ duration: 0.15 }}
         dir={dir}
         className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
@@ -1140,7 +1155,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
               <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
             </div>
 
-            <div className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
+            <div ref={tocScrollRef} className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
               <div className="space-y-1">
                 {toc.map((entry, index) => {
                   const depth = entry.level;
@@ -1152,12 +1167,17 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                   return (
                     <button
                       key={index}
+                      ref={isActive ? activeTocRef : undefined}
                       onClick={() => {
                         setCurrentPage(entry.page);
                         setShowSidebar(false);
                       }}
                       className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
-                      style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+                      style={{
+                        paddingInlineStart: `${depth * 16 + 12}px`,
+                        contentVisibility: "auto",
+                        containIntrinsicSize: "auto 44px",
+                      }}
                     >
                       {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
                       <span>{entry.title}</span>
@@ -1171,6 +1191,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       </motion.div>
       )}
       </AnimatePresence>
+      </div>
 
       {/* Content area */}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
