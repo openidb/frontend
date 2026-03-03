@@ -1160,73 +1160,59 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
         onClick={handleContentClick}
         style={{ backgroundColor: 'hsl(var(--background))' }}
       >
-        <AnimatePresence>
-          {isLoading && !pageData && !error && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 space-y-4"
-              dir="rtl"
-            >
-              {[85, 92, 78, 95, 70, 88, 74, 97, 82, 90, 76, 93].map((w, i) => (
-                <div
-                  key={i}
-                  className="h-4 bg-muted rounded animate-shimmer"
-                  style={{ width: `${w}%` }}
-                />
-              ))}
-            </motion.div>
-          )}
-
-          {error && !pageData && (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center justify-center h-full"
-            >
-              <p className="text-muted-foreground">{error}</p>
-            </motion.div>
-          )}
-
-          {pageData && (
-            <div
-              className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-28 sm:pb-10"
-              style={{
-                fontFamily: 'var(--font-noto-naskh), sans-serif',
-                lineHeight: 2.0,
-                fontSize: `${fontSize}rem`,
-                color: 'hsl(var(--reader-fg))',
-              }}
-            >
-              {showTranslation && translationResult && (
-                <div
-                  dir={dir}
-                  className="mb-4 px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-sm leading-relaxed"
-                  style={{ fontFamily: 'system-ui, sans-serif', fontSize: '0.85rem', lineHeight: 1.5 }}
-                >
-                  <span className="font-semibold">[{t("reader.showTranslation")}]</span>{" "}
-                  {t("reader.aiTranslationDisclaimer")}
-                </div>
-              )}
+        {isLoading && !pageData && !error && (
+          <div
+            className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 space-y-4"
+            dir="rtl"
+          >
+            {[85, 92, 78, 95, 70, 88, 74, 97, 82, 90, 76, 93].map((w, i) => (
               <div
-                dangerouslySetInnerHTML={{
-                  __html: formatContentHtml(
-                    pageData.contentHtml,
-                    wordTapEnabled,
-                    showTranslation && translationResult ? translationResult : undefined,
-                    pageData.pageNumber === 0,
-                  ),
-                }}
+                key={i}
+                className="h-4 bg-muted rounded animate-shimmer"
+                style={{ width: `${w}%` }}
               />
-            </div>
-          )}
-        </AnimatePresence>
+            ))}
+          </div>
+        )}
+
+        {error && !pageData && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground">{error}</p>
+          </div>
+        )}
+
+        {pageData && (
+          <div
+            className="max-w-3xl mx-auto px-5 md:px-12 py-6 md:py-10 pb-28 sm:pb-10"
+            style={{
+              fontFamily: 'var(--font-noto-naskh), sans-serif',
+              lineHeight: 2.0,
+              fontSize: `${fontSize}rem`,
+              color: 'hsl(var(--reader-fg))',
+            }}
+          >
+            {showTranslation && translationResult && (
+              <div
+                dir={dir}
+                className="mb-4 px-4 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-sm leading-relaxed"
+                style={{ fontFamily: 'system-ui, sans-serif', fontSize: '0.85rem', lineHeight: 1.5 }}
+              >
+                <span className="font-semibold">[{t("reader.showTranslation")}]</span>{" "}
+                {t("reader.aiTranslationDisclaimer")}
+              </div>
+            )}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: formatContentHtml(
+                  pageData.contentHtml,
+                  wordTapEnabled,
+                  showTranslation && translationResult ? translationResult : undefined,
+                  pageData.pageNumber === 0,
+                ),
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Mobile bottom page navigation */}
