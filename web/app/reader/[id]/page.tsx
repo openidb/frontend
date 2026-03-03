@@ -85,9 +85,10 @@ export default async function ReaderPage({
   const translationLang = localeCookie === "ar" ? "en" : localeCookie;
 
   // Fetch book metadata, first page, TOC, and translation (if enabled) in parallel
-  const bookPromise = fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 3600 });
-  const pagePromise = fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: 86400 });
-  const tocPromise = fetchAPI<{ toc: TocEntry[] }>(`/api/books/${encodedId}/toc`, { revalidate: 86400 });
+  // Book content is static — use long/indefinite revalidation
+  const bookPromise = fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 86400 });
+  const pagePromise = fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: false });
+  const tocPromise = fetchAPI<{ toc: TocEntry[] }>(`/api/books/${encodedId}/toc`, { revalidate: false });
   const translationPromise = translationEnabled
     ? fetchAPI<{ paragraphs: { index: number; translation: string }[] }>(
         `/api/books/${encodedId}/pages/${initialPage}/translation?lang=${encodeURIComponent(translationLang)}`,

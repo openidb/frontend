@@ -15,7 +15,7 @@ export async function GET(
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": res.ok
-          ? "public, max-age=86400, s-maxage=86400, stale-while-revalidate=3600"
+          ? "public, max-age=31536000, immutable"
           : "no-store",
       },
     });

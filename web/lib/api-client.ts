@@ -2,7 +2,7 @@ const OPENIDB_URL = process.env.OPENIDB_URL || "http://localhost:4000";
 
 export async function fetchAPI<T>(
   path: string,
-  init?: RequestInit & { revalidate?: number; timeout?: number; retries?: number }
+  init?: RequestInit & { revalidate?: number | false; timeout?: number; retries?: number }
 ): Promise<T> {
   const { revalidate, timeout = 10000, retries = 2, ...fetchInit } = init ?? {};
   let lastError: Error | null = null;

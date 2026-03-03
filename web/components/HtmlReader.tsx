@@ -32,10 +32,6 @@ interface PageData {
   urlPageIndex: string | null;
   printedPageNumber: number | null;
   contentHtml: string;
-  contentPlain: string;
-  hasPoetry: boolean;
-  hasHadith: boolean;
-  hasQuran: boolean;
   pdfUrl: string | null;
 }
 
@@ -747,13 +743,20 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       .finally(() => setTocLoading(false));
   }, [showSidebar, bookMetadata.id]);
 
-  // Find the active TOC entry index for the current page
+  // Find the active TOC entry via binary search (O(log n) instead of O(n))
   const activeTocIndex = useMemo(() => {
     if (tocData.length === 0) return -1;
-    for (let i = tocData.length - 1; i >= 0; i--) {
-      if (tocData[i].page <= currentPage) return i;
+    let lo = 0, hi = tocData.length - 1, result = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      if (tocData[mid].page <= currentPage) {
+        result = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
     }
-    return -1;
+    return result;
   }, [tocData, currentPage]);
 
   // Virtualized TOC list — only renders visible rows
@@ -1062,14 +1065,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
         />
       )}
 
-      {/* Options panel — always mounted so TOC DOM persists across open/close.
-          Uses CSS opacity transition instead of AnimatePresence to avoid unmounting. */}
+      {/* Options panel — hidden via display:none when closed to fully disable virtualizer layout work */}
       <div
         dir={dir}
         aria-hidden={!showSidebar}
-        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation transition-opacity duration-150 ${
-          showSidebar ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
+        style={showSidebar ? undefined : { display: "none" }}
       >
         {/* Mobile close header — X positioned to match the options menu button */}
         <div className="sm:hidden flex items-center border-b px-2 py-2">
