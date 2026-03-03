@@ -325,6 +325,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   const [showSidebar, setShowSidebar] = useState(false);
   // TOC is lazy-loaded from /api/books/:id/toc on first sidebar open
   const [tocData, setTocData] = useState<TocEntry[]>(initialToc);
+  const [tocLoading, setTocLoading] = useState(false);
   const tocFetchedRef = useRef(initialToc.length > 0);
   const [fontSize, setFontSize] = useState<number>(() => {
     if (typeof window === 'undefined') return 1.15;
@@ -736,12 +737,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   useEffect(() => {
     if (!showSidebar || tocFetchedRef.current) return;
     tocFetchedRef.current = true;
+    setTocLoading(true);
     fetch(`/api/books/${bookMetadata.id}/toc`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data?.toc) setTocData(data.toc);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setTocLoading(false));
   }, [showSidebar, bookMetadata.id]);
 
   // Find the active TOC entry index for the current page
@@ -1187,15 +1190,21 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
         </div>
 
         {/* Table of Contents section */}
-        {tocData.length > 0 && (
+        {(tocData.length > 0 || tocLoading) && (
           <>
             <div className="px-3 pb-1">
               <div className="border-t" />
               <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
             </div>
 
-            <div ref={tocScrollRef} className="flex-1 overflow-auto px-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
-              <div style={{ height: `${tocVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
+            {tocLoading && (
+              <div className="flex justify-center py-6">
+                <div className="h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground/80 rounded-full animate-spin" />
+              </div>
+            )}
+
+            <div ref={tocScrollRef} className="flex-1 overflow-auto px-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation" style={tocLoading ? { display: "none" } : undefined}>
+              <div style={{ height: tocVirtualizer.getTotalSize(), position: "relative", width: "100%" }}>
                 {tocVirtualizer.getVirtualItems().map((virtualRow) => {
                   const entry = tocData[virtualRow.index];
                   const depth = entry.level;
@@ -1204,24 +1213,30 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                   const isActive = virtualRow.index === activeTocIndex;
 
                   return (
-                    <button
+                    <div
                       key={virtualRow.index}
                       data-index={virtualRow.index}
                       ref={tocVirtualizer.measureElement}
-                      onClick={() => {
-                        setCurrentPage(entry.page);
-                        setShowSidebar(false);
-                      }}
-                      className={`absolute left-0 right-0 px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
                       style={{
+                        position: "absolute",
                         top: 0,
+                        left: 0,
+                        width: "100%",
                         transform: `translateY(${virtualRow.start}px)`,
-                        paddingInlineStart: `${depth * 16 + 12}px`,
                       }}
                     >
-                      {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
-                      <span>{entry.title}</span>
-                    </button>
+                      <button
+                        onClick={() => {
+                          setCurrentPage(entry.page);
+                          setShowSidebar(false);
+                        }}
+                        className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
+                        style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+                      >
+                        {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
+                        <span>{entry.title}</span>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
