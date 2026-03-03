@@ -86,21 +86,13 @@ export default function AuthorsClient() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch century facets on mount
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/books/centuries/authors", { signal: controller.signal })
-      .then((r) => r.json())
-      .then((data) => { if (data?.centuries) setCenturies(data.centuries); })
-      .catch(() => {});
-    return () => controller.abort();
-  }, []);
+  // Fetch authors + century facets together so loading hides once both are ready
+  const centuriesLoadedRef = useRef(false);
 
-  // Fetch authors from API when search, filters, or pagination changes
   useEffect(() => {
     const controller = new AbortController();
 
-    const fetchAuthors = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         const offset = (pagination.page - 1) * pagination.limit;
@@ -115,20 +107,28 @@ export default function AuthorsClient() {
           params.set("century", selectedCenturies.join(","));
         }
 
-        const response = await fetch(`/api/books/authors?${params}`, { signal: controller.signal });
+        const [authorsRes, centuriesRes] = await Promise.all([
+          fetch(`/api/books/authors?${params}`, { signal: controller.signal }).then((r) => r.json()),
+          !centuriesLoadedRef.current
+            ? fetch("/api/books/centuries/authors", { signal: controller.signal }).then((r) => r.json()).catch(() => null)
+            : null,
+        ]);
         if (controller.signal.aborted) return;
-        const data = await response.json();
 
-        setAuthors(data.authors || []);
-        const resTotal = data.total || 0;
-        const resLimit = data.limit || pagination.limit;
-        const resOffset = data.offset || 0;
+        setAuthors(authorsRes.authors || []);
+        const resTotal = authorsRes.total || 0;
+        const resLimit = authorsRes.limit || pagination.limit;
+        const resOffset = authorsRes.offset || 0;
         setPagination({
           page: Math.floor(resOffset / resLimit) + 1,
           limit: resLimit,
           total: resTotal,
           totalPages: Math.ceil(resTotal / resLimit),
         });
+        if (centuriesRes?.centuries) {
+          setCenturies(centuriesRes.centuries);
+          centuriesLoadedRef.current = true;
+        }
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error("Error fetching authors:", error);
@@ -137,7 +137,7 @@ export default function AuthorsClient() {
       }
     };
 
-    fetchAuthors();
+    fetchData();
     return () => controller.abort();
   }, [pagination.page, pagination.limit, debouncedSearch, selectedCenturies]);
 
