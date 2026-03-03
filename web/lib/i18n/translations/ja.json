@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "テーマ",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "システム",
         "light": "ライト",

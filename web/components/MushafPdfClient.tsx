@@ -3,11 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
+import { useAppConfig } from "@/lib/config";
+import { triggerHaptic } from "@/lib/haptics";
 
 const TOTAL_MUSHAF_PAGES = 604;
 
 export function MushafPdfClient() {
   const router = useRouter();
+  const { config } = useAppConfig();
   const searchParams = useSearchParams();
   const initialPage = Math.min(Math.max(Number(searchParams.get("page")) || 1, 1), TOTAL_MUSHAF_PAGES);
   const [mushafPage, setMushafPage] = useState(initialPage);
@@ -64,11 +67,12 @@ export function MushafPdfClient() {
       const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
       touchStartRef.current = null;
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+        if (config.hapticsEnabled) triggerHaptic("light");
         if (dx < 0) goNext();
         else goPrev();
       }
     },
-    [goNext, goPrev],
+    [goNext, goPrev, config.hapticsEnabled],
   );
 
   const handlePageSubmit = useCallback(

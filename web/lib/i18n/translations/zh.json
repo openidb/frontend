@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "主题",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "系统",
         "light": "浅色",

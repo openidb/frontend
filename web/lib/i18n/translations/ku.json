@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "Rûkar",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "Pergal",
         "light": "Ronî",

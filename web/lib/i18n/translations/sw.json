@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "Mandhari",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "Mfumo",
         "light": "Mwanga",

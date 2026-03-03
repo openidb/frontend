@@ -105,6 +105,7 @@ export interface SearchConfig {
   refineAyahRerank: number;
   refineHadithRerank: number;
   hadithCollections: string[];
+  hapticsEnabled: boolean;
 }
 
 /** Collections excluded from search by default (still selectable by users) */
@@ -139,6 +140,7 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   hadithCollections: HADITH_COLLECTIONS
     .filter(c => !DEFAULT_EXCLUDED_COLLECTIONS.has(c.slug))
     .map(c => c.slug),
+  hapticsEnabled: true,
 };
 
 // Internal config keys that are NOT user-configurable via the config page.

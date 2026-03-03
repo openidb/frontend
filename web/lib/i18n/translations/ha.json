@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "Jigo",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "Tsarin",
         "light": "Haske",

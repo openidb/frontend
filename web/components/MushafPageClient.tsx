@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { useAppConfig } from "@/lib/config";
+import { triggerHaptic } from "@/lib/haptics";
 
 // --- Types ---
 
@@ -70,6 +72,7 @@ function isCenterAligned(pageNumber: number, lineNumber: number): boolean {
 export function MushafPageClient({ initialData }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
+  const { config } = useAppConfig();
   const [data, setData] = useState<MushafPageData>(initialData);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [surahFontLoaded, setSurahFontLoaded] = useState(false);
@@ -145,11 +148,12 @@ export function MushafPageClient({ initialData }: Props) {
       touchStartRef.current = null;
 
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+        if (config.hapticsEnabled) triggerHaptic("light");
         if (dx < 0) navigateTo(Math.min(page + 1, 604));
         else navigateTo(Math.max(page - 1, 1));
       }
     },
-    [page]
+    [page, config.hapticsEnabled]
   );
 
   const navigateTo = useCallback(

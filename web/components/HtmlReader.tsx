@@ -11,6 +11,7 @@ import { WordDefinitionPopover } from "./WordDefinitionPopover";
 import { trackBookEvent } from "@/lib/analytics";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { triggerHaptic } from "@/lib/haptics";
 
 interface BookMetadata {
   id: string;
@@ -793,6 +794,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   }, [goToNextPage, goToPrevPage, dir]);
 
   const goBack = () => {
+    if (config.hapticsEnabled) triggerHaptic("light");
     // If we have browser history, go back; otherwise navigate to home
     if (window.history.length > 1) {
       router.back();
@@ -837,6 +839,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     // Handle word taps
     const wordTarget = (e.target as HTMLElement).closest(".word") as HTMLElement | null;
     if (wordTarget?.dataset.word) {
+      if (config.hapticsEnabled) triggerHaptic("light");
       const rect = wordTarget.getBoundingClientRect();
       setSelectedWord({
         word: wordTarget.dataset.word,
@@ -991,7 +994,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setShowSidebar(!showSidebar)}
+            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(!showSidebar); }}
             title={t("reader.chapters")}
             className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
           >
@@ -1076,14 +1079,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
             <span>{t("reader.fontSize")}</span>
             <div className="flex items-center gap-2" dir="ltr">
               <button
-                onClick={() => setFontSize((s) => Math.max(0.8, +(s - 0.1).toFixed(1)))}
+                onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setFontSize((s) => Math.max(0.8, +(s - 0.1).toFixed(1))); }}
                 className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
               >
                 <Minus className="h-4 w-4" />
               </button>
               <span className="w-10 text-center text-muted-foreground">{Math.round(fontSize * 100)}%</span>
               <button
-                onClick={() => setFontSize((s) => Math.min(2.0, +(s + 0.1).toFixed(1)))}
+                onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setFontSize((s) => Math.min(2.0, +(s + 0.1).toFixed(1))); }}
                 className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
               >
                 <Plus className="h-4 w-4" />
@@ -1105,6 +1108,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           {/* Word definitions toggle */}
           <button
             onClick={() => {
+              if (config.hapticsEnabled) triggerHaptic("light");
               setWordTapEnabled((v) => !v);
               setSelectedWord(null);
             }}
@@ -1123,7 +1127,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           {/* Translation toggle */}
           {hasTranslation ? (
             <button
-              onClick={() => setShowTranslation((v) => !v)}
+              onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowTranslation((v) => !v); }}
               className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
             >
               <span className="flex items-center gap-2">
@@ -1265,7 +1269,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       >
         <div className="flex items-center justify-between">
           <button
-            onClick={goToNextPage}
+            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); goToNextPage(); }}
             disabled={currentPage >= totalPages - 1}
             className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
           >
@@ -1304,7 +1308,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           </div>
 
           <button
-            onClick={goToPrevPage}
+            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); goToPrevPage(); }}
             disabled={currentPage <= 0}
             className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
           >

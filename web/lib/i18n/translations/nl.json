@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "Thema",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "Systeem",
         "light": "Licht",

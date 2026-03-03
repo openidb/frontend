@@ -225,6 +225,11 @@ export default function ConfigPage() {
               getLabel={(o) => t(`config.appearance.themes.${o}`)}
             />
           </div>
+          <ToggleSetting
+            label={t("config.appearance.haptics")}
+            checked={config.hapticsEnabled}
+            onChange={(checked) => updateConfig({ hapticsEnabled: checked })}
+          />
         </div>
 
         <Divider />

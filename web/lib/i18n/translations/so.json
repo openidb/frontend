@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "Qaabka",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "Nidaamka",
         "light": "Iftiin",

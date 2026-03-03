@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "السمة",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "النظام",
         "light": "فاتح",

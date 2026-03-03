@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "थीम",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "सिस्टम",
         "light": "लाइट",

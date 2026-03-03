@@ -7,6 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn } from "@/lib/utils";
+import { useAppConfig } from "@/lib/config";
+import { triggerHaptic } from "@/lib/haptics";
 
 const navItems = [
   { href: "/", icon: Search, labelKey: "nav.search" as const, iconClass: "nav-icon-search" },
@@ -104,6 +106,7 @@ export function MobileNavigation() {
   const pathname = usePathname();
   const router = useRouter();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const { config } = useAppConfig();
 
   // Clear pending state when navigation completes
   useEffect(() => { setPendingHref(null); }, [pathname]);
@@ -118,9 +121,10 @@ export function MobileNavigation() {
   const handleNav = useCallback((e: React.MouseEvent, href: string) => {
     e.preventDefault();
     if (href === pathname) return;
+    if (config.hapticsEnabled) triggerHaptic("light");
     setPendingHref(href);
     router.push(href);
-  }, [pathname, router]);
+  }, [pathname, router, config.hapticsEnabled]);
 
   // Hide mobile nav when in the book reader, mushaf viewer, or audiobook
   const isReaderPage = pathname.startsWith("/reader/") || pathname.startsWith("/mushaf/") || pathname.startsWith("/quran/") || pathname.startsWith("/audiobook/");

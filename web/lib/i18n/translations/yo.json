@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "Àkọlé",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "Ètò",
         "light": "Ìmọ́lẹ̀",

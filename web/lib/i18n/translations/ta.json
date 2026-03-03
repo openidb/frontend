@@ -200,6 +200,7 @@
     },
     "appearance": {
       "theme": "தீம்",
+      "haptics": "Haptic Feedback",
       "themes": {
         "system": "கணினி",
         "light": "வெளிச்சம்",
