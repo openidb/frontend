@@ -14,7 +14,6 @@ interface BookMetadata {
   authorId: string;
   datePublished: string;
   filename: string;
-  toc: never[];
 }
 
 interface TocEntry {
@@ -85,9 +84,10 @@ export default async function ReaderPage({
   const localeCookie = cookieStore.get("locale")?.value || cookieStore.get("detected-locale")?.value || "en";
   const translationLang = localeCookie === "ar" ? "en" : localeCookie;
 
-  // Fetch book metadata, first page, and translation (if enabled) in parallel
+  // Fetch book metadata, first page, TOC, and translation (if enabled) in parallel
   const bookPromise = fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 3600 });
   const pagePromise = fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: 86400 });
+  const tocPromise = fetchAPI<{ toc: TocEntry[] }>(`/api/books/${encodedId}/toc`, { revalidate: 86400 });
   const translationPromise = translationEnabled
     ? fetchAPI<{ paragraphs: { index: number; translation: string }[] }>(
         `/api/books/${encodedId}/pages/${initialPage}/translation?lang=${encodeURIComponent(translationLang)}`,
@@ -95,7 +95,7 @@ export default async function ReaderPage({
       ).catch(() => null)
     : null;
 
-  const [bookResult, pageResult] = await Promise.allSettled([bookPromise, pagePromise]);
+  const [bookResult, pageResult, tocResult] = await Promise.allSettled([bookPromise, pagePromise, tocPromise]);
 
   if (bookResult.status === "rejected") notFound();
   const book = bookResult.value.book;
@@ -103,6 +103,7 @@ export default async function ReaderPage({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const initialPageData: any = pageResult.status === "fulfilled" ? (pageResult.value.page ?? null) : null;
+  const initialToc: TocEntry[] = tocResult.status === "fulfilled" ? (tocResult.value.toc ?? []) : [];
 
   // Await translation (already running in parallel, just resolve the result)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,7 +120,6 @@ export default async function ReaderPage({
     authorId: book.author.id,
     datePublished: book.publicationYearGregorian || "",
     filename: book.filename,
-    toc: [],
   };
 
   return (
@@ -134,7 +134,7 @@ export default async function ReaderPage({
       volumeStartPages={book.volumeStartPages || {}}
       volumeMaxPrintedPages={book.volumeMaxPrintedPages || {}}
       volumeMinPrintedPages={book.volumeMinPrintedPages || {}}
-      toc={[]}
+      toc={initialToc}
       translatedLanguages={book.translatedLanguages}
     />
   );
