@@ -320,9 +320,18 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, t
   const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [fontSize, setFontSize] = useState(1.15);
-  const [wordTapEnabled, setWordTapEnabled] = useState(false);
-  const [showTranslation, setShowTranslation] = useState(false);
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window === 'undefined') return 1.15;
+    try { return JSON.parse(localStorage.getItem("readerPrefs") || "{}").fontSize ?? 1.15; } catch { return 1.15; }
+  });
+  const [wordTapEnabled, setWordTapEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try { return JSON.parse(localStorage.getItem("readerPrefs") || "{}").wordTapEnabled ?? false; } catch { return false; }
+  });
+  const [showTranslation, setShowTranslation] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try { return JSON.parse(localStorage.getItem("readerPrefs") || "{}").showTranslation ?? false; } catch { return false; }
+  });
   const [translationResult, setTranslationResult] = useState<TranslationParagraph[] | null>(null);
   const translationCacheRef = useRef<Map<string, TranslationParagraph[]>>(new Map());
   const TRANSLATION_CACHE_MAX = 50;
@@ -391,17 +400,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, t
     }
   }, [volumeStartPages]);
 
-  // Hydrate reader preferences from localStorage after mount
+  // Gate persist effect so the initial (already-correct) values don't trigger a write
   const prefsHydrated = useRef(false);
-  useEffect(() => {
-    try {
-      const v = JSON.parse(localStorage.getItem("readerPrefs") || "{}");
-      if (v.fontSize != null) setFontSize(v.fontSize);
-      if (v.wordTapEnabled != null) setWordTapEnabled(v.wordTapEnabled);
-      if (v.showTranslation != null) setShowTranslation(v.showTranslation);
-    } catch {}
-    prefsHydrated.current = true;
-  }, []);
+  useEffect(() => { prefsHydrated.current = true; }, []);
 
   // Persist reader preferences to localStorage on change
   useEffect(() => {
