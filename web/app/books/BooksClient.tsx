@@ -62,18 +62,6 @@ interface FeatureCounts {
   isTranslated: number;
 }
 
-interface BooksClientProps {
-  initialBooks: Book[];
-  initialPagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  initialCategories: CategoryItem[];
-  initialCenturies: CenturyItem[];
-}
-
 // Get year display for a book using centralized utility
 function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCalendar = "both", pubLabel = "(pub.)"): string {
   const result = formatBookYear(book, calendar);
@@ -82,12 +70,9 @@ function getBookYear(book: Book, showPublicationDates: boolean, calendar: DateCa
   return result.isPublicationYear ? `${result.year} ${pubLabel}` : result.year;
 }
 
-export default function BooksClient({
-  initialBooks,
-  initialPagination,
-  initialCategories,
-  initialCenturies,
-}: BooksClientProps) {
+const EMPTY_PAGINATION = { page: 1, limit: 50, total: 0, totalPages: 0 };
+
+export default function BooksClient() {
   const { t, locale } = useTranslation();
   const { config } = useAppConfig();
 
@@ -103,14 +88,14 @@ export default function BooksClient({
 
   const [searchQuery, setSearchQuery] = useState(saved.current.search);
   const [debouncedSearch, setDebouncedSearch] = useState(saved.current.search);
-  const [books, setBooks] = useState<Book[]>(initialBooks);
-  const [pagination, setPagination] = useState({ ...initialPagination, page: saved.current.page });
-  const [loading, setLoading] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [pagination, setPagination] = useState({ ...EMPTY_PAGINATION, page: saved.current.page });
+  const [loading, setLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(saved.current.categories);
   const [selectedCenturies, setSelectedCenturies] = useState<string[]>(saved.current.centuries);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(saved.current.features);
-  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
-  const [centuries, setCenturies] = useState<CenturyItem[]>(initialCenturies);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [centuries, setCenturies] = useState<CenturyItem[]>([]);
   const [featureCounts, setFeatureCounts] = useState<FeatureCounts>({ hasPdf: 0, isIndexed: 0, isTranslated: 0 });
 
   // Persist filter state to sessionStorage
@@ -164,15 +149,8 @@ export default function BooksClient({
       if (selectedFeatures.includes("isIndexed")) featParams.set("isIndexed", "true");
 
       const [catRes, cenRes, featRes] = await Promise.all([
-        // Fetch categories filtered by centuries + features
-        (selectedCenturies.length > 0 || selectedFeatures.length > 0)
-          ? fetch(`/api/books/categories?${catParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
-          : null,
-        // Fetch centuries filtered by categories + features
-        (selectedCategories.length > 0 || selectedFeatures.length > 0)
-          ? fetch(`/api/books/centuries?${cenParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null)
-          : null,
-        // Fetch feature counts filtered by categories + centuries + other features
+        fetch(`/api/books/categories?${catParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
+        fetch(`/api/books/centuries?${cenParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
         fetch(`/api/books/features?${featParams}`, { signal: controller.signal }).then((r) => r.json()).catch(() => null),
       ]);
 
@@ -180,14 +158,10 @@ export default function BooksClient({
 
       if (catRes?.categories) {
         setCategories(catRes.categories);
-      } else if (!hasAnyFilter || selectedCenturies.length === 0 && selectedFeatures.length === 0) {
-        setCategories(initialCategories);
       }
 
       if (cenRes?.centuries) {
         setCenturies(cenRes.centuries);
-      } else if (!hasAnyFilter || selectedCategories.length === 0 && selectedFeatures.length === 0) {
-        setCenturies(initialCenturies);
       }
 
       if (featRes?.features) {
@@ -204,7 +178,7 @@ export default function BooksClient({
     });
 
     return () => controller.abort();
-  }, [selectedCategories, selectedCenturies, selectedFeatures, initialCategories, initialCenturies, locale]);
+  }, [selectedCategories, selectedCenturies, selectedFeatures, locale]);
 
   // Build category options for MultiSelectDropdown (locale-aware via i18n)
   const categoryOptions = useMemo(() =>
@@ -252,13 +226,6 @@ export default function BooksClient({
 
   // Fetch books from API when search, filters, pagination, or title language changes
   useEffect(() => {
-    // No active filters, no translation needed, and on page 1 — use server-provided initial data
-    if (debouncedSearch === "" && selectedCategories.length === 0 && selectedCenturies.length === 0 && selectedFeatures.length === 0 && !bookTitleLang && pagination.page === 1) {
-      setBooks(initialBooks);
-      setPagination(initialPagination);
-      return;
-    }
-
     const controller = new AbortController();
 
     const fetchBooks = async () => {

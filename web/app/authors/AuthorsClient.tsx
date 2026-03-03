@@ -33,18 +33,9 @@ interface CenturyItem {
   authorsCount: number;
 }
 
-interface AuthorsClientProps {
-  initialAuthors: Author[];
-  initialPagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  initialCenturies: CenturyItem[];
-}
+const EMPTY_PAGINATION = { page: 1, limit: 50, total: 0, totalPages: 0 };
 
-export default function AuthorsClient({ initialAuthors, initialPagination, initialCenturies }: AuthorsClientProps) {
+export default function AuthorsClient() {
   const { t, locale } = useTranslation();
   const { config } = useAppConfig();
 
@@ -60,10 +51,11 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
 
   const [searchQuery, setSearchQuery] = useState(saved.current.search);
   const [debouncedSearch, setDebouncedSearch] = useState(saved.current.search);
-  const [authors, setAuthors] = useState<Author[]>(initialAuthors);
-  const [pagination, setPagination] = useState({ ...initialPagination, page: saved.current.page });
-  const [loading, setLoading] = useState(false);
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [pagination, setPagination] = useState({ ...EMPTY_PAGINATION, page: saved.current.page });
+  const [loading, setLoading] = useState(true);
   const [selectedCenturies, setSelectedCenturies] = useState<string[]>(saved.current.centuries);
+  const [centuries, setCenturies] = useState<CenturyItem[]>([]);
 
   // Persist filter state to sessionStorage
   useEffect(() => {
@@ -78,12 +70,12 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
 
   // Build century options for MultiSelectDropdown (locale-aware via i18n)
   const centuryOptions = useMemo(() =>
-    initialCenturies.map((c) => ({
+    centuries.map((c) => ({
       value: c.century.toString(),
       label: t(`centuries.${c.century}`),
       count: c.authorsCount,
     })),
-    [initialCenturies, t]
+    [centuries, t]
   );
 
   // Debounce search query
@@ -94,15 +86,18 @@ export default function AuthorsClient({ initialAuthors, initialPagination, initi
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Fetch century facets on mount
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/books/centuries/authors", { signal: controller.signal })
+      .then((r) => r.json())
+      .then((data) => { if (data?.centuries) setCenturies(data.centuries); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+
   // Fetch authors from API when search, filters, or pagination changes
   useEffect(() => {
-    // No active filters and on page 1 — reset to server-provided initial data
-    if (debouncedSearch === "" && selectedCenturies.length === 0 && pagination.page === 1) {
-      setAuthors(initialAuthors);
-      setPagination(initialPagination);
-      return;
-    }
-
     const controller = new AbortController();
 
     const fetchAuthors = async () => {
