@@ -134,7 +134,7 @@ export default async function ReaderPage({
       volumeStartPages={book.volumeStartPages || {}}
       volumeMaxPrintedPages={book.volumeMaxPrintedPages || {}}
       volumeMinPrintedPages={book.volumeMinPrintedPages || {}}
-      toc={book.tableOfContents || []}
+      toc={[]}
       translatedLanguages={book.translatedLanguages}
     />
   );

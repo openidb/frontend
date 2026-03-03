@@ -316,12 +316,15 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, initialTranslationData, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, initialTranslationData, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc: initialToc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  // TOC is lazy-loaded from /api/books/:id/toc on first sidebar open
+  const [tocData, setTocData] = useState<TocEntry[]>(initialToc);
+  const tocFetchedRef = useRef(initialToc.length > 0);
   const [fontSize, setFontSize] = useState<number>(() => {
     if (typeof window === 'undefined') return 1.15;
     try { return Number(JSON.parse(localStorage.getItem("readerPrefs") || "{}").fontSize) || 1.15; } catch { return 1.15; }
@@ -732,30 +735,43 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     setSelectedWord(null);
   }, [currentPage]);
 
-  // Progressive TOC rendering: on first sidebar open, render chapters in batches.
+  // Lazy-load TOC from API on first sidebar open
+  useEffect(() => {
+    if (!showSidebar || tocFetchedRef.current) return;
+    tocFetchedRef.current = true;
+    fetch(`/api/books/${bookMetadata.id}/toc`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.toc) setTocData(data.toc);
+      })
+      .catch(() => {});
+  }, [showSidebar, bookMetadata.id]);
+
+  // Progressive TOC rendering: render chapters in batches.
   // Entries persist across open/close so the sidebar reopens instantly.
   useEffect(() => {
-    if (!showSidebar || toc.length === 0) {
+    if (!showSidebar || tocData.length === 0) {
       tocScrolledRef.current = false;
       return;
     }
     // Already fully rendered — nothing to do
-    if (tocLoadStartedRef.current) return;
+    if (tocLoadStartedRef.current && tocRenderLimit >= tocData.length) return;
     tocLoadStartedRef.current = true;
 
     let raf: number;
-    let limit = 0;
+    let limit = tocRenderLimit;
     const renderBatch = () => {
-      limit = Math.min(limit + TOC_BATCH, toc.length);
+      limit = Math.min(limit + TOC_BATCH, tocData.length);
       setTocRenderLimit(limit);
-      if (limit < toc.length) {
+      if (limit < tocData.length) {
         raf = requestAnimationFrame(renderBatch);
       }
     };
     // Defer first batch to after the sidebar's opening animation paint
     raf = requestAnimationFrame(renderBatch);
     return () => cancelAnimationFrame(raf);
-  }, [showSidebar, toc.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSidebar, tocData.length]);
 
   // Auto-scroll TOC to active chapter once it's rendered
   useEffect(() => {
@@ -1179,7 +1195,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
         </div>
 
         {/* Table of Contents section */}
-        {toc.length > 0 && (
+        {tocData.length > 0 && (
           <>
             <div className="px-3 pb-1">
               <div className="border-t" />
@@ -1188,12 +1204,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
 
             <div ref={tocScrollRef} className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
               <div className="space-y-1">
-                {toc.slice(0, tocRenderLimit).map((entry, index) => {
+                {tocData.slice(0, tocRenderLimit).map((entry, index) => {
                   const depth = entry.level;
                   const bullets = ["●", "○", "▪", "◦", "▸"];
                   const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
                   const isActive = entry.page <= currentPage &&
-                    (index === toc.length - 1 || toc[index + 1].page > currentPage);
+                    (index === tocData.length - 1 || tocData[index + 1].page > currentPage);
 
                   return (
                     <button
@@ -1211,7 +1227,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                     </button>
                   );
                 })}
-                {tocRenderLimit < toc.length && (
+                {tocRenderLimit < tocData.length && (
                   <div className="flex justify-center py-3">
                     <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground/80 rounded-full animate-spin" />
                   </div>
