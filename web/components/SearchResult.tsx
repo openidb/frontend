@@ -137,6 +137,7 @@ function SearchResultInner({ result, bookTitleDisplay = "none", showAuthorTransl
   return (
     <PrefetchLink
       href={readerUrl}
+      prefetchData={`/api/books/${book.id}/pages/${pageNumber}`}
       className="block p-4 border rounded-lg hover:border-muted-foreground hover:shadow-sm transition-all bg-card"
       onClick={() => {
         if (searchEventId) {

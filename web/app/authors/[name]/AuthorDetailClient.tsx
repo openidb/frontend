@@ -199,6 +199,7 @@ export default function AuthorDetailClient({
                     <TableCell>
                       <PrefetchLink
                         href={`/reader/${book.id}`}
+                        prefetchData={`/api/books/${book.id}/pages/0`}
                         className="font-medium hover:underline"
                       >
                         <div>{book.title}</div>

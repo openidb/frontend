@@ -199,6 +199,7 @@ export function WordDefinitionPopover({
                 {def.bookId && def.startPage != null && (
                   <PrefetchLink
                     href={`/reader/${def.bookId}?pn=${def.startPage}`}
+                    prefetchData={`/api/books/${def.bookId}/pages/${def.startPage}`}
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                     onClick={onClose}
                   >

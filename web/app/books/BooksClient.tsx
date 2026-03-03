@@ -376,6 +376,7 @@ export default function BooksClient() {
               <PrefetchLink
                 key={book.id}
                 href={`/reader/${book.id}`}
+                prefetchData={`/api/books/${book.id}/pages/0`}
                 className="block p-4 rounded-lg border border-border/50 dark:border-border/30 bg-card/50 hover:bg-card transition-colors"
               >
                 <div className="font-medium text-sm truncate" dir="rtl">{book.titleArabic}</div>
@@ -441,6 +442,7 @@ export default function BooksClient() {
                     <TableCell className="overflow-hidden py-3">
                       <PrefetchLink
                         href={`/reader/${book.id}`}
+                        prefetchData={`/api/books/${book.id}/pages/0`}
                         className="font-medium hover:underline"
                       >
                         <div className="truncate text-[15px]">{book.titleArabic}</div>

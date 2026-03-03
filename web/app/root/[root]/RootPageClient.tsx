@@ -174,6 +174,7 @@ export function RootPageClient({ data }: { data: RootFamilyData }) {
                         <div className="mt-3 text-sm text-gray-500">
                           <PrefetchLink
                             href={`/reader/${entry.bookId}?page=${entry.startPage}`}
+                            prefetchData={`/api/books/${entry.bookId}/pages/${entry.startPage}`}
                             className="hover:underline text-blue-600 dark:text-blue-400"
                           >
                             View in reader (p. {entry.startPage}
