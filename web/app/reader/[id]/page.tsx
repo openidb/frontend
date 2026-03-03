@@ -74,16 +74,22 @@ export default async function ReaderPage({
   const { id } = await params;
   const { pn, lang } = await searchParams;
 
-  let bookData: BookData;
-  try {
-    const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&bookTitleLang=${encodeURIComponent(lang)}` : "";
-    bookData = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}?${langParam}`, { revalidate: 3600 });
-  } catch {
-    notFound();
-  }
+  const encodedId = encodeURIComponent(id);
+  const initialPage = pn ? parseInt(pn, 10) : 0;
+  const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&bookTitleLang=${encodeURIComponent(lang)}` : "";
 
-  const book = bookData.book;
+  // Fetch book metadata and first page in parallel
+  const [bookResult, pageResult] = await Promise.allSettled([
+    fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 3600 }),
+    fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: 86400 }),
+  ]);
+
+  if (bookResult.status === "rejected") notFound();
+  const book = bookResult.value.book;
   if (!book) notFound();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const initialPageData: any = pageResult.status === "fulfilled" ? (pageResult.value.page ?? null) : null;
 
   const bookMetadata: BookMetadata = {
     id: book.id,
@@ -97,20 +103,6 @@ export default async function ReaderPage({
     filename: book.filename,
     toc: [],
   };
-
-  // Fetch the initial page server-side so the reader can render content immediately
-  const initialPage = pn ? parseInt(pn, 10) : 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let initialPageData: any = null;
-  try {
-    const pageRes = await fetchAPI<{ page: unknown }>(
-      `/api/books/${encodeURIComponent(id)}/pages/${initialPage}`,
-      { revalidate: 86400 }
-    );
-    initialPageData = pageRes.page ?? null;
-  } catch {
-    // Non-critical — reader will fetch client-side as fallback
-  }
 
   return (
     <HtmlReader
