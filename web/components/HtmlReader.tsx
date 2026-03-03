@@ -52,6 +52,7 @@ interface HtmlReaderProps {
   bookMetadata: BookMetadata;
   initialPageNumber?: string;
   initialPageData?: PageData | null;
+  initialTranslationData?: TranslationParagraph[] | null;
   totalPages: number;
   totalVolumes: number;
   maxPrintedPage: number;
@@ -314,31 +315,37 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, initialTranslationData, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [fontSize, setFontSize] = useState(() => {
+  const [fontSize, setFontSize] = useState<number>(() => {
     if (typeof window === 'undefined') return 1.15;
-    try { return JSON.parse(localStorage.getItem("readerPrefs") || "{}").fontSize ?? 1.15; } catch { return 1.15; }
+    try { return Number(JSON.parse(localStorage.getItem("readerPrefs") || "{}").fontSize) || 1.15; } catch { return 1.15; }
   });
-  const [wordTapEnabled, setWordTapEnabled] = useState(() => {
+  const [wordTapEnabled, setWordTapEnabled] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    try { return JSON.parse(localStorage.getItem("readerPrefs") || "{}").wordTapEnabled ?? false; } catch { return false; }
+    try { return !!JSON.parse(localStorage.getItem("readerPrefs") || "{}").wordTapEnabled; } catch { return false; }
   });
-  const [showTranslation, setShowTranslation] = useState(() => {
+  const [showTranslation, setShowTranslation] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    try { return JSON.parse(localStorage.getItem("readerPrefs") || "{}").showTranslation ?? false; } catch { return false; }
+    try { return !!JSON.parse(localStorage.getItem("readerPrefs") || "{}").showTranslation; } catch { return false; }
   });
-  const [translationResult, setTranslationResult] = useState<TranslationParagraph[] | null>(null);
-  const translationCacheRef = useRef<Map<string, TranslationParagraph[]>>(new Map());
+  const [translationResult, setTranslationResult] = useState<TranslationParagraph[] | null>(initialTranslationData ?? null);
   const TRANSLATION_CACHE_MAX = 50;
 
   // Determine translation language and availability
   const translationLang = locale === "ar" ? "en" : locale;
   const hasTranslation = translatedLanguages?.includes(translationLang) ?? false;
+
+  // Seed translation cache with server-fetched data
+  const translationCacheRef = useRef<Map<string, TranslationParagraph[]>>(
+    initialTranslationData && initialPageData
+      ? new Map([[`${initialPageNumber ? parseInt(initialPageNumber, 10) : 0}:${translationLang}`, initialTranslationData]])
+      : new Map()
+  );
 
   const [currentPage, setCurrentPage] = useState<number>(
     initialPageNumber ? parseInt(initialPageNumber, 10) : 0
@@ -404,10 +411,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, t
   const prefsHydrated = useRef(false);
   useEffect(() => { prefsHydrated.current = true; }, []);
 
-  // Persist reader preferences to localStorage on change
+  // Persist reader preferences to localStorage + sync translation cookie for SSR
   useEffect(() => {
     if (!prefsHydrated.current) return;
     try { localStorage.setItem("readerPrefs", JSON.stringify({ fontSize, wordTapEnabled, showTranslation })); } catch {}
+    // Sync to cookie so server can pre-fetch translation data
+    document.cookie = `reader-translation=${showTranslation ? "1" : "0"};path=/;max-age=${365 * 86400};SameSite=Lax`;
   }, [fontSize, wordTapEnabled, showTranslation]);
 
   // Analytics: page view duration tracking

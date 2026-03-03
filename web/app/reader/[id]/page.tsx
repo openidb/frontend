@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { fetchAPI } from "@/lib/api-client";
 import { HtmlReader } from "@/components/HtmlReader";
@@ -78,11 +79,23 @@ export default async function ReaderPage({
   const initialPage = pn ? parseInt(pn, 10) : 0;
   const langParam = lang && lang !== "none" && lang !== "transliteration" ? `&bookTitleLang=${encodeURIComponent(lang)}` : "";
 
-  // Fetch book metadata and first page in parallel
-  const [bookResult, pageResult] = await Promise.allSettled([
-    fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 3600 }),
-    fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: 86400 }),
-  ]);
+  // Check if user has translation enabled via cookie
+  const cookieStore = await cookies();
+  const translationEnabled = cookieStore.get("reader-translation")?.value === "1";
+  const localeCookie = cookieStore.get("locale")?.value || cookieStore.get("detected-locale")?.value || "en";
+  const translationLang = localeCookie === "ar" ? "en" : localeCookie;
+
+  // Fetch book metadata, first page, and translation (if enabled) in parallel
+  const bookPromise = fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 3600 });
+  const pagePromise = fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: 86400 });
+  const translationPromise = translationEnabled
+    ? fetchAPI<{ paragraphs: { index: number; translation: string }[] }>(
+        `/api/books/${encodedId}/pages/${initialPage}/translation?lang=${encodeURIComponent(translationLang)}`,
+        { revalidate: 3600 }
+      ).catch(() => null)
+    : null;
+
+  const [bookResult, pageResult] = await Promise.allSettled([bookPromise, pagePromise]);
 
   if (bookResult.status === "rejected") notFound();
   const book = bookResult.value.book;
@@ -90,6 +103,11 @@ export default async function ReaderPage({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const initialPageData: any = pageResult.status === "fulfilled" ? (pageResult.value.page ?? null) : null;
+
+  // Await translation (already running in parallel, just resolve the result)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const translationData: any = translationPromise ? await translationPromise : null;
+  const initialTranslationData = translationData?.paragraphs ?? null;
 
   const bookMetadata: BookMetadata = {
     id: book.id,
@@ -109,6 +127,7 @@ export default async function ReaderPage({
       bookMetadata={bookMetadata}
       initialPageNumber={pn}
       initialPageData={initialPageData}
+      initialTranslationData={initialTranslationData}
       totalPages={book.totalPages || 0}
       totalVolumes={book.totalVolumes || 1}
       maxPrintedPage={book.maxPrintedPage ?? book.totalPages ?? 0}
