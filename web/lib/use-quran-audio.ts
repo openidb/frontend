@@ -186,6 +186,7 @@ export function useQuranAudio(
   const scheduleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPlayingRef = useRef(false);
   const elementModeRef = useRef(false);
+  const firstAyahViaElementRef = useRef(false); // true while first ayah plays through <audio> src
   const currentPlayingAyahRef = useRef(0); // ayah currently audible
 
   const recitedPositions = useMemo(
@@ -571,8 +572,7 @@ export function useQuranAudio(
     if (!ctx) return;
     // While first ayah plays via <audio> element (not the Web Audio bridge),
     // don't navigate based on Web Audio scheduled sources
-    const el = audioRef.current;
-    if (el && el.src && !el.srcObject) return;
+    if (firstAyahViaElementRef.current) return;
     const now = ctx.currentTime;
     for (const ss of scheduledSourcesRef.current) {
       if (now >= ss.startTime && now < ss.startTime + ss.duration) {
@@ -1024,6 +1024,7 @@ export function useQuranAudio(
     el.onended = null;
     el.onerror = null;
     el.srcObject = null;
+    firstAyahViaElementRef.current = true;
     el.src = audioUrl(surahNumber, targetAyah);
     el.volume = 1;
     if (el.muted) el.muted = false;
@@ -1044,6 +1045,7 @@ export function useQuranAudio(
     el.onended = () => {
       el.onended = null;
       el.onerror = null;
+      firstAyahViaElementRef.current = false;
       // Switch to MediaStream bridge for gapless Web Audio playback.
       // Navigation to the next ayah is handled by updatePlayingAyah()
       // when it detects the next buffer is actually audible.
@@ -1064,6 +1066,7 @@ export function useQuranAudio(
   const pause = useCallback(() => {
     stopAllSources();
     stopScheduleTimer();
+    firstAyahViaElementRef.current = false;
     const el = audioRef.current;
     if (el) {
       // Don't null srcObject on pause — keep bridge alive so media session
