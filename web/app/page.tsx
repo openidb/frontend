@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import SearchClient from "./SearchClient";
 
 export async function generateMetadata({
@@ -23,7 +24,9 @@ export async function generateMetadata({
 export default async function SearchPage() {
   return (
     <main className="min-h-screen bg-background">
-      <SearchClient />
+      <Suspense>
+        <SearchClient />
+      </Suspense>
     </main>
   );
 }
