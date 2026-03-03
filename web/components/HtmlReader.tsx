@@ -655,17 +655,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     return maxPrintedPage;
   }, [pageData, currentPage, volumeInputValue, volumeMaxPrintedPages, maxPrintedPage, totalVolumes]);
 
-  // Handle volume dropdown change
-  const handleVolumeChange = useCallback((vol: string) => {
-    setVolumeInputValue(vol);
-    const startPage = volumeStartPages[vol];
-    if (startPage != null) {
-      setCurrentPage(startPage);
-      // Reset page input to avoid showing stale printed page from previous volume
-      setPageInputValue("1");
-    }
-  }, [volumeStartPages]);
-
   // Gate persist effect so the initial (already-correct) values don't trigger a write
   const prefsHydrated = useRef(false);
   useEffect(() => { prefsHydrated.current = true; }, []);
@@ -746,13 +735,17 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     };
   }, [bookMetadata.id]);
 
-  // Page cache (LRU, capped at 30 entries), seeded with server-fetched page
+  // Page cache (LRU, capped at 50 entries), seeded with server-fetched page
   const cacheRef = useRef<Map<number, PageData>>(
     initialPageData
       ? new Map([[initialPageData.pageNumber, initialPageData]])
       : new Map()
   );
-  const CACHE_MAX = 30;
+  const CACHE_MAX = 50;
+
+  // Precomputed formatted HTML cache — avoids expensive regex on page turns
+  const formattedCacheRef = useRef<Map<string, string>>(new Map());
+  const FORMATTED_CACHE_MAX = 60;
 
   const cacheGet = useCallback((key: number): PageData | undefined => {
     const val = cacheRef.current.get(key);
@@ -773,6 +766,55 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       if (oldest !== undefined) cacheRef.current.delete(oldest);
     }
   }, []);
+
+  // Precompute formatted HTML for a page during idle time
+  const wordTapRef = useRef(wordTapEnabled);
+  wordTapRef.current = wordTapEnabled;
+  const precomputeHtml = useCallback((page: PageData) => {
+    const key = `${page.pageNumber}:${wordTapRef.current ? 1 : 0}`;
+    if (formattedCacheRef.current.has(key)) return;
+    const run = () => {
+      if (formattedCacheRef.current.has(key)) return;
+      const html = formatContentHtml(page.contentHtml, wordTapRef.current, undefined, page.pageNumber === 0);
+      formattedCacheRef.current.set(key, html);
+      if (formattedCacheRef.current.size > FORMATTED_CACHE_MAX) {
+        const oldest = formattedCacheRef.current.keys().next().value;
+        if (oldest !== undefined) formattedCacheRef.current.delete(oldest);
+      }
+    };
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(run);
+    } else {
+      setTimeout(run, 1);
+    }
+  }, []);
+
+  // Navigate to a page — resolves cache synchronously to avoid stale-frame flash
+  const navigateToPage = useCallback((pageNumber: number) => {
+    const cached = cacheRef.current.get(pageNumber);
+    if (cached) {
+      // LRU touch
+      cacheRef.current.delete(pageNumber);
+      cacheRef.current.set(pageNumber, cached);
+      // Batch all updates — single render with new content
+      setCurrentPage(pageNumber);
+      setPageData(cached);
+      setIsLoading(false);
+    } else {
+      setCurrentPage(pageNumber);
+    }
+  }, []);
+
+  // Handle volume dropdown change
+  const handleVolumeChange = useCallback((vol: string) => {
+    setVolumeInputValue(vol);
+    const startPage = volumeStartPages[vol];
+    if (startPage != null) {
+      navigateToPage(startPage);
+      // Reset page input to avoid showing stale printed page from previous volume
+      setPageInputValue("1");
+    }
+  }, [volumeStartPages, navigateToPage]);
 
   // Abort controller for current page fetch (cancels stale requests)
   const abortRef = useRef<AbortController | null>(null);
@@ -841,7 +883,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   // Track in-flight prefetches to avoid duplicate requests
   const prefetchingRef = useRef<Set<number>>(new Set());
 
-  // Prefetch a single page (no abort — let requests complete to populate cache)
+  // Prefetch a single page + precompute its formatted HTML
   const prefetchPage = useCallback(async (pageNumber: number) => {
     if (pageNumber < 0 || pageNumber >= totalPages) return;
     if (cacheRef.current.has(pageNumber) || prefetchingRef.current.has(pageNumber)) return;
@@ -850,14 +892,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       const res = await fetch(`/api/books/${bookMetadata.id}/pages/${pageNumber}`);
       if (res.ok) {
         const data = await res.json();
-        cacheSet(pageNumber, data.page);
+        const page = data.page as PageData;
+        cacheSet(pageNumber, page);
+        precomputeHtml(page);
       }
     } catch {
       // Silent prefetch failure
     } finally {
       prefetchingRef.current.delete(pageNumber);
     }
-  }, [bookMetadata.id, totalPages, cacheSet]);
+  }, [bookMetadata.id, totalPages, cacheSet, precomputeHtml]);
 
   // Track in-flight translation prefetches
   const prefetchingTranslationsRef = useRef<Set<string>>(new Set());
@@ -891,21 +935,23 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     fetchPage(currentPage);
   }, [currentPage, fetchPage]);
 
-  // Prefetch 5 ahead + 2 behind after current page loads (pages + translations)
+  // Prefetch 10 ahead + 3 behind after current page loads (pages + translations)
   useEffect(() => {
     if (!isLoading && pageData) {
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 1; i <= 10; i++) {
         prefetchPage(currentPage + i);
       }
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= 3; i++) {
         prefetchPage(currentPage - i);
       }
       // Prefetch translations for nearby pages when translation is active
       if (showTranslation && hasTranslation && translationLang) {
-        for (let i = 1; i <= 3; i++) {
+        for (let i = 1; i <= 5; i++) {
           prefetchTranslation(currentPage + i, translationLang);
         }
-        prefetchTranslation(currentPage - 1, translationLang);
+        for (let i = 1; i <= 2; i++) {
+          prefetchTranslation(currentPage - i, translationLang);
+        }
       }
     }
   }, [isLoading, pageData, currentPage, prefetchPage, showTranslation, hasTranslation, translationLang, prefetchTranslation]);
@@ -991,12 +1037,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       rafRef.current = requestAnimationFrame(() => {
         rafRef.current = 0;
         if (pendingPageRef.current !== null) {
-          setCurrentPage(pendingPageRef.current);
+          navigateToPage(pendingPageRef.current);
           pendingPageRef.current = null;
         }
       });
     }
-  }, []);
+  }, [navigateToPage]);
 
   // Clean up RAF on unmount
   useEffect(() => {
@@ -1077,7 +1123,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
 
         // Clamp to valid range
         const clamped = Math.max(0, Math.min(totalPages - 1, internalPage));
-        setCurrentPage(clamped);
+        navigateToPage(clamped);
       }
       return;
     }
@@ -1124,11 +1170,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     // Internal page = volume start + (printed page - first printed page in this volume)
     const estimated = volStart + (num - minPrinted);
     if (estimated >= volStart && estimated <= volEnd) {
-      setCurrentPage(estimated);
+      navigateToPage(estimated);
     } else {
       // Clamp to volume bounds
       const clamped = Math.max(volStart, Math.min(volEnd, estimated));
-      setCurrentPage(clamped);
+      navigateToPage(clamped);
     }
   };
 
@@ -1144,15 +1190,28 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     trackBookEvent(bookMetadata.id, "pdf_open", currentPage);
   }, [bookMetadata.id, currentPage, pageData?.printedPageNumber]);
 
-  // Memoize formatted HTML — avoids expensive regex (honorifics, word wrapping) on every render
+  // Memoize formatted HTML — checks precomputed cache first, avoids expensive regex on page turns
   const formattedHtml = useMemo(() => {
     if (!pageData) return "";
-    return formatContentHtml(
+    const translationData = showTranslation && translationResult ? translationResult : undefined;
+    // Check precomputed cache (only for pages without translation — translation is dynamic)
+    if (!translationData) {
+      const key = `${pageData.pageNumber}:${wordTapEnabled ? 1 : 0}`;
+      const cached = formattedCacheRef.current.get(key);
+      if (cached) return cached;
+    }
+    const html = formatContentHtml(
       pageData.contentHtml,
       wordTapEnabled,
-      showTranslation && translationResult ? translationResult : undefined,
+      translationData,
       pageData.pageNumber === 0,
     );
+    // Store in precomputed cache for instant access on revisits
+    if (!translationData) {
+      const key = `${pageData.pageNumber}:${wordTapEnabled ? 1 : 0}`;
+      formattedCacheRef.current.set(key, html);
+    }
+    return html;
   }, [pageData?.contentHtml, pageData?.pageNumber, wordTapEnabled, showTranslation, translationResult]);
 
   return (
@@ -1273,7 +1332,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
         wordTapEnabled={wordTapEnabled}
         showTranslation={showTranslation}
         initialToc={initialToc}
-        onPageChange={setCurrentPage}
+        onPageChange={navigateToPage}
         onFontSizeChange={setFontSize}
         onWordTapToggle={() => { setWordTapEnabled((v) => !v); setSelectedWord(null); }}
         onTranslationToggle={() => setShowTranslation((v) => !v)}
