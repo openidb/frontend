@@ -313,7 +313,7 @@ export default function BooksClient() {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 pb-24 md:pb-8">
       <div className="mb-6 space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold">{t("books.title")}</h1>
         <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 rounded-2xl bg-muted/60 p-1.5" suppressHydrationWarning>
