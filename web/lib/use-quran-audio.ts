@@ -1053,22 +1053,10 @@ export function useQuranAudio(
       });
     };
 
-    // Schedule ayah+1 onwards via Web Audio (ayah 1 plays through element).
-    // Set scheduledEnd to account for first ayah duration so next ayah is
-    // scheduled to start after the current one ends (not immediately).
+    // Schedule ayah+1 onwards via Web Audio (ayah 1 plays through element)
     nextScheduleAyahRef.current = targetAyah + 1;
-    if (el.readyState >= 1 && el.duration && isFinite(el.duration)) {
-      scheduledEndRef.current = ctx.currentTime + el.duration;
-      scheduleFromCache();
-    } else {
-      scheduledEndRef.current = Infinity; // prevent premature scheduling
-      el.addEventListener('loadedmetadata', () => {
-        const c = audioCtxRef.current;
-        if (!c || !isPlayingRef.current) return;
-        scheduledEndRef.current = c.currentTime + el.duration;
-        scheduleFromCacheRef.current();
-      }, { once: true });
-    }
+    scheduledEndRef.current = 0;
+    scheduleFromCache();
     stopScheduleTimer();
     scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
   }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
