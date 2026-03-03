@@ -1,7 +1,6 @@
 import { fetchAPI } from "@/lib/api-client";
 import BooksClient from "./BooksClient";
 
-export const dynamic = 'force-dynamic'; // skip build-time render (API unavailable during Docker build)
 
 interface Author {
   id: string;
