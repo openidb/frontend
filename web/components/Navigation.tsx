@@ -80,12 +80,12 @@ export function DesktopNavigation() {
               )}
             >
               {active && (
-                <span className="absolute inset-0 bg-muted rounded-md" />
+                <span className="absolute inset-0 bg-muted rounded-md pointer-events-none" />
               )}
               <span className={cn("relative inline-flex transition-transform duration-200", iconClass)}>
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 pointer-events-none" />
               </span>
-              <span className="relative">{t(labelKey)}</span>
+              <span className="relative pointer-events-none">{t(labelKey)}</span>
             </a>
           );
         })}
@@ -141,12 +141,12 @@ export function MobileNavigation() {
             )}
           >
             {active && (
-              <span className="absolute inset-0 bg-muted rounded-md" />
+              <span className="absolute inset-0 bg-muted rounded-md pointer-events-none" />
             )}
             <span className={cn("relative inline-flex transition-transform duration-200", iconClass)}>
-              <Icon className="h-6 w-6" />
+              <Icon className="h-6 w-6 pointer-events-none" />
             </span>
-            <span className="text-[0.7rem] relative">{t(labelKey)}</span>
+            <span className="text-[0.7rem] relative pointer-events-none">{t(labelKey)}</span>
           </a>
         );
       })}
