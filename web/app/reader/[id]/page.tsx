@@ -98,10 +98,25 @@ export default async function ReaderPage({
     toc: [],
   };
 
+  // Fetch the initial page server-side so the reader can render content immediately
+  const initialPage = pn ? parseInt(pn, 10) : 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let initialPageData: any = null;
+  try {
+    const pageRes = await fetchAPI<{ page: unknown }>(
+      `/api/books/${encodeURIComponent(id)}/pages/${initialPage}`,
+      { revalidate: 86400 }
+    );
+    initialPageData = pageRes.page ?? null;
+  } catch {
+    // Non-critical — reader will fetch client-side as fallback
+  }
+
   return (
     <HtmlReader
       bookMetadata={bookMetadata}
       initialPageNumber={pn}
+      initialPageData={initialPageData}
       totalPages={book.totalPages || 0}
       totalVolumes={book.totalVolumes || 1}
       maxPrintedPage={book.maxPrintedPage ?? book.totalPages ?? 0}

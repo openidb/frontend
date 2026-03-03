@@ -51,6 +51,7 @@ interface TranslationParagraph {
 interface HtmlReaderProps {
   bookMetadata: BookMetadata;
   initialPageNumber?: string;
+  initialPageData?: PageData | null;
   totalPages: number;
   totalVolumes: number;
   maxPrintedPage: number;
@@ -313,7 +314,7 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
-export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
+export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { config } = useAppConfig();
@@ -333,8 +334,8 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
   const [currentPage, setCurrentPage] = useState<number>(
     initialPageNumber ? parseInt(initialPageNumber, 10) : 0
   );
-  const [pageData, setPageData] = useState<PageData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [pageData, setPageData] = useState<PageData | null>(initialPageData ?? null);
+  const [isLoading, setIsLoading] = useState(!initialPageData);
   const [error, setError] = useState<string | null>(null);
   const [pageInputValue, setPageInputValue] = useState(
     initialPageNumber || "0"
@@ -470,8 +471,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, totalPages, totalV
     };
   }, [bookMetadata.id]);
 
-  // Page cache (LRU, capped at 30 entries)
-  const cacheRef = useRef<Map<number, PageData>>(new Map());
+  // Page cache (LRU, capped at 30 entries), seeded with server-fetched page
+  const cacheRef = useRef<Map<number, PageData>>(
+    initialPageData
+      ? new Map([[initialPageData.pageNumber, initialPageData]])
+      : new Map()
+  );
   const CACHE_MAX = 30;
 
   const cacheGet = useCallback((key: number): PageData | undefined => {
