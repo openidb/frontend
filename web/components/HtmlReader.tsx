@@ -11,8 +11,6 @@ import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
 import { WordDefinitionPopover } from "./WordDefinitionPopover";
 import { trackBookEvent } from "@/lib/analytics";
-import { motion } from "framer-motion";
-import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { triggerHaptic } from "@/lib/haptics";
 
 interface BookMetadata {
@@ -1146,7 +1144,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     trackBookEvent(bookMetadata.id, "pdf_open", currentPage);
   }, [bookMetadata.id, currentPage, pageData?.printedPageNumber]);
 
-  const prefersReducedMotion = useReducedMotion();
+  // Memoize formatted HTML — avoids expensive regex (honorifics, word wrapping) on every render
+  const formattedHtml = useMemo(() => {
+    if (!pageData) return "";
+    return formatContentHtml(
+      pageData.contentHtml,
+      wordTapEnabled,
+      showTranslation && translationResult ? translationResult : undefined,
+      pageData.pageNumber === 0,
+    );
+  }, [pageData?.contentHtml, pageData?.pageNumber, wordTapEnabled, showTranslation, translationResult]);
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-background touch-manipulation">
@@ -1177,18 +1184,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           {/* Translation loading indicator removed for smooth transitions */}
           {/* Desktop page controls — hidden on mobile (moved to bottom bar) */}
           <div className="hidden sm:flex items-center gap-1 rounded-lg bg-foreground/[0.04] px-1.5 py-0.5" dir="ltr">
-            <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={goToNextPage}
-                disabled={currentPage >= totalPages - 1}
-                title={t("reader.nextPage")}
-                className="h-8 w-8"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            </motion.div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToNextPage}
+              disabled={currentPage >= totalPages - 1}
+              title={t("reader.nextPage")}
+              className="h-8 w-8 transition-transform active:scale-95 hover:scale-105"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
             <div className="flex items-center gap-1">
               {totalVolumes > 1 && volumeKeys.length > 0 && (
                 <div className="flex items-center gap-0.5">
@@ -1224,18 +1229,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                 </span>
               </form>
             </div>
-            <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.06 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={goToPrevPage}
-                disabled={currentPage <= 0}
-                title={t("reader.prevPage")}
-                className="h-8 w-8"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </motion.div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToPrevPage}
+              disabled={currentPage <= 0}
+              title={t("reader.prevPage")}
+              className="h-8 w-8 transition-transform active:scale-95 hover:scale-105"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
           </div>
 
           {/* Menu button — bigger on mobile */}
@@ -1328,14 +1331,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
               </div>
             )}
             <div
-              dangerouslySetInnerHTML={{
-                __html: formatContentHtml(
-                  pageData.contentHtml,
-                  wordTapEnabled,
-                  showTranslation && translationResult ? translationResult : undefined,
-                  pageData.pageNumber === 0,
-                ),
-              }}
+              dangerouslySetInnerHTML={{ __html: formattedHtml }}
             />
           </div>
         )}

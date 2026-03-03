@@ -53,7 +53,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`, { revalidate: 3600 });
+    const data = await fetchAPI<BookData>(`/api/books/${encodeURIComponent(id)}`, { revalidate: 86400 });
     const title = data.book?.titleArabic || data.book?.titleLatin || `Book ${id}`;
     return {
       title: `${title} - OpenIDB`,
@@ -86,7 +86,8 @@ export default async function ReaderPage({
 
   // Fetch book metadata, first page, TOC, and translation (if enabled) in parallel
   // Book content is static — use long/indefinite revalidation
-  const bookPromise = fetchAPI<BookData>(`/api/books/${encodedId}?${langParam}`, { revalidate: 86400 });
+  const bookUrl = langParam ? `/api/books/${encodedId}?${langParam}` : `/api/books/${encodedId}`;
+  const bookPromise = fetchAPI<BookData>(bookUrl, { revalidate: 86400 });
   const pagePromise = fetchAPI<{ page: unknown }>(`/api/books/${encodedId}/pages/${initialPage}`, { revalidate: false });
   const tocPromise = fetchAPI<{ toc: TocEntry[] }>(`/api/books/${encodedId}/toc`, { revalidate: false });
   const translationPromise = translationEnabled
