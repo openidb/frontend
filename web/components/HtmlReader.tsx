@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, ChevronLeft, EllipsisVertical, FileText, User, Minus, Plus, X, Languages, Headphones } from "lucide-react";
@@ -381,15 +382,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   });
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
-  const activeTocRef = useRef<HTMLButtonElement>(null);
   const tocScrollRef = useRef<HTMLDivElement>(null);
 
   // Progressive TOC rendering — avoids blocking the main thread when sidebar opens.
   // Entries persist across open/close so reopening is instant.
-  const TOC_BATCH = 100;
-  const [tocRenderLimit, setTocRenderLimit] = useState(0);
   const tocScrolledRef = useRef(false);
-  const tocLoadStartedRef = useRef(false);
 
   // Sorted volume keys for dropdown
   const volumeKeys = useMemo(
@@ -747,41 +744,36 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       .catch(() => {});
   }, [showSidebar, bookMetadata.id]);
 
-  // Progressive TOC rendering: render chapters in batches.
-  // Entries persist across open/close so the sidebar reopens instantly.
+  // Find the active TOC entry index for the current page
+  const activeTocIndex = useMemo(() => {
+    if (tocData.length === 0) return -1;
+    for (let i = tocData.length - 1; i >= 0; i--) {
+      if (tocData[i].page <= currentPage) return i;
+    }
+    return -1;
+  }, [tocData, currentPage]);
+
+  // Virtualized TOC list — only renders visible rows
+  const tocVirtualizer = useVirtualizer({
+    count: tocData.length,
+    getScrollElement: () => tocScrollRef.current,
+    estimateSize: () => 44,
+    overscan: 20,
+  });
+
+  // Auto-scroll TOC to active chapter on sidebar open
   useEffect(() => {
     if (!showSidebar || tocData.length === 0) {
       tocScrolledRef.current = false;
       return;
     }
-    // Already fully rendered — nothing to do
-    if (tocLoadStartedRef.current && tocRenderLimit >= tocData.length) return;
-    tocLoadStartedRef.current = true;
-
-    let raf: number;
-    let limit = tocRenderLimit;
-    const renderBatch = () => {
-      limit = Math.min(limit + TOC_BATCH, tocData.length);
-      setTocRenderLimit(limit);
-      if (limit < tocData.length) {
-        raf = requestAnimationFrame(renderBatch);
-      }
-    };
-    // Defer first batch to after the sidebar's opening animation paint
-    raf = requestAnimationFrame(renderBatch);
-    return () => cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSidebar, tocData.length]);
-
-  // Auto-scroll TOC to active chapter once it's rendered
-  useEffect(() => {
-    if (showSidebar && !tocScrolledRef.current && activeTocRef.current) {
-      tocScrolledRef.current = true;
-      requestAnimationFrame(() => {
-        activeTocRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
-      });
-    }
-  }, [showSidebar, tocRenderLimit]);
+    if (tocScrolledRef.current || activeTocIndex < 0) return;
+    tocScrolledRef.current = true;
+    // Defer to next frame so the virtualizer has measured
+    requestAnimationFrame(() => {
+      tocVirtualizer.scrollToIndex(activeTocIndex, { align: "center" });
+    });
+  }, [showSidebar, tocData.length, activeTocIndex, tocVirtualizer]);
 
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
   const rafRef = useRef<number>(0);
@@ -1202,36 +1194,36 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
               <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
             </div>
 
-            <div ref={tocScrollRef} className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
-              <div className="space-y-1">
-                {tocData.slice(0, tocRenderLimit).map((entry, index) => {
+            <div ref={tocScrollRef} className="flex-1 overflow-auto px-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
+              <div style={{ height: `${tocVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}>
+                {tocVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const entry = tocData[virtualRow.index];
                   const depth = entry.level;
                   const bullets = ["●", "○", "▪", "◦", "▸"];
                   const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
-                  const isActive = entry.page <= currentPage &&
-                    (index === tocData.length - 1 || tocData[index + 1].page > currentPage);
+                  const isActive = virtualRow.index === activeTocIndex;
 
                   return (
                     <button
-                      key={index}
-                      ref={isActive ? activeTocRef : undefined}
+                      key={virtualRow.index}
+                      data-index={virtualRow.index}
+                      ref={tocVirtualizer.measureElement}
                       onClick={() => {
                         setCurrentPage(entry.page);
                         setShowSidebar(false);
                       }}
-                      className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
-                      style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+                      className={`absolute left-0 right-0 px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
+                      style={{
+                        top: 0,
+                        transform: `translateY(${virtualRow.start}px)`,
+                        paddingInlineStart: `${depth * 16 + 12}px`,
+                      }}
                     >
                       {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
                       <span>{entry.title}</span>
                     </button>
                   );
                 })}
-                {tocRenderLimit < tocData.length && (
-                  <div className="flex justify-center py-3">
-                    <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground/80 rounded-full animate-spin" />
-                  </div>
-                )}
               </div>
             </div>
           </>
