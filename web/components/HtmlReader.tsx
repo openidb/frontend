@@ -743,9 +743,9 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       .finally(() => setTocLoading(false));
   }, [showSidebar, bookMetadata.id]);
 
-  // Find the active TOC entry via binary search (O(log n) instead of O(n))
+  // Find the active TOC entry via binary search — only computed when sidebar is open
   const activeTocIndex = useMemo(() => {
-    if (tocData.length === 0) return -1;
+    if (!showSidebar || tocData.length === 0) return -1;
     let lo = 0, hi = tocData.length - 1, result = -1;
     while (lo <= hi) {
       const mid = (lo + hi) >>> 1;
@@ -757,11 +757,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       }
     }
     return result;
-  }, [tocData, currentPage]);
+  }, [showSidebar, tocData, currentPage]);
 
-  // Virtualized TOC list — only renders visible rows
+  // Virtualized TOC list — only active when sidebar is open
   const tocVirtualizer = useVirtualizer({
-    count: tocData.length,
+    count: showSidebar ? tocData.length : 0,
     getScrollElement: () => tocScrollRef.current,
     estimateSize: () => 44,
     overscan: 20,
@@ -1061,11 +1061,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
       {showSidebar && (
         <div
           className="hidden sm:block fixed inset-0 z-20"
-          onClick={() => setShowSidebar(false)}
+          onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
         />
       )}
 
-      {/* Options panel — hidden via display:none when closed to fully disable virtualizer layout work */}
+      {/* Options panel — children only rendered when open to avoid virtualizer work on close */}
       <div
         dir={dir}
         aria-hidden={!showSidebar}
@@ -1078,7 +1078,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
             <h2 className="font-semibold text-base">{t("reader.options")}</h2>
           </div>
           <button
-            onClick={() => setShowSidebar(false)}
+            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
             className="h-10 w-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0"
           >
             <X className="h-5 w-5" />
@@ -1090,7 +1090,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           <PrefetchLink
             href={`/authors/${bookMetadata.authorId}`}
             className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-            onClick={() => setShowSidebar(false)}
+            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
           >
             <User className="h-4 w-4 shrink-0 text-muted-foreground" />
             <span>{t("reader.author")}: {expandHonorifics(bookMetadata.author)}</span>
@@ -1098,6 +1098,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           {pageData?.pdfUrl ? (
             <button
               onClick={() => {
+                if (config.hapticsEnabled) triggerHaptic("light");
                 handleOpenPdf();
                 setShowSidebar(false);
               }}
@@ -1138,7 +1139,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
             href={`/audiobook/${bookMetadata.id}?pn=${currentPage}`}
             replace
             className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-            onClick={() => setShowSidebar(false)}
+            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
           >
             <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />
             <span>{t("audio.listenToBook")}</span>
@@ -1228,6 +1229,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                     >
                       <button
                         onClick={() => {
+                          if (config.hapticsEnabled) triggerHaptic("light");
                           setCurrentPage(entry.page);
                           setShowSidebar(false);
                         }}
