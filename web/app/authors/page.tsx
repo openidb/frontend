@@ -1,6 +1,6 @@
+import { unstable_noStore } from "next/cache";
 import { fetchAPI } from "@/lib/api-client";
 import AuthorsClient from "./AuthorsClient";
-
 
 interface Author {
   id: string;
@@ -51,6 +51,7 @@ export default async function AuthorsPage() {
     centuries = centuriesData.centuries;
   } catch (error) {
     console.error("Failed to fetch authors:", error);
+    unstable_noStore(); // don't cache failed fetches
   }
 
   return (
