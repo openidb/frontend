@@ -381,6 +381,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   const activeTocRef = useRef<HTMLButtonElement>(null);
   const tocScrollRef = useRef<HTMLDivElement>(null);
 
+  // Progressive TOC rendering — avoids blocking the main thread when sidebar opens
+  const TOC_BATCH = 100;
+  const [tocRenderLimit, setTocRenderLimit] = useState(0);
+  const tocScrolledRef = useRef(false);
+
   // Sorted volume keys for dropdown
   const volumeKeys = useMemo(
     () => Object.keys(volumeStartPages).sort((a, b) => Number(a) - Number(b)),
@@ -725,15 +730,39 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     setSelectedWord(null);
   }, [currentPage]);
 
-  // Auto-scroll TOC to active chapter when sidebar opens
+  // Progressive TOC rendering: when sidebar opens, render chapters in batches
+  // so the panel appears instantly and entries fill in without blocking
   useEffect(() => {
-    if (showSidebar && activeTocRef.current) {
-      // Small delay to let the sidebar render/measure
+    if (!showSidebar) {
+      setTocRenderLimit(0);
+      tocScrolledRef.current = false;
+      return;
+    }
+    if (toc.length === 0) return;
+
+    let raf: number;
+    let limit = 0;
+    const renderBatch = () => {
+      limit = Math.min(limit + TOC_BATCH, toc.length);
+      setTocRenderLimit(limit);
+      if (limit < toc.length) {
+        raf = requestAnimationFrame(renderBatch);
+      }
+    };
+    // Defer first batch to after the sidebar's opening animation paint
+    raf = requestAnimationFrame(renderBatch);
+    return () => cancelAnimationFrame(raf);
+  }, [showSidebar, toc.length]);
+
+  // Auto-scroll TOC to active chapter once it's rendered
+  useEffect(() => {
+    if (showSidebar && !tocScrolledRef.current && activeTocRef.current) {
+      tocScrolledRef.current = true;
       requestAnimationFrame(() => {
         activeTocRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
       });
     }
-  }, [showSidebar]);
+  }, [showSidebar, tocRenderLimit]);
 
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
   const rafRef = useRef<number>(0);
@@ -1161,7 +1190,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
 
             <div ref={tocScrollRef} className="flex-1 overflow-auto p-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation">
               <div className="space-y-1">
-                {toc.map((entry, index) => {
+                {toc.slice(0, tocRenderLimit).map((entry, index) => {
                   const depth = entry.level;
                   const bullets = ["●", "○", "▪", "◦", "▸"];
                   const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
@@ -1188,6 +1217,11 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                     </button>
                   );
                 })}
+                {tocRenderLimit < toc.length && (
+                  <div className="flex justify-center py-3">
+                    <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground/80 rounded-full animate-spin" />
+                  </div>
+                )}
               </div>
             </div>
           </>
