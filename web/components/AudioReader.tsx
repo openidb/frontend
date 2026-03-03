@@ -603,7 +603,7 @@ export function AudioReader({
         style={{ backgroundColor: "hsl(var(--background))" }}
       >
         {/* Back button */}
-        <Button variant="ghost" size="icon" onClick={() => router.back()} className="shrink-0 h-10 w-10 sm:h-9 sm:w-9">
+        <Button variant="ghost" size="icon" onClick={() => { window.history.length > 1 ? router.back() : router.push("/"); }} className="shrink-0 h-10 w-10 sm:h-9 sm:w-9">
           <ArrowLeft className="h-6 w-6 sm:h-5 sm:w-5 rtl:scale-x-[-1]" />
         </Button>
         <div className="min-w-0 flex-1">
@@ -800,6 +800,7 @@ export function AudioReader({
               <div className="border-t pt-3">
                 <PrefetchLink
                   href={`/reader/${bookMetadata.id}?pn=${currentPageNum}`}
+                  replace
                   className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
                   onClick={() => setShowOptions(false)}
                 >
