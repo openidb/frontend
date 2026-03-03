@@ -9,7 +9,7 @@ import { useTranslation } from "@/lib/i18n";
 import { useAppConfig } from "@/lib/config";
 import { WordDefinitionPopover } from "./WordDefinitionPopover";
 import { trackBookEvent } from "@/lib/analytics";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -381,10 +381,12 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   const activeTocRef = useRef<HTMLButtonElement>(null);
   const tocScrollRef = useRef<HTMLDivElement>(null);
 
-  // Progressive TOC rendering — avoids blocking the main thread when sidebar opens
+  // Progressive TOC rendering — avoids blocking the main thread when sidebar opens.
+  // Entries persist across open/close so reopening is instant.
   const TOC_BATCH = 100;
   const [tocRenderLimit, setTocRenderLimit] = useState(0);
   const tocScrolledRef = useRef(false);
+  const tocLoadStartedRef = useRef(false);
 
   // Sorted volume keys for dropdown
   const volumeKeys = useMemo(
@@ -730,15 +732,16 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     setSelectedWord(null);
   }, [currentPage]);
 
-  // Progressive TOC rendering: when sidebar opens, render chapters in batches
-  // so the panel appears instantly and entries fill in without blocking
+  // Progressive TOC rendering: on first sidebar open, render chapters in batches.
+  // Entries persist across open/close so the sidebar reopens instantly.
   useEffect(() => {
-    if (!showSidebar) {
-      setTocRenderLimit(0);
+    if (!showSidebar || toc.length === 0) {
       tocScrolledRef.current = false;
       return;
     }
-    if (toc.length === 0) return;
+    // Already fully rendered — nothing to do
+    if (tocLoadStartedRef.current) return;
+    tocLoadStartedRef.current = true;
 
     let raf: number;
     let limit = 0;
@@ -1048,19 +1051,14 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
         />
       )}
 
-      {/* Options panel — full-screen on mobile, dropdown on desktop */}
-      {/* Wrapper ensures pointer-events are disabled immediately when sidebar closes,
-          preventing the exit animation from blocking clicks on header buttons */}
-      <div style={{ pointerEvents: showSidebar ? undefined : "none" }}>
-      <AnimatePresence>
-      {showSidebar && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
+      {/* Options panel — always mounted so TOC DOM persists across open/close.
+          Uses CSS opacity transition instead of AnimatePresence to avoid unmounting. */}
+      <div
         dir={dir}
-        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
+        aria-hidden={!showSidebar}
+        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation transition-opacity duration-150 ${
+          showSidebar ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
       >
         {/* Mobile close header — X positioned to match the options menu button */}
         <div className="sm:hidden flex items-center border-b px-2 py-2">
@@ -1206,11 +1204,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
                         setShowSidebar(false);
                       }}
                       className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
-                      style={{
-                        paddingInlineStart: `${depth * 16 + 12}px`,
-                        contentVisibility: "auto",
-                        containIntrinsicSize: "auto 44px",
-                      }}
+                      style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
                     >
                       {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
                       <span>{entry.title}</span>
@@ -1226,9 +1220,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
             </div>
           </>
         )}
-      </motion.div>
-      )}
-      </AnimatePresence>
       </div>
 
       {/* Content area */}
