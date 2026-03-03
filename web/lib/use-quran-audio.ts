@@ -266,6 +266,8 @@ export function useQuranAudio(
     const el = audioRef.current;
     const dest = mediaStreamDestRef.current;
     if (!el || !dest) return;
+    // Don't override el.src playback while first ayah plays through element
+    if (firstAyahViaElementRef.current) return;
     if (el.srcObject !== dest.stream) el.srcObject = dest.stream;
     if (el.volume !== 1) el.volume = 1;
     if (el.muted) el.muted = false;
