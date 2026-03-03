@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo, useImperativeHandle, forwardRef, memo } from "react";
+import type { Ref } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -313,16 +314,274 @@ function displayPageNumber(page: PageData | null, internalPage: number): string 
   return ROMAN[internalPage] ?? internalPage.toString();
 }
 
+// --- Sidebar extracted as a memo'd component so toggling it doesn't re-render the reader ---
+
+interface ReaderSidebarHandle {
+  toggle: () => void;
+}
+
+interface ReaderSidebarProps {
+  dir: string;
+  bookMetadata: BookMetadata;
+  currentPage: number;
+  pageData: PageData | null;
+  hasTranslation: boolean;
+  fontSize: number;
+  wordTapEnabled: boolean;
+  showTranslation: boolean;
+  initialToc: TocEntry[];
+  onPageChange: (page: number) => void;
+  onFontSizeChange: (fn: (s: number) => number) => void;
+  onWordTapToggle: () => void;
+  onTranslationToggle: () => void;
+  onOpenPdf: () => void;
+}
+
+const ReaderSidebar = memo(forwardRef(function ReaderSidebar(
+  props: ReaderSidebarProps,
+  ref: Ref<ReaderSidebarHandle>,
+) {
+  const {
+    dir, bookMetadata, currentPage, pageData, hasTranslation,
+    fontSize, wordTapEnabled, showTranslation, initialToc,
+    onPageChange, onFontSizeChange, onWordTapToggle, onTranslationToggle, onOpenPdf,
+  } = props;
+  const { t } = useTranslation();
+  const { config } = useAppConfig();
+
+  const [open, setOpen] = useState(false);
+  const haptic = () => { if (config.hapticsEnabled) triggerHaptic("light"); };
+
+  useImperativeHandle(ref, () => ({
+    toggle: () => { haptic(); setOpen((v) => !v); },
+  }), [config.hapticsEnabled]);
+
+  // TOC state — fully owned by sidebar
+  const [tocData, setTocData] = useState<TocEntry[]>(initialToc);
+  const [tocLoading, setTocLoading] = useState(false);
+  const tocFetchedRef = useRef(initialToc.length > 0);
+  const tocScrollRef = useRef<HTMLDivElement>(null);
+  const tocScrolledRef = useRef(false);
+
+  // Lazy-load TOC on first open
+  useEffect(() => {
+    if (!open || tocFetchedRef.current) return;
+    tocFetchedRef.current = true;
+    setTocLoading(true);
+    fetch(`/api/books/${bookMetadata.id}/toc`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.toc) setTocData(data.toc); })
+      .catch(() => {})
+      .finally(() => setTocLoading(false));
+  }, [open, bookMetadata.id]);
+
+  // Active chapter via binary search
+  const activeTocIndex = useMemo(() => {
+    if (!open || tocData.length === 0) return -1;
+    let lo = 0, hi = tocData.length - 1, result = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      if (tocData[mid].page <= currentPage) { result = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    return result;
+  }, [open, tocData, currentPage]);
+
+  // Virtualizer — zero items when hidden
+  const tocVirtualizer = useVirtualizer({
+    count: open ? tocData.length : 0,
+    getScrollElement: () => tocScrollRef.current,
+    estimateSize: () => 44,
+    overscan: 20,
+  });
+
+  // Auto-scroll to active chapter on open
+  useEffect(() => {
+    if (!open || tocData.length === 0) { tocScrolledRef.current = false; return; }
+    if (tocScrolledRef.current || activeTocIndex < 0) return;
+    tocScrolledRef.current = true;
+    requestAnimationFrame(() => {
+      tocVirtualizer.scrollToIndex(activeTocIndex, { align: "center" });
+    });
+  }, [open, tocData.length, activeTocIndex, tocVirtualizer]);
+
+  const close = () => { haptic(); setOpen(false); };
+
+  if (!open) return null;
+
+  return (
+    <>
+      {/* Overlay — desktop only */}
+      <div className="hidden sm:block fixed inset-0 z-20" onClick={close} />
+
+      <div
+        dir={dir}
+        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
+      >
+        {/* Mobile close header */}
+        <div className="sm:hidden flex items-center border-b px-2 py-2">
+          <div className="flex-1 ps-2">
+            <h2 className="font-semibold text-base">{t("reader.options")}</h2>
+          </div>
+          <button
+            onClick={close}
+            className="h-10 w-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Links section */}
+        <div className="p-3 sm:p-3 space-y-1 touch-manipulation">
+          <PrefetchLink
+            href={`/authors/${bookMetadata.authorId}`}
+            className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            onClick={close}
+          >
+            <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>{t("reader.author")}: {expandHonorifics(bookMetadata.author)}</span>
+          </PrefetchLink>
+          {pageData?.pdfUrl ? (
+            <button
+              onClick={() => { haptic(); onOpenPdf(); close(); }}
+              className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>{t("reader.openPdf")}</span>
+            </button>
+          ) : (
+            <div className="w-full px-4 py-3 text-sm flex items-center gap-2 text-muted-foreground">
+              <FileText className="h-4 w-4 shrink-0" />
+              <span>{t("reader.pdfNotAvailable")}</span>
+            </div>
+          )}
+
+          {/* Font size */}
+          <div className="w-full px-4 py-3 text-sm flex items-center justify-between">
+            <span>{t("reader.fontSize")}</span>
+            <div className="flex items-center gap-2" dir="ltr">
+              <button
+                onClick={() => { haptic(); onFontSizeChange((s) => Math.max(0.8, +(s - 0.1).toFixed(1))); }}
+                className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <span className="w-10 text-center text-muted-foreground">{Math.round(fontSize * 100)}%</span>
+              <button
+                onClick={() => { haptic(); onFontSizeChange((s) => Math.min(2.0, +(s + 0.1).toFixed(1))); }}
+                className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Audio reader link */}
+          <PrefetchLink
+            href={`/audiobook/${bookMetadata.id}?pn=${currentPage}`}
+            replace
+            className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
+            onClick={close}
+          >
+            <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>{t("audio.listenToBook")}</span>
+          </PrefetchLink>
+
+          {/* Word definitions toggle */}
+          <button
+            onClick={() => { haptic(); onWordTapToggle(); }}
+            className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
+          >
+            <span>{t("reader.wordDefinitions")}</span>
+            <div className={`w-11 h-6 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-muted-foreground/20"}`}>
+              <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${wordTapEnabled ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`} />
+            </div>
+          </button>
+
+          {/* Translation toggle */}
+          {hasTranslation ? (
+            <button
+              onClick={() => { haptic(); onTranslationToggle(); }}
+              className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />
+                {t("reader.showTranslation")}
+              </span>
+              <div className={`w-11 h-6 rounded-full transition-colors relative ${showTranslation ? "bg-primary" : "bg-muted-foreground/20"}`}>
+                <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${showTranslation ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`} />
+              </div>
+            </button>
+          ) : (
+            <div className="w-full px-4 py-3 text-sm flex items-center gap-2 text-muted-foreground">
+              <Languages className="h-4 w-4 shrink-0" />
+              <span>{t("reader.translationNotAvailable")}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Table of Contents */}
+        {(tocData.length > 0 || tocLoading) && (
+          <>
+            <div className="px-3 pb-1">
+              <div className="border-t" />
+              <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
+            </div>
+
+            {tocLoading && (
+              <div className="flex justify-center py-6">
+                <div className="h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground/80 rounded-full animate-spin" />
+              </div>
+            )}
+
+            <div ref={tocScrollRef} className="flex-1 overflow-auto px-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation" style={tocLoading ? { display: "none" } : undefined}>
+              <div style={{ height: tocVirtualizer.getTotalSize(), position: "relative", width: "100%" }}>
+                {tocVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const entry = tocData[virtualRow.index];
+                  const depth = entry.level;
+                  const bullets = ["●", "○", "▪", "◦", "▸"];
+                  const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
+                  const isActive = virtualRow.index === activeTocIndex;
+
+                  return (
+                    <div
+                      key={virtualRow.index}
+                      data-index={virtualRow.index}
+                      ref={tocVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <button
+                        onClick={() => { haptic(); onPageChange(entry.page); setOpen(false); }}
+                        className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
+                        style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
+                      >
+                        {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
+                        <span>{entry.title}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}));
+
 export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, initialTranslationData, totalPages, totalVolumes, maxPrintedPage, volumeStartPages = {}, volumeMaxPrintedPages = {}, volumeMinPrintedPages = {}, toc: initialToc = [], translatedLanguages }: HtmlReaderProps) {
   const router = useRouter();
   const { t, dir, locale } = useTranslation();
   const { config } = useAppConfig();
   const contentRef = useRef<HTMLDivElement>(null);
-  const [showSidebar, setShowSidebar] = useState(false);
-  // TOC is lazy-loaded from /api/books/:id/toc on first sidebar open
-  const [tocData, setTocData] = useState<TocEntry[]>(initialToc);
-  const [tocLoading, setTocLoading] = useState(false);
-  const tocFetchedRef = useRef(initialToc.length > 0);
+  const sidebarRef = useRef<ReaderSidebarHandle>(null);
   const [fontSize, setFontSize] = useState<number>(() => {
     if (typeof window === 'undefined') return 1.15;
     try { return Number(JSON.parse(localStorage.getItem("readerPrefs") || "{}").fontSize) || 1.15; } catch { return 1.15; }
@@ -379,11 +638,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
   });
   const [selectedWord, setSelectedWord] = useState<{ word: string; x: number; y: number; wordBottom: number } | null>(null);
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(bookMetadata.titleTranslated || null);
-  const tocScrollRef = useRef<HTMLDivElement>(null);
-
-  // Progressive TOC rendering — avoids blocking the main thread when sidebar opens.
-  // Entries persist across open/close so reopening is instant.
-  const tocScrolledRef = useRef(false);
 
   // Sorted volume keys for dropdown
   const volumeKeys = useMemo(
@@ -729,58 +983,6 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
     setSelectedWord(null);
   }, [currentPage]);
 
-  // Lazy-load TOC from API on first sidebar open
-  useEffect(() => {
-    if (!showSidebar || tocFetchedRef.current) return;
-    tocFetchedRef.current = true;
-    setTocLoading(true);
-    fetch(`/api/books/${bookMetadata.id}/toc`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data?.toc) setTocData(data.toc);
-      })
-      .catch(() => {})
-      .finally(() => setTocLoading(false));
-  }, [showSidebar, bookMetadata.id]);
-
-  // Find the active TOC entry via binary search — only computed when sidebar is open
-  const activeTocIndex = useMemo(() => {
-    if (!showSidebar || tocData.length === 0) return -1;
-    let lo = 0, hi = tocData.length - 1, result = -1;
-    while (lo <= hi) {
-      const mid = (lo + hi) >>> 1;
-      if (tocData[mid].page <= currentPage) {
-        result = mid;
-        lo = mid + 1;
-      } else {
-        hi = mid - 1;
-      }
-    }
-    return result;
-  }, [showSidebar, tocData, currentPage]);
-
-  // Virtualized TOC list — only active when sidebar is open
-  const tocVirtualizer = useVirtualizer({
-    count: showSidebar ? tocData.length : 0,
-    getScrollElement: () => tocScrollRef.current,
-    estimateSize: () => 44,
-    overscan: 20,
-  });
-
-  // Auto-scroll TOC to active chapter on sidebar open
-  useEffect(() => {
-    if (!showSidebar || tocData.length === 0) {
-      tocScrolledRef.current = false;
-      return;
-    }
-    if (tocScrolledRef.current || activeTocIndex < 0) return;
-    tocScrolledRef.current = true;
-    // Defer to next frame so the virtualizer has measured
-    requestAnimationFrame(() => {
-      tocVirtualizer.scrollToIndex(activeTocIndex, { align: "center" });
-    });
-  }, [showSidebar, tocData.length, activeTocIndex, tocVirtualizer]);
-
   // RAF-debounced navigation: collapses rapid calls into one state update per frame
   const rafRef = useRef<number>(0);
   const pendingPageRef = useRef<number | null>(null);
@@ -1040,7 +1242,7 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(!showSidebar); }}
+            onClick={() => sidebarRef.current?.toggle()}
             title={t("reader.chapters")}
             className="h-10 w-10 sm:h-9 sm:w-9 md:h-10 md:w-10"
           >
@@ -1057,196 +1259,23 @@ export function HtmlReader({ bookMetadata, initialPageNumber, initialPageData, i
         />
       </div>
 
-      {/* Sidebar overlay — desktop only (mobile uses full-screen) */}
-      {showSidebar && (
-        <div
-          className="hidden sm:block fixed inset-0 z-20"
-          onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
-        />
-      )}
-
-      {/* Options panel — children only rendered when open to avoid virtualizer work on close */}
-      <div
+      <ReaderSidebar
+        ref={sidebarRef}
         dir={dir}
-        aria-hidden={!showSidebar}
-        className={`fixed inset-0 sm:absolute sm:inset-auto sm:top-20 ${dir === "rtl" ? "sm:left-4" : "sm:right-4"} sm:w-80 sm:max-h-[calc(100vh-6rem)] sm:rounded-lg sm:border sm:shadow-xl bg-[hsl(var(--background))] z-30 flex flex-col touch-manipulation`}
-        style={showSidebar ? undefined : { display: "none" }}
-      >
-        {/* Mobile close header — X positioned to match the options menu button */}
-        <div className="sm:hidden flex items-center border-b px-2 py-2">
-          <div className="flex-1 ps-2">
-            <h2 className="font-semibold text-base">{t("reader.options")}</h2>
-          </div>
-          <button
-            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
-            className="h-10 w-10 rounded-full hover:bg-muted flex items-center justify-center transition-colors shrink-0"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Links section */}
-        <div className="p-3 sm:p-3 space-y-1 touch-manipulation">
-          <PrefetchLink
-            href={`/authors/${bookMetadata.authorId}`}
-            className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
-          >
-            <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>{t("reader.author")}: {expandHonorifics(bookMetadata.author)}</span>
-          </PrefetchLink>
-          {pageData?.pdfUrl ? (
-            <button
-              onClick={() => {
-                if (config.hapticsEnabled) triggerHaptic("light");
-                handleOpenPdf();
-                setShowSidebar(false);
-              }}
-              className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-            >
-              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span>{t("reader.openPdf")}</span>
-            </button>
-          ) : (
-            <div className="w-full px-4 py-3 text-sm flex items-center gap-2 text-muted-foreground">
-              <FileText className="h-4 w-4 shrink-0" />
-              <span>{t("reader.pdfNotAvailable")}</span>
-            </div>
-          )}
-
-          {/* Font size */}
-          <div className="w-full px-4 py-3 text-sm flex items-center justify-between">
-            <span>{t("reader.fontSize")}</span>
-            <div className="flex items-center gap-2" dir="ltr">
-              <button
-                onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setFontSize((s) => Math.max(0.8, +(s - 0.1).toFixed(1))); }}
-                className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="w-10 text-center text-muted-foreground">{Math.round(fontSize * 100)}%</span>
-              <button
-                onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setFontSize((s) => Math.min(2.0, +(s + 0.1).toFixed(1))); }}
-                className="h-9 w-9 rounded-md border flex items-center justify-center hover:bg-muted transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Audio reader link */}
-          <PrefetchLink
-            href={`/audiobook/${bookMetadata.id}?pn=${currentPage}`}
-            replace
-            className="w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2"
-            onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowSidebar(false); }}
-          >
-            <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>{t("audio.listenToBook")}</span>
-          </PrefetchLink>
-
-          {/* Word definitions toggle */}
-          <button
-            onClick={() => {
-              if (config.hapticsEnabled) triggerHaptic("light");
-              setWordTapEnabled((v) => !v);
-              setSelectedWord(null);
-            }}
-            className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
-          >
-            <span>{t("reader.wordDefinitions")}</span>
-            <div
-              className={`w-11 h-6 rounded-full transition-colors relative ${wordTapEnabled ? "bg-primary" : "bg-muted-foreground/20"}`}
-            >
-              <div
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${wordTapEnabled ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`}
-              />
-            </div>
-          </button>
-
-          {/* Translation toggle */}
-          {hasTranslation ? (
-            <button
-              onClick={() => { if (config.hapticsEnabled) triggerHaptic("light"); setShowTranslation((v) => !v); }}
-              className="w-full px-4 py-3 text-sm flex items-center justify-between hover:bg-muted rounded-md transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Languages className="h-4 w-4 shrink-0 text-muted-foreground" />
-                {t("reader.showTranslation")}
-              </span>
-              <div
-                className={`w-11 h-6 rounded-full transition-colors relative ${showTranslation ? "bg-primary" : "bg-muted-foreground/20"}`}
-              >
-                <div
-                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-gray-900 shadow-sm transition-all ${showTranslation ? "right-0.5" : "right-[calc(100%-1.375rem)]"}`}
-                />
-              </div>
-            </button>
-          ) : (
-            <div className="w-full px-4 py-3 text-sm flex items-center gap-2 text-muted-foreground">
-              <Languages className="h-4 w-4 shrink-0" />
-              <span>{t("reader.translationNotAvailable")}</span>
-            </div>
-          )}
-
-        </div>
-
-        {/* Table of Contents section */}
-        {(tocData.length > 0 || tocLoading) && (
-          <>
-            <div className="px-3 pb-1">
-              <div className="border-t" />
-              <h2 className="font-semibold text-sm mt-2">{t("reader.chapters")}</h2>
-            </div>
-
-            {tocLoading && (
-              <div className="flex justify-center py-6">
-                <div className="h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground/80 rounded-full animate-spin" />
-              </div>
-            )}
-
-            <div ref={tocScrollRef} className="flex-1 overflow-auto px-3 pt-0 pb-[env(safe-area-inset-bottom)] touch-manipulation" style={tocLoading ? { display: "none" } : undefined}>
-              <div style={{ height: tocVirtualizer.getTotalSize(), position: "relative", width: "100%" }}>
-                {tocVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const entry = tocData[virtualRow.index];
-                  const depth = entry.level;
-                  const bullets = ["●", "○", "▪", "◦", "▸"];
-                  const bullet = depth > 0 ? bullets[Math.min(depth - 1, bullets.length - 1)] : "";
-                  const isActive = virtualRow.index === activeTocIndex;
-
-                  return (
-                    <div
-                      key={virtualRow.index}
-                      data-index={virtualRow.index}
-                      ref={tocVirtualizer.measureElement}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        transform: `translateY(${virtualRow.start}px)`,
-                      }}
-                    >
-                      <button
-                        onClick={() => {
-                          if (config.hapticsEnabled) triggerHaptic("light");
-                          setCurrentPage(entry.page);
-                          setShowSidebar(false);
-                        }}
-                        className={`w-full px-4 py-3 rounded-md hover:bg-muted text-sm transition-colors flex items-center gap-2 ${isActive ? "bg-muted font-medium" : ""}`}
-                        style={{ paddingInlineStart: `${depth * 16 + 12}px` }}
-                      >
-                        {bullet && <span className="text-muted-foreground text-xs">{bullet}</span>}
-                        <span>{entry.title}</span>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+        bookMetadata={bookMetadata}
+        currentPage={currentPage}
+        pageData={pageData}
+        hasTranslation={hasTranslation}
+        fontSize={fontSize}
+        wordTapEnabled={wordTapEnabled}
+        showTranslation={showTranslation}
+        initialToc={initialToc}
+        onPageChange={setCurrentPage}
+        onFontSizeChange={setFontSize}
+        onWordTapToggle={() => { setWordTapEnabled((v) => !v); setSelectedWord(null); }}
+        onTranslationToggle={() => setShowTranslation((v) => !v)}
+        onOpenPdf={handleOpenPdf}
+      />
 
       {/* Content area */}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
