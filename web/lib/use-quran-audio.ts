@@ -569,6 +569,10 @@ export function useQuranAudio(
   const updatePlayingAyah = useCallback(() => {
     const ctx = audioCtxRef.current;
     if (!ctx) return;
+    // While first ayah plays via <audio> element (not the Web Audio bridge),
+    // don't navigate based on Web Audio scheduled sources
+    const el = audioRef.current;
+    if (el && el.src && !el.srcObject) return;
     const now = ctx.currentTime;
     for (const ss of scheduledSourcesRef.current) {
       if (now >= ss.startTime && now < ss.startTime + ss.duration) {
@@ -1049,10 +1053,22 @@ export function useQuranAudio(
       });
     };
 
-    // Schedule ayah+1 onwards via Web Audio (ayah 1 plays through element)
+    // Schedule ayah+1 onwards via Web Audio (ayah 1 plays through element).
+    // Set scheduledEnd to account for first ayah duration so next ayah is
+    // scheduled to start after the current one ends (not immediately).
     nextScheduleAyahRef.current = targetAyah + 1;
-    scheduledEndRef.current = 0;
-    scheduleFromCache();
+    if (el.readyState >= 1 && el.duration && isFinite(el.duration)) {
+      scheduledEndRef.current = ctx.currentTime + el.duration;
+      scheduleFromCache();
+    } else {
+      scheduledEndRef.current = Infinity; // prevent premature scheduling
+      el.addEventListener('loadedmetadata', () => {
+        const c = audioCtxRef.current;
+        if (!c || !isPlayingRef.current) return;
+        scheduledEndRef.current = c.currentTime + el.duration;
+        scheduleFromCacheRef.current();
+      }, { once: true });
+    }
     stopScheduleTimer();
     scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
   }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
