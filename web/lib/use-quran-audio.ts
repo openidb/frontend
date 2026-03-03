@@ -1049,21 +1049,26 @@ export function useQuranAudio(
       el.onerror = null;
       firstAyahViaElementRef.current = false;
       // Switch to MediaStream bridge for gapless Web Audio playback.
-      // Navigation to the next ayah is handled by updatePlayingAyah()
-      // when it detects the next buffer is actually audible.
+      // Schedule from current AudioContext time so ayah+1 starts now.
+      const c = audioCtxRef.current;
+      if (c) {
+        scheduledEndRef.current = c.currentTime;
+        scheduleFromCacheRef.current();
+        stopScheduleTimer();
+        scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
+      }
       el.srcObject = dest.stream;
       el.play().catch(() => {
         setDirectOutputEnabled(true);
       });
     };
 
-    // Schedule ayah+1 onwards via Web Audio (ayah 1 plays through element)
+    // Pre-fetch ayah+1 buffer so it's ready when first ayah ends (don't schedule yet)
     nextScheduleAyahRef.current = targetAyah + 1;
-    scheduledEndRef.current = 0;
-    scheduleFromCache();
-    stopScheduleTimer();
-    scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
-  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
+    if (targetAyah + 1 <= totalAyahs) {
+      fetchBuffer(audioUrl(surahNumber, targetAyah + 1));
+    }
+  }, [surahNumber, targetAyah, totalAyahs, ensureRunningAudioGraph, scheduleFromCache, fetchBuffer, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
 
   const pause = useCallback(() => {
     stopAllSources();
