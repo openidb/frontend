@@ -657,14 +657,16 @@ export function QuranAyahViewer({
           {Object.keys(translations).length > 0 && (
             <div dir="ltr" className="mushaf-ayah-translation">
               <p className="mushaf-ayah-translation-label">[{translatorName}]</p>
-              {ayahNumbers.map((num) =>
-                translations[num] ? (
-                  <p key={num} className={`mushaf-ayah-translation-text ${num === clientAyah ? "" : "mushaf-ayah-translation-context"}`}>
-                    <span className="mushaf-ayah-translation-num">{surahNumber}:{num}</span>{" "}
-                    {translations[num]}
-                  </p>
-                ) : null
-              )}
+              {ayahNumbers
+                .filter((num) => num >= clientAyah - 1 && num <= clientAyah + 2)
+                .map((num) =>
+                  translations[num] ? (
+                    <p key={num} className={`mushaf-ayah-translation-text ${num === clientAyah ? "" : "mushaf-ayah-translation-context"}`}>
+                      <span className="mushaf-ayah-translation-num">{surahNumber}:{num}</span>{" "}
+                      {translations[num]}
+                    </p>
+                  ) : null
+                )}
             </div>
           )}
 
