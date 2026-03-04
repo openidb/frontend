@@ -769,15 +769,16 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: larger font, tighter lines */
+        /* Ayah viewer: larger font, enough line-height for ayah end symbols */
         .ayah-view .mushaf-line {
           font-size: clamp(1.3rem, 5.5vw, 1.8rem);
-          line-height: 1.8;
+          line-height: 2.2;
           min-height: 1.6rem;
+          overflow: visible;
         }
         @media (min-width: 640px) {
           .ayah-view .mushaf-line {
-            line-height: 2.0;
+            line-height: 2.4;
           }
         }
 
