@@ -803,12 +803,12 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: larger font, enough line-height for ayah end symbols */
+        /* Ayah viewer: larger font, padding for tall ayah-end symbol glyphs */
         .ayah-view .mushaf-line {
           font-size: clamp(1.3rem, 5.5vw, 1.8rem);
           line-height: 2.2;
           min-height: 1.6rem;
-          overflow: visible;
+          padding-block: 0.35em;
         }
 
         .mushaf-line-justify { justify-content: space-between; }
