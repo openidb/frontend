@@ -596,7 +596,8 @@ export function QuranAyahViewer({
               );
             }
 
-            // Regular text line — identical to MushafPageClient
+            // Regular text line — use inline text layout (not flex) so QCF2 glyph
+            // overflow between words with different colors isn't clipped
             const centered = isCenterAligned(pageNumber, line.lineNumber);
             return (
               <div
@@ -604,17 +605,18 @@ export function QuranAyahViewer({
                 className={`mushaf-line ${centered ? "mushaf-line-center" : "mushaf-line-justify"}`}
                 style={{ fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif` }}
               >
-                {line.words.map((w) => {
+                {line.words.map((w, i) => {
                   const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
                   const isHighlighted = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
-                  return (
+                  return [
+                    i > 0 ? " " : null,
                     <span
                       key={w.position}
                       className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}${!isTarget ? " mushaf-word-dim" : ""}`}
                     >
                       {w.glyph || w.text}
-                    </span>
-                  );
+                    </span>,
+                  ];
                 })}
               </div>
             );
@@ -802,11 +804,21 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: larger font */
+        /* Ayah viewer: inline text layout so QCF2 glyph overflow isn't clipped by flex item boundaries */
         .ayah-view .mushaf-line {
+          display: block;
+          direction: rtl;
           font-size: clamp(1.3rem, 5.5vw, 1.8rem);
           line-height: 2.2;
           min-height: 1.6rem;
+        }
+        .ayah-view .mushaf-line-justify {
+          text-align: justify;
+          text-align-last: justify;
+        }
+        .ayah-view .mushaf-line-center {
+          text-align: center;
+          word-spacing: 0.2em;
         }
 
         .mushaf-line-justify { justify-content: space-between; }
