@@ -835,9 +835,9 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: larger font */
+        /* Ayah viewer: keep mushaf-native font size for correct QCF2 glyph
+           positioning; only override vertical spacing for compact display */
         .ayah-view .mushaf-line {
-          font-size: clamp(1.3rem, 5.5vw, 1.8rem);
           line-height: 2.2;
           min-height: 1.6rem;
         }
