@@ -805,7 +805,7 @@ export function QuranAyahViewer({
 
         .ayah-view .mushaf-page-frame {
           width: 100%;
-          max-width: 460px;
+          max-width: 540px;
           margin: 0 auto;
           padding: 0.5rem 1rem;
           display: flex;
@@ -815,7 +815,7 @@ export function QuranAyahViewer({
         }
         @media (min-width: 640px) {
           .ayah-view .mushaf-page-frame {
-            padding: 1.5rem 1rem;
+            padding: 1.5rem 2rem;
             background: hsl(var(--reader-bg, 40 30% 96%));
           }
         }
@@ -835,13 +835,13 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: match QCF2 design ratio (~14.875) so glyph advance
-           widths fill each line correctly. Container content = 100vw - 2rem
-           on mobile, capped at 428px (460px max-width - 32px padding). */
+        /* Ayah viewer: larger font to reduce space-between gaps, matching
+           QCF2 glyph-to-container ratio more closely */
         .ayah-view .mushaf-line {
-          font-size: clamp(1.2rem, calc((100vw - 2rem) / 14.875), 1.8rem);
+          font-size: clamp(1.15rem, calc((100vw - 2rem) / 16), 1.85rem);
           line-height: 2.2;
           min-height: 1.6rem;
+          overflow: hidden;
         }
 
         .mushaf-line-justify { justify-content: space-between; }
