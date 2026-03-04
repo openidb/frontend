@@ -596,28 +596,52 @@ export function QuranAyahViewer({
               );
             }
 
-            // Regular text line — use inline text layout (not flex) so QCF2 glyph
-            // overflow between words with different colors isn't clipped
+            // Regular text line — two-layer rendering to avoid glyph clipping:
+            // Base layer: all words at dim color (single color = no cross-span clip)
+            // Overlay: target words at full color, non-target hidden
             const centered = isCenterAligned(pageNumber, line.lineNumber);
+            const lineClass = `mushaf-line ${centered ? "mushaf-line-center" : "mushaf-line-justify"}`;
+            const lineStyle = { fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif` };
+            const hasTarget = line.words.some((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah);
+            const allTarget = line.words.every((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah);
+
+            // Single-ayah lines: no overlay needed
+            if (!hasTarget) {
+              return (
+                <div key={`${pageNumber}-${line.lineNumber}`} className={`${lineClass} mushaf-word-dim`} style={lineStyle}>
+                  {line.words.map((w, i) => [i > 0 ? " " : null, <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>])}
+                </div>
+              );
+            }
+            if (allTarget) {
+              return (
+                <div key={`${pageNumber}-${line.lineNumber}`} className={lineClass} style={lineStyle}>
+                  {line.words.map((w, i) => {
+                    const isHighlighted = isAudioMode && w.charType === "word" && w.wordPosition === highlightedPosition;
+                    return [i > 0 ? " " : null, <span key={w.position} className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`}>{w.glyph || w.text}</span>];
+                  })}
+                </div>
+              );
+            }
+
+            // Mixed line: two layers
             return (
-              <div
-                key={`${pageNumber}-${line.lineNumber}`}
-                className={`mushaf-line ${centered ? "mushaf-line-center" : "mushaf-line-justify"}`}
-                style={{ fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif` }}
-              >
-                {line.words.map((w, i) => {
-                  const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
-                  const isHighlighted = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
-                  return [
-                    i > 0 ? " " : null,
-                    <span
-                      key={w.position}
-                      className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}${!isTarget ? " mushaf-word-dim" : ""}`}
-                    >
-                      {w.glyph || w.text}
-                    </span>,
-                  ];
-                })}
+              <div key={`${pageNumber}-${line.lineNumber}`} style={{ position: "relative" }}>
+                {/* Base: all words dim, uniform color so no glyph clipping */}
+                <div className={`${lineClass} mushaf-word-dim`} style={lineStyle}>
+                  {line.words.map((w, i) => [i > 0 ? " " : null, <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>])}
+                </div>
+                {/* Overlay: target words at full color */}
+                <div className={`${lineClass} mushaf-line-overlay`} style={lineStyle} aria-hidden="true">
+                  {line.words.map((w, i) => {
+                    const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
+                    const isHighlighted = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
+                    return [
+                      i > 0 ? " " : null,
+                      <span key={w.position} className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`} style={isTarget ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>,
+                    ];
+                  })}
+                </div>
               </div>
             );
           })}
@@ -825,6 +849,7 @@ export function QuranAyahViewer({
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
         .mushaf-word { cursor: default; transition: color 0.15s ease; }
         .ayah-view .mushaf-word-dim { color: hsl(var(--foreground) / 0.2); }
+        .mushaf-line-overlay { position: absolute; inset: 0; pointer-events: none; }
         .mushaf-word-highlight { color: hsl(160 84% 39%); }
         :is(.dark) .mushaf-word-highlight { color: hsl(158 64% 52%); }
 
