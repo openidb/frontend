@@ -838,6 +838,9 @@ export function QuranAyahViewer({
         .mushaf-line-overlay { position: absolute; inset: 0; pointer-events: none; }
         .mushaf-word-highlight { color: hsl(160 84% 39%); }
         :is(.dark) .mushaf-word-highlight { color: hsl(158 64% 52%); }
+        /* Ayah view: use background highlight to avoid glyph clipping from color boundaries */
+        .ayah-view .mushaf-word-highlight { color: inherit; background: hsl(160 84% 39% / 0.25); border-radius: 4px; }
+        :is(.dark) .ayah-view .mushaf-word-highlight { color: inherit; background: hsl(158 64% 52% / 0.25); }
 
         .mushaf-surah-header {
           display: flex;
