@@ -437,10 +437,9 @@ export function QuranAyahViewer({
     return loadedFonts.has(fontName);
   }) || fontsLoaded.size > 0 && clientMushafPages.every((p) => fontsLoaded.has(p.pageNumber));
 
-  // Scroll to top + subtle fade on ayah change (like book reader)
+  // Subtle fade on ayah change
   const prevAyahRef = useRef(clientAyah);
   useEffect(() => {
-    containerRef.current?.scrollTo(0, 0);
     if (prevAyahRef.current !== clientAyah) {
       prevAyahRef.current = clientAyah;
       const el = contentRef.current;
