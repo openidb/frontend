@@ -610,8 +610,7 @@ export function QuranAyahViewer({
                   return (
                     <span
                       key={w.position}
-                      className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`}
-                      style={{ opacity: isTarget ? 1 : 0.2 }}
+                      className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}${!isTarget ? " mushaf-word-dim" : ""}`}
                     >
                       {w.glyph || w.text}
                     </span>
@@ -803,17 +802,17 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: larger font, padding for tall ayah-end symbol glyphs */
+        /* Ayah viewer: larger font */
         .ayah-view .mushaf-line {
           font-size: clamp(1.3rem, 5.5vw, 1.8rem);
           line-height: 2.2;
           min-height: 1.6rem;
-          padding-block: 0.35em;
         }
 
         .mushaf-line-justify { justify-content: space-between; }
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
         .mushaf-word { cursor: default; transition: color 0.15s ease; }
+        .ayah-view .mushaf-word-dim { color: hsl(var(--foreground) / 0.2); }
         .mushaf-word-highlight { color: hsl(160 84% 39%); }
         :is(.dark) .mushaf-word-highlight { color: hsl(158 64% 52%); }
 
