@@ -609,37 +609,33 @@ export function QuranAyahViewer({
             if (!hasTarget) {
               return (
                 <div key={`${pageNumber}-${line.lineNumber}`} className={`${lineClass} mushaf-word-dim`} style={lineStyle}>
-                  {line.words.map((w, i) => [i > 0 ? " " : null, <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>])}
+                  {line.words.map((w) => <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>)}
                 </div>
               );
             }
             if (allTarget) {
               return (
                 <div key={`${pageNumber}-${line.lineNumber}`} className={lineClass} style={lineStyle}>
-                  {line.words.map((w, i) => {
+                  {line.words.map((w) => {
                     const isHighlighted = isAudioMode && w.charType === "word" && w.wordPosition === highlightedPosition;
-                    return [i > 0 ? " " : null, <span key={w.position} className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`}>{w.glyph || w.text}</span>];
+                    return <span key={w.position} className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`}>{w.glyph || w.text}</span>;
                   })}
                 </div>
               );
             }
 
-            // Mixed line: two layers
+            // Mixed line: two layers — base has uniform color (no glyph clip),
+            // overlay paints target words at full color on top
             return (
               <div key={`${pageNumber}-${line.lineNumber}`} style={{ position: "relative" }}>
-                {/* Base: all words dim, uniform color so no glyph clipping */}
                 <div className={`${lineClass} mushaf-word-dim`} style={lineStyle}>
-                  {line.words.map((w, i) => [i > 0 ? " " : null, <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>])}
+                  {line.words.map((w) => <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>)}
                 </div>
-                {/* Overlay: target words at full color */}
                 <div className={`${lineClass} mushaf-line-overlay`} style={lineStyle} aria-hidden="true">
-                  {line.words.map((w, i) => {
+                  {line.words.map((w) => {
                     const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
                     const isHighlighted = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
-                    return [
-                      i > 0 ? " " : null,
-                      <span key={w.position} className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`} style={isTarget ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>,
-                    ];
+                    return <span key={w.position} className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`} style={isTarget ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>;
                   })}
                 </div>
               </div>
@@ -828,21 +824,11 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: inline text layout so QCF2 glyph overflow isn't clipped by flex item boundaries */
+        /* Ayah viewer: larger font */
         .ayah-view .mushaf-line {
-          display: block;
-          direction: rtl;
           font-size: clamp(1.3rem, 5.5vw, 1.8rem);
           line-height: 2.2;
           min-height: 1.6rem;
-        }
-        .ayah-view .mushaf-line-justify {
-          text-align: justify;
-          text-align-last: justify;
-        }
-        .ayah-view .mushaf-line-center {
-          text-align: center;
-          word-spacing: 0.2em;
         }
 
         .mushaf-line-justify { justify-content: space-between; }
