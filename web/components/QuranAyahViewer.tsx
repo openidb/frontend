@@ -86,7 +86,6 @@ const PREFERRED_TAFSIRS: Record<string, string> = {
 // Pages where ALL lines should be center-aligned
 const CENTER_ALIGNED_PAGES = [1, 2];
 // Module-level caches (persist across React re-renders and navigations)
-const loadedFonts = new Set<string>();
 const translationCache = new Map<string, string>(); // "surah:ayah:edition" → text
 const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
 const tafsirFetching = new Set<string>(); // dedup in-flight tafsir fetches
@@ -180,7 +179,6 @@ export function QuranAyahViewer({
     }
   }, [isAudioMode, clientMushafPages]);
 
-  const [fontsLoaded, setFontsLoaded] = useState<Set<number>>(new Set());
   const [surahFontLoaded, setSurahFontLoaded] = useState(false);
   const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
   const [tafsirLang, setTafsirLang] = useState<string>("");
@@ -256,37 +254,6 @@ export function QuranAyahViewer({
 
     return { filteredLines: lines, ayahSet: set };
   }, [clientMushafPages, surahNumber, clientAyah]);
-
-  // Load QPC V2 fonts for relevant pages (skip already-loaded fonts)
-  useEffect(() => {
-    const pages = clientMushafPages.map((p) => p.pageNumber);
-    const alreadyLoaded = new Set<number>();
-    const toLoad: number[] = [];
-    for (const page of pages) {
-      const fontName = `QCF2_P${String(page).padStart(3, "0")}`;
-      if (loadedFonts.has(fontName)) {
-        alreadyLoaded.add(page);
-      } else {
-        toLoad.push(page);
-      }
-    }
-    if (toLoad.length === 0) {
-      setFontsLoaded(new Set(pages));
-      return;
-    }
-    Promise.all(
-      toLoad.map(async (page) => {
-        const fontName = `QCF2_P${String(page).padStart(3, "0")}`;
-        try {
-          const font = new FontFace(fontName, `url(/fonts/mushaf/v2/p${page}.woff2)`);
-          const f = await font.load();
-          document.fonts.add(f);
-          loadedFonts.add(fontName);
-          alreadyLoaded.add(page);
-        } catch {}
-      })
-    ).then(() => setFontsLoaded(new Set(alreadyLoaded)));
-  }, [clientMushafPages]);
 
   // Prefetch adjacent ayah routes for non-audio navigation
   useEffect(() => {
@@ -466,12 +433,6 @@ export function QuranAyahViewer({
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
 
-  // Use module-level cache for instant font readiness (no state flash on page boundary)
-  const allFontsReady = clientMushafPages.every((p) => {
-    const fontName = `QCF2_P${String(p.pageNumber).padStart(3, "0")}`;
-    return loadedFonts.has(fontName);
-  }) || fontsLoaded.size > 0 && clientMushafPages.every((p) => fontsLoaded.has(p.pageNumber));
-
   // Subtle fade on ayah change
   const prevAyahRef = useRef(clientAyah);
   useEffect(() => {
@@ -488,17 +449,6 @@ export function QuranAyahViewer({
       }
     }
   }, [clientAyah]);
-
-  // Pre-load fonts for upcoming mushaf pages in audio mode
-  useEffect(() => {
-    if (!isAudioMode) return;
-    for (const page of mushafCacheRef.current.values()) {
-      const fontName = `QCF2_P${String(page.pageNumber).padStart(3, "0")}`;
-      if (loadedFonts.has(fontName)) continue;
-      const font = new FontFace(fontName, `url(/fonts/mushaf/v2/p${page.pageNumber}.woff2)`);
-      font.load().then((f) => { document.fonts.add(f); loadedFonts.add(fontName); }).catch(() => {});
-    }
-  }, [isAudioMode, clientMushafPages]);
 
   return (
     <div className="ayah-view flex flex-col h-full min-h-0">
@@ -544,10 +494,7 @@ export function QuranAyahViewer({
           ref={contentRef}
           className="mushaf-page-frame"
           dir="rtl"
-          style={{
-            opacity: allFontsReady ? 1 : 0.3,
-            transition: "opacity 0.15s ease-in",
-          }}
+          style={{ transition: "opacity 0.15s ease-in" }}
         >
           {/* Ayah range and page info */}
           <div className="mushaf-ayah-title" dir="ltr">
@@ -559,8 +506,6 @@ export function QuranAyahViewer({
           </div>
 
           {filteredLines.map(({ pageNumber, line }) => {
-            const fontFamily = `QCF2_P${String(pageNumber).padStart(3, "0")}`;
-
             // Surah header line
             if (line.lineType === "surah_name") {
               const surahWord = line.words.find((w) => w.charType === "surah_name");
@@ -584,71 +529,28 @@ export function QuranAyahViewer({
             // Bismillah line
             if (line.lineType === "bismillah") {
               return (
-                <div
-                  key={`${pageNumber}-${line.lineNumber}`}
-                  className="mushaf-bismillah-line"
-                  style={{ fontFamily: '"QCF_Bismillah", "QPC Hafs", "UthmanicHafs", serif' }}
-                >
+                <div key={`${pageNumber}-${line.lineNumber}`} className="mushaf-bismillah-line">
                   <span className="mushaf-word mushaf-bismillah">
-                    {line.words.map((w) => w.glyph || w.text).join("") || "﷽"}
+                    {line.words.map((w) => w.text).join(" ") || "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ"}
                   </span>
                 </div>
               );
             }
 
-            // Regular text line — two-layer rendering to avoid glyph clipping:
-            // Base layer: all words at dim color (single color = no cross-span clip)
-            // Overlay: target words at full color, non-target hidden
+            // Regular text line — render actual Arabic text with UthmanicHafs.
+            // No multi-layer overlay needed (standard font has no glyph clipping).
             const centered = isCenterAligned(pageNumber, line.lineNumber);
             const lineClass = `mushaf-line ${centered ? "mushaf-line-center" : "mushaf-line-justify"}`;
-            const lineStyle = { fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif` };
             const hasTarget = line.words.some((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah);
-            const allTarget = line.words.every((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah);
-
-            // Multi-layer rendering: each layer has uniform visible color to
-            // prevent QCF2 glyph clipping at flex item color boundaries.
-            // Layer 1 (base): all words at dim color
-            // Layer 2: target ayah words at default color (if mixed line)
-            // Layer 3: highlighted word at green (if audio playing)
-            const highlightIdx = isAudioMode
-              ? line.words.findIndex((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah && w.charType === "word" && w.wordPosition === highlightedPosition)
-              : -1;
-            const needTargetOverlay = hasTarget && !allTarget;
-            const needHighlightOverlay = highlightIdx !== -1;
-            const allWords = line.words.map((w) => <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>);
-
-            // Simple case: single color, no overlays
-            if (!needTargetOverlay && !needHighlightOverlay) {
-              return (
-                <div key={`${pageNumber}-${line.lineNumber}`} className={`${lineClass}${!hasTarget ? " mushaf-word-dim" : ""}`} style={lineStyle}>
-                  {allWords}
-                </div>
-              );
-            }
 
             return (
-              <div key={`${pageNumber}-${line.lineNumber}`} style={{ position: "relative" }}>
-                {/* Base: all words at uniform dim (mixed) or default (all-target) color */}
-                <div className={`${lineClass}${!allTarget ? " mushaf-word-dim" : ""}`} style={lineStyle}>
-                  {allWords}
-                </div>
-                {/* Target overlay: target ayah words at default color */}
-                {needTargetOverlay && (
-                  <div className={`${lineClass} mushaf-line-overlay`} style={lineStyle} aria-hidden="true">
-                    {line.words.map((w) => {
-                      const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
-                      return <span key={w.position} className="mushaf-word" style={isTarget ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>;
-                    })}
-                  </div>
-                )}
-                {/* Highlight overlay: single word at highlight color */}
-                {needHighlightOverlay && (
-                  <div className={`${lineClass} mushaf-line-overlay`} style={lineStyle} aria-hidden="true">
-                    {line.words.map((w, i) => (
-                      <span key={w.position} className={`mushaf-word${i === highlightIdx ? " mushaf-word-highlight" : ""}`} style={i === highlightIdx ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>
-                    ))}
-                  </div>
-                )}
+              <div key={`${pageNumber}-${line.lineNumber}`} className={lineClass}>
+                {line.words.map((w) => {
+                  const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
+                  const isHighlight = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
+                  const cls = `mushaf-word${isHighlight ? " mushaf-word-highlight" : hasTarget && !isTarget ? " mushaf-word-dim" : ""}`;
+                  return <span key={w.position} className={cls}>{w.text}</span>;
+                })}
               </div>
             );
           })}
@@ -835,17 +737,17 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: font-size matched to QCF2 glyph width ratio.
-           At quran.com: 28.8px font for 428.39px container → ratio 0.06722.
-           lineWidth = min(100vw, 540px) − horizontal padding */
+        /* Ayah viewer: UthmanicHafs with actual Arabic text */
         .ayah-view .mushaf-line {
-          font-size: calc((min(100vw, 540px) - 2rem) * 0.06722);
-          line-height: 2.2;
+          font-family: "UthmanicHafs", "KFGQPC HAFS Uthmanic Script", "Noto Naskh Arabic", serif;
+          font-size: clamp(1.3rem, 5.5vw, 1.9rem);
+          line-height: 2.4;
           min-height: 1.6rem;
+          gap: 0.15em;
         }
         @media (min-width: 640px) {
           .ayah-view .mushaf-line {
-            font-size: calc((min(100vw, 540px) - 4rem) * 0.06722);
+            font-size: clamp(1.5rem, 3.5vw, 2rem);
           }
         }
 
@@ -853,7 +755,6 @@ export function QuranAyahViewer({
         .mushaf-line-center { justify-content: center; gap: 0.2em; }
         .mushaf-word { cursor: default; transition: color 0.15s ease; }
         .ayah-view .mushaf-word-dim { color: hsl(var(--foreground) / 0.2); }
-        .mushaf-line-overlay { position: absolute; inset: 0; pointer-events: none; }
         .mushaf-word-highlight { color: hsl(160 84% 39%); }
         :is(.dark) .mushaf-word-highlight { color: hsl(158 64% 52%); }
 
@@ -894,12 +795,13 @@ export function QuranAyahViewer({
           align-items: baseline;
           justify-content: center;
           direction: rtl;
+          font-family: "UthmanicHafs", "KFGQPC HAFS Uthmanic Script", serif;
           line-height: 2;
           min-height: auto;
           gap: 0.2em;
         }
         .mushaf-bismillah {
-          font-size: 1.6rem;
+          font-size: clamp(1.2rem, 5vw, 1.6rem);
           line-height: 2 !important;
         }
 
@@ -986,13 +888,6 @@ export function QuranAyahViewer({
           font-weight: normal;
           font-style: normal;
           font-display: block;
-        }
-        @font-face {
-          font-family: "QCF_Bismillah";
-          src: url("/fonts/mushaf/QCF_Bismillah.woff2") format("woff2");
-          font-weight: normal;
-          font-style: normal;
-          font-display: swap;
         }
       `}</style>
     </div>
