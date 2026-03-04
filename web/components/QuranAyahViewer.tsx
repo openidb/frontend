@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Headphones, Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
@@ -500,55 +500,6 @@ export function QuranAyahViewer({
     }
   }, [isAudioMode, clientMushafPages]);
 
-  // Compute optimal font-size by measuring QCF2 glyph advance widths against container width.
-  // QCF2 fonts have fixed glyph widths per page — scaling so the widest line fills the
-  // container means space-between distributes only the font's built-in inter-word spacing.
-  useEffect(() => {
-    if (!allFontsReady || !contentRef.current || filteredLines.length === 0) return;
-
-    const frame = contentRef.current;
-
-    const compute = () => {
-      const style = getComputedStyle(frame);
-      const contentWidth = frame.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      if (contentWidth <= 0) return;
-
-      const REF_SIZE = 20; // px – arbitrary reference for measurement
-      let maxNaturalWidth = 0;
-
-      for (const { pageNumber, line } of filteredLines) {
-        if (line.lineType !== "text" || isCenterAligned(pageNumber, line.lineNumber)) continue;
-
-        const fontFamily = `QCF2_P${String(pageNumber).padStart(3, "0")}`;
-        const probe = document.createElement("div");
-        probe.style.cssText = `position:fixed;top:-9999px;visibility:hidden;display:inline-flex;direction:rtl;font-family:"${fontFamily}","UthmanicHafs",serif;font-size:${REF_SIZE}px;white-space:nowrap`;
-        for (const w of line.words) {
-          const s = document.createElement("span");
-          s.textContent = w.glyph || w.text;
-          probe.appendChild(s);
-        }
-        document.body.appendChild(probe);
-        const measured = probe.getBoundingClientRect().width;
-        document.body.removeChild(probe);
-        if (measured > maxNaturalWidth) maxNaturalWidth = measured;
-      }
-
-      if (maxNaturalWidth <= 0) return;
-
-      // Scale: at REF_SIZE, glyphs occupy maxNaturalWidth px.
-      // We want them to fill contentWidth, so optimal = REF_SIZE * contentWidth / maxNaturalWidth.
-      const optimal = REF_SIZE * (contentWidth / maxNaturalWidth);
-      frame.style.setProperty("--mushaf-font-size", `${optimal}px`);
-    };
-
-    compute();
-    window.addEventListener("resize", compute);
-    return () => {
-      window.removeEventListener("resize", compute);
-      frame.style.removeProperty("--mushaf-font-size");
-    };
-  }, [allFontsReady, filteredLines]);
-
   return (
     <div className="ayah-view flex flex-col h-full min-h-0">
       {/* Header bar */}
@@ -884,12 +835,18 @@ export function QuranAyahViewer({
           }
         }
 
-        /* Ayah viewer: font-size computed at runtime via JS measurement
-           to match QCF2 glyph widths exactly to the container */
+        /* Ayah viewer: font-size matched to QCF2 glyph width ratio.
+           At quran.com: 28.8px font for 428.39px container → ratio 0.06722.
+           lineWidth = min(100vw, 540px) − horizontal padding */
         .ayah-view .mushaf-line {
-          font-size: var(--mushaf-font-size, clamp(1.05rem, 4.3vw, 1.55rem));
+          font-size: calc((min(100vw, 540px) - 2rem) * 0.06722);
           line-height: 2.2;
           min-height: 1.6rem;
+        }
+        @media (min-width: 640px) {
+          .ayah-view .mushaf-line {
+            font-size: calc((min(100vw, 540px) - 4rem) * 0.06722);
+          }
         }
 
         .mushaf-line-justify { justify-content: space-between; }
