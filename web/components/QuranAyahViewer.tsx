@@ -192,11 +192,70 @@ export function QuranAyahViewer({
 
   const canGoPrev = clientAyah > 1;
   const canGoNext = clientAyah < totalAyahs;
-  // Show prev + current + next, but don't cross surah boundaries
-  const ayahSet = new Set<number>();
-  if (clientAyah > 1) ayahSet.add(clientAyah - 1);
-  ayahSet.add(clientAyah);
-  if (clientAyah < totalAyahs) ayahSet.add(clientAyah + 1);
+
+  // Show at least 4 mushaf text lines centered on the target ayah.
+  // If the ayah spans more than 4 lines, show all of them.
+  const { filteredLines, ayahSet } = useMemo(() => {
+    const MIN_LINES = 4;
+    // Collect all lines across mushaf pages in order
+    const allLines: { pageNumber: number; line: typeof clientMushafPages[0]["lines"][0] }[] = [];
+    for (const page of clientMushafPages) {
+      for (const line of page.lines) {
+        allLines.push({ pageNumber: page.pageNumber, line });
+      }
+    }
+
+    // Find text lines containing the target ayah
+    const targetIndices: number[] = [];
+    for (let i = 0; i < allLines.length; i++) {
+      if (allLines[i].line.lineType === "text" &&
+        allLines[i].line.words.some(w => w.surahNumber === surahNumber && w.ayahNumber === clientAyah)) {
+        targetIndices.push(i);
+      }
+    }
+    if (targetIndices.length === 0) return { filteredLines: [], ayahSet: new Set([clientAyah]) };
+
+    let rangeStart = targetIndices[0];
+    let rangeEnd = targetIndices[targetIndices.length - 1];
+
+    // Count text lines in a range
+    const countText = (s: number, e: number) => {
+      let c = 0;
+      for (let i = s; i <= e; i++) if (allLines[i]?.line.lineType === "text") c++;
+      return c;
+    };
+
+    // Expand symmetrically to reach MIN_LINES text lines
+    while (countText(rangeStart, rangeEnd) < MIN_LINES) {
+      let grew = false;
+      if (rangeEnd + 1 < allLines.length) { rangeEnd++; grew = true; }
+      if (countText(rangeStart, rangeEnd) >= MIN_LINES) break;
+      if (rangeStart - 1 >= 0) { rangeStart--; grew = true; }
+      if (!grew) break;
+    }
+
+    // Include surah headers / bismillah immediately before the range
+    while (rangeStart > 0) {
+      const prevType = allLines[rangeStart - 1].line.lineType;
+      if (prevType === "surah_name" || prevType === "bismillah") rangeStart--;
+      else break;
+    }
+
+    const lines = allLines.slice(rangeStart, rangeEnd + 1);
+
+    // Derive ayahSet from displayed lines (for translations, fonts, etc.)
+    const set = new Set<number>();
+    set.add(clientAyah);
+    for (const { line } of lines) {
+      if (line.lineType === "text") {
+        for (const w of line.words) {
+          if (w.surahNumber === surahNumber) set.add(w.ayahNumber);
+        }
+      }
+    }
+
+    return { filteredLines: lines, ayahSet: set };
+  }, [clientMushafPages, surahNumber, clientAyah]);
 
   // Load QPC V2 fonts for relevant pages (skip already-loaded fonts)
   useEffect(() => {
@@ -407,30 +466,6 @@ export function QuranAyahViewer({
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
 
-  // Filter mushaf lines: only those containing any of our 3 ayahs
-  const filteredLines: { pageNumber: number; line: typeof clientMushafPages[0]["lines"][0] }[] = [];
-  for (const page of clientMushafPages) {
-    for (const line of page.lines) {
-      if (line.lineType === "text") {
-        const hasOurAyah = line.words.some(
-          (w) => w.surahNumber === surahNumber && ayahSet.has(w.ayahNumber)
-        );
-        if (hasOurAyah) filteredLines.push({ pageNumber: page.pageNumber, line });
-      } else if (line.lineType === "surah_name" || line.lineType === "bismillah") {
-        // Include surah headers/bismillah if the next text line has our ayahs
-        const nextTextLine = page.lines.find(
-          (l) => l.lineNumber > line.lineNumber && l.lineType === "text"
-        );
-        if (
-          nextTextLine &&
-          nextTextLine.words.some((w) => w.surahNumber === surahNumber && ayahSet.has(w.ayahNumber))
-        ) {
-          filteredLines.push({ pageNumber: page.pageNumber, line });
-        }
-      }
-    }
-  }
-
   // Use module-level cache for instant font readiness (no state flash on page boundary)
   const allFontsReady = clientMushafPages.every((p) => {
     const fontName = `QCF2_P${String(p.pageNumber).padStart(3, "0")}`;
@@ -570,14 +605,13 @@ export function QuranAyahViewer({
                 style={{ fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif` }}
               >
                 {line.words.map((w) => {
-                  const isOurAyah = w.surahNumber === surahNumber && ayahSet.has(w.ayahNumber);
                   const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
                   const isHighlighted = isAudioMode && isTarget && w.charType === "word" && w.wordPosition === highlightedPosition;
                   return (
                     <span
                       key={w.position}
                       className={`mushaf-word${isHighlighted ? " mushaf-word-highlight" : ""}`}
-                      style={{ opacity: !isOurAyah ? 0.15 : isTarget ? 1 : 0.4 }}
+                      style={{ opacity: isTarget ? 1 : 0.2 }}
                     >
                       {w.glyph || w.text}
                     </span>
@@ -775,11 +809,6 @@ export function QuranAyahViewer({
           line-height: 2.2;
           min-height: 1.6rem;
           overflow: visible;
-        }
-        @media (min-width: 640px) {
-          .ayah-view .mushaf-line {
-            line-height: 2.4;
-          }
         }
 
         .mushaf-line-justify { justify-content: space-between; }
