@@ -593,6 +593,7 @@ export function QuranAyahViewer({
         >
           <span className="truncate">
             {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
+            <span className="text-muted-foreground font-normal"> {clientAyah}</span>
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
         </button>
