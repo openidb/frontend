@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchAPI } from "@/lib/api-client";
 import { QuranAyahViewer } from "@/components/QuranAyahViewer";
-import type { MushafPageData } from "@/components/MushafPageClient";
 
 interface AyahData {
   ayahNumber: number;
@@ -59,14 +58,14 @@ export default async function QuranAyahPage({
   if (isNaN(surahNum) || surahNum < 1 || surahNum > 114) notFound();
   if (isNaN(ayahNum) || ayahNum < 1) notFound();
 
-  // Fetch 3 ayahs: prev, current, next
+  // Fetch 4 ayahs: 1 before, current, 2 after
   const startAyah = Math.max(1, ayahNum - 1);
   const offset = startAyah - 1;
 
   let data: AyahsResponse;
   try {
     data = await fetchAPI<AyahsResponse>(
-      `/api/quran/ayahs?surah=${surahNum}&offset=${offset}&limit=3`,
+      `/api/quran/ayahs?surah=${surahNum}&offset=${offset}&limit=4`,
       { revalidate: 86400 }
     );
   } catch {
@@ -74,23 +73,6 @@ export default async function QuranAyahPage({
   }
 
   if (!data.ayahs.length) notFound();
-
-  // Get unique page numbers for displayed ayahs
-  const pageNumbers = [...new Set(data.ayahs.map((a) => a.pageNumber))];
-
-  // Fetch mushaf page data
-  const mushafPages: MushafPageData[] = [];
-  await Promise.all(
-    pageNumbers.map(async (p) => {
-      try {
-        const pd = await fetchAPI<MushafPageData>(`/api/quran/mushaf/${p}`, { revalidate: 86400 });
-        mushafPages.push(pd);
-      } catch {}
-    })
-  );
-  mushafPages.sort((a, b) => a.pageNumber - b.pageNumber);
-
-  if (!mushafPages.length) notFound();
 
   const surahInfo = data.ayahs.find((a) => a.ayahNumber === ayahNum)?.surah || data.ayahs[0].surah;
 
@@ -103,7 +85,7 @@ export default async function QuranAyahPage({
         surahNameEnglish={surahInfo.nameEnglish}
         surahNameArabic={surahInfo.nameArabic}
         totalAyahs={data.total}
-        mushafPages={mushafPages}
+        mushafPages={[]}
         initialAudioMode={audio === "1"}
       />
     </div>

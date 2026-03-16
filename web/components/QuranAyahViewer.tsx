@@ -83,23 +83,11 @@ const PREFERRED_TAFSIRS: Record<string, string> = {
   tr: "qul-914",                  // Tafsir Ibne Kathir
 };
 
-// Pages where ALL lines should be center-aligned
-const CENTER_ALIGNED_PAGES = [1, 2];
 // Module-level caches (persist across React re-renders and navigations)
-const loadedFonts = new Set<string>();
 const translationCache = new Map<string, string>(); // "surah:ayah:edition" → text
 const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
 const tafsirFetching = new Set<string>(); // dedup in-flight tafsir fetches
-
-const CENTER_ALIGNED_LINES: Record<number, number[]> = {
-  255: [2], 528: [9], 534: [6], 545: [6], 586: [1], 593: [2], 594: [5],
-  600: [10], 602: [5, 15], 603: [10, 15], 604: [4, 9, 14, 15],
-};
-
-function isCenterAligned(pageNumber: number, lineNumber: number): boolean {
-  if (CENTER_ALIGNED_PAGES.includes(pageNumber)) return true;
-  return CENTER_ALIGNED_LINES[pageNumber]?.includes(lineNumber) ?? false;
-}
+const ayahTextCache = new Map<string, string>(); // "surah:ayah" → textUthmani
 
 export function QuranAyahViewer({
   ayahs,
@@ -116,42 +104,21 @@ export function QuranAyahViewer({
 
   // --- Client-side state for instant ayah transitions in audio mode ---
   const [clientAyah, setClientAyah] = useState(targetAyah);
-  const [clientMushafPages, setClientMushafPages] = useState(serverMushafPages);
-  const mushafCacheRef = useRef(new Map<number, MushafPageData>());
+  const [ayahTick, setAyahTick] = useState(0);
+
+  // Seed ayah text cache from server props
+  for (const a of ayahs) {
+    ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+  }
 
   // Sync from server props when they change (real navigation / initial load)
   useEffect(() => { setClientAyah(targetAyah); }, [targetAyah]);
-  useEffect(() => {
-    setClientMushafPages(serverMushafPages);
-    for (const p of serverMushafPages) mushafCacheRef.current.set(p.pageNumber, p);
-  }, [serverMushafPages]);
 
   // Client-side navigation: update state + URL without server round-trip
   const handleAudioNavigate = useCallback((ayah: number) => {
     history.replaceState(null, '', `/quran/${surahNumber}/${ayah}?audio=1`);
     setClientAyah(ayah);
-
-    // Find cached mushaf pages containing the 3 display ayahs
-    const displayAyahs = new Set<number>();
-    if (ayah > 1) displayAyahs.add(ayah - 1);
-    displayAyahs.add(ayah);
-    if (ayah < totalAyahs) displayAyahs.add(ayah + 1);
-
-    const pages: MushafPageData[] = [];
-    for (const page of mushafCacheRef.current.values()) {
-      for (const line of page.lines) {
-        if (line.lineType !== 'text') continue;
-        if (line.words.some(w => w.surahNumber === surahNumber && displayAyahs.has(w.ayahNumber))) {
-          pages.push(page);
-          break;
-        }
-      }
-    }
-    if (pages.length > 0) {
-      pages.sort((a, b) => a.pageNumber - b.pageNumber);
-      setClientMushafPages(pages);
-    }
-  }, [surahNumber, totalAyahs]);
+  }, [surahNumber]);
 
   const {
     isAudioMode,
@@ -161,27 +128,9 @@ export function QuranAyahViewer({
     pause,
     skipForward,
     skipBack,
-    highlightedPosition,
     audioRef,
-  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, clientMushafPages, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic);
+  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, serverMushafPages, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic);
 
-  // Pre-fetch upcoming mushaf pages in audio mode
-  useEffect(() => {
-    if (!isAudioMode) return;
-    const maxPage = Math.max(...clientMushafPages.map(p => p.pageNumber));
-    for (let p = maxPage + 1; p <= Math.min(maxPage + 3, 604); p++) {
-      if (mushafCacheRef.current.has(p)) continue;
-      fetch(`/api/quran/mushaf/${p}`)
-        .then(r => r.ok ? r.json() : null)
-        .then((data: MushafPageData | null) => {
-          if (data) mushafCacheRef.current.set(data.pageNumber, data);
-        })
-        .catch(() => {});
-    }
-  }, [isAudioMode, clientMushafPages]);
-
-  const [fontsLoaded, setFontsLoaded] = useState<Set<number>>(new Set());
-  const [surahFontLoaded, setSurahFontLoaded] = useState(false);
   const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
   const [tafsirLang, setTafsirLang] = useState<string>("");
   const [tafsirEditionId, setTafsirEditionId] = useState<string>("");
@@ -193,152 +142,69 @@ export function QuranAyahViewer({
   const canGoPrev = clientAyah > 1;
   const canGoNext = clientAyah < totalAyahs;
 
-  // Show at least 4 mushaf text lines centered on the target ayah.
-  // If the ayah spans more than 4 lines, show all of them.
-  const { filteredLines, ayahSet } = useMemo(() => {
-    const MIN_LINES = 4;
-    // Collect all lines across mushaf pages in order
-    const allLines: { pageNumber: number; line: typeof clientMushafPages[0]["lines"][0] }[] = [];
-    for (const page of clientMushafPages) {
-      for (const line of page.lines) {
-        allLines.push({ pageNumber: page.pageNumber, line });
-      }
+  // Compute display range: 1 before, target, 2 after
+  const displayAyahNumbers = useMemo(() => {
+    const nums: number[] = [];
+    for (let i = Math.max(1, clientAyah - 1); i <= Math.min(totalAyahs, clientAyah + 2); i++) {
+      nums.push(i);
     }
+    return nums;
+  }, [clientAyah, totalAyahs]);
 
-    // Find text lines containing the target ayah
-    const targetIndices: number[] = [];
-    for (let i = 0; i < allLines.length; i++) {
-      if (allLines[i].line.lineType === "text" &&
-        allLines[i].line.words.some(w => w.surahNumber === surahNumber && w.ayahNumber === clientAyah)) {
-        targetIndices.push(i);
-      }
-    }
-    if (targetIndices.length === 0) return { filteredLines: [], ayahSet: new Set([clientAyah]) };
+  // Read ayah texts from cache (synchronous — zero flicker)
+  const displayAyahs = displayAyahNumbers.map(n => ({
+    number: n,
+    text: ayahTextCache.get(`${surahNumber}:${n}`) || "",
+  }));
 
-    let rangeStart = targetIndices[0];
-    let rangeEnd = targetIndices[targetIndices.length - 1];
-
-    // Count text lines in a range
-    const countText = (s: number, e: number) => {
-      let c = 0;
-      for (let i = s; i <= e; i++) if (allLines[i]?.line.lineType === "text") c++;
-      return c;
-    };
-
-    // Expand symmetrically to reach MIN_LINES text lines,
-    // but only include lines that belong to the same surah.
-    const lineHasSurah = (idx: number) => {
-      const l = allLines[idx]?.line;
-      if (!l || l.lineType !== "text") return false;
-      return l.words.some(w => w.surahNumber === surahNumber);
-    };
-    const countSurahText = (s: number, e: number) => {
-      let c = 0;
-      for (let i = s; i <= e; i++) if (lineHasSurah(i)) c++;
-      return c;
-    };
-    while (countSurahText(rangeStart, rangeEnd) < MIN_LINES) {
-      let grew = false;
-      if (rangeEnd + 1 < allLines.length && lineHasSurah(rangeEnd + 1)) { rangeEnd++; grew = true; }
-      else if (rangeEnd + 1 < allLines.length) {
-        // Skip lines from other surahs — try beyond
-        let probe = rangeEnd + 1;
-        while (probe < allLines.length && !lineHasSurah(probe)) probe++;
-        if (probe < allLines.length) { rangeEnd = probe; grew = true; }
-      }
-      if (countSurahText(rangeStart, rangeEnd) >= MIN_LINES) break;
-      if (rangeStart - 1 >= 0 && lineHasSurah(rangeStart - 1)) { rangeStart--; grew = true; }
-      else if (rangeStart - 1 >= 0) {
-        let probe = rangeStart - 1;
-        while (probe >= 0 && !lineHasSurah(probe)) probe--;
-        if (probe >= 0) { rangeStart = probe; grew = true; }
-      }
-      if (!grew) break;
-    }
-
-    // Trim non-surah lines from the edges of the range
-    const filtered = allLines.slice(rangeStart, rangeEnd + 1).filter(({ line }) =>
-      line.lineType !== "text" || line.words.some(w => w.surahNumber === surahNumber)
-    );
-
-    // Include surah headers / bismillah for the target surah
-    // that appear anywhere in the range
-    for (let i = 0; i < allLines.length; i++) {
-      const lt = allLines[i].line.lineType;
-      if ((lt === "surah_name" || lt === "bismillah") &&
-        allLines[i].line.words.some(w => w.surahNumber === surahNumber) &&
-        !filtered.some(f => f.pageNumber === allLines[i].pageNumber && f.line.lineNumber === allLines[i].line.lineNumber)) {
-        filtered.push(allLines[i]);
-      }
-    }
-
-    // Sort by page then line number for correct display order
-    filtered.sort((a, b) => a.pageNumber - b.pageNumber || a.line.lineNumber - b.line.lineNumber);
-
-    // Derive ayahSet from displayed lines (for translations, fonts, etc.)
-    const set = new Set<number>();
-    set.add(clientAyah);
-    for (const { line } of filtered) {
-      if (line.lineType === "text") {
-        for (const w of line.words) {
-          if (w.surahNumber === surahNumber) set.add(w.ayahNumber);
-        }
-      }
-    }
-
-    return { filteredLines: filtered, ayahSet: set };
-  }, [clientMushafPages, surahNumber, clientAyah]);
-
-  // Load QPC V2 fonts for relevant pages (skip already-loaded fonts)
+  // Fetch missing ayah texts
   useEffect(() => {
-    const pages = clientMushafPages.map((p) => p.pageNumber);
-    const alreadyLoaded = new Set<number>();
-    const toLoad: number[] = [];
-    for (const page of pages) {
-      const fontName = `QCF2_P${String(page).padStart(3, "0")}`;
-      if (loadedFonts.has(fontName)) {
-        alreadyLoaded.add(page);
-      } else {
-        toLoad.push(page);
-      }
-    }
-    if (toLoad.length === 0) {
-      setFontsLoaded(new Set(pages));
-      return;
-    }
-    Promise.all(
-      toLoad.map(async (page) => {
-        const fontName = `QCF2_P${String(page).padStart(3, "0")}`;
-        try {
-          const font = new FontFace(fontName, `url(/fonts/mushaf/v2/p${page}.woff2)`);
-          const f = await font.load();
-          document.fonts.add(f);
-          loadedFonts.add(fontName);
-          alreadyLoaded.add(page);
-        } catch {}
+    const missing = displayAyahNumbers.filter(n => !ayahTextCache.has(`${surahNumber}:${n}`));
+    if (missing.length === 0) return;
+    const min = Math.min(...missing);
+    const max = Math.max(...missing);
+    let cancelled = false;
+    fetch(`/api/quran/ayahs?surah=${surahNumber}&offset=${min - 1}&limit=${max - min + 1}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.ayahs) for (const a of d.ayahs) ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+        if (!cancelled) setAyahTick(t => t + 1);
       })
-    ).then(() => setFontsLoaded(new Set(alreadyLoaded)));
-  }, [clientMushafPages]);
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [surahNumber, displayAyahNumbers]);
+
+  // In audio mode, pre-warm upcoming ayah texts
+  useEffect(() => {
+    if (!isAudioMode) return;
+    const toFetch: number[] = [];
+    for (let i = 1; i <= 20; i++) {
+      const a = clientAyah + i;
+      if (a <= totalAyahs && !ayahTextCache.has(`${surahNumber}:${a}`)) toFetch.push(a);
+    }
+    if (toFetch.length === 0) return;
+    const min = Math.min(...toFetch);
+    const max = Math.max(...toFetch);
+    fetch(`/api/quran/ayahs?surah=${surahNumber}&offset=${min - 1}&limit=${max - min + 1}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.ayahs) for (const a of d.ayahs) ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+      })
+      .catch(() => {});
+  }, [isAudioMode, surahNumber, clientAyah, totalAyahs]);
 
   // Prefetch adjacent ayah routes for non-audio navigation
   useEffect(() => {
-    if (isAudioMode) return; // Audio mode uses client-side transitions
+    if (isAudioMode) return;
     if (canGoPrev) router.prefetch(`/quran/${surahNumber}/${clientAyah - 1}`);
     if (canGoNext) router.prefetch(`/quran/${surahNumber}/${clientAyah + 1}`);
   }, [surahNumber, clientAyah, canGoPrev, canGoNext, router, isAudioMode]);
 
-  // Load surah name font
-  useEffect(() => {
-    const font = new FontFace("SurahNameV2", "url(/fonts/mushaf/surah-name-v2.woff2)");
-    font.load().then((f) => { document.fonts.add(f); setSurahFontLoaded(true); }).catch(() => {});
-  }, []);
-
   // Translations: read synchronously from module-level cache (zero flicker)
-  const ayahNumbers = Array.from(ayahSet).sort((a, b) => a - b);
+  const ayahNumbers = displayAyahNumbers;
   const translationEdition = PREFERRED_EDITIONS[locale] || PREFERRED_EDITIONS.en;
   const [translationTick, setTranslationTick] = useState(0);
 
-  // Synchronous read from cache — available on the SAME render frame
   const translations: Record<number, string> = {};
   if (locale !== "ar") {
     for (const num of ayahNumbers) {
@@ -386,12 +252,10 @@ export function QuranAyahViewer({
           (t: TafsirEdition) => t.language && t.language !== "unknown"
         );
         setTafsirEditions(editions);
-        // Default to user's locale or Arabic (only if language name is resolvable)
         const hasLang = (l: string) => editions.some((e: TafsirEdition) => e.language === l) && getLanguageName(l);
         const defaultLang = hasLang(locale) ? locale
           : hasLang("ar") ? "ar" : editions.find((e: TafsirEdition) => getLanguageName(e.language))?.language || "";
         setTafsirLang(defaultLang);
-        // Prefer Ibn Kathir for the default language, otherwise first edition
         const langEditions = editions.filter((e: TafsirEdition) => e.language === defaultLang);
         const preferred = PREFERRED_TAFSIRS[defaultLang];
         const defaultEdition = (preferred && langEditions.find((e) => e.id === preferred)) || langEditions[0];
@@ -421,8 +285,7 @@ export function QuranAyahViewer({
     }
   }, [tafsirLang, tafsirLangs]);
 
-  // Tafsir: read synchronously from cache, fallback to prev ayah's tafsir
-  // (adjacent ayahs often share the same tafsir text, so this avoids flicker)
+  // Tafsir: read synchronously from cache
   const currentTafsir = tafsirEditionId
     ? (tafsirCache.get(`${surahNumber}:${clientAyah}:${tafsirEditionId}`)
        ?? tafsirCache.get(`${surahNumber}:${clientAyah - 1}:${tafsirEditionId}`)
@@ -430,7 +293,6 @@ export function QuranAyahViewer({
     : null;
 
   // Helper: fetch a single tafsir into cache (deduped)
-  // When fetched text matches adjacent ayahs, propagate to neighbours
   const fetchTafsir = useCallback((surah: number, ayah: number, editionId: string, onDone?: () => void) => {
     const key = `${surah}:${ayah}:${editionId}`;
     if (tafsirCache.has(key) || tafsirFetching.has(key)) return;
@@ -441,7 +303,6 @@ export function QuranAyahViewer({
         if (d?.tafsirs?.[0]?.text) {
           const text = d.tafsirs[0].text;
           tafsirCache.set(key, text);
-          // Propagate: if prev/next ayah has the same text, pre-fill adjacent keys
           const prevKey = `${surah}:${ayah - 1}:${editionId}`;
           const nextKey = `${surah}:${ayah + 1}:${editionId}`;
           if (tafsirCache.get(prevKey) === text && !tafsirCache.has(nextKey)) {
@@ -461,7 +322,7 @@ export function QuranAyahViewer({
   useEffect(() => {
     if (!tafsirEditionId) return;
     const key = `${surahNumber}:${clientAyah}:${tafsirEditionId}`;
-    if (tafsirCache.has(key)) return; // already cached
+    if (tafsirCache.has(key)) return;
     let cancelled = false;
     fetchTafsir(surahNumber, clientAyah, tafsirEditionId, () => {
       if (!cancelled) setTafsirTick((t) => t + 1);
@@ -469,7 +330,7 @@ export function QuranAyahViewer({
     return () => { cancelled = true; };
   }, [surahNumber, clientAyah, tafsirEditionId, fetchTafsir]);
 
-  // Aggressively pre-warm tafsir: +20 ayahs ahead in audio mode
+  // Pre-warm tafsir: +20 ayahs ahead in audio mode
   useEffect(() => {
     if (!isAudioMode || !tafsirEditionId) return;
     for (let i = 1; i <= 20; i++) {
@@ -498,12 +359,6 @@ export function QuranAyahViewer({
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
 
-  // Use module-level cache for instant font readiness (no state flash on page boundary)
-  const allFontsReady = clientMushafPages.every((p) => {
-    const fontName = `QCF2_P${String(p.pageNumber).padStart(3, "0")}`;
-    return loadedFonts.has(fontName);
-  }) || fontsLoaded.size > 0 && clientMushafPages.every((p) => fontsLoaded.has(p.pageNumber));
-
   // Subtle fade on ayah change
   const prevAyahRef = useRef(clientAyah);
   useEffect(() => {
@@ -521,16 +376,10 @@ export function QuranAyahViewer({
     }
   }, [clientAyah]);
 
-  // Pre-load fonts for upcoming mushaf pages in audio mode
-  useEffect(() => {
-    if (!isAudioMode) return;
-    for (const page of mushafCacheRef.current.values()) {
-      const fontName = `QCF2_P${String(page.pageNumber).padStart(3, "0")}`;
-      if (loadedFonts.has(fontName)) continue;
-      const font = new FontFace(fontName, `url(/fonts/mushaf/v2/p${page.pageNumber}.woff2)`);
-      font.load().then((f) => { document.fonts.add(f); loadedFonts.add(fontName); }).catch(() => {});
-    }
-  }, [isAudioMode, clientMushafPages]);
+  // Suppress unused tick warnings
+  void translationTick;
+  void tafsirTick;
+  void ayahTick;
 
   return (
     <div className="ayah-view flex flex-col h-full min-h-0">
@@ -558,159 +407,63 @@ export function QuranAyahViewer({
           <Headphones className="h-5 w-5" />
         </button>
         <button
-          onClick={() => router.push(`/mushaf/pdf?page=${clientMushafPages[0]?.pageNumber ?? 1}`)}
+          onClick={() => router.push(`/mushaf/pdf?page=${ayahs[0]?.pageNumber ?? 1}`)}
           className="px-3 py-1.5 rounded-lg text-xs bg-foreground/[0.06] hover:bg-foreground/[0.1] transition-colors text-muted-foreground font-medium"
         >
           {t("mushaf.viewFullSurah")}
         </button>
       </div>
 
-      {/* Mushaf content */}
+      {/* Content */}
       <div
         ref={containerRef}
-        className="flex-1 min-h-0 overflow-auto flex justify-center mushaf-bg"
+        className="flex-1 min-h-0 overflow-auto flex justify-center ayah-bg"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <div
           ref={contentRef}
-          className="mushaf-page-frame"
-          dir="rtl"
-          style={{
-            opacity: allFontsReady ? 1 : 0.3,
-            transition: "opacity 0.15s ease-in",
-          }}
+          className="ayah-content-frame"
         >
-          {/* Ayah range and page info */}
-          <div className="mushaf-ayah-title" dir="ltr">
-            {ayahNumbers.length > 1
-              ? `${surahNumber}:${ayahNumbers[0]}–${ayahNumbers[ayahNumbers.length - 1]}`
-              : `${surahNumber}:${clientAyah}`}
-            {" · "}
-            {t("mushaf.page")} {clientMushafPages.map((p) => p.pageNumber).join("–")}
-          </div>
+          {/* Arabic ayahs — ayah by ayah, like translation display */}
+          {displayAyahs.map(({ number, text }) => (
+            <div
+              key={number}
+              className={`arabic-ayah${number === clientAyah ? " arabic-ayah-current" : " arabic-ayah-context"}`}
+            >
+              <p className="arabic-ayah-text" dir="rtl">
+                {text}{" "}
+                <span className="arabic-ayah-end-marker">
+                  ﴿{number.toLocaleString("ar-EG")}﴾
+                </span>
+              </p>
+            </div>
+          ))}
 
-          {filteredLines.map(({ pageNumber, line }) => {
-            const fontFamily = `QCF2_P${String(pageNumber).padStart(3, "0")}`;
-
-            // Surah header line
-            if (line.lineType === "surah_name") {
-              const surahWord = line.words.find((w) => w.charType === "surah_name");
-              const surahNum = surahWord?.surahNumber ?? 0;
-              const page = clientMushafPages.find((p) => p.pageNumber === pageNumber);
-              const surahInfo = page?.surahs.find((s) => s.number === surahNum);
-              const ligature = `surah${String(surahNum).padStart(3, "0")}`;
-              return (
-                <div key={`${pageNumber}-${line.lineNumber}`} className="mushaf-surah-header">
-                  {surahFontLoaded ? (
-                    <span className="mushaf-surah-name">{ligature}</span>
-                  ) : (
-                    <span className="mushaf-surah-name-fallback">
-                      {surahInfo?.nameArabic || `سورة ${surahNum}`}
-                    </span>
-                  )}
-                </div>
-              );
-            }
-
-            // Bismillah line
-            if (line.lineType === "bismillah") {
-              return (
-                <div
-                  key={`${pageNumber}-${line.lineNumber}`}
-                  className="mushaf-bismillah-line"
-                  style={{ fontFamily: '"QCF_Bismillah", "QPC Hafs", "UthmanicHafs", serif' }}
-                >
-                  <span className="mushaf-word mushaf-bismillah">
-                    {line.words.map((w) => w.glyph || w.text).join("") || "﷽"}
-                  </span>
-                </div>
-              );
-            }
-
-            // Regular text line — two-layer rendering to avoid glyph clipping:
-            // Base layer: all words at dim color (single color = no cross-span clip)
-            // Overlay: target words at full color, non-target hidden
-            const centered = isCenterAligned(pageNumber, line.lineNumber);
-            const lineClass = `mushaf-line ${centered ? "mushaf-line-center" : "mushaf-line-justify"}`;
-            const lineStyle = { fontFamily: `"${fontFamily}", "UthmanicHafs", "QPC Hafs", serif` };
-            const hasTarget = line.words.some((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah);
-            const allTarget = line.words.every((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah);
-
-            // Multi-layer rendering: each layer has uniform visible color to
-            // prevent QCF2 glyph clipping at flex item color boundaries.
-            // Layer 1 (base): all words at dim color
-            // Layer 2: target ayah words at default color (if mixed line)
-            // Layer 3: highlighted word at green (if audio playing)
-            const highlightIdx = isAudioMode
-              ? line.words.findIndex((w) => w.surahNumber === surahNumber && w.ayahNumber === clientAyah && w.charType === "word" && w.wordPosition === highlightedPosition)
-              : -1;
-            const needTargetOverlay = hasTarget && !allTarget;
-            const needHighlightOverlay = highlightIdx !== -1;
-            const allWords = line.words.map((w) => <span key={w.position} className="mushaf-word">{w.glyph || w.text}</span>);
-
-            // Simple case: single color, no overlays
-            if (!needTargetOverlay && !needHighlightOverlay) {
-              return (
-                <div key={`${pageNumber}-${line.lineNumber}`} className={`${lineClass}${!hasTarget ? " mushaf-word-dim" : ""}`} style={lineStyle}>
-                  {allWords}
-                </div>
-              );
-            }
-
-            return (
-              <div key={`${pageNumber}-${line.lineNumber}`} style={{ position: "relative" }}>
-                {/* Base: all words at uniform dim (mixed) or default (all-target) color */}
-                <div className={`${lineClass}${!allTarget ? " mushaf-word-dim" : ""}`} style={lineStyle}>
-                  {allWords}
-                </div>
-                {/* Target overlay: target ayah words at default color */}
-                {needTargetOverlay && (
-                  <div className={`${lineClass} mushaf-line-overlay`} style={lineStyle} aria-hidden="true">
-                    {line.words.map((w) => {
-                      const isTarget = w.surahNumber === surahNumber && w.ayahNumber === clientAyah;
-                      return <span key={w.position} className="mushaf-word" style={isTarget ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>;
-                    })}
-                  </div>
-                )}
-                {/* Highlight overlay: single word at highlight color */}
-                {needHighlightOverlay && (
-                  <div className={`${lineClass} mushaf-line-overlay`} style={lineStyle} aria-hidden="true">
-                    {line.words.map((w, i) => (
-                      <span key={w.position} className={`mushaf-word${i === highlightIdx ? " mushaf-word-highlight" : ""}`} style={i === highlightIdx ? undefined : { visibility: "hidden" }}>{w.glyph || w.text}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Translations for all displayed ayahs */}
+          {/* Translations */}
           {Object.keys(translations).length > 0 && (
-            <div dir="ltr" className="mushaf-ayah-translation">
-              <p className="mushaf-ayah-translation-label">[{translatorName}]</p>
-              {ayahNumbers
-                .filter((num) => num >= clientAyah - 1 && num <= clientAyah + 2)
-                .map((num) =>
-                  translations[num] ? (
-                    <p key={num} className={`mushaf-ayah-translation-text ${num === clientAyah ? "" : "mushaf-ayah-translation-context"}`}>
-                      <span className="mushaf-ayah-translation-num">{surahNumber}:{num}</span>{" "}
-                      {translations[num]}
-                    </p>
-                  ) : null
-                )}
+            <div dir="ltr" className="ayah-translation-section">
+              <p className="ayah-translation-label">[{translatorName}]</p>
+              {ayahNumbers.map((num) =>
+                translations[num] ? (
+                  <p key={num} className={`ayah-translation-text${num === clientAyah ? "" : " ayah-translation-context"}`}>
+                    <span className="ayah-translation-num">{surahNumber}:{num}</span>{" "}
+                    {translations[num]}
+                  </p>
+                ) : null
+              )}
             </div>
           )}
 
           {/* Tafsir section */}
           {tafsirEditions.length > 0 && (
-            <div dir="ltr" className="mushaf-tafsir-section">
-              <p className="mushaf-tafsir-title">{t("mushaf.tafsir")}</p>
-              <div className="mushaf-tafsir-selectors">
+            <div dir="ltr" className="ayah-tafsir-section">
+              <p className="ayah-tafsir-title">{t("mushaf.tafsir")}</p>
+              <div className="ayah-tafsir-selectors">
                 <select
                   value={tafsirLang}
                   onChange={(e) => setTafsirLang(e.target.value)}
-                  className="mushaf-tafsir-select"
+                  className="ayah-tafsir-select"
                 >
                   {Object.keys(tafsirLangs).sort().map((lang) => {
                     const name = getLanguageName(lang);
@@ -726,20 +479,18 @@ export function QuranAyahViewer({
                 <select
                   value={tafsirEditionId}
                   onChange={(e) => setTafsirEditionId(e.target.value)}
-                  className="mushaf-tafsir-select mushaf-tafsir-select-edition"
+                  className="ayah-tafsir-select ayah-tafsir-select-edition"
                 >
                   {(tafsirLangs[tafsirLang] || []).map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.name}
-                    </option>
+                    <option key={e.id} value={e.id}>{e.name}</option>
                   ))}
                 </select>
               </div>
 
               {currentTafsir && (
-                <div className="mushaf-tafsir-content">
+                <div className="ayah-tafsir-content">
                   <div
-                    className="mushaf-tafsir-text"
+                    className="ayah-tafsir-text"
                     dir={tafsirEditions.find((e) => e.id === tafsirEditionId)?.direction || "ltr"}
                     dangerouslySetInnerHTML={{ __html: currentTafsir }}
                   />
@@ -750,7 +501,7 @@ export function QuranAyahViewer({
         </div>
       </div>
 
-      {/* Bottom nav — card-style buttons */}
+      {/* Bottom nav */}
       <div
         className="shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
         style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
@@ -816,141 +567,82 @@ export function QuranAyahViewer({
       </div>
 
       {/* Hidden audio element */}
-      {/* Audio element always rendered so iOS activation works on first tap */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} preload="none" playsInline webkit-playsinline="" />
 
       <style jsx global>{`
-        .mushaf-bg {
+        .ayah-bg {
           background-color: hsl(var(--reader-bg, 40 30% 96%));
           color: hsl(var(--reader-fg, 0 0% 10%));
           padding: 1rem 0;
         }
         @media (min-width: 640px) {
-          .mushaf-bg { padding: 1.5rem 0; }
+          .ayah-bg { padding: 1.5rem 0; }
         }
 
-        .mushaf-ayah-title {
-          text-align: center;
-          font-size: 0.75rem;
-          opacity: 0.5;
-          margin-bottom: 0.75rem;
-        }
-
-        .ayah-view .mushaf-page-frame {
+        .ayah-content-frame {
           width: 100%;
-          max-width: 540px;
+          max-width: 640px;
           margin: 0 auto;
           padding: 0.5rem 1rem;
           display: flex;
           flex-direction: column;
-          min-height: auto;
-          align-self: flex-start;
         }
         @media (min-width: 640px) {
-          .ayah-view .mushaf-page-frame {
+          .ayah-content-frame {
             padding: 1.5rem 2rem;
             background: hsl(var(--reader-bg, 40 30% 96%));
           }
         }
 
-        .mushaf-line {
-          display: flex;
-          align-items: baseline;
-          direction: rtl;
-          line-height: 3.4;
-          font-size: clamp(1.05rem, 4.3vw, 1.55rem);
-          min-height: 2.8rem;
+        /* Arabic ayahs — ayah by ayah display */
+        .arabic-ayah {
+          padding: 0.75rem 0;
+          border-bottom: 1px solid hsl(var(--border) / 0.15);
         }
-        @media (min-width: 640px) {
-          .mushaf-line {
-            font-size: 1.7rem;
-            line-height: 3.5;
-          }
+        .arabic-ayah:last-of-type {
+          border-bottom: none;
         }
-
-        /* Ayah viewer: larger font */
-        .ayah-view .mushaf-line {
-          font-size: clamp(1.3rem, 5.5vw, 1.8rem);
+        .arabic-ayah-context {
+          opacity: 0.3;
+        }
+        .arabic-ayah-current {
+          opacity: 1;
+        }
+        .arabic-ayah-text {
+          font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
+          font-size: clamp(1.4rem, 5.5vw, 2rem);
           line-height: 2.2;
-          min-height: 1.6rem;
+          text-align: right;
+          margin: 0;
         }
-
-        .mushaf-line-justify { justify-content: space-between; }
-        .mushaf-line-center { justify-content: center; gap: 0.2em; }
-        .mushaf-word { cursor: default; transition: color 0.15s ease; }
-        .ayah-view .mushaf-word-dim { color: hsl(var(--foreground) / 0.2); }
-        .mushaf-line-overlay { position: absolute; inset: 0; pointer-events: none; }
-        .mushaf-word-highlight { color: hsl(160 84% 39%); }
-        :is(.dark) .mushaf-word-highlight { color: hsl(158 64% 52%); }
-
-        .mushaf-surah-header {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          padding: 0.2rem 1rem;
-          margin: 3.5rem 0 0.5rem;
-          border-radius: 8px;
-          border: 1.5px solid hsl(0 0% 25%);
-        }
-        :is(.dark) .mushaf-surah-header { border-color: hsl(0 0% 75%); }
-
-        .mushaf-surah-name {
-          font-family: "SurahNameV2", serif;
-          font-size: clamp(2rem, 7vw, 2.8rem);
-          line-height: 1.4;
-          display: block;
-          width: 100%;
-          text-align: center;
-        }
-        @media (min-width: 640px) {
-          .mushaf-surah-name { font-size: 3.2rem; }
-        }
-
-        .mushaf-surah-name-fallback {
-          font-family: "UthmanicHafs", "Noto Naskh Arabic", serif;
-          font-size: 1.3rem;
-          line-height: 1.6;
-          color: hsl(25 50% 22%);
-        }
-        :is(.dark) .mushaf-surah-name-fallback { color: hsl(38 40% 80%); }
-
-        .mushaf-bismillah-line {
-          display: flex;
-          align-items: baseline;
-          justify-content: center;
-          direction: rtl;
-          line-height: 2;
-          min-height: auto;
-          gap: 0.2em;
-        }
-        .mushaf-bismillah {
-          font-size: 1.6rem;
-          line-height: 2 !important;
+        .arabic-ayah-end-marker {
+          font-size: 0.8em;
+          opacity: 0.5;
+          white-space: nowrap;
         }
 
         /* Translation block */
-        .mushaf-ayah-translation {
+        .ayah-translation-section {
           margin-top: 1.5rem;
           padding-top: 0.75rem;
           border-top: 1px solid hsl(var(--border));
         }
-        .mushaf-ayah-translation-label {
+        .ayah-translation-label {
           font-size: 0.7rem;
           opacity: 0.4;
           margin-bottom: 0.5rem;
           text-align: center;
         }
-        .mushaf-ayah-translation-text {
+        .ayah-translation-text {
           font-size: 0.875rem;
           line-height: 1.6;
           margin-bottom: 0.5rem;
         }
-        .mushaf-ayah-translation-context {
+        .ayah-translation-context {
           opacity: 0.4;
         }
-        .mushaf-ayah-translation-num {
+        .ayah-translation-num {
           font-size: 0.75rem;
           font-weight: 600;
           opacity: 0.5;
@@ -958,24 +650,24 @@ export function QuranAyahViewer({
         }
 
         /* Tafsir section */
-        .mushaf-tafsir-section {
+        .ayah-tafsir-section {
           margin-top: 1rem;
           border-top: 1px solid hsl(var(--border));
           padding-top: 0.5rem;
         }
-        .mushaf-tafsir-title {
+        .ayah-tafsir-title {
           font-size: 0.9rem;
           font-weight: 600;
           opacity: 0.5;
           text-align: center;
           margin-bottom: 0.375rem;
         }
-        .mushaf-tafsir-selectors {
+        .ayah-tafsir-selectors {
           display: flex;
           gap: 0.5rem;
           margin: 0.25rem 0 0.5rem;
         }
-        .mushaf-tafsir-select {
+        .ayah-tafsir-select {
           flex-shrink: 0;
           padding: 0.25rem 0.5rem;
           font-size: 0.75rem;
@@ -986,37 +678,23 @@ export function QuranAyahViewer({
           cursor: pointer;
           max-width: 11rem;
         }
-        .mushaf-tafsir-select-edition {
+        .ayah-tafsir-select-edition {
           flex: 1;
           min-width: 0;
           max-width: none;
         }
-        .mushaf-tafsir-content {
+        .ayah-tafsir-content {
           margin-top: 0.5rem;
         }
-        .mushaf-tafsir-text {
+        .ayah-tafsir-text {
           font-size: 0.8rem;
           line-height: 1.7;
         }
 
-        /* Font faces */
+        /* Font face */
         @font-face {
           font-family: "UthmanicHafs";
           src: url("/fonts/mushaf/UthmanicHafs_V22.woff2") format("woff2");
-          font-weight: normal;
-          font-style: normal;
-          font-display: swap;
-        }
-        @font-face {
-          font-family: "SurahNameV2";
-          src: url("/fonts/mushaf/surah-name-v2.woff2") format("woff2");
-          font-weight: normal;
-          font-style: normal;
-          font-display: block;
-        }
-        @font-face {
-          font-family: "QCF_Bismillah";
-          src: url("/fonts/mushaf/QCF_Bismillah.woff2") format("woff2");
           font-weight: normal;
           font-style: normal;
           font-display: swap;
