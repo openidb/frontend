@@ -897,6 +897,8 @@ export function useQuranAudio(
   // User actions
   // ====================================================================
 
+  const playRef = useRef<() => void>(() => {});
+
   const toggleAudioMode = useCallback(() => {
     setIsAudioMode((prev) => {
       if (prev) {
@@ -918,6 +920,8 @@ export function useQuranAudio(
       } else {
         activate();
         router.replace(`/quran/${surahNumber}/${targetAyah}?audio=1`);
+        // Auto-play in the same user gesture context (required for iOS)
+        requestAnimationFrame(() => playRef.current());
       }
       return !prev;
     });
@@ -994,6 +998,8 @@ export function useQuranAudio(
     stopScheduleTimer();
     scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
   }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
+
+  playRef.current = play;
 
   const pause = useCallback(() => {
     stopAllSources();
