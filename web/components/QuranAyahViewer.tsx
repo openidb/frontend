@@ -593,7 +593,6 @@ export function QuranAyahViewer({
         >
           <span className="truncate">
             {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
-            <span className="text-muted-foreground font-normal"> {clientAyah}</span>
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
         </button>
@@ -706,6 +705,14 @@ export function QuranAyahViewer({
           ref={contentRef}
           className="ayah-content-frame"
         >
+          {/* Ayah & page info */}
+          <p className="ayah-info-line" dir="ltr">
+            {t("mushaf.ayah")} {clientAyah} / {totalAyahs}
+            {ayahs[0]?.pageNumber != null && (
+              <> · {t("mushaf.page")} {ayahs.find(a => a.ayahNumber === clientAyah)?.pageNumber ?? ayahs[0].pageNumber}</>
+            )}
+          </p>
+
           {/* Bismillah — shown before ayah 1 for all surahs except 1 (Al-Fatiha, where it's ayah 1) and 9 (At-Tawbah) */}
           {surahNumber !== 1 && surahNumber !== 9 && displayAyahNumbers[0] === 1 && (
             <div className="arabic-ayah arabic-ayah-context">
@@ -893,6 +900,15 @@ export function QuranAyahViewer({
             padding: 1.5rem 2rem;
             background: hsl(var(--reader-bg, 40 30% 96%));
           }
+        }
+
+        /* Ayah info line */
+        .ayah-info-line {
+          text-align: center;
+          font-size: 0.75rem;
+          color: hsl(var(--muted-foreground));
+          opacity: 0.6;
+          margin-bottom: 0.5rem;
         }
 
         /* Arabic ayahs — ayah by ayah display */
