@@ -614,7 +614,7 @@ export function QuranAyahViewer({
 
         /* Arabic ayahs — ayah by ayah display */
         .arabic-ayah {
-          padding: 0.75rem 0;
+          padding: 0.15rem 0;
         }
         .arabic-ayah-context {
           opacity: 0.3;
