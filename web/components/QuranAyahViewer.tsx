@@ -425,6 +425,13 @@ export function QuranAyahViewer({
           ref={contentRef}
           className="ayah-content-frame"
         >
+          {/* Bismillah — shown before ayah 1 for all surahs except 1 (Al-Fatiha, where it's ayah 1) and 9 (At-Tawbah) */}
+          {surahNumber !== 1 && surahNumber !== 9 && displayAyahNumbers[0] === 1 && (
+            <div className="arabic-ayah arabic-ayah-context">
+              <p className="arabic-bismillah" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
+            </div>
+          )}
+
           {/* Arabic ayahs — ayah by ayah, like translation display */}
           {displayAyahs.map(({ number, text }) => (
             <div
@@ -434,7 +441,7 @@ export function QuranAyahViewer({
               <p className="arabic-ayah-text" dir="rtl">
                 {text}{" "}
                 <span className="arabic-ayah-end-marker">
-                  ﴿{number.toLocaleString("ar-EG")}﴾
+                  {number.toLocaleString("ar-EG")}
                 </span>
               </p>
             </div>
@@ -611,14 +618,22 @@ export function QuranAyahViewer({
         }
         .arabic-ayah-text {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
-          font-size: clamp(1.4rem, 5.5vw, 2rem);
-          line-height: 2.2;
+          font-size: clamp(1.1rem, 4vw, 1.4rem);
+          line-height: 2;
           text-align: right;
           margin: 0;
         }
+        .arabic-bismillah {
+          font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
+          font-size: clamp(1rem, 3.5vw, 1.25rem);
+          line-height: 2;
+          text-align: center;
+          margin: 0;
+          opacity: 0.6;
+        }
         .arabic-ayah-end-marker {
           font-size: 0.8em;
-          opacity: 0.5;
+          opacity: 0.4;
           white-space: nowrap;
         }
 
