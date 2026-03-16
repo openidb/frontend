@@ -531,7 +531,7 @@ export function QuranAyahViewer({
         style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
         dir="ltr"
       >
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center ${isAudioMode ? "justify-center gap-4" : "justify-between"}`}>
           {isAudioMode ? (
             <>
               <button
