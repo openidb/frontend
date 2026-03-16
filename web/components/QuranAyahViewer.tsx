@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Headphones, Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Headphones, Play, Pause, SkipBack, SkipForward, X } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { useQuranAudio } from "@/lib/use-quran-audio";
 
@@ -88,6 +88,124 @@ function cleanUthmani(text: string): string {
   return text.replace(QURAN_ANNOTATION_RE, "").replace(/\s+/g, " ").trim();
 }
 
+// Static surah metadata (number, Arabic name, English name, ayah count)
+const SURAHS: { number: number; nameArabic: string; nameEnglish: string; ayahCount: number }[] = [
+  { number: 1, nameArabic: "الفاتحة", nameEnglish: "Al-Fatihah", ayahCount: 7 },
+  { number: 2, nameArabic: "البقرة", nameEnglish: "Al-Baqarah", ayahCount: 286 },
+  { number: 3, nameArabic: "آل عمران", nameEnglish: "Ali 'Imran", ayahCount: 200 },
+  { number: 4, nameArabic: "النساء", nameEnglish: "An-Nisa", ayahCount: 176 },
+  { number: 5, nameArabic: "المائدة", nameEnglish: "Al-Ma'idah", ayahCount: 120 },
+  { number: 6, nameArabic: "الأنعام", nameEnglish: "Al-An'am", ayahCount: 165 },
+  { number: 7, nameArabic: "الأعراف", nameEnglish: "Al-A'raf", ayahCount: 206 },
+  { number: 8, nameArabic: "الأنفال", nameEnglish: "Al-Anfal", ayahCount: 75 },
+  { number: 9, nameArabic: "التوبة", nameEnglish: "At-Tawbah", ayahCount: 129 },
+  { number: 10, nameArabic: "يونس", nameEnglish: "Yunus", ayahCount: 109 },
+  { number: 11, nameArabic: "هود", nameEnglish: "Hud", ayahCount: 123 },
+  { number: 12, nameArabic: "يوسف", nameEnglish: "Yusuf", ayahCount: 111 },
+  { number: 13, nameArabic: "الرعد", nameEnglish: "Ar-Ra'd", ayahCount: 43 },
+  { number: 14, nameArabic: "إبراهيم", nameEnglish: "Ibrahim", ayahCount: 52 },
+  { number: 15, nameArabic: "الحجر", nameEnglish: "Al-Hijr", ayahCount: 99 },
+  { number: 16, nameArabic: "النحل", nameEnglish: "An-Nahl", ayahCount: 128 },
+  { number: 17, nameArabic: "الإسراء", nameEnglish: "Al-Isra", ayahCount: 111 },
+  { number: 18, nameArabic: "الكهف", nameEnglish: "Al-Kahf", ayahCount: 110 },
+  { number: 19, nameArabic: "مريم", nameEnglish: "Maryam", ayahCount: 98 },
+  { number: 20, nameArabic: "طه", nameEnglish: "Taha", ayahCount: 135 },
+  { number: 21, nameArabic: "الأنبياء", nameEnglish: "Al-Anbya", ayahCount: 112 },
+  { number: 22, nameArabic: "الحج", nameEnglish: "Al-Hajj", ayahCount: 78 },
+  { number: 23, nameArabic: "المؤمنون", nameEnglish: "Al-Mu'minun", ayahCount: 118 },
+  { number: 24, nameArabic: "النور", nameEnglish: "An-Nur", ayahCount: 64 },
+  { number: 25, nameArabic: "الفرقان", nameEnglish: "Al-Furqan", ayahCount: 77 },
+  { number: 26, nameArabic: "الشعراء", nameEnglish: "Ash-Shu'ara", ayahCount: 227 },
+  { number: 27, nameArabic: "النمل", nameEnglish: "An-Naml", ayahCount: 93 },
+  { number: 28, nameArabic: "القصص", nameEnglish: "Al-Qasas", ayahCount: 88 },
+  { number: 29, nameArabic: "العنكبوت", nameEnglish: "Al-'Ankabut", ayahCount: 69 },
+  { number: 30, nameArabic: "الروم", nameEnglish: "Ar-Rum", ayahCount: 60 },
+  { number: 31, nameArabic: "لقمان", nameEnglish: "Luqman", ayahCount: 34 },
+  { number: 32, nameArabic: "السجدة", nameEnglish: "As-Sajdah", ayahCount: 30 },
+  { number: 33, nameArabic: "الأحزاب", nameEnglish: "Al-Ahzab", ayahCount: 73 },
+  { number: 34, nameArabic: "سبأ", nameEnglish: "Saba", ayahCount: 54 },
+  { number: 35, nameArabic: "فاطر", nameEnglish: "Fatir", ayahCount: 45 },
+  { number: 36, nameArabic: "يس", nameEnglish: "Ya-Sin", ayahCount: 83 },
+  { number: 37, nameArabic: "الصافات", nameEnglish: "As-Saffat", ayahCount: 182 },
+  { number: 38, nameArabic: "ص", nameEnglish: "Sad", ayahCount: 88 },
+  { number: 39, nameArabic: "الزمر", nameEnglish: "Az-Zumar", ayahCount: 75 },
+  { number: 40, nameArabic: "غافر", nameEnglish: "Ghafir", ayahCount: 85 },
+  { number: 41, nameArabic: "فصلت", nameEnglish: "Fussilat", ayahCount: 54 },
+  { number: 42, nameArabic: "الشورى", nameEnglish: "Ash-Shuraa", ayahCount: 53 },
+  { number: 43, nameArabic: "الزخرف", nameEnglish: "Az-Zukhruf", ayahCount: 89 },
+  { number: 44, nameArabic: "الدخان", nameEnglish: "Ad-Dukhan", ayahCount: 59 },
+  { number: 45, nameArabic: "الجاثية", nameEnglish: "Al-Jathiyah", ayahCount: 37 },
+  { number: 46, nameArabic: "الأحقاف", nameEnglish: "Al-Ahqaf", ayahCount: 35 },
+  { number: 47, nameArabic: "محمد", nameEnglish: "Muhammad", ayahCount: 38 },
+  { number: 48, nameArabic: "الفتح", nameEnglish: "Al-Fath", ayahCount: 29 },
+  { number: 49, nameArabic: "الحجرات", nameEnglish: "Al-Hujurat", ayahCount: 18 },
+  { number: 50, nameArabic: "ق", nameEnglish: "Qaf", ayahCount: 45 },
+  { number: 51, nameArabic: "الذاريات", nameEnglish: "Adh-Dhariyat", ayahCount: 60 },
+  { number: 52, nameArabic: "الطور", nameEnglish: "At-Tur", ayahCount: 49 },
+  { number: 53, nameArabic: "النجم", nameEnglish: "An-Najm", ayahCount: 62 },
+  { number: 54, nameArabic: "القمر", nameEnglish: "Al-Qamar", ayahCount: 55 },
+  { number: 55, nameArabic: "الرحمن", nameEnglish: "Ar-Rahman", ayahCount: 78 },
+  { number: 56, nameArabic: "الواقعة", nameEnglish: "Al-Waqi'ah", ayahCount: 96 },
+  { number: 57, nameArabic: "الحديد", nameEnglish: "Al-Hadid", ayahCount: 29 },
+  { number: 58, nameArabic: "المجادلة", nameEnglish: "Al-Mujadila", ayahCount: 22 },
+  { number: 59, nameArabic: "الحشر", nameEnglish: "Al-Hashr", ayahCount: 24 },
+  { number: 60, nameArabic: "الممتحنة", nameEnglish: "Al-Mumtahanah", ayahCount: 13 },
+  { number: 61, nameArabic: "الصف", nameEnglish: "As-Saf", ayahCount: 14 },
+  { number: 62, nameArabic: "الجمعة", nameEnglish: "Al-Jumu'ah", ayahCount: 11 },
+  { number: 63, nameArabic: "المنافقون", nameEnglish: "Al-Munafiqun", ayahCount: 11 },
+  { number: 64, nameArabic: "التغابن", nameEnglish: "At-Taghabun", ayahCount: 18 },
+  { number: 65, nameArabic: "الطلاق", nameEnglish: "At-Talaq", ayahCount: 12 },
+  { number: 66, nameArabic: "التحريم", nameEnglish: "At-Tahrim", ayahCount: 12 },
+  { number: 67, nameArabic: "الملك", nameEnglish: "Al-Mulk", ayahCount: 30 },
+  { number: 68, nameArabic: "القلم", nameEnglish: "Al-Qalam", ayahCount: 52 },
+  { number: 69, nameArabic: "الحاقة", nameEnglish: "Al-Haqqah", ayahCount: 52 },
+  { number: 70, nameArabic: "المعارج", nameEnglish: "Al-Ma'arij", ayahCount: 44 },
+  { number: 71, nameArabic: "نوح", nameEnglish: "Nuh", ayahCount: 28 },
+  { number: 72, nameArabic: "الجن", nameEnglish: "Al-Jinn", ayahCount: 28 },
+  { number: 73, nameArabic: "المزمل", nameEnglish: "Al-Muzzammil", ayahCount: 20 },
+  { number: 74, nameArabic: "المدثر", nameEnglish: "Al-Muddaththir", ayahCount: 56 },
+  { number: 75, nameArabic: "القيامة", nameEnglish: "Al-Qiyamah", ayahCount: 40 },
+  { number: 76, nameArabic: "الإنسان", nameEnglish: "Al-Insan", ayahCount: 31 },
+  { number: 77, nameArabic: "المرسلات", nameEnglish: "Al-Mursalat", ayahCount: 50 },
+  { number: 78, nameArabic: "النبأ", nameEnglish: "An-Naba", ayahCount: 40 },
+  { number: 79, nameArabic: "النازعات", nameEnglish: "An-Nazi'at", ayahCount: 46 },
+  { number: 80, nameArabic: "عبس", nameEnglish: "'Abasa", ayahCount: 42 },
+  { number: 81, nameArabic: "التكوير", nameEnglish: "At-Takwir", ayahCount: 29 },
+  { number: 82, nameArabic: "الانفطار", nameEnglish: "Al-Infitar", ayahCount: 19 },
+  { number: 83, nameArabic: "المطففين", nameEnglish: "Al-Mutaffifin", ayahCount: 36 },
+  { number: 84, nameArabic: "الانشقاق", nameEnglish: "Al-Inshiqaq", ayahCount: 25 },
+  { number: 85, nameArabic: "البروج", nameEnglish: "Al-Buruj", ayahCount: 22 },
+  { number: 86, nameArabic: "الطارق", nameEnglish: "At-Tariq", ayahCount: 17 },
+  { number: 87, nameArabic: "الأعلى", nameEnglish: "Al-A'la", ayahCount: 19 },
+  { number: 88, nameArabic: "الغاشية", nameEnglish: "Al-Ghashiyah", ayahCount: 26 },
+  { number: 89, nameArabic: "الفجر", nameEnglish: "Al-Fajr", ayahCount: 30 },
+  { number: 90, nameArabic: "البلد", nameEnglish: "Al-Balad", ayahCount: 20 },
+  { number: 91, nameArabic: "الشمس", nameEnglish: "Ash-Shams", ayahCount: 15 },
+  { number: 92, nameArabic: "الليل", nameEnglish: "Al-Layl", ayahCount: 21 },
+  { number: 93, nameArabic: "الضحى", nameEnglish: "Ad-Duhaa", ayahCount: 11 },
+  { number: 94, nameArabic: "الشرح", nameEnglish: "Ash-Sharh", ayahCount: 8 },
+  { number: 95, nameArabic: "التين", nameEnglish: "At-Tin", ayahCount: 8 },
+  { number: 96, nameArabic: "العلق", nameEnglish: "Al-'Alaq", ayahCount: 19 },
+  { number: 97, nameArabic: "القدر", nameEnglish: "Al-Qadr", ayahCount: 5 },
+  { number: 98, nameArabic: "البينة", nameEnglish: "Al-Bayyinah", ayahCount: 8 },
+  { number: 99, nameArabic: "الزلزلة", nameEnglish: "Az-Zalzalah", ayahCount: 8 },
+  { number: 100, nameArabic: "العاديات", nameEnglish: "Al-'Adiyat", ayahCount: 11 },
+  { number: 101, nameArabic: "القارعة", nameEnglish: "Al-Qari'ah", ayahCount: 11 },
+  { number: 102, nameArabic: "التكاثر", nameEnglish: "At-Takathur", ayahCount: 8 },
+  { number: 103, nameArabic: "العصر", nameEnglish: "Al-'Asr", ayahCount: 3 },
+  { number: 104, nameArabic: "الهمزة", nameEnglish: "Al-Humazah", ayahCount: 9 },
+  { number: 105, nameArabic: "الفيل", nameEnglish: "Al-Fil", ayahCount: 5 },
+  { number: 106, nameArabic: "قريش", nameEnglish: "Quraysh", ayahCount: 4 },
+  { number: 107, nameArabic: "الماعون", nameEnglish: "Al-Ma'un", ayahCount: 7 },
+  { number: 108, nameArabic: "الكوثر", nameEnglish: "Al-Kawthar", ayahCount: 3 },
+  { number: 109, nameArabic: "الكافرون", nameEnglish: "Al-Kafirun", ayahCount: 6 },
+  { number: 110, nameArabic: "النصر", nameEnglish: "An-Nasr", ayahCount: 3 },
+  { number: 111, nameArabic: "المسد", nameEnglish: "Al-Masad", ayahCount: 5 },
+  { number: 112, nameArabic: "الإخلاص", nameEnglish: "Al-Ikhlas", ayahCount: 4 },
+  { number: 113, nameArabic: "الفلق", nameEnglish: "Al-Falaq", ayahCount: 5 },
+  { number: 114, nameArabic: "الناس", nameEnglish: "An-Nas", ayahCount: 6 },
+];
+
 // Module-level caches (persist across React re-renders and navigations)
 const translationCache = new Map<string, string>(); // "surah:ayah:edition" → text
 const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
@@ -105,6 +223,13 @@ export function QuranAyahViewer({
 }: Props) {
   const { t, locale } = useTranslation();
   const router = useRouter();
+
+  // --- Surah/Ayah picker state ---
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerSurah, setPickerSurah] = useState(surahNumber);
+  const [pickerAyah, setPickerAyah] = useState(targetAyah);
+  const surahListRef = useRef<HTMLDivElement>(null);
+  const ayahListRef = useRef<HTMLDivElement>(null);
 
   // --- Client-side state for instant ayah transitions in audio mode ---
   const [clientAyah, setClientAyah] = useState(targetAyah);
@@ -404,6 +529,47 @@ export function QuranAyahViewer({
     }
   }, [clientAyah]);
 
+  // Open picker and auto-scroll to current surah/ayah
+  const openPicker = useCallback(() => {
+    setPickerSurah(surahNumber);
+    setPickerAyah(clientAyah);
+    setShowPicker(true);
+    requestAnimationFrame(() => {
+      // Scroll surah list to center the current surah
+      const surahEl = surahListRef.current?.querySelector(`[data-surah="${surahNumber}"]`) as HTMLElement | null;
+      surahEl?.scrollIntoView({ block: "center" });
+      // Scroll ayah list to center the current ayah
+      const ayahEl = ayahListRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
+      ayahEl?.scrollIntoView({ block: "center" });
+    });
+  }, [surahNumber, clientAyah]);
+
+  // When picker surah changes, reset ayah to 1 (unless it's the current surah)
+  const handlePickerSurahSelect = useCallback((num: number) => {
+    setPickerSurah(num);
+    if (num === surahNumber) {
+      setPickerAyah(clientAyah);
+    } else {
+      setPickerAyah(1);
+    }
+    // Scroll ayah list to top (or to current ayah if same surah)
+    requestAnimationFrame(() => {
+      if (num === surahNumber) {
+        const ayahEl = ayahListRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
+        ayahEl?.scrollIntoView({ block: "center" });
+      } else {
+        ayahListRef.current?.scrollTo({ top: 0 });
+      }
+    });
+  }, [surahNumber, clientAyah]);
+
+  const handlePickerGo = useCallback(() => {
+    setShowPicker(false);
+    router.replace(`/quran/${pickerSurah}/${pickerAyah}`);
+  }, [pickerSurah, pickerAyah, router]);
+
+  const pickerAyahCount = SURAHS[pickerSurah - 1]?.ayahCount ?? 1;
+
   // Suppress unused tick warnings
   void translationTick;
   void tafsirTick;
@@ -420,9 +586,16 @@ export function QuranAyahViewer({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <span className="flex-1 text-sm font-medium truncate">
-          {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
-        </span>
+        <button
+          onClick={openPicker}
+          className="flex-1 flex items-center gap-1 text-sm font-medium truncate hover:opacity-70 transition-opacity"
+          aria-label={t("mushaf.goToSurah")}
+        >
+          <span className="truncate">
+            {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
+          </span>
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+        </button>
         <button
           onClick={toggleAudioMode}
           className={`p-1.5 rounded-lg transition-colors ${
@@ -441,6 +614,85 @@ export function QuranAyahViewer({
           {t("mushaf.viewFullSurah")}
         </button>
       </div>
+
+      {/* Surah/Ayah Picker Overlay */}
+      {showPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowPicker(false)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className="picker-panel relative w-full h-full sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-xl bg-card flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Picker header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
+              <h2 className="text-sm font-semibold">{t("mushaf.goToSurah")}</h2>
+              <button
+                onClick={() => setShowPicker(false)}
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                aria-label={t("common.close")}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Column headers */}
+            <div className="flex border-b shrink-0 text-xs text-muted-foreground font-medium">
+              <div className="flex-1 px-4 py-1.5">{t("mushaf.surah")}</div>
+              <div className="w-24 px-4 py-1.5 border-l text-center">{t("mushaf.ayah")}</div>
+            </div>
+
+            {/* Two-column picker body */}
+            <div className="flex flex-1 min-h-0">
+              {/* Surah column */}
+              <div ref={surahListRef} className="flex-1 overflow-y-auto picker-scroll">
+                {SURAHS.map((s) => (
+                  <button
+                    key={s.number}
+                    data-surah={s.number}
+                    onClick={() => handlePickerSurahSelect(s.number)}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${
+                      s.number === pickerSurah
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <span className="text-xs text-muted-foreground w-6 shrink-0 tabular-nums">{s.number}</span>
+                    <span className="truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Ayah column */}
+              <div ref={ayahListRef} className="w-24 border-l overflow-y-auto picker-scroll">
+                {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    data-ayah={n}
+                    onClick={() => setPickerAyah(n)}
+                    className={`w-full text-center py-2 text-sm tabular-nums transition-colors ${
+                      n === pickerAyah
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-muted/50"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Go button */}
+            <div className="shrink-0 border-t px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+              <button
+                onClick={handlePickerGo}
+                className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 active:bg-primary/80 transition-colors"
+              >
+                {t("mushaf.goToSurah")} {pickerSurah}:{pickerAyah}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div
@@ -746,6 +998,24 @@ export function QuranAyahViewer({
         .ayah-tafsir-text {
           font-size: 0.8rem;
           line-height: 1.7;
+        }
+
+        /* Picker */
+        .picker-panel {
+          animation: picker-slide-up 0.2s ease-out;
+        }
+        @keyframes picker-slide-up {
+          from { opacity: 0; transform: translateY(2rem); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 639px) {
+          .picker-panel {
+            animation: none;
+          }
+        }
+        .picker-scroll {
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
         }
 
         /* Font face */
