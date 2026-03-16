@@ -374,6 +374,8 @@
     "ayah": "آية",
     "nextAyah": "التالية",
     "prevAyah": "السابقة",
+    "nextSurah": "السورة التالية",
+    "prevSurah": "السورة السابقة",
     "tafsir": "تفسير",
     "listenToAyah": "Listen",
     "stopListening": "Stop listening",

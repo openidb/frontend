@@ -144,8 +144,24 @@ export function QuranAyahViewer({
   const contentRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  const canGoPrev = clientAyah > 1;
-  const canGoNext = clientAyah < totalAyahs;
+  const canGoPrev = clientAyah > 1 || surahNumber > 1;
+  const canGoNext = clientAyah < totalAyahs || surahNumber < 114;
+
+  const goNext = useCallback(() => {
+    if (clientAyah < totalAyahs) {
+      router.replace(`/quran/${surahNumber}/${clientAyah + 1}`);
+    } else if (surahNumber < 114) {
+      router.replace(`/quran/${surahNumber + 1}/1`);
+    }
+  }, [clientAyah, totalAyahs, surahNumber, router]);
+
+  const goPrev = useCallback(() => {
+    if (clientAyah > 1) {
+      router.replace(`/quran/${surahNumber}/${clientAyah - 1}`);
+    } else if (surahNumber > 1) {
+      router.replace(`/quran/${surahNumber - 1}/1`);
+    }
+  }, [clientAyah, surahNumber, router]);
 
   // Compute display range: 1 before, target, 2 after
   const displayAyahNumbers = useMemo(() => {
@@ -355,11 +371,11 @@ export function QuranAyahViewer({
     touchStartRef.current = null;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
       if (isAudioMode) {
-        if (dx > 0 && canGoNext) handleAudioNavigate(clientAyah + 1);
-        else if (dx < 0 && canGoPrev) handleAudioNavigate(clientAyah - 1);
+        if (dx > 0 && clientAyah < totalAyahs) handleAudioNavigate(clientAyah + 1);
+        else if (dx < 0 && clientAyah > 1) handleAudioNavigate(clientAyah - 1);
       } else {
-        if (dx > 0 && canGoNext) router.replace(`/quran/${surahNumber}/${clientAyah + 1}`);
-        else if (dx < 0 && canGoPrev) router.replace(`/quran/${surahNumber}/${clientAyah - 1}`);
+        if (dx > 0 && canGoNext) goNext();
+        else if (dx < 0 && canGoPrev) goPrev();
       }
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
@@ -563,13 +579,13 @@ export function QuranAyahViewer({
           ) : (
             <>
               <button
-                onClick={() => canGoNext && router.replace(`/quran/${surahNumber}/${clientAyah + 1}`)}
+                onClick={goNext}
                 disabled={!canGoNext}
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
-                aria-label={t("mushaf.nextAyah")}
+                aria-label={clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
               >
                 <ChevronLeft className="h-5 w-5" />
-                {t("mushaf.nextAyah")}
+                {clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
               </button>
 
               <span className="text-sm text-muted-foreground tabular-nums">
@@ -577,12 +593,12 @@ export function QuranAyahViewer({
               </span>
 
               <button
-                onClick={() => canGoPrev && router.replace(`/quran/${surahNumber}/${clientAyah - 1}`)}
+                onClick={goPrev}
                 disabled={!canGoPrev}
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
-                aria-label={t("mushaf.prevAyah")}
+                aria-label={clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
               >
-                {t("mushaf.prevAyah")}
+                {clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
                 <ChevronRight className="h-5 w-5" />
               </button>
             </>
