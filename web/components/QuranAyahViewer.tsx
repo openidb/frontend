@@ -540,7 +540,7 @@ export function QuranAyahViewer({
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={t("mushaf.skipForward")}
               >
-                <SkipForward className="h-5 w-5" />
+                <SkipBack className="h-5 w-5" />
               </button>
 
               <button
@@ -557,7 +557,7 @@ export function QuranAyahViewer({
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={t("mushaf.skipBack")}
               >
-                <SkipBack className="h-5 w-5" />
+                <SkipForward className="h-5 w-5" />
               </button>
             </>
           ) : (
