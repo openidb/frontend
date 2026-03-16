@@ -225,28 +225,60 @@ export function QuranAyahViewer({
       return c;
     };
 
-    // Expand symmetrically to reach MIN_LINES text lines
-    while (countText(rangeStart, rangeEnd) < MIN_LINES) {
+    // Expand symmetrically to reach MIN_LINES text lines,
+    // but only include lines that belong to the same surah.
+    const lineHasSurah = (idx: number) => {
+      const l = allLines[idx]?.line;
+      if (!l || l.lineType !== "text") return false;
+      return l.words.some(w => w.surahNumber === surahNumber);
+    };
+    const countSurahText = (s: number, e: number) => {
+      let c = 0;
+      for (let i = s; i <= e; i++) if (lineHasSurah(i)) c++;
+      return c;
+    };
+    while (countSurahText(rangeStart, rangeEnd) < MIN_LINES) {
       let grew = false;
-      if (rangeEnd + 1 < allLines.length) { rangeEnd++; grew = true; }
-      if (countText(rangeStart, rangeEnd) >= MIN_LINES) break;
-      if (rangeStart - 1 >= 0) { rangeStart--; grew = true; }
+      if (rangeEnd + 1 < allLines.length && lineHasSurah(rangeEnd + 1)) { rangeEnd++; grew = true; }
+      else if (rangeEnd + 1 < allLines.length) {
+        // Skip lines from other surahs — try beyond
+        let probe = rangeEnd + 1;
+        while (probe < allLines.length && !lineHasSurah(probe)) probe++;
+        if (probe < allLines.length) { rangeEnd = probe; grew = true; }
+      }
+      if (countSurahText(rangeStart, rangeEnd) >= MIN_LINES) break;
+      if (rangeStart - 1 >= 0 && lineHasSurah(rangeStart - 1)) { rangeStart--; grew = true; }
+      else if (rangeStart - 1 >= 0) {
+        let probe = rangeStart - 1;
+        while (probe >= 0 && !lineHasSurah(probe)) probe--;
+        if (probe >= 0) { rangeStart = probe; grew = true; }
+      }
       if (!grew) break;
     }
 
-    // Include surah headers / bismillah immediately before the range
-    while (rangeStart > 0) {
-      const prevType = allLines[rangeStart - 1].line.lineType;
-      if (prevType === "surah_name" || prevType === "bismillah") rangeStart--;
-      else break;
+    // Trim non-surah lines from the edges of the range
+    const filtered = allLines.slice(rangeStart, rangeEnd + 1).filter(({ line }) =>
+      line.lineType !== "text" || line.words.some(w => w.surahNumber === surahNumber)
+    );
+
+    // Include surah headers / bismillah for the target surah
+    // that appear anywhere in the range
+    for (let i = 0; i < allLines.length; i++) {
+      const lt = allLines[i].line.lineType;
+      if ((lt === "surah_name" || lt === "bismillah") &&
+        allLines[i].line.words.some(w => w.surahNumber === surahNumber) &&
+        !filtered.some(f => f.pageNumber === allLines[i].pageNumber && f.line.lineNumber === allLines[i].line.lineNumber)) {
+        filtered.push(allLines[i]);
+      }
     }
 
-    const lines = allLines.slice(rangeStart, rangeEnd + 1);
+    // Sort by page then line number for correct display order
+    filtered.sort((a, b) => a.pageNumber - b.pageNumber || a.line.lineNumber - b.line.lineNumber);
 
     // Derive ayahSet from displayed lines (for translations, fonts, etc.)
     const set = new Set<number>();
     set.add(clientAyah);
-    for (const { line } of lines) {
+    for (const { line } of filtered) {
       if (line.lineType === "text") {
         for (const w of line.words) {
           if (w.surahNumber === surahNumber) set.add(w.ayahNumber);
@@ -254,7 +286,7 @@ export function QuranAyahViewer({
       }
     }
 
-    return { filteredLines: lines, ayahSet: set };
+    return { filteredLines: filtered, ayahSet: set };
   }, [clientMushafPages, surahNumber, clientAyah]);
 
   // Load QPC V2 fonts for relevant pages (skip already-loaded fonts)
