@@ -81,6 +81,13 @@ const PREFERRED_TAFSIRS: Record<string, string> = {
   tr: "qul-914",                  // Tafsir Ibne Kathir
 };
 
+// Strip Quranic annotation marks that render as odd symbols with text fonts.
+// Keeps core diacritics (tashkeel), superscript alef, maddah, alef wasla.
+const QURAN_ANNOTATION_RE = /[\u06D6-\u06DC\u06DE\u06DF\u06E0-\u06E4\u06E5\u06E6\u06E7-\u06ED]/g;
+function cleanUthmani(text: string): string {
+  return text.replace(QURAN_ANNOTATION_RE, "").replace(/\s+/g, " ").trim();
+}
+
 // Module-level caches (persist across React re-renders and navigations)
 const translationCache = new Map<string, string>(); // "surah:ayah:edition" → text
 const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
@@ -433,7 +440,7 @@ export function QuranAyahViewer({
           {/* Arabic ayahs — ayah by ayah with word-level highlighting */}
           {displayAyahs.map(({ number, text }) => {
             const isCurrentAyah = number === clientAyah;
-            const words = text.split(/\s+/).filter(Boolean);
+            const words = cleanUthmani(text).split(/\s+/).filter(Boolean);
             return (
               <div
                 key={number}
