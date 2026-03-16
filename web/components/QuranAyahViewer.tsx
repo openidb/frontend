@@ -605,10 +605,6 @@ export function QuranAyahViewer({
         /* Arabic ayahs — ayah by ayah display */
         .arabic-ayah {
           padding: 0.75rem 0;
-          border-bottom: 1px solid hsl(var(--border) / 0.15);
-        }
-        .arabic-ayah:last-of-type {
-          border-bottom: none;
         }
         .arabic-ayah-context {
           opacity: 0.3;
@@ -625,14 +621,13 @@ export function QuranAyahViewer({
         }
         .arabic-bismillah {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
-          font-size: clamp(1rem, 3.5vw, 1.25rem);
+          font-size: clamp(1.1rem, 4vw, 1.4rem);
           line-height: 2;
-          text-align: center;
+          text-align: right;
           margin: 0;
           opacity: 0.6;
         }
         .arabic-ayah-end-marker {
-          font-size: 0.8em;
           opacity: 0.4;
           white-space: nowrap;
         }
