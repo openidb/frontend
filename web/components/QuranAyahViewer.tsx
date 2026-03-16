@@ -355,11 +355,11 @@ export function QuranAyahViewer({
     touchStartRef.current = null;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
       if (isAudioMode) {
-        if (dx < 0 && canGoNext) handleAudioNavigate(clientAyah + 1);
-        else if (dx > 0 && canGoPrev) handleAudioNavigate(clientAyah - 1);
+        if (dx > 0 && canGoNext) handleAudioNavigate(clientAyah + 1);
+        else if (dx < 0 && canGoPrev) handleAudioNavigate(clientAyah - 1);
       } else {
-        if (dx < 0 && canGoNext) router.replace(`/quran/${surahNumber}/${clientAyah + 1}`);
-        else if (dx > 0 && canGoPrev) router.replace(`/quran/${surahNumber}/${clientAyah - 1}`);
+        if (dx > 0 && canGoNext) router.replace(`/quran/${surahNumber}/${clientAyah + 1}`);
+        else if (dx < 0 && canGoPrev) router.replace(`/quran/${surahNumber}/${clientAyah - 1}`);
       }
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
@@ -535,12 +535,12 @@ export function QuranAyahViewer({
           {isAudioMode ? (
             <>
               <button
-                onClick={skipBack}
-                disabled={clientAyah <= 1}
+                onClick={skipForward}
+                disabled={clientAyah >= totalAyahs}
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
-                aria-label={t("mushaf.skipBack")}
+                aria-label={t("mushaf.skipForward")}
               >
-                <SkipBack className="h-5 w-5" />
+                <SkipForward className="h-5 w-5" />
               </button>
 
               <button
@@ -552,24 +552,24 @@ export function QuranAyahViewer({
               </button>
 
               <button
-                onClick={skipForward}
-                disabled={clientAyah >= totalAyahs}
+                onClick={skipBack}
+                disabled={clientAyah <= 1}
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
-                aria-label={t("mushaf.skipForward")}
+                aria-label={t("mushaf.skipBack")}
               >
-                <SkipForward className="h-5 w-5" />
+                <SkipBack className="h-5 w-5" />
               </button>
             </>
           ) : (
             <>
               <button
-                onClick={() => canGoPrev && router.replace(`/quran/${surahNumber}/${clientAyah - 1}`)}
-                disabled={!canGoPrev}
+                onClick={() => canGoNext && router.replace(`/quran/${surahNumber}/${clientAyah + 1}`)}
+                disabled={!canGoNext}
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
-                aria-label={t("mushaf.prevAyah")}
+                aria-label={t("mushaf.nextAyah")}
               >
                 <ChevronLeft className="h-5 w-5" />
-                {t("mushaf.prevAyah")}
+                {t("mushaf.nextAyah")}
               </button>
 
               <span className="text-sm text-muted-foreground tabular-nums">
@@ -577,12 +577,12 @@ export function QuranAyahViewer({
               </span>
 
               <button
-                onClick={() => canGoNext && router.replace(`/quran/${surahNumber}/${clientAyah + 1}`)}
-                disabled={!canGoNext}
+                onClick={() => canGoPrev && router.replace(`/quran/${surahNumber}/${clientAyah - 1}`)}
+                disabled={!canGoPrev}
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
-                aria-label={t("mushaf.nextAyah")}
+                aria-label={t("mushaf.prevAyah")}
               >
-                {t("mushaf.nextAyah")}
+                {t("mushaf.prevAyah")}
                 <ChevronRight className="h-5 w-5" />
               </button>
             </>
