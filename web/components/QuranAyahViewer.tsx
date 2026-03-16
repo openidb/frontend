@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Headphones, Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { useQuranAudio } from "@/lib/use-quran-audio";
-import type { MushafPageData } from "./MushafPageClient";
 
 interface TafsirEdition {
   id: string;
@@ -29,7 +28,6 @@ interface Props {
   surahNameEnglish: string;
   surahNameArabic: string;
   totalAyahs: number;
-  mushafPages: MushafPageData[];
   initialAudioMode?: boolean;
 }
 
@@ -96,7 +94,6 @@ export function QuranAyahViewer({
   surahNameEnglish,
   surahNameArabic,
   totalAyahs,
-  mushafPages: serverMushafPages,
   initialAudioMode = false,
 }: Props) {
   const { t, locale } = useTranslation();
@@ -128,8 +125,9 @@ export function QuranAyahViewer({
     pause,
     skipForward,
     skipBack,
+    highlightedPosition,
     audioRef,
-  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, serverMushafPages, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic);
+  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic);
 
   const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
   const [tafsirLang, setTafsirLang] = useState<string>("");
@@ -432,20 +430,32 @@ export function QuranAyahViewer({
             </div>
           )}
 
-          {/* Arabic ayahs — ayah by ayah, like translation display */}
-          {displayAyahs.map(({ number, text }) => (
-            <div
-              key={number}
-              className={`arabic-ayah${number === clientAyah ? " arabic-ayah-current" : " arabic-ayah-context"}`}
-            >
-              <p className="arabic-ayah-text" dir="rtl">
-                {text}{" "}
-                <span className="arabic-ayah-end-marker">
-                  {number.toLocaleString("ar-EG")}
-                </span>
-              </p>
-            </div>
-          ))}
+          {/* Arabic ayahs — ayah by ayah with word-level highlighting */}
+          {displayAyahs.map(({ number, text }) => {
+            const isCurrentAyah = number === clientAyah;
+            const words = text.split(/\s+/).filter(Boolean);
+            return (
+              <div
+                key={number}
+                className={`arabic-ayah${isCurrentAyah ? " arabic-ayah-current" : " arabic-ayah-context"}`}
+              >
+                <p className="arabic-ayah-text" dir="rtl">
+                  {words.map((word, i) => {
+                    const pos = i + 1;
+                    const highlighted = isCurrentAyah && isAudioMode && highlightedPosition === pos;
+                    return (
+                      <span key={i} className={highlighted ? "arabic-word-highlight" : undefined}>
+                        {word}{" "}
+                      </span>
+                    );
+                  })}
+                  <span className="arabic-ayah-end-marker">
+                    {number.toLocaleString("ar-EG")}
+                  </span>
+                </p>
+              </div>
+            );
+          })}
 
           {/* Translations */}
           {Object.keys(translations).length > 0 && (
@@ -630,6 +640,13 @@ export function QuranAyahViewer({
         .arabic-ayah-end-marker {
           opacity: 0.4;
           white-space: nowrap;
+        }
+        .arabic-word-highlight {
+          color: hsl(160 84% 39%);
+          transition: color 0.1s ease;
+        }
+        :is(.dark) .arabic-word-highlight {
+          color: hsl(158 64% 52%);
         }
 
         /* Translation block */

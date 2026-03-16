@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import type { MushafPageData } from "@/components/MushafPageClient";
 
 interface SegmentData {
   segments: number[][]; // [word_pos, start_ms, end_ms][]
@@ -117,25 +116,6 @@ class LRUBufferCache {
 const bufferCache = new LRUBufferCache();
 const inflightFetches = new Map<string, Promise<AudioBuffer | null>>();
 
-function collectRecitedWordPositions(
-  mushafPages: MushafPageData[],
-  surahNumber: number,
-  targetAyah: number,
-): number[] {
-  const wps = new Set<number>();
-  for (const page of mushafPages) {
-    for (const line of page.lines) {
-      if (line.lineType !== "text" && line.lineType !== "bismillah") continue;
-      for (const w of line.words) {
-        if (w.surahNumber === surahNumber && w.ayahNumber === targetAyah && w.charType === "word") {
-          wps.add(w.wordPosition);
-        }
-      }
-    }
-  }
-  return Array.from(wps).sort((a, b) => a - b);
-}
-
 // --- Scheduled source tracking (voice app pattern) ---
 interface ScheduledSource {
   source: AudioBufferSourceNode;
@@ -150,7 +130,6 @@ export function useQuranAudio(
   surahNumber: number,
   targetAyah: number,
   totalAyahs: number,
-  mushafPages: MushafPageData[],
   router: AppRouterInstance,
   initialAudioMode: boolean,
   onNavigate?: (ayah: number) => void,
@@ -176,7 +155,6 @@ export function useQuranAudio(
   const lastBridgePlayAttemptAtRef = useRef(0);
   const decodeInFlightRef = useRef(0);
   const decodeQueueRef = useRef<Array<() => void>>([]);
-  const audioActivatedRef = useRef(false);
   const elementObjectUrlRef = useRef<string | null>(null);
 
   // Scheduling state (voice app pattern)
@@ -187,13 +165,6 @@ export function useQuranAudio(
   const isPlayingRef = useRef(false);
   const elementModeRef = useRef(false);
   const currentPlayingAyahRef = useRef(0); // ayah currently audible
-
-  const recitedPositions = useMemo(
-    () => collectRecitedWordPositions(mushafPages, surahNumber, targetAyah),
-    [mushafPages, surahNumber, targetAyah],
-  );
-  const recitedPositionsRef = useRef(recitedPositions);
-  recitedPositionsRef.current = recitedPositions;
 
   // ====================================================================
   // Audio graph management — copied from voice app
@@ -304,7 +275,6 @@ export function useQuranAudio(
         }).catch(() => { el.volume = 1; });
       }
     }
-    audioActivatedRef.current = true;
     const ctx = ensureRunningAudioGraph();
     if (ctx && ctx.state !== "running") {
       const recovered = hardResetAudioGraph();
@@ -758,7 +728,6 @@ export function useQuranAudio(
     const tick = () => {
       const segMap = segmentCacheRef.current.get(cacheKey);
       const segData = segMap?.get(targetAyah);
-      const positions = recitedPositionsRef.current;
       let timeMs = 0;
 
       if (!elementModeRef.current) {
@@ -803,7 +772,7 @@ export function useQuranAudio(
         }
         for (let i = 0; i < len; i++) {
           if (timeMs >= starts[i] && timeMs < ends[i]) {
-            newHighlight = i < positions.length ? positions[i] : null;
+            newHighlight = segs[i][0]; // word position from segment data
             break;
           }
         }

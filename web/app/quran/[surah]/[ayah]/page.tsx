@@ -85,7 +85,6 @@ export default async function QuranAyahPage({
         surahNameEnglish={surahInfo.nameEnglish}
         surahNameArabic={surahInfo.nameArabic}
         totalAyahs={data.total}
-        mushafPages={[]}
         initialAudioMode={audio === "1"}
       />
     </div>
