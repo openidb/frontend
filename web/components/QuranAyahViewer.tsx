@@ -159,7 +159,14 @@ export function QuranAyahViewer({
     if (clientAyah > 1) {
       router.replace(`/quran/${surahNumber}/${clientAyah - 1}`);
     } else if (surahNumber > 1) {
-      router.replace(`/quran/${surahNumber - 1}/1`);
+      // Fetch the previous surah's total ayahs to navigate to its last ayah
+      fetch(`/api/quran/ayahs?surah=${surahNumber - 1}&offset=0&limit=1`)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          const lastAyah = d?.total || 1;
+          router.replace(`/quran/${surahNumber - 1}/${lastAyah}`);
+        })
+        .catch(() => router.replace(`/quran/${surahNumber - 1}/1`));
     }
   }, [clientAyah, surahNumber, router]);
 
