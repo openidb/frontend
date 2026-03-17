@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown, FileText, Headphones, Play, Pause, SkipBack, SkipForward, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, FileText, Headphones, Play, Pause, SkipBack, SkipForward, User, X } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
-import { useQuranAudio } from "@/lib/use-quran-audio";
+import { useQuranAudio, RECITERS, DEFAULT_RECITER } from "@/lib/use-quran-audio";
 
 interface TafsirEdition {
   id: string;
@@ -224,6 +224,21 @@ export function QuranAyahViewer({
   const { t, locale } = useTranslation();
   const router = useRouter();
 
+  // --- Reciter state (persisted in localStorage) ---
+  const [reciter, setReciter] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("quran-reciter") || DEFAULT_RECITER;
+    }
+    return DEFAULT_RECITER;
+  });
+  const [showReciterMenu, setShowReciterMenu] = useState(false);
+
+  const handleReciterChange = useCallback((slug: string) => {
+    setReciter(slug);
+    localStorage.setItem("quran-reciter", slug);
+    setShowReciterMenu(false);
+  }, []);
+
   // --- Surah/Ayah picker state ---
   const [showPicker, setShowPicker] = useState(false);
   const [pickerSurah, setPickerSurah] = useState(surahNumber);
@@ -259,7 +274,7 @@ export function QuranAyahViewer({
     skipBack,
     highlightedPosition,
     audioRef,
-  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic);
+  } = useQuranAudio(surahNumber, clientAyah, totalAyahs, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic, reciter);
 
   const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
   const [tafsirLang, setTafsirLang] = useState<string>("");
@@ -607,6 +622,37 @@ export function QuranAyahViewer({
         >
           <Headphones className="h-5 w-5" />
         </button>
+        {isAudioMode && (
+          <div className="relative">
+            <button
+              onClick={() => setShowReciterMenu((v) => !v)}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+              aria-label="Reciter"
+            >
+              <User className="h-5 w-5" />
+            </button>
+            {showReciterMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowReciterMenu(false)} />
+                <div className="absolute right-0 top-full mt-1 z-50 bg-card border rounded-lg shadow-lg py-1 min-w-[200px]">
+                  {RECITERS.map((r) => (
+                    <button
+                      key={r.slug}
+                      onClick={() => handleReciterChange(r.slug)}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                        r.slug === reciter
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-muted/50"
+                      }`}
+                    >
+                      {r.name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
         <button
           onClick={() => router.push(`/mushaf/pdf?page=${ayahs[0]?.pageNumber ?? 1}`)}
           className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"

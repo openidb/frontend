@@ -24,7 +24,20 @@ export interface UseQuranAudioReturn {
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
-const DEFAULT_RECITER = "tarteel/alafasy";
+export const DEFAULT_RECITER = "tarteel/alafasy";
+
+// Reciters that support word-by-word highlighting (have timing segments)
+export const RECITERS = [
+  { slug: "tarteel/alafasy", name: "Mishari al-Afasy" },
+  { slug: "tarteel/sudais", name: "Abdur-Rahman as-Sudais" },
+  { slug: "tarteel/dossary", name: "Yasser al-Dossary" },
+  { slug: "tarteel/muaiqly", name: "Maher al-Muaiqly" },
+  { slug: "tarteel/rifai", name: "Hani ar-Rifai" },
+] as const;
+
+const RECITER_NAMES: Record<string, string> = Object.fromEntries(
+  RECITERS.map((r) => [r.slug, r.name]),
+);
 const PRELOAD_AHEAD = 5;
 const PRELOAD_BEHIND = 1;
 const MEDIA_SESSION_DEBOUNCE_MS = 300;
@@ -34,8 +47,8 @@ const CACHE_MAX = 96;
 const SCHEDULE_INTERVAL_MS = 50;
 const SCHEDULE_LOOKAHEAD_SECS = 2;
 
-function audioUrl(surah: number, ayah: number): string {
-  return `/api/quran/audio/${surah}/${ayah}?reciter=${encodeURIComponent(DEFAULT_RECITER)}`;
+function audioUrl(surah: number, ayah: number, reciter: string): string {
+  return `/api/quran/audio/${surah}/${ayah}?reciter=${encodeURIComponent(reciter)}`;
 }
 
 // --- Silent WAV for iOS audio activation (copied from voice app) ---
@@ -135,6 +148,7 @@ export function useQuranAudio(
   onNavigate?: (ayah: number) => void,
   surahNameEnglish?: string,
   surahNameArabic?: string,
+  reciter: string = DEFAULT_RECITER,
 ): UseQuranAudioReturn {
   const [isAudioMode, setIsAudioMode] = useState(initialAudioMode);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -371,15 +385,19 @@ export function useQuranAudio(
     }
   }, []);
 
+  // Keep a ref for reciter so callbacks always see latest
+  const reciterRef = useRef(reciter);
+  reciterRef.current = reciter;
+
   // Fetch segments
   useEffect(() => {
     if (!isAudioMode || !surahNumber) return;
-    const cacheKey = `${DEFAULT_RECITER}:${surahNumber}`;
+    const cacheKey = `${reciter}:${surahNumber}`;
     if (segmentCacheRef.current.has(cacheKey) || fetchingSegmentsRef.current.has(cacheKey)) return;
     fetchingSegmentsRef.current.add(cacheKey);
     const controller = new AbortController();
     fetch(
-      `/api/quran/segments?reciter=${encodeURIComponent(DEFAULT_RECITER)}&surah=${surahNumber}`,
+      `/api/quran/segments?reciter=${encodeURIComponent(reciter)}&surah=${surahNumber}`,
       { signal: controller.signal },
     )
       .then((res) => (res.ok ? res.json() : null))
@@ -393,20 +411,20 @@ export function useQuranAudio(
       .catch(() => {})
       .finally(() => fetchingSegmentsRef.current.delete(cacheKey));
     return () => controller.abort();
-  }, [isAudioMode, surahNumber]);
+  }, [isAudioMode, surahNumber, reciter]);
 
   // Prefetch adjacent ayah audio
   useEffect(() => {
     if (!isAudioMode || !surahNumber) return;
     for (let i = 0; i <= PRELOAD_AHEAD; i++) {
       const a = targetAyah + i;
-      if (a <= totalAyahs) prefetchBuffer(audioUrl(surahNumber, a));
+      if (a <= totalAyahs) prefetchBuffer(audioUrl(surahNumber, a, reciter));
     }
     for (let i = 1; i <= PRELOAD_BEHIND; i++) {
       const a = targetAyah - i;
-      if (a >= 1) prefetchBuffer(audioUrl(surahNumber, a));
+      if (a >= 1) prefetchBuffer(audioUrl(surahNumber, a, reciter));
     }
-  }, [isAudioMode, surahNumber, targetAyah, totalAyahs, prefetchBuffer]);
+  }, [isAudioMode, surahNumber, targetAyah, totalAyahs, prefetchBuffer, reciter]);
 
   // Navigation helpers
   const onNavigateRef = useRef(onNavigate);
@@ -461,7 +479,7 @@ export function useQuranAudio(
       // Don't schedule too far ahead
       if (scheduledEndRef.current - ctx.currentTime > SCHEDULE_LOOKAHEAD_SECS) break;
 
-      const url = audioUrl(surah, nextAyah);
+      const url = audioUrl(surah, nextAyah, reciterRef.current);
       if (bufferCache.isFailed(url)) { nextAyah++; nextScheduleAyahRef.current = nextAyah; continue; }
 
       const buffer = bufferCache.get(url);
@@ -591,14 +609,14 @@ export function useQuranAudio(
 
     el.onplaying = () => {};
     el.onended = () => playViaElementRef.current(
-      audioUrl(surahRef.current, targetAyahRef.current + 1),
+      audioUrl(surahRef.current, targetAyahRef.current + 1, reciterRef.current),
       targetAyahRef.current + 1,
       surahRef.current,
     );
     el.onerror = (e) => {
       console.error("[quran-audio] element error", el.error, e);
       playViaElementRef.current(
-        audioUrl(surahRef.current, targetAyahRef.current + 1),
+        audioUrl(surahRef.current, targetAyahRef.current + 1, reciterRef.current),
         targetAyahRef.current + 1,
         surahRef.current,
       );
@@ -658,14 +676,14 @@ export function useQuranAudio(
           scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
           ensureMediaElementBridge(true, true);
         } else {
-          playViaElement(audioUrl(surahNumber, nextAyah), nextAyah, surahNumber);
+          playViaElement(audioUrl(surahNumber, nextAyah, reciter), nextAyah, surahNumber);
         }
       } else {
-        playViaElement(audioUrl(surahNumber, nextAyah), nextAyah, surahNumber);
+        playViaElement(audioUrl(surahNumber, nextAyah, reciter), nextAyah, surahNumber);
       }
     }
     navigateToAyah(targetAyah + 1);
-  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, scheduleFromCache, ensureMediaElementBridge, playViaElement]);
+  }, [targetAyah, totalAyahs, navigateToAyah, surahNumber, reciter, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, scheduleFromCache, ensureMediaElementBridge, playViaElement]);
 
   const skipBack = useCallback(() => {
     if (targetAyah <= 1 || navigatingRef.current) return;
@@ -688,14 +706,14 @@ export function useQuranAudio(
           scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
           ensureMediaElementBridge(true, true);
         } else {
-          playViaElement(audioUrl(surahNumber, prevAyah), prevAyah, surahNumber);
+          playViaElement(audioUrl(surahNumber, prevAyah, reciter), prevAyah, surahNumber);
         }
       } else {
-        playViaElement(audioUrl(surahNumber, prevAyah), prevAyah, surahNumber);
+        playViaElement(audioUrl(surahNumber, prevAyah, reciter), prevAyah, surahNumber);
       }
     }
     navigateToAyah(targetAyah - 1);
-  }, [targetAyah, navigateToAyah, surahNumber, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, scheduleFromCache, ensureMediaElementBridge, playViaElement]);
+  }, [targetAyah, navigateToAyah, surahNumber, reciter, stopAllSources, stopScheduleTimer, ensureRunningAudioGraph, scheduleFromCache, ensureMediaElementBridge, playViaElement]);
 
   const skipForwardRef = useRef(skipForward);
   skipForwardRef.current = skipForward;
@@ -709,8 +727,8 @@ export function useQuranAudio(
   useEffect(() => {
     if (!isAudioMode) return;
     // Prefetch current ayah's audio
-    prefetchBuffer(audioUrl(surahNumber, targetAyah));
-  }, [isAudioMode, surahNumber, targetAyah, prefetchBuffer]);
+    prefetchBuffer(audioUrl(surahNumber, targetAyah, reciter));
+  }, [isAudioMode, surahNumber, targetAyah, reciter, prefetchBuffer]);
 
   // ====================================================================
   // rAF word highlighting
@@ -724,7 +742,7 @@ export function useQuranAudio(
       }
       return;
     }
-    const cacheKey = `${DEFAULT_RECITER}:${surahNumber}`;
+    const cacheKey = `${reciter}:${surahNumber}`;
     const tick = () => {
       const segMap = segmentCacheRef.current.get(cacheKey);
       const segData = segMap?.get(targetAyah);
@@ -785,7 +803,7 @@ export function useQuranAudio(
     };
     rafIdRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafIdRef.current);
-  }, [isAudioMode, isPlaying, surahNumber, targetAyah]);
+  }, [isAudioMode, isPlaying, surahNumber, targetAyah, reciter]);
 
   useEffect(() => () => cancelAnimationFrame(rafIdRef.current), []);
 
@@ -805,7 +823,7 @@ export function useQuranAudio(
     const surahDisplay = surahNameArabic ? `${nameEn} (${surahNameArabic})` : nameEn;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: `${surahDisplay} — Ayah ${targetAyah}`,
-      artist: "Al-Afasy",
+      artist: RECITER_NAMES[reciterRef.current] || reciterRef.current,
       album: "Quran",
       artwork: [
         { src: "/favicon-128.png", sizes: "128x128", type: "image/png" },
@@ -855,7 +873,7 @@ export function useQuranAudio(
         }
       } else {
         const ayah = targetAyahRef.current;
-        playViaElement(audioUrl(surahRef.current, ayah), ayah, surahRef.current);
+        playViaElement(audioUrl(surahRef.current, ayah, reciterRef.current), ayah, surahRef.current);
       }
     }));
     ms.setActionHandler("pause", debounced(() => {
@@ -934,7 +952,7 @@ export function useQuranAudio(
     const surahDisplay = surahNameArabic ? `${nameEn} (${surahNameArabic})` : nameEn;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: `${surahDisplay} — Ayah ${targetAyah}`,
-      artist: "Al-Afasy",
+      artist: RECITER_NAMES[reciterRef.current] || reciterRef.current,
       album: "Quran",
       artwork: [
         { src: "/favicon-128.png", sizes: "128x128", type: "image/png" },
@@ -955,7 +973,7 @@ export function useQuranAudio(
     const ctx = ensureRunningAudioGraph();
     if (!ctx) {
       // Fallback: element mode (no Web Audio support)
-      playViaElement(audioUrl(surahNumber, targetAyah), targetAyah, surahNumber);
+      playViaElement(audioUrl(surahNumber, targetAyah, reciter), targetAyah, surahNumber);
       return;
     }
 
@@ -997,7 +1015,7 @@ export function useQuranAudio(
     scheduleFromCacheRef.current();
     stopScheduleTimer();
     scheduleTimerRef.current = setInterval(() => scheduleFromCacheRef.current(), SCHEDULE_INTERVAL_MS);
-  }, [surahNumber, targetAyah, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
+  }, [surahNumber, targetAyah, reciter, ensureRunningAudioGraph, scheduleFromCache, stopScheduleTimer, setDirectOutputEnabled, playViaElement, setMediaSessionMetadataNow]);
 
   playRef.current = play;
 
@@ -1013,6 +1031,26 @@ export function useQuranAudio(
     isPlayingRef.current = false;
     setIsPlaying(false);
   }, [stopAllSources, stopScheduleTimer]);
+
+  // Stop playback when reciter changes (user picks a new one)
+  const prevReciterRef = useRef(reciter);
+  useEffect(() => {
+    if (prevReciterRef.current !== reciter) {
+      prevReciterRef.current = reciter;
+      if (isPlayingRef.current) {
+        stopAllSources();
+        stopScheduleTimer();
+        const el = audioRef.current;
+        if (el) { el.onended = null; el.pause(); }
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        setHighlightedPosition(null);
+        elementModeRef.current = false;
+        // Auto-restart with new reciter
+        requestAnimationFrame(() => playRef.current());
+      }
+    }
+  }, [reciter, stopAllSources, stopScheduleTimer]);
 
   // Cleanup on unmount
   useEffect(() => {
