@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown, Headphones, Play, Pause, SkipBack, SkipForward, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, FileText, Headphones, Play, Pause, SkipBack, SkipForward, X } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { useQuranAudio } from "@/lib/use-quran-audio";
 
@@ -609,9 +609,10 @@ export function QuranAyahViewer({
         </button>
         <button
           onClick={() => router.push(`/mushaf/pdf?page=${ayahs[0]?.pageNumber ?? 1}`)}
-          className="px-3 py-1.5 rounded-lg text-xs bg-foreground/[0.06] hover:bg-foreground/[0.1] transition-colors text-muted-foreground font-medium"
+          className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+          aria-label="PDF"
         >
-          {t("mushaf.viewFullSurah")}
+          <FileText className="h-5 w-5" />
         </button>
       </div>
 
