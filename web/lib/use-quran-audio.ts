@@ -789,9 +789,9 @@ export function useQuranAudio(
       let timeMs = 0;
 
       if (!elementModeRef.current) {
-        // Web Audio mode: find current source for this ayah
+        // Web Audio mode: find current source for this ayah directly from scheduled sources
         const ctx = audioCtxRef.current;
-        if (ctx && currentPlayingAyahRef.current === targetAyah) {
+        if (ctx) {
           const now = ctx.currentTime;
           for (const ss of scheduledSourcesRef.current) {
             if (ss.ayah === targetAyah && now >= ss.startTime && now < ss.startTime + ss.duration) {
