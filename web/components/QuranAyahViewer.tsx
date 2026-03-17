@@ -88,6 +88,16 @@ function cleanUthmani(text: string): string {
   return text.replace(QURAN_ANNOTATION_RE, "").replace(/\s+/g, " ").trim();
 }
 
+// The Bismillah is baked into textUthmani for ayah 1 of every surah except 1 and 9.
+// Since we render it as a separate decorative line, strip it from the ayah text.
+const BISMILLAH_PREFIX = /^بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\s*/;
+function stripBismillah(text: string, surah: number, ayah: number): string {
+  if (ayah === 1 && surah !== 1 && surah !== 9) {
+    return text.replace(BISMILLAH_PREFIX, "");
+  }
+  return text;
+}
+
 // Static surah metadata (number, Arabic name, English name, ayah count)
 const SURAHS: { number: number; nameArabic: string; nameEnglish: string; ayahCount: number }[] = [
   { number: 1, nameArabic: "الفاتحة", nameEnglish: "Al-Fatihah", ayahCount: 7 },
@@ -770,7 +780,7 @@ export function QuranAyahViewer({
           {/* Arabic ayahs — ayah by ayah with word-level highlighting */}
           {displayAyahs.map(({ number, text }) => {
             const isCurrentAyah = number === clientAyah;
-            const words = cleanUthmani(text).split(/\s+/).filter(Boolean);
+            const words = cleanUthmani(stripBismillah(text, surahNumber, number)).split(/\s+/).filter(Boolean);
             return (
               <div
                 key={number}
