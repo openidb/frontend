@@ -596,7 +596,8 @@ export function useQuranAudio(
         if (currentPlayingAyahRef.current !== ss.ayah) {
           currentPlayingAyahRef.current = ss.ayah;
           // Navigate to this ayah if different from current page
-          if (ss.ayah !== targetAyahRef.current) {
+          // Skip navigation for bismillah (ayah=0) — keep showing ayah 1
+          if (ss.ayah > 0 && ss.ayah !== targetAyahRef.current) {
             navigatingRef.current = true;
             navigateRef.current(ss.ayah);
           }
