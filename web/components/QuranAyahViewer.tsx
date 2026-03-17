@@ -621,6 +621,18 @@ export function QuranAyahViewer({
           </span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
         </button>
+        {isAudioMode && (
+          <button
+            onClick={() => setShowReciterMenu((v) => !v)}
+            className="flex items-center gap-1 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+            aria-label="Reciter"
+          >
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs font-medium max-w-[100px] truncate">
+              {RECITERS.find((r) => r.slug === reciter)?.name ?? "Reciter"}
+            </span>
+          </button>
+        )}
         <button
           onClick={toggleAudioMode}
           className={`p-1.5 rounded-lg transition-colors ${
@@ -632,37 +644,6 @@ export function QuranAyahViewer({
         >
           <Headphones className="h-5 w-5" />
         </button>
-        {isAudioMode && (
-          <div className="relative">
-            <button
-              onClick={() => setShowReciterMenu((v) => !v)}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
-              aria-label="Reciter"
-            >
-              <User className="h-5 w-5" />
-            </button>
-            {showReciterMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowReciterMenu(false)} />
-                <div className="absolute right-0 top-full mt-1 z-50 bg-card border rounded-lg shadow-lg py-1 min-w-[200px]">
-                  {RECITERS.map((r) => (
-                    <button
-                      key={r.slug}
-                      onClick={() => handleReciterChange(r.slug)}
-                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                        r.slug === reciter
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-muted/50"
-                      }`}
-                    >
-                      {r.name}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
         <button
           onClick={() => router.push(`/mushaf/pdf?page=${ayahs[0]?.pageNumber ?? 1}`)}
           className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
@@ -746,6 +727,43 @@ export function QuranAyahViewer({
               >
                 {t("mushaf.goToSurah")} {pickerSurah}:{pickerAyah}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reciter Menu */}
+      {showReciterMenu && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-start sm:justify-end" onClick={() => setShowReciterMenu(false)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="reciter-menu relative w-full sm:w-auto sm:min-w-[260px] sm:mt-12 sm:mr-4 bg-card sm:rounded-xl rounded-t-2xl shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag handle (mobile) */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
+            </div>
+            <div className="px-4 py-3 border-b">
+              <p className="text-sm font-semibold">Reciter</p>
+            </div>
+            <div className="py-1 pb-[env(safe-area-inset-bottom)]">
+              {RECITERS.map((r) => (
+                <button
+                  key={r.slug}
+                  onClick={() => handleReciterChange(r.slug)}
+                  className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center justify-between ${
+                    r.slug === reciter
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-muted/50 active:bg-muted"
+                  }`}
+                >
+                  <span className={r.slug === reciter ? "font-medium" : ""}>{r.name}</span>
+                  {r.slug === reciter && (
+                    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -1072,6 +1090,24 @@ export function QuranAyahViewer({
         .ayah-tafsir-text {
           font-size: 0.8rem;
           line-height: 1.7;
+        }
+
+        /* Reciter menu */
+        .reciter-menu {
+          animation: reciter-slide-up 0.2s ease-out;
+        }
+        @keyframes reciter-slide-up {
+          from { opacity: 0; transform: translateY(1rem); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @media (min-width: 640px) {
+          .reciter-menu {
+            animation: reciter-fade-in 0.15s ease-out;
+          }
+          @keyframes reciter-fade-in {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
         }
 
         /* Picker */
