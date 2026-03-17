@@ -179,6 +179,7 @@ export function useQuranAudio(
   const isPlayingRef = useRef(false);
   const elementModeRef = useRef(false);
   const currentPlayingAyahRef = useRef(0); // ayah currently audible
+  const bismillahScheduledRef = useRef(false); // whether bismillah has been scheduled for current session
 
   // ====================================================================
   // Audio graph management — copied from voice app
@@ -475,6 +476,38 @@ export function useQuranAudio(
     const total = totalAyahsRef.current;
     let nextAyah = nextScheduleAyahRef.current;
 
+    // Schedule bismillah (Fatiha ayah 1) before ayah 1 of any surah except 1 and 9
+    if (nextAyah === 1 && surah !== 1 && surah !== 9 && !bismillahScheduledRef.current) {
+      const bismillahUrl = audioUrl(1, 1, reciterRef.current);
+      if (!bufferCache.isFailed(bismillahUrl)) {
+        const bismillahBuf = bufferCache.get(bismillahUrl);
+        if (!bismillahBuf) {
+          if (!inflightFetches.has(bismillahUrl)) {
+            fetchBuffer(bismillahUrl).then(() => {
+              if (isPlayingRef.current && !elementModeRef.current) scheduleFromCacheRef.current();
+            });
+          }
+          ensureMediaElementBridge(true);
+          return;
+        }
+        const startTime = Math.max(ctx.currentTime + 0.005, scheduledEndRef.current);
+        const source = ctx.createBufferSource();
+        source.buffer = bismillahBuf;
+        source.connect(gain);
+        try { source.start(startTime); } catch { /* ignore */ }
+        const ss: ScheduledSource = { source, startTime, duration: bismillahBuf.duration, ayah: 0 };
+        scheduledSourcesRef.current.push(ss);
+        scheduledEndRef.current = startTime + bismillahBuf.duration;
+        source.onended = () => {
+          source.disconnect();
+          const idx = scheduledSourcesRef.current.indexOf(ss);
+          if (idx !== -1) scheduledSourcesRef.current.splice(idx, 1);
+          if (isPlayingRef.current) scheduleFromCacheRef.current();
+        };
+      }
+      bismillahScheduledRef.current = true;
+    }
+
     while (nextAyah <= total) {
       // Don't schedule too far ahead
       if (scheduledEndRef.current - ctx.currentTime > SCHEDULE_LOOKAHEAD_SECS) break;
@@ -665,6 +698,7 @@ export function useQuranAudio(
     if (wasPlaying) {
       const nextAyah = targetAyah + 1;
       nextScheduleAyahRef.current = nextAyah;
+      bismillahScheduledRef.current = true;
       scheduledEndRef.current = 0;
       currentPlayingAyahRef.current = nextAyah;
 
@@ -696,6 +730,7 @@ export function useQuranAudio(
     if (wasPlaying) {
       const prevAyah = targetAyah - 1;
       nextScheduleAyahRef.current = prevAyah;
+      bismillahScheduledRef.current = true;
       scheduledEndRef.current = 0;
       currentPlayingAyahRef.current = prevAyah;
 
@@ -728,6 +763,10 @@ export function useQuranAudio(
     if (!isAudioMode) return;
     // Prefetch current ayah's audio
     prefetchBuffer(audioUrl(surahNumber, targetAyah, reciter));
+    // Prefetch bismillah (Fatiha ayah 1) for surah starts
+    if (targetAyah === 1 && surahNumber !== 1 && surahNumber !== 9) {
+      prefetchBuffer(audioUrl(1, 1, reciter));
+    }
   }, [isAudioMode, surahNumber, targetAyah, reciter, prefetchBuffer]);
 
   // ====================================================================
@@ -861,6 +900,7 @@ export function useQuranAudio(
         elementModeRef.current = false;
         const ayah = targetAyahRef.current;
         nextScheduleAyahRef.current = ayah;
+        bismillahScheduledRef.current = ayah !== 1;
         scheduledEndRef.current = ctx.currentTime;
         currentPlayingAyahRef.current = ayah;
 
@@ -1011,6 +1051,7 @@ export function useQuranAudio(
 
     // Schedule from current ayah via Web Audio
     nextScheduleAyahRef.current = targetAyah;
+    bismillahScheduledRef.current = targetAyah !== 1; // only play bismillah when starting from ayah 1
     scheduledEndRef.current = ctx.currentTime;
     scheduleFromCacheRef.current();
     stopScheduleTimer();

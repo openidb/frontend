@@ -90,7 +90,11 @@ function cleanUthmani(text: string): string {
 
 // The Bismillah is baked into textUthmani for ayah 1 of every surah except 1 and 9.
 // Since we render it as a separate decorative line, strip it from the ayah text.
-const BISMILLAH_PREFIX = /^بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\s*/;
+// Use a diacritics-tolerant regex: match base consonants with optional tashkeel between them.
+const D = "[\u064B-\u0652\u0670\u06D6-\u06ED]*"; // optional diacritics
+const BISMILLAH_PREFIX = new RegExp(
+  `^${D}ب${D}س${D}م${D}\\s+[ٱا]${D}ل${D}ل${D}ه${D}\\s+[ٱا]${D}ل${D}ر${D}ح${D}م${D}ن${D}\\s+[ٱا]${D}ل${D}ر${D}ح${D}ي${D}م${D}\\s*`
+);
 function stripBismillah(text: string, surah: number, ayah: number): string {
   if (ayah === 1 && surah !== 1 && surah !== 9) {
     return text.replace(BISMILLAH_PREFIX, "");
