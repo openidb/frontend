@@ -107,12 +107,12 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <AppConfigProvider>
-              <div className="flex h-screen">
+              <div className="flex h-dvh">
                 {/* Desktop Sidebar - hidden on mobile */}
                 <DesktopNavigation />
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-auto bg-background pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+                <main className="flex-1 overflow-auto overscroll-contain bg-background pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
                   {children}
                 </main>
 

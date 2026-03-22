@@ -131,7 +131,7 @@ export function MobileNavigation() {
   if (isReaderPage) return null;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-stretch z-50 pb-[env(safe-area-inset-bottom)]">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t flex items-stretch z-50 pb-[env(safe-area-inset-bottom)]">
       {navItems.map(({ href, icon: Icon, labelKey, iconClass }) => {
         const active = isActive(activeHref, href);
         return (
@@ -140,7 +140,7 @@ export function MobileNavigation() {
             href={href}
             onClick={(e) => handleNav(e, href)}
             className={cn(
-              "nav-link relative flex flex-col items-center justify-center gap-1 py-2 px-4 min-w-[3.5rem] min-h-[3.5rem] transition-colors duration-150 hover:text-foreground touch-action-manipulation",
+              "nav-link relative flex-1 flex flex-col items-center justify-center gap-1 py-3 min-h-[3.5rem] transition-colors duration-150 hover:text-foreground touch-action-manipulation",
               active ? "text-foreground" : "text-muted-foreground"
             )}
           >
