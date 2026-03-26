@@ -589,10 +589,7 @@ export function QuranAyahViewer({
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
 
-  // Scroll content to top on navigation
-  useEffect(() => {
-    containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, [clientAyah, surahNumber]);
+
 
   // Open picker and auto-scroll to current surah/ayah
   const openPicker = useCallback(() => {
