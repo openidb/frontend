@@ -911,7 +911,7 @@ export function QuranAyahViewer({
 
           {/* Bismillah — shown before ayah 1 for all surahs except 1 (Al-Fatiha) and 9 (At-Tawbah) */}
           {surahNumber !== 1 && surahNumber !== 9 && displayAyahNumbers[0] === 1 && (
-            <div className="arabic-ayah" style={{ opacity: 0.3 }}>
+            <div className="arabic-ayah arabic-ayah-context">
               <p className="arabic-bismillah" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
             </div>
           )}
@@ -923,8 +923,7 @@ export function QuranAyahViewer({
             return (
               <div
                 key={number}
-                className="arabic-ayah"
-                style={{ opacity: isCurrentAyah ? 1 : 0.3 }}
+                className={`arabic-ayah ${isCurrentAyah ? "arabic-ayah-current" : "arabic-ayah-context"}`}
               >
                 <p className="arabic-ayah-text" dir="rtl">
                   {words.map((word, i) => {
@@ -952,8 +951,7 @@ export function QuranAyahViewer({
                 translations[num] ? (
                   <p
                     key={num}
-                    className="ayah-translation-text"
-                    style={{ opacity: num === clientAyah ? 1 : 0.4 }}
+                    className={`ayah-translation-text ${num === clientAyah ? "ayah-translation-current" : "ayah-translation-context"}`}
                   >
                     <span className="ayah-translation-num">{surahNumber}:{num}</span>{" "}
                     {translations[num]}
@@ -1126,7 +1124,13 @@ export function QuranAyahViewer({
         /* Arabic ayahs — ayah by ayah display */
         .arabic-ayah {
           padding: 0.15rem 0;
-          transition: opacity 0.4s ease;
+          transition: opacity 0.5s ease-in-out;
+        }
+        .arabic-ayah-context {
+          opacity: 0.45;
+        }
+        .arabic-ayah-current {
+          opacity: 1;
         }
         .arabic-ayah-text {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
@@ -1171,7 +1175,13 @@ export function QuranAyahViewer({
           font-size: 0.875rem;
           line-height: 1.6;
           margin-bottom: 0.5rem;
-          transition: opacity 0.4s ease;
+          transition: opacity 0.5s ease-in-out;
+        }
+        .ayah-translation-context {
+          opacity: 0.5;
+        }
+        .ayah-translation-current {
+          opacity: 1;
         }
         .ayah-translation-num {
           font-size: 0.75rem;
@@ -1286,6 +1296,14 @@ export function QuranAyahViewer({
         }
         .quran-sidebar-ayah-pill {
           background: hsl(var(--primary) / 0.08);
+        }
+
+        /* Reduced motion: disable opacity transitions for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+          .arabic-ayah,
+          .ayah-translation-text {
+            transition: none;
+          }
         }
 
         /* Font face */
