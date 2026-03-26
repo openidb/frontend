@@ -226,6 +226,7 @@ const translationCache = new Map<string, string>(); // "surah:ayah:edition" → 
 const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
 const tafsirFetching = new Set<string>(); // dedup in-flight tafsir fetches
 const ayahTextCache = new Map<string, string>(); // "surah:ayah" → textUthmani
+const ayahPageCache = new Map<string, number>(); // "surah:ayah" → pageNumber
 
 export function QuranAyahViewer({
   ayahs,
@@ -267,9 +268,10 @@ export function QuranAyahViewer({
   const [clientAyah, setClientAyah] = useState(targetAyah);
   const [ayahTick, setAyahTick] = useState(0);
 
-  // Seed ayah text cache from server props
+  // Seed ayah text + page caches from server props
   for (const a of ayahs) {
     ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+    if (a.pageNumber != null) ayahPageCache.set(`${surahNumber}:${a.ayahNumber}`, a.pageNumber);
   }
 
   // Sync from server props when they change (real navigation / initial load)
@@ -352,7 +354,10 @@ export function QuranAyahViewer({
     fetch(`/api/quran/ayahs?surah=${surahNumber}&offset=${min - 1}&limit=${max - min + 1}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.ayahs) for (const a of d.ayahs) ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+        if (d?.ayahs) for (const a of d.ayahs) {
+          ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+          if (a.pageNumber != null) ayahPageCache.set(`${surahNumber}:${a.ayahNumber}`, a.pageNumber);
+        }
         if (!cancelled) setAyahTick(t => t + 1);
       })
       .catch(() => {});
@@ -373,7 +378,10 @@ export function QuranAyahViewer({
     fetch(`/api/quran/ayahs?surah=${surahNumber}&offset=${min - 1}&limit=${max - min + 1}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.ayahs) for (const a of d.ayahs) ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+        if (d?.ayahs) for (const a of d.ayahs) {
+          ayahTextCache.set(`${surahNumber}:${a.ayahNumber}`, a.textUthmani);
+          if (a.pageNumber != null) ayahPageCache.set(`${surahNumber}:${a.ayahNumber}`, a.pageNumber);
+        }
       })
       .catch(() => {});
   }, [isAudioMode, surahNumber, clientAyah, totalAyahs]);
@@ -904,8 +912,8 @@ export function QuranAyahViewer({
           {/* Ayah & page info */}
           <p className="ayah-info-line" dir="ltr">
             {t("mushaf.ayah")} {clientAyah} / {totalAyahs}
-            {ayahs[0]?.pageNumber != null && (
-              <> · {t("mushaf.page")} {ayahs.find(a => a.ayahNumber === clientAyah)?.pageNumber ?? ayahs[0].pageNumber}</>
+            {ayahPageCache.has(`${surahNumber}:${clientAyah}`) && (
+              <> · {t("mushaf.page")} {ayahPageCache.get(`${surahNumber}:${clientAyah}`)}</>
             )}
           </p>
 
