@@ -576,7 +576,7 @@ export function QuranAyahViewer({
         const ayahEl = ayahListRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
         ayahEl?.scrollIntoView({ block: "center" });
         const sidebarAyahEl = sidebarAyahRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
-        sidebarAyahEl?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        sidebarAyahEl?.scrollIntoView({ block: "center", behavior: "smooth" });
       } else {
         ayahListRef.current?.scrollTo({ top: 0 });
         sidebarAyahRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -598,9 +598,14 @@ export function QuranAyahViewer({
   const handleSidebarAyahClick = useCallback((ayah: number) => {
     setPickerAyah(ayah);
     if (isPlaying) pause();
-    const audioParam = isAudioMode ? '?audio=1' : '';
-    router.replace(`/quran/${pickerSurah}/${ayah}${audioParam}`);
-  }, [pickerSurah, router, isAudioMode, isPlaying, pause]);
+    if (isAudioMode && pickerSurah === surahNumber) {
+      // In audio mode, same surah: use client-side nav to avoid router state mismatch
+      handleAudioNavigate(ayah);
+    } else {
+      const audioParam = isAudioMode ? '?audio=1' : '';
+      router.replace(`/quran/${pickerSurah}/${ayah}${audioParam}`);
+    }
+  }, [pickerSurah, surahNumber, router, isAudioMode, isPlaying, pause, handleAudioNavigate]);
 
   const handleSidebarSurahClick = useCallback((num: number) => {
     handlePickerSurahSelect(num);
@@ -619,9 +624,9 @@ export function QuranAyahViewer({
     isInitialMount.current = false;
     requestAnimationFrame(() => {
       const surahEl = sidebarSurahRef.current?.querySelector(`[data-surah="${surahNumber}"]`) as HTMLElement | null;
-      surahEl?.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
+      surahEl?.scrollIntoView({ block: "center", behavior: smooth ? "smooth" : "auto" });
       const ayahEl = sidebarAyahRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
-      ayahEl?.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
+      ayahEl?.scrollIntoView({ block: "center", behavior: smooth ? "smooth" : "auto" });
     });
   }, [surahNumber, clientAyah]);
 
