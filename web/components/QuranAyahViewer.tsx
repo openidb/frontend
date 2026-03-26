@@ -313,8 +313,12 @@ export function QuranAyahViewer({
   } = useQuranAudio(surahNumber, clientAyah, totalAyahs, router, initialAudioMode, handleAudioNavigate, surahNameEnglish, surahNameArabic, reciter);
 
   const [tafsirEditions, setTafsirEditions] = useState<TafsirEdition[]>([]);
-  const [tafsirLang, setTafsirLang] = useState<string>("");
-  const [tafsirEditionId, setTafsirEditionId] = useState<string>("");
+  const [tafsirLang, setTafsirLang] = useState<string>(() => {
+    try { return localStorage.getItem("quran-tafsir-lang") || ""; } catch { return ""; }
+  });
+  const [tafsirEditionId, setTafsirEditionId] = useState<string>(() => {
+    try { return localStorage.getItem("quran-tafsir-edition") || ""; } catch { return ""; }
+  });
   const [tafsirTick, setTafsirTick] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -462,14 +466,29 @@ export function QuranAyahViewer({
           (t: TafsirEdition) => t.language && t.language !== "unknown"
         );
         setTafsirEditions(editions);
+
+        // Restore saved selections if valid, otherwise pick defaults
+        const savedLang = tafsirLang;
+        const savedEdition = tafsirEditionId;
         const hasLang = (l: string) => editions.some((e: TafsirEdition) => e.language === l) && getLanguageName(l);
-        const defaultLang = hasLang(locale) ? locale
+
+        if (savedLang && hasLang(savedLang) && savedEdition && editions.some((e) => e.id === savedEdition)) {
+          // Saved values are still valid — keep them
+          return;
+        }
+
+        const defaultLang = (savedLang && hasLang(savedLang)) ? savedLang
+          : hasLang(locale) ? locale
           : hasLang("ar") ? "ar" : editions.find((e: TafsirEdition) => getLanguageName(e.language))?.language || "";
         setTafsirLang(defaultLang);
+        try { localStorage.setItem("quran-tafsir-lang", defaultLang); } catch {}
         const langEditions = editions.filter((e: TafsirEdition) => e.language === defaultLang);
         const preferred = PREFERRED_TAFSIRS[defaultLang];
         const defaultEdition = (preferred && langEditions.find((e) => e.id === preferred)) || langEditions[0];
-        if (defaultEdition) setTafsirEditionId(defaultEdition.id);
+        if (defaultEdition) {
+          setTafsirEditionId(defaultEdition.id);
+          try { localStorage.setItem("quran-tafsir-edition", defaultEdition.id); } catch {}
+        }
       })
       .catch(() => {});
   }, []);
@@ -492,6 +511,7 @@ export function QuranAyahViewer({
       const preferred = PREFERRED_TAFSIRS[tafsirLang];
       const pick = (preferred && editions.find((e) => e.id === preferred)) || editions[0];
       setTafsirEditionId(pick.id);
+      try { localStorage.setItem("quran-tafsir-edition", pick.id); } catch {}
     }
   }, [tafsirLang, tafsirLangs]);
 
@@ -707,7 +727,7 @@ export function QuranAyahViewer({
           <Headphones className="h-5 w-5" />
         </button>
         <button
-          onClick={() => router.push(`/mushaf/pdf?page=${ayahs[0]?.pageNumber ?? 1}`)}
+          onClick={() => router.push(`/mushaf/pdf?page=${ayahPageCache.get(`${surahNumber}:${clientAyah}`) ?? ayahs[0]?.pageNumber ?? 1}`)}
           className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
           aria-label="PDF"
         >
@@ -993,7 +1013,7 @@ export function QuranAyahViewer({
               <div className="ayah-tafsir-selectors">
                 <select
                   value={tafsirLang}
-                  onChange={(e) => setTafsirLang(e.target.value)}
+                  onChange={(e) => { setTafsirLang(e.target.value); try { localStorage.setItem("quran-tafsir-lang", e.target.value); } catch {} }}
                   className="ayah-tafsir-select"
                 >
                   {Object.keys(tafsirLangs).sort().map((lang) => {
@@ -1009,7 +1029,7 @@ export function QuranAyahViewer({
 
                 <select
                   value={tafsirEditionId}
-                  onChange={(e) => setTafsirEditionId(e.target.value)}
+                  onChange={(e) => { setTafsirEditionId(e.target.value); try { localStorage.setItem("quran-tafsir-edition", e.target.value); } catch {} }}
                   className="ayah-tafsir-select ayah-tafsir-select-edition"
                 >
                   {(tafsirLangs[tafsirLang] || []).map((e) => (
