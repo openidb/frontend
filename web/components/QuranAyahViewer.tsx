@@ -876,14 +876,12 @@ export function QuranAyahViewer({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <AnimatePresence mode="wait">
         <motion.div
           key={contentKey}
           ref={contentRef}
           className="ayah-content-frame"
           initial={{ opacity: 0.4 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
         >
           {/* Ayah & page info */}
@@ -987,7 +985,6 @@ export function QuranAyahViewer({
             </div>
           )}
         </motion.div>
-        </AnimatePresence>
       </div>
 
       {/* Bottom nav */}

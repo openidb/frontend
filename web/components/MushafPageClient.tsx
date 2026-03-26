@@ -124,6 +124,13 @@ export function MushafPageClient({ initialData }: Props) {
       .catch(() => {});
   }, []);
 
+  const navigateTo = useCallback(
+    (targetPage: number) => {
+      router.push(`/mushaf/${targetPage}`, { scroll: false });
+    },
+    [router]
+  );
+
   // Keyboard navigation (RTL: Left = next, Right = prev)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -133,7 +140,7 @@ export function MushafPageClient({ initialData }: Props) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [page]);
+  }, [page, navigateTo]);
 
   // Swipe navigation
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -153,14 +160,7 @@ export function MushafPageClient({ initialData }: Props) {
         else navigateTo(Math.max(page - 1, 1));
       }
     },
-    [page, config.hapticsEnabled]
-  );
-
-  const navigateTo = useCallback(
-    (targetPage: number) => {
-      router.push(`/mushaf/${targetPage}`, { scroll: false });
-    },
-    [router]
+    [page, config.hapticsEnabled, navigateTo]
   );
 
   // Page input handler
