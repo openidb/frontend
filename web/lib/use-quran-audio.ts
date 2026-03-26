@@ -129,12 +129,50 @@ class LRUBufferCache {
 const bufferCache = new LRUBufferCache();
 const inflightFetches = new Map<string, Promise<AudioBuffer | null>>();
 
+// --- MP3 silence trimming for gapless playback ---
+// MP3 files have encoder delay (~576 samples) at the start and padding at the end.
+// decodeAudioData may not strip these, causing audible gaps between consecutive buffers.
+interface TrimInfo {
+  startOffset: number; // seconds of leading silence to skip
+  effectiveDuration: number; // duration after trimming both ends
+}
+const trimInfoCache = new Map<string, TrimInfo>();
+
+function computeTrimInfo(buffer: AudioBuffer): TrimInfo {
+  const data = buffer.getChannelData(0);
+  const sr = buffer.sampleRate;
+  const threshold = 0.005;
+  // Scan up to 50ms from each end
+  const maxScan = Math.min(Math.floor(sr * 0.05), data.length);
+
+  let startSample = 0;
+  for (let i = 0; i < maxScan; i++) {
+    if (Math.abs(data[i]) > threshold) {
+      startSample = Math.max(0, i - 1);
+      break;
+    }
+  }
+
+  let endSample = data.length;
+  for (let i = data.length - 1; i >= data.length - maxScan && i >= 0; i--) {
+    if (Math.abs(data[i]) > threshold) {
+      endSample = Math.min(data.length, i + 2);
+      break;
+    }
+  }
+
+  const startOffset = startSample / sr;
+  const effectiveDuration = Math.max(0, (endSample - startSample) / sr);
+  return { startOffset, effectiveDuration };
+}
+
 // --- Scheduled source tracking (voice app pattern) ---
 interface ScheduledSource {
   source: AudioBufferSourceNode;
   startTime: number;
   duration: number;
   ayah: number;
+  audioOffset: number; // offset into the buffer where playback starts (for trim)
 }
 
 // --- Hook ---
@@ -344,6 +382,8 @@ export function useQuranAudio(
               setTimeout(() => reject(new Error("decode timeout")), DECODE_TIMEOUT_MS)),
           ]));
         bufferCache.set(url, buf, rawClone);
+        // Compute and cache trim info for gapless playback
+        if (!trimInfoCache.has(url)) trimInfoCache.set(url, computeTrimInfo(buf));
         return buf;
       } catch (e) {
         if ((e as Error).name === "AbortError") return null;
@@ -490,14 +530,15 @@ export function useQuranAudio(
           ensureMediaElementBridge(true);
           return;
         }
+        const trim = trimInfoCache.get(bismillahUrl) || { startOffset: 0, effectiveDuration: bismillahBuf.duration };
         const startTime = Math.max(ctx.currentTime + 0.005, scheduledEndRef.current);
         const source = ctx.createBufferSource();
         source.buffer = bismillahBuf;
         source.connect(gain);
-        try { source.start(startTime); } catch { /* ignore */ }
-        const ss: ScheduledSource = { source, startTime, duration: bismillahBuf.duration, ayah: 0 };
+        try { source.start(startTime, trim.startOffset, trim.effectiveDuration); } catch { /* ignore */ }
+        const ss: ScheduledSource = { source, startTime, duration: trim.effectiveDuration, ayah: 0, audioOffset: trim.startOffset };
         scheduledSourcesRef.current.push(ss);
-        scheduledEndRef.current = startTime + bismillahBuf.duration;
+        scheduledEndRef.current = startTime + trim.effectiveDuration;
         source.onended = () => {
           source.disconnect();
           const idx = scheduledSourcesRef.current.indexOf(ss);
@@ -526,12 +567,13 @@ export function useQuranAudio(
         break;
       }
 
+      const trim = trimInfoCache.get(url) || { startOffset: 0, effectiveDuration: buffer.duration };
       const startTime = Math.max(ctx.currentTime + 0.005, scheduledEndRef.current);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(gain);
       try {
-        source.start(startTime);
+        source.start(startTime, trim.startOffset, trim.effectiveDuration);
       } catch {
         try { source.disconnect(); } catch {}
         nextAyah++;
@@ -543,11 +585,12 @@ export function useQuranAudio(
       const ss: ScheduledSource = {
         source,
         startTime,
-        duration: buffer.duration,
+        duration: trim.effectiveDuration,
         ayah: ayahNum,
+        audioOffset: trim.startOffset,
       };
       scheduledSourcesRef.current.push(ss);
-      scheduledEndRef.current = startTime + buffer.duration;
+      scheduledEndRef.current = startTime + trim.effectiveDuration;
       nextAyah++;
       nextScheduleAyahRef.current = nextAyah;
 
@@ -795,7 +838,8 @@ export function useQuranAudio(
           const now = ctx.currentTime;
           for (const ss of scheduledSourcesRef.current) {
             if (ss.ayah === targetAyah && now >= ss.startTime && now < ss.startTime + ss.duration) {
-              timeMs = (now - ss.startTime) * 1000;
+              // Account for trim offset: actual audio position = audioOffset + elapsed time
+              timeMs = (ss.audioOffset + now - ss.startTime) * 1000;
               break;
             }
           }
