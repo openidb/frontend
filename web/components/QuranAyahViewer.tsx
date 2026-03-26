@@ -594,8 +594,11 @@ export function QuranAyahViewer({
 
   const handlePickerGo = useCallback(() => {
     setShowPicker(false);
-    router.replace(`/quran/${pickerSurah}/${pickerAyah}`);
-  }, [pickerSurah, pickerAyah, router]);
+    // Stop audio to prevent old scheduled sources from overriding navigation
+    if (isPlaying) pause();
+    const audioParam = isAudioMode ? '?audio=1' : '';
+    router.replace(`/quran/${pickerSurah}/${pickerAyah}${audioParam}`);
+  }, [pickerSurah, pickerAyah, router, isAudioMode, isPlaying, pause]);
 
   const pickerAyahCount = SURAHS[pickerSurah - 1]?.ayahCount ?? 1;
 
