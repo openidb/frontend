@@ -227,12 +227,6 @@ const tafsirCache = new Map<string, string>(); // "surah:ayah:edition" → html
 const tafsirFetching = new Set<string>(); // dedup in-flight tafsir fetches
 const ayahTextCache = new Map<string, string>(); // "surah:ayah" → textUthmani
 
-// Directional slide variants for per-ayah transitions
-const ayahSlideVariants = {
-  enter: (dir: number) => ({ opacity: 0, y: dir * 30 }),
-  exit: (dir: number) => ({ opacity: 0, y: -dir * 30 }),
-};
-
 export function QuranAyahViewer({
   ayahs,
   targetAyah,
@@ -549,14 +543,6 @@ export function QuranAyahViewer({
       }
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
-
-  // Track scroll direction for per-ayah slide transitions
-  const prevClientAyahRef = useRef(clientAyah);
-  const scrollDir = useRef(1);
-  if (clientAyah !== prevClientAyahRef.current) {
-    scrollDir.current = clientAyah > prevClientAyahRef.current ? 1 : -1;
-    prevClientAyahRef.current = clientAyah;
-  }
 
   // Scroll content to top on navigation
   useEffect(() => {
@@ -923,78 +909,57 @@ export function QuranAyahViewer({
             )}
           </p>
 
-          {/* Bismillah + Arabic ayahs — per-ayah slide transitions */}
-          <AnimatePresence mode="popLayout" initial={false} custom={scrollDir.current}>
-            {surahNumber !== 1 && surahNumber !== 9 && displayAyahNumbers[0] === 1 && (
-              <motion.div
-                key="bismillah"
-                className="arabic-ayah"
-                custom={scrollDir.current}
-                variants={ayahSlideVariants}
-                initial="enter"
-                animate={{ opacity: 0.3, y: 0 }}
-                exit="exit"
-                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-              >
-                <p className="arabic-bismillah" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
-              </motion.div>
-            )}
-            {displayAyahs.map(({ number, text }) => {
-              const isCurrentAyah = number === clientAyah;
-              const words = cleanUthmani(stripBismillah(text, surahNumber, number)).split(/\s+/).filter(Boolean);
-              return (
-                <motion.div
-                  key={number}
-                  className="arabic-ayah"
-                  custom={scrollDir.current}
-                  variants={ayahSlideVariants}
-                  initial="enter"
-                  animate={{ opacity: isCurrentAyah ? 1 : 0.3, y: 0 }}
-                  exit="exit"
-                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                >
-                  <p className="arabic-ayah-text" dir="rtl">
-                    {words.map((word, i) => {
-                      const pos = i + 1;
-                      const highlighted = isCurrentAyah && isAudioMode && highlightedPosition === pos;
-                      return (
-                        <span key={i} className={highlighted ? "arabic-word-highlight" : undefined}>
-                          {word}{" "}
-                        </span>
-                      );
-                    })}
-                    <span className="arabic-ayah-end-marker">
-                      {number.toLocaleString("ar-EG")}
-                    </span>
-                  </p>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+          {/* Bismillah — shown before ayah 1 for all surahs except 1 (Al-Fatiha) and 9 (At-Tawbah) */}
+          {surahNumber !== 1 && surahNumber !== 9 && displayAyahNumbers[0] === 1 && (
+            <div className="arabic-ayah" style={{ opacity: 0.3 }}>
+              <p className="arabic-bismillah" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
+            </div>
+          )}
 
-          {/* Translations — per-ayah slide transitions */}
+          {/* Arabic ayahs — CSS transition on opacity for smooth current/context changes */}
+          {displayAyahs.map(({ number, text }) => {
+            const isCurrentAyah = number === clientAyah;
+            const words = cleanUthmani(stripBismillah(text, surahNumber, number)).split(/\s+/).filter(Boolean);
+            return (
+              <div
+                key={number}
+                className="arabic-ayah"
+                style={{ opacity: isCurrentAyah ? 1 : 0.3 }}
+              >
+                <p className="arabic-ayah-text" dir="rtl">
+                  {words.map((word, i) => {
+                    const pos = i + 1;
+                    const highlighted = isCurrentAyah && isAudioMode && highlightedPosition === pos;
+                    return (
+                      <span key={i} className={highlighted ? "arabic-word-highlight" : undefined}>
+                        {word}{" "}
+                      </span>
+                    );
+                  })}
+                  <span className="arabic-ayah-end-marker">
+                    {number.toLocaleString("ar-EG")}
+                  </span>
+                </p>
+              </div>
+            );
+          })}
+
+          {/* Translations — CSS transition on opacity */}
           {Object.keys(translations).length > 0 && (
             <div dir="ltr" className="ayah-translation-section">
               <p className="ayah-translation-label">[{translatorName}]</p>
-              <AnimatePresence mode="popLayout" initial={false} custom={scrollDir.current}>
-                {ayahNumbers.map((num) =>
-                  translations[num] ? (
-                    <motion.p
-                      key={num}
-                      className="ayah-translation-text"
-                      custom={scrollDir.current}
-                      variants={ayahSlideVariants}
-                      initial="enter"
-                      animate={{ opacity: num === clientAyah ? 1 : 0.4, y: 0 }}
-                      exit="exit"
-                      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                    >
-                      <span className="ayah-translation-num">{surahNumber}:{num}</span>{" "}
-                      {translations[num]}
-                    </motion.p>
-                  ) : null
-                )}
-              </AnimatePresence>
+              {ayahNumbers.map((num) =>
+                translations[num] ? (
+                  <p
+                    key={num}
+                    className="ayah-translation-text"
+                    style={{ opacity: num === clientAyah ? 1 : 0.4 }}
+                  >
+                    <span className="ayah-translation-num">{surahNumber}:{num}</span>{" "}
+                    {translations[num]}
+                  </p>
+                ) : null
+              )}
             </div>
           )}
 
@@ -1161,8 +1126,8 @@ export function QuranAyahViewer({
         /* Arabic ayahs — ayah by ayah display */
         .arabic-ayah {
           padding: 0.15rem 0;
+          transition: opacity 0.4s ease;
         }
-        /* opacity controlled by framer-motion animate prop */
         .arabic-ayah-text {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
           font-size: clamp(1.1rem, 4vw, 1.4rem);
@@ -1206,8 +1171,8 @@ export function QuranAyahViewer({
           font-size: 0.875rem;
           line-height: 1.6;
           margin-bottom: 0.5rem;
+          transition: opacity 0.4s ease;
         }
-        /* translation opacity controlled by framer-motion */
         .ayah-translation-num {
           font-size: 0.75rem;
           font-weight: 600;
