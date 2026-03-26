@@ -1127,7 +1127,7 @@ export function QuranAyahViewer({
         }
         .arabic-ayah-context {
           opacity: 0.45;
-          transition: opacity 0.2s ease-out;
+          transition: none;
         }
         .arabic-ayah-current {
           opacity: 1;
@@ -1179,7 +1179,7 @@ export function QuranAyahViewer({
         }
         .ayah-translation-context {
           opacity: 0.5;
-          transition: opacity 0.2s ease-out;
+          transition: none;
         }
         .ayah-translation-current {
           opacity: 1;
