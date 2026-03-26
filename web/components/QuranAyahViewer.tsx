@@ -259,6 +259,8 @@ export function QuranAyahViewer({
   const [pickerAyah, setPickerAyah] = useState(targetAyah);
   const surahListRef = useRef<HTMLDivElement>(null);
   const ayahListRef = useRef<HTMLDivElement>(null);
+  const sidebarSurahRef = useRef<HTMLDivElement>(null);
+  const sidebarAyahRef = useRef<HTMLDivElement>(null);
 
   // --- Client-side state for instant ayah transitions in audio mode ---
   const [clientAyah, setClientAyah] = useState(targetAyah);
@@ -586,8 +588,11 @@ export function QuranAyahViewer({
       if (num === surahNumber) {
         const ayahEl = ayahListRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
         ayahEl?.scrollIntoView({ block: "center" });
+        const sidebarAyahEl = sidebarAyahRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
+        sidebarAyahEl?.scrollIntoView({ block: "center" });
       } else {
         ayahListRef.current?.scrollTo({ top: 0 });
+        sidebarAyahRef.current?.scrollTo({ top: 0 });
       }
     });
   }, [surahNumber, clientAyah]);
@@ -601,6 +606,26 @@ export function QuranAyahViewer({
   }, [pickerSurah, pickerAyah, router, isAudioMode, isPlaying, pause]);
 
   const pickerAyahCount = SURAHS[pickerSurah - 1]?.ayahCount ?? 1;
+
+  // Desktop sidebar: navigate immediately on ayah tap
+  const handleSidebarAyahClick = useCallback((ayah: number) => {
+    setPickerAyah(ayah);
+    if (isPlaying) pause();
+    const audioParam = isAudioMode ? '?audio=1' : '';
+    router.replace(`/quran/${pickerSurah}/${ayah}${audioParam}`);
+  }, [pickerSurah, router, isAudioMode, isPlaying, pause]);
+
+  // Sync sidebar picker with current navigation state
+  useEffect(() => {
+    setPickerSurah(surahNumber);
+    setPickerAyah(clientAyah);
+    requestAnimationFrame(() => {
+      const surahEl = sidebarSurahRef.current?.querySelector(`[data-surah="${surahNumber}"]`) as HTMLElement | null;
+      surahEl?.scrollIntoView({ block: "center" });
+      const ayahEl = sidebarAyahRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
+      ayahEl?.scrollIntoView({ block: "center" });
+    });
+  }, [surahNumber, clientAyah]);
 
   // Suppress unused tick warnings
   void translationTick;
@@ -626,7 +651,7 @@ export function QuranAyahViewer({
           <span className="truncate">
             {locale === "ar" ? surahNameArabic : `${t("mushaf.surah")} ${surahNameEnglish}`}
           </span>
-          <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50 sm:hidden" />
         </button>
         {isAudioMode && (
           <button
@@ -776,6 +801,61 @@ export function QuranAyahViewer({
         </div>
       )}
 
+      {/* Main area: sidebar + content */}
+      <div className="flex flex-1 min-h-0">
+        {/* Desktop Sidebar */}
+        <div className="hidden sm:flex sm:flex-col sm:w-64 border-r bg-card shrink-0 min-h-0">
+          <div className="flex border-b shrink-0 text-xs text-muted-foreground font-medium">
+            <div className="flex-1 px-3 py-1.5">{t("mushaf.surah")}</div>
+            <div className="w-20 px-2 py-1.5 border-l text-center">{t("mushaf.ayah")}</div>
+          </div>
+          <div className="flex flex-1 min-h-0">
+            <div ref={sidebarSurahRef} className="flex-1 overflow-y-auto picker-scroll">
+              {SURAHS.map((s) => (
+                <button
+                  key={s.number}
+                  data-surah={s.number}
+                  onClick={() => handlePickerSurahSelect(s.number)}
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
+                    s.number === pickerSurah
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <span className="text-xs text-muted-foreground w-6 shrink-0 tabular-nums">{s.number}</span>
+                  <span className="truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
+                </button>
+              ))}
+            </div>
+            <div ref={sidebarAyahRef} className="w-20 border-l overflow-y-auto picker-scroll">
+              {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  data-ayah={n}
+                  onClick={() => handleSidebarAyahClick(n)}
+                  className={`w-full text-center py-1.5 text-sm tabular-nums transition-colors ${
+                    n === pickerAyah
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="shrink-0 border-t px-3 py-2">
+            <button
+              onClick={handlePickerGo}
+              className="w-full h-9 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 active:bg-primary/80 transition-colors"
+            >
+              {pickerSurah}:{pickerAyah}
+            </button>
+          </div>
+        </div>
+
+        {/* Content + bottom nav */}
+        <div className="flex flex-col flex-1 min-h-0">
       {/* Content */}
       <div
         ref={containerRef}
@@ -952,6 +1032,8 @@ export function QuranAyahViewer({
               </button>
             </>
           )}
+        </div>
+      </div>
         </div>
       </div>
 
