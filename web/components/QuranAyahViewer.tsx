@@ -683,7 +683,7 @@ export function QuranAyahViewer({
   void ayahTick;
 
   return (
-    <div className="ayah-view flex flex-col h-full min-h-0">
+    <div className="ayah-view flex flex-col h-full min-h-0 overflow-x-hidden">
       {/* Header bar */}
       <div className="ayah-header flex items-center px-2 sm:px-3 py-1.5 sm:py-2 pt-[calc(0.375rem+env(safe-area-inset-top))] sm:pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-1 sm:gap-2">
         <button
@@ -747,11 +747,11 @@ export function QuranAyahViewer({
         >
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowPicker(false)} />
           <motion.div
-            className="absolute inset-x-0 bottom-0 top-0 bg-card flex flex-col"
+            className="absolute inset-0 bg-card flex flex-col"
             onClick={(e) => e.stopPropagation()}
-            initial={{ y: "100%" }}
+            initial={{ y: "-100%" }}
             animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            exit={{ y: "-100%" }}
             transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
           >
             {/* Picker header */}
@@ -1062,11 +1062,11 @@ export function QuranAyahViewer({
 
       {/* Bottom nav */}
       <div
-        className="shrink-0 border-t border-border/50 px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+        className="shrink-0 border-t border-border/50 px-2 sm:px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] overflow-hidden"
         style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
         dir={isRTL ? "rtl" : "ltr"}
       >
-        <div className={`flex items-center ${isAudioMode ? "justify-center gap-3" : "justify-between"}`}>
+        <div className={`flex items-center ${isAudioMode ? "justify-center gap-3" : "justify-between gap-1"}`}>
           {isAudioMode ? (
             <>
               <button
@@ -1100,25 +1100,25 @@ export function QuranAyahViewer({
               <button
                 onClick={goNext}
                 disabled={!canGoNext}
-                className="h-9 px-3 sm:h-11 sm:px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 px-2 sm:px-5 sm:h-11 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30 min-w-0"
                 aria-label={clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
               >
-                {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                <span className="max-w-[5rem] truncate">{clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}</span>
+                {isRTL ? <ChevronRight className="h-4 w-4 shrink-0" /> : <ChevronLeft className="h-4 w-4 shrink-0" />}
+                <span className="truncate">{clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}</span>
               </button>
 
               <span className="text-xs sm:text-sm text-muted-foreground tabular-nums shrink-0">
-                {fmtNum(clientAyah)} / {fmtNum(totalAyahs)}
+                {fmtNum(clientAyah)}/{fmtNum(totalAyahs)}
               </span>
 
               <button
                 onClick={goPrev}
                 disabled={!canGoPrev}
-                className="h-9 px-3 sm:h-11 sm:px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 px-2 sm:px-5 sm:h-11 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30 min-w-0"
                 aria-label={clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
               >
-                <span className="max-w-[5rem] truncate">{clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}</span>
-                {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                <span className="truncate">{clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}</span>
+                {isRTL ? <ChevronLeft className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
               </button>
             </>
           )}
@@ -1148,6 +1148,8 @@ export function QuranAyahViewer({
           padding: 0.25rem 0.75rem;
           display: flex;
           flex-direction: column;
+          box-sizing: border-box;
+          overflow-x: hidden;
         }
         @media (min-width: 640px) {
           .ayah-content-frame {
@@ -1183,6 +1185,8 @@ export function QuranAyahViewer({
           line-height: 2;
           text-align: right;
           margin: 0;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
         }
         .arabic-bismillah {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
@@ -1261,7 +1265,6 @@ export function QuranAyahViewer({
           margin: 0.25rem 0 0.5rem;
         }
         .ayah-tafsir-select {
-          flex-shrink: 0;
           padding: 0.25rem 0.5rem;
           font-size: 0.75rem;
           border-radius: 6px;
@@ -1269,6 +1272,7 @@ export function QuranAyahViewer({
           background: hsl(var(--background));
           color: inherit;
           cursor: pointer;
+          min-width: 0;
           max-width: 11rem;
         }
         .ayah-tafsir-select-edition {
@@ -1282,6 +1286,8 @@ export function QuranAyahViewer({
         .ayah-tafsir-text {
           font-size: 0.8rem;
           line-height: 1.7;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
         }
 
         .picker-scroll {
