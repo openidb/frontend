@@ -594,10 +594,21 @@ export function QuranAyahViewer({
 
   const pickerAyahCount = SURAHS[pickerSurah - 1]?.ayahCount ?? 1;
 
-  // Desktop sidebar: select ayah (navigate via Go button)
+  // Desktop sidebar: navigate immediately on click
   const handleSidebarAyahClick = useCallback((ayah: number) => {
     setPickerAyah(ayah);
-  }, []);
+    if (isPlaying) pause();
+    const audioParam = isAudioMode ? '?audio=1' : '';
+    router.replace(`/quran/${pickerSurah}/${ayah}${audioParam}`);
+  }, [pickerSurah, router, isAudioMode, isPlaying, pause]);
+
+  const handleSidebarSurahClick = useCallback((num: number) => {
+    handlePickerSurahSelect(num);
+    if (isPlaying) pause();
+    const ayah = num === surahNumber ? clientAyah : 1;
+    const audioParam = isAudioMode ? '?audio=1' : '';
+    router.replace(`/quran/${num}/${ayah}${audioParam}`);
+  }, [handlePickerSurahSelect, surahNumber, clientAyah, router, isAudioMode, isPlaying, pause]);
 
   // Sync sidebar picker with current navigation state
   useEffect(() => {
@@ -820,12 +831,12 @@ export function QuranAyahViewer({
             <div className="w-20 px-2 py-2 text-center">{t("mushaf.ayah")}</div>
           </div>
           <div className="flex flex-1 min-h-0">
-            <div ref={sidebarSurahRef} className="flex-1 overflow-y-auto picker-scroll">
+            <div ref={sidebarSurahRef} className="flex-1 overflow-y-auto overflow-x-hidden picker-scroll">
               {SURAHS.map((s) => (
                 <button
                   key={s.number}
                   data-surah={s.number}
-                  onClick={() => handlePickerSurahSelect(s.number)}
+                  onClick={() => handleSidebarSurahClick(s.number)}
                   className={`quran-sidebar-item w-full text-left px-4 py-2 text-sm transition-all flex items-center gap-2.5 ${
                     s.number === pickerSurah
                       ? "quran-sidebar-item-active"
@@ -837,13 +848,13 @@ export function QuranAyahViewer({
                 </button>
               ))}
             </div>
-            <div ref={sidebarAyahRef} className="w-20 overflow-y-auto picker-scroll quran-sidebar-ayah-col">
+            <div ref={sidebarAyahRef} className="w-20 overflow-y-auto overflow-x-hidden picker-scroll quran-sidebar-ayah-col">
               {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
                   data-ayah={n}
                   onClick={() => handleSidebarAyahClick(n)}
-                  className={`quran-sidebar-ayah w-full text-center py-1.5 text-sm tabular-nums transition-all ${
+                  className={`quran-sidebar-ayah w-full text-center py-2 text-sm tabular-nums transition-all ${
                     n === pickerAyah
                       ? "quran-sidebar-ayah-active"
                       : ""
@@ -853,14 +864,6 @@ export function QuranAyahViewer({
                 </button>
               ))}
             </div>
-          </div>
-          <div className="shrink-0 px-3 py-2.5">
-            <button
-              onClick={handlePickerGo}
-              className="w-full h-9 rounded-xl bg-primary/10 text-primary font-medium text-sm hover:bg-primary/20 active:bg-primary/30 transition-colors"
-            >
-              {t("mushaf.navigate")} · {pickerSurah}:{pickerAyah}
-            </button>
           </div>
         </div>
 
