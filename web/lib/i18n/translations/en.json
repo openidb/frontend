@@ -380,7 +380,8 @@
     "listenToAyah": "Listen",
     "stopListening": "Stop listening",
     "skipBack": "Previous ayah",
-    "skipForward": "Next ayah"
+    "skipForward": "Next ayah",
+    "navigate": "Navigate"
   },
   "common": {
     "loading": "Loading...",

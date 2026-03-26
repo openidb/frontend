@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, ChevronDown, FileText, Headphones, Play, Pause, SkipBack, SkipForward, User, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/lib/i18n";
 import { useQuranAudio, RECITERS, DEFAULT_RECITER } from "@/lib/use-quran-audio";
 
@@ -543,22 +544,8 @@ export function QuranAyahViewer({
     }
   }, [clientAyah, surahNumber, canGoPrev, canGoNext, router, isAudioMode, handleAudioNavigate]);
 
-  // Subtle fade on ayah change
-  const prevAyahRef = useRef(clientAyah);
-  useEffect(() => {
-    if (prevAyahRef.current !== clientAyah) {
-      prevAyahRef.current = clientAyah;
-      const el = contentRef.current;
-      if (el) {
-        el.style.transition = 'none';
-        el.style.opacity = '0.5';
-        requestAnimationFrame(() => {
-          el.style.transition = 'opacity 0.1s ease-out';
-          el.style.opacity = '1';
-        });
-      }
-    }
-  }, [clientAyah]);
+  // Content transition key — changes trigger fade
+  const contentKey = `${surahNumber}:${clientAyah}`;
 
   // Open picker and auto-scroll to current surah/ayah
   const openPicker = useCallback(() => {
@@ -607,13 +594,10 @@ export function QuranAyahViewer({
 
   const pickerAyahCount = SURAHS[pickerSurah - 1]?.ayahCount ?? 1;
 
-  // Desktop sidebar: navigate immediately on ayah tap
+  // Desktop sidebar: select ayah (navigate via Go button)
   const handleSidebarAyahClick = useCallback((ayah: number) => {
     setPickerAyah(ayah);
-    if (isPlaying) pause();
-    const audioParam = isAudioMode ? '?audio=1' : '';
-    router.replace(`/quran/${pickerSurah}/${ayah}${audioParam}`);
-  }, [pickerSurah, router, isAudioMode, isPlaying, pause]);
+  }, []);
 
   // Sync sidebar picker with current navigation state
   useEffect(() => {
@@ -645,7 +629,7 @@ export function QuranAyahViewer({
         </button>
         <button
           onClick={openPicker}
-          className="flex-1 flex items-center gap-1 text-sm font-medium truncate hover:opacity-70 transition-opacity"
+          className="flex-1 flex items-center gap-1 text-sm font-medium truncate hover:opacity-70 sm:hover:opacity-100 sm:cursor-default transition-opacity"
           aria-label={t("mushaf.goToSurah")}
         >
           <span className="truncate">
@@ -685,13 +669,25 @@ export function QuranAyahViewer({
         </button>
       </div>
 
-      {/* Surah/Ayah Picker Overlay */}
+      {/* Surah/Ayah Picker Overlay (mobile only — desktop uses sidebar) */}
+      <AnimatePresence>
       {showPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowPicker(false)}>
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center sm:hidden"
+          onClick={() => setShowPicker(false)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
           <div className="absolute inset-0 bg-black/50" />
-          <div
-            className="picker-panel relative w-full h-full sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-xl bg-card flex flex-col"
+          <motion.div
+            className="picker-panel relative w-full h-full sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl bg-card flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
           >
             {/* Picker header */}
             <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
@@ -760,17 +756,30 @@ export function QuranAyahViewer({
                 {t("mushaf.goToSurah")} {pickerSurah}:{pickerAyah}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Reciter Menu */}
+      <AnimatePresence>
       {showReciterMenu && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-start sm:justify-end" onClick={() => setShowReciterMenu(false)}>
+        <motion.div
+          className="fixed inset-0 z-50 flex items-end sm:items-start sm:justify-end"
+          onClick={() => setShowReciterMenu(false)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
           <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="reciter-menu relative w-full sm:w-auto sm:min-w-[260px] sm:mt-12 sm:mr-4 bg-card sm:rounded-xl rounded-t-2xl shadow-xl overflow-hidden"
+          <motion.div
+            className="reciter-menu relative w-full sm:w-auto sm:min-w-[260px] sm:mt-12 sm:mr-4 bg-card sm:rounded-xl rounded-t-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
           >
             {/* Drag handle (mobile) */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
@@ -797,17 +806,18 @@ export function QuranAyahViewer({
                 </button>
               ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Main area: sidebar + content */}
       <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
-        <div className="hidden sm:flex sm:flex-col sm:w-64 border-r bg-card shrink-0 min-h-0">
-          <div className="flex border-b shrink-0 text-xs text-muted-foreground font-medium">
-            <div className="flex-1 px-3 py-1.5">{t("mushaf.surah")}</div>
-            <div className="w-20 px-2 py-1.5 border-l text-center">{t("mushaf.ayah")}</div>
+        <div className="quran-sidebar hidden sm:flex sm:flex-col sm:w-64 shrink-0 min-h-0">
+          <div className="flex shrink-0 text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
+            <div className="flex-1 px-4 py-2">{t("mushaf.surah")}</div>
+            <div className="w-20 px-2 py-2 text-center">{t("mushaf.ayah")}</div>
           </div>
           <div className="flex flex-1 min-h-0">
             <div ref={sidebarSurahRef} className="flex-1 overflow-y-auto picker-scroll">
@@ -816,27 +826,27 @@ export function QuranAyahViewer({
                   key={s.number}
                   data-surah={s.number}
                   onClick={() => handlePickerSurahSelect(s.number)}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
+                  className={`quran-sidebar-item w-full text-left px-4 py-2 text-sm transition-all flex items-center gap-2.5 ${
                     s.number === pickerSurah
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "hover:bg-muted/50"
+                      ? "quran-sidebar-item-active"
+                      : ""
                   }`}
                 >
-                  <span className="text-xs text-muted-foreground w-6 shrink-0 tabular-nums">{s.number}</span>
+                  <span className="text-xs opacity-40 w-6 shrink-0 tabular-nums">{s.number}</span>
                   <span className="truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
                 </button>
               ))}
             </div>
-            <div ref={sidebarAyahRef} className="w-20 border-l overflow-y-auto picker-scroll">
+            <div ref={sidebarAyahRef} className="w-20 overflow-y-auto picker-scroll quran-sidebar-ayah-col">
               {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
                   data-ayah={n}
                   onClick={() => handleSidebarAyahClick(n)}
-                  className={`w-full text-center py-1.5 text-sm tabular-nums transition-colors ${
+                  className={`quran-sidebar-ayah w-full text-center py-1.5 text-sm tabular-nums transition-all ${
                     n === pickerAyah
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "hover:bg-muted/50"
+                      ? "quran-sidebar-ayah-active"
+                      : ""
                   }`}
                 >
                   {n}
@@ -844,12 +854,12 @@ export function QuranAyahViewer({
               ))}
             </div>
           </div>
-          <div className="shrink-0 border-t px-3 py-2">
+          <div className="shrink-0 px-3 py-2.5">
             <button
               onClick={handlePickerGo}
-              className="w-full h-9 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 active:bg-primary/80 transition-colors"
+              className="w-full h-9 rounded-xl bg-primary/10 text-primary font-medium text-sm hover:bg-primary/20 active:bg-primary/30 transition-colors"
             >
-              {pickerSurah}:{pickerAyah}
+              {t("mushaf.navigate")} · {pickerSurah}:{pickerAyah}
             </button>
           </div>
         </div>
@@ -863,9 +873,15 @@ export function QuranAyahViewer({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div
+        <AnimatePresence mode="wait">
+        <motion.div
+          key={contentKey}
           ref={contentRef}
           className="ayah-content-frame"
+          initial={{ opacity: 0.4 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
         >
           {/* Ayah & page info */}
           <p className="ayah-info-line" dir="ltr">
@@ -967,7 +983,8 @@ export function QuranAyahViewer({
               )}
             </div>
           )}
-        </div>
+        </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Bottom nav */}
@@ -1181,40 +1198,62 @@ export function QuranAyahViewer({
           line-height: 1.7;
         }
 
-        /* Reciter menu */
-        .reciter-menu {
-          animation: reciter-slide-up 0.2s ease-out;
-        }
-        @keyframes reciter-slide-up {
-          from { opacity: 0; transform: translateY(1rem); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @media (min-width: 640px) {
-          .reciter-menu {
-            animation: reciter-fade-in 0.15s ease-out;
-          }
-          @keyframes reciter-fade-in {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        }
-
-        /* Picker */
-        .picker-panel {
-          animation: picker-slide-up 0.2s ease-out;
-        }
-        @keyframes picker-slide-up {
-          from { opacity: 0; transform: translateY(2rem); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        /* Picker (mobile full-screen) */
         @media (max-width: 639px) {
           .picker-panel {
-            animation: none;
+            border-radius: 0;
           }
         }
         .picker-scroll {
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
+        }
+
+        /* Desktop sidebar */
+        .quran-sidebar {
+          background: hsl(var(--reader-bg, 40 30% 96%));
+          color: hsl(var(--reader-fg, 0 0% 10%));
+          border-right: 1px solid hsl(var(--border) / 0.3);
+        }
+        .quran-sidebar-item {
+          border-radius: 0.5rem;
+          margin: 1px 0.375rem;
+          padding-left: 0.625rem;
+          opacity: 0.55;
+        }
+        .quran-sidebar-item:hover {
+          opacity: 0.85;
+          background: hsl(var(--foreground) / 0.04);
+        }
+        .quran-sidebar-item-active {
+          opacity: 1;
+          background: hsl(var(--primary) / 0.08);
+          color: hsl(var(--primary));
+          font-weight: 500;
+        }
+        .quran-sidebar-item-active:hover {
+          background: hsl(var(--primary) / 0.12);
+        }
+        .quran-sidebar-ayah-col {
+          border-left: 1px solid hsl(var(--border) / 0.2);
+        }
+        .quran-sidebar-ayah {
+          opacity: 0.4;
+          border-radius: 0.375rem;
+          margin: 1px 0.25rem;
+        }
+        .quran-sidebar-ayah:hover {
+          opacity: 0.7;
+          background: hsl(var(--foreground) / 0.04);
+        }
+        .quran-sidebar-ayah-active {
+          opacity: 1;
+          background: hsl(var(--primary) / 0.08);
+          color: hsl(var(--primary));
+          font-weight: 500;
+        }
+        .quran-sidebar-ayah-active:hover {
+          background: hsl(var(--primary) / 0.12);
         }
 
         /* Font face */
