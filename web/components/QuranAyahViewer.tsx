@@ -736,30 +736,14 @@ export function QuranAyahViewer({
       </div>
 
       {/* Surah/Ayah Picker Overlay (mobile only — desktop uses sidebar) */}
-      <AnimatePresence>
       {showPicker && (
-        <motion.div
-          className="fixed inset-0 z-50 sm:hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPicker(false)} />
-          <motion.div
-            className="absolute inset-0 bg-card flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-            initial={{ y: "-100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
-            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-          >
+        <div className="fixed inset-0 z-50 sm:hidden quran-picker-bg flex flex-col">
             {/* Picker header */}
-            <div className="flex items-center justify-between px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] border-b shrink-0">
-              <h2 className="text-sm font-semibold">{t("mushaf.goToSurah")}</h2>
+            <div className="flex items-center justify-between px-4 py-2.5 pt-[calc(0.625rem+env(safe-area-inset-top))] shrink-0">
+              <h2 className="text-sm font-semibold opacity-70">{t("mushaf.goToSurah")}</h2>
               <button
                 onClick={() => setShowPicker(false)}
-                className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                className="p-1.5 rounded-lg hover:bg-foreground/[0.06] active:bg-foreground/[0.1] transition-colors"
                 aria-label={t("common.close")}
               >
                 <X className="h-4 w-4" />
@@ -767,53 +751,63 @@ export function QuranAyahViewer({
             </div>
 
             {/* Column headers */}
-            <div className="flex border-b shrink-0 text-xs text-muted-foreground font-medium">
+            <div className="flex shrink-0 text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
               <div className="flex-1 px-4 py-1.5">{t("mushaf.surah")}</div>
-              <div className="w-24 px-4 py-1.5 border-l text-center">{t("mushaf.ayah")}</div>
+              <div className="w-20 px-2 py-1.5 text-center">{t("mushaf.ayah")}</div>
             </div>
 
             {/* Two-column picker body */}
             <div className="flex flex-1 min-h-0">
               {/* Surah column */}
-              <div ref={surahListRef} className="flex-1 overflow-y-auto picker-scroll">
+              <div ref={surahListRef} className="flex-1 overflow-y-auto overflow-x-hidden picker-scroll">
                 {SURAHS.map((s) => (
                   <button
                     key={s.number}
                     data-surah={s.number}
                     onClick={() => handlePickerSurahSelect(s.number)}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${
-                      s.number === pickerSurah
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-muted/50"
+                    className={`quran-sidebar-item relative w-full text-left px-4 py-2 text-sm flex items-center gap-2.5 ${
+                      s.number === pickerSurah ? "quran-sidebar-item-active" : ""
                     }`}
                   >
-                    <span className="text-xs text-muted-foreground w-6 shrink-0 tabular-nums">{fmtNum(s.number)}</span>
-                    <span className="truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
+                    {s.number === pickerSurah && (
+                      <motion.span
+                        layoutId="picker-surah-highlight"
+                        className="absolute inset-0 rounded-lg quran-sidebar-surah-pill"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-[1] text-xs opacity-40 w-6 shrink-0 tabular-nums">{fmtNum(s.number)}</span>
+                    <span className="relative z-[1] truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
                   </button>
                 ))}
               </div>
 
               {/* Ayah column */}
-              <div ref={ayahListRef} className="w-24 border-l overflow-y-auto picker-scroll">
+              <div ref={ayahListRef} className="w-20 overflow-y-auto overflow-x-hidden picker-scroll quran-sidebar-ayah-col">
                 {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
                   <button
                     key={n}
                     data-ayah={n}
                     onClick={() => setPickerAyah(n)}
-                    className={`w-full text-center py-2 text-sm tabular-nums transition-colors ${
-                      n === pickerAyah
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-muted/50"
+                    className={`quran-sidebar-ayah relative w-full text-center py-2 text-sm tabular-nums ${
+                      n === pickerAyah ? "quran-sidebar-ayah-active" : ""
                     }`}
                   >
-                    {fmtNum(n)}
+                    {n === pickerAyah && (
+                      <motion.span
+                        layoutId="picker-ayah-highlight"
+                        className="absolute inset-0 rounded-md quran-sidebar-ayah-pill"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-[1]">{fmtNum(n)}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Go button */}
-            <div className="shrink-0 border-t px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+            <div className="shrink-0 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
               <button
                 onClick={handlePickerGo}
                 className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 active:bg-primary/80 transition-colors"
@@ -821,10 +815,8 @@ export function QuranAyahViewer({
                 {t("mushaf.goToSurah")} {fmtNum(pickerSurah)}:{fmtNum(pickerAyah)}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+        </div>
       )}
-      </AnimatePresence>
 
       {/* Reciter Menu */}
       <AnimatePresence>
@@ -1288,6 +1280,11 @@ export function QuranAyahViewer({
           line-height: 1.7;
           overflow-wrap: break-word;
           word-wrap: break-word;
+        }
+
+        .quran-picker-bg {
+          background: hsl(var(--reader-bg, 40 30% 96%));
+          color: hsl(var(--reader-fg, 0 0% 10%));
         }
 
         .picker-scroll {
