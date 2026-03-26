@@ -576,10 +576,10 @@ export function QuranAyahViewer({
         const ayahEl = ayahListRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
         ayahEl?.scrollIntoView({ block: "center" });
         const sidebarAyahEl = sidebarAyahRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
-        sidebarAyahEl?.scrollIntoView({ block: "center" });
+        sidebarAyahEl?.scrollIntoView({ block: "nearest", behavior: "smooth" });
       } else {
         ayahListRef.current?.scrollTo({ top: 0 });
-        sidebarAyahRef.current?.scrollTo({ top: 0 });
+        sidebarAyahRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       }
     });
   }, [surahNumber, clientAyah]);
@@ -611,14 +611,17 @@ export function QuranAyahViewer({
   }, [handlePickerSurahSelect, surahNumber, clientAyah, router, isAudioMode, isPlaying, pause]);
 
   // Sync sidebar picker with current navigation state
+  const isInitialMount = useRef(true);
   useEffect(() => {
     setPickerSurah(surahNumber);
     setPickerAyah(clientAyah);
+    const smooth = !isInitialMount.current;
+    isInitialMount.current = false;
     requestAnimationFrame(() => {
       const surahEl = sidebarSurahRef.current?.querySelector(`[data-surah="${surahNumber}"]`) as HTMLElement | null;
-      surahEl?.scrollIntoView({ block: "center" });
+      surahEl?.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
       const ayahEl = sidebarAyahRef.current?.querySelector(`[data-ayah="${clientAyah}"]`) as HTMLElement | null;
-      ayahEl?.scrollIntoView({ block: "center" });
+      ayahEl?.scrollIntoView({ block: "nearest", behavior: smooth ? "smooth" : "auto" });
     });
   }, [surahNumber, clientAyah]);
 
@@ -837,14 +840,21 @@ export function QuranAyahViewer({
                   key={s.number}
                   data-surah={s.number}
                   onClick={() => handleSidebarSurahClick(s.number)}
-                  className={`quran-sidebar-item w-full text-left px-4 py-2 text-sm transition-all flex items-center gap-2.5 ${
+                  className={`quran-sidebar-item relative w-full text-left px-4 py-2 text-sm flex items-center gap-2.5 ${
                     s.number === pickerSurah
                       ? "quran-sidebar-item-active"
                       : ""
                   }`}
                 >
-                  <span className="text-xs opacity-40 w-6 shrink-0 tabular-nums">{s.number}</span>
-                  <span className="truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
+                  {s.number === pickerSurah && (
+                    <motion.span
+                      layoutId="sidebar-surah-highlight"
+                      className="absolute inset-0 rounded-lg quran-sidebar-surah-pill"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-[1] text-xs opacity-40 w-6 shrink-0 tabular-nums">{s.number}</span>
+                  <span className="relative z-[1] truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
                 </button>
               ))}
             </div>
@@ -854,13 +864,20 @@ export function QuranAyahViewer({
                   key={n}
                   data-ayah={n}
                   onClick={() => handleSidebarAyahClick(n)}
-                  className={`quran-sidebar-ayah w-full text-center py-2 text-sm tabular-nums transition-all ${
+                  className={`quran-sidebar-ayah relative w-full text-center py-2 text-sm tabular-nums ${
                     n === pickerAyah
                       ? "quran-sidebar-ayah-active"
                       : ""
                   }`}
                 >
-                  {n}
+                  {n === pickerAyah && (
+                    <motion.span
+                      layoutId="sidebar-ayah-highlight"
+                      className="absolute inset-0 rounded-md quran-sidebar-ayah-pill"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-[1]">{n}</span>
                 </button>
               ))}
             </div>
@@ -1220,6 +1237,7 @@ export function QuranAyahViewer({
           margin: 1px 0.375rem;
           padding-left: 0.625rem;
           opacity: 0.55;
+          transition: opacity 0.2s ease, color 0.2s ease;
         }
         .quran-sidebar-item:hover {
           opacity: 0.85;
@@ -1227,12 +1245,15 @@ export function QuranAyahViewer({
         }
         .quran-sidebar-item-active {
           opacity: 1;
-          background: hsl(var(--primary) / 0.08);
+          background: none;
           color: hsl(var(--primary));
           font-weight: 500;
         }
         .quran-sidebar-item-active:hover {
-          background: hsl(var(--primary) / 0.12);
+          background: none;
+        }
+        .quran-sidebar-surah-pill {
+          background: hsl(var(--primary) / 0.08);
         }
         .quran-sidebar-ayah-col {
           border-left: 1px solid hsl(var(--border) / 0.2);
@@ -1241,6 +1262,7 @@ export function QuranAyahViewer({
           opacity: 0.4;
           border-radius: 0.375rem;
           margin: 1px 0.25rem;
+          transition: opacity 0.2s ease, color 0.2s ease;
         }
         .quran-sidebar-ayah:hover {
           opacity: 0.7;
@@ -1248,12 +1270,15 @@ export function QuranAyahViewer({
         }
         .quran-sidebar-ayah-active {
           opacity: 1;
-          background: hsl(var(--primary) / 0.08);
+          background: none;
           color: hsl(var(--primary));
           font-weight: 500;
         }
         .quran-sidebar-ayah-active:hover {
-          background: hsl(var(--primary) / 0.12);
+          background: none;
+        }
+        .quran-sidebar-ayah-pill {
+          background: hsl(var(--primary) / 0.08);
         }
 
         /* Font face */
