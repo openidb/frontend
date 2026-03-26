@@ -228,6 +228,15 @@ const tafsirFetching = new Set<string>(); // dedup in-flight tafsir fetches
 const ayahTextCache = new Map<string, string>(); // "surah:ayah" → textUthmani
 const ayahPageCache = new Map<string, number>(); // "surah:ayah" → pageNumber
 
+// Arabic reciter names
+const RECITER_NAMES_AR: Record<string, string> = {
+  "tarteel/alafasy": "مشاري العفاسي",
+  "tarteel/sudais": "عبدالرحمن السديس",
+  "tarteel/dossary": "ياسر الدوسري",
+  "tarteel/muaiqly": "ماهر المعيقلي",
+  "tarteel/rifai": "هاني الرفاعي",
+};
+
 export function QuranAyahViewer({
   ayahs,
   targetAyah,
@@ -238,6 +247,14 @@ export function QuranAyahViewer({
   initialAudioMode = false,
 }: Props) {
   const { t, locale } = useTranslation();
+  const isRTL = locale === "ar";
+
+  // Format numbers: Eastern Arabic for ar locale, Western otherwise
+  const fmtNum = (n: number) => isRTL ? n.toLocaleString("ar-EG") : String(n);
+
+  // Get reciter display name
+  const reciterName = (slug: string) =>
+    isRTL ? (RECITER_NAMES_AR[slug] ?? slug) : (RECITERS.find((r) => r.slug === slug)?.name ?? slug);
   const router = useRouter();
 
   // --- Reciter state (persisted in localStorage) ---
@@ -654,7 +671,7 @@ export function QuranAyahViewer({
           className="p-1.5 rounded-lg hover:bg-muted transition-colors"
           aria-label={t("common.close")}
         >
-          <ChevronLeft className="h-5 w-5" />
+          {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </button>
         <button
           onClick={openPicker}
@@ -673,8 +690,8 @@ export function QuranAyahViewer({
             aria-label="Reciter"
           >
             <User className="h-4 w-4" />
-            <span className="hidden sm:inline text-xs font-medium max-w-[100px] truncate">
-              {RECITERS.find((r) => r.slug === reciter)?.name ?? "Reciter"}
+            <span className="hidden sm:inline text-xs font-medium max-w-[120px] truncate">
+              {reciterName(reciter)}
             </span>
           </button>
         )}
@@ -751,7 +768,7 @@ export function QuranAyahViewer({
                         : "hover:bg-muted/50"
                     }`}
                   >
-                    <span className="text-xs text-muted-foreground w-6 shrink-0 tabular-nums">{s.number}</span>
+                    <span className="text-xs text-muted-foreground w-6 shrink-0 tabular-nums">{fmtNum(s.number)}</span>
                     <span className="truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
                   </button>
                 ))}
@@ -770,7 +787,7 @@ export function QuranAyahViewer({
                         : "hover:bg-muted/50"
                     }`}
                   >
-                    {n}
+                    {fmtNum(n)}
                   </button>
                 ))}
               </div>
@@ -782,7 +799,7 @@ export function QuranAyahViewer({
                 onClick={handlePickerGo}
                 className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 active:bg-primary/80 transition-colors"
               >
-                {t("mushaf.goToSurah")} {pickerSurah}:{pickerAyah}
+                {t("mushaf.goToSurah")} {fmtNum(pickerSurah)}:{fmtNum(pickerAyah)}
               </button>
             </div>
           </motion.div>
@@ -815,7 +832,7 @@ export function QuranAyahViewer({
               <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
             </div>
             <div className="px-4 py-3 border-b">
-              <p className="text-sm font-semibold">Reciter</p>
+              <p className="text-sm font-semibold">{isRTL ? "القارئ" : "Reciter"}</p>
             </div>
             <div className="py-1 pb-[env(safe-area-inset-bottom)]">
               {RECITERS.map((r) => (
@@ -828,7 +845,7 @@ export function QuranAyahViewer({
                       : "hover:bg-muted/50 active:bg-muted"
                   }`}
                 >
-                  <span className={r.slug === reciter ? "font-medium" : ""}>{r.name}</span>
+                  <span className={r.slug === reciter ? "font-medium" : ""}>{reciterName(r.slug)}</span>
                   {r.slug === reciter && (
                     <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   )}
@@ -868,7 +885,7 @@ export function QuranAyahViewer({
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}
-                  <span className="relative z-[1] text-xs opacity-40 w-6 shrink-0 tabular-nums">{s.number}</span>
+                  <span className="relative z-[1] text-xs opacity-40 w-6 shrink-0 tabular-nums">{fmtNum(s.number)}</span>
                   <span className="relative z-[1] truncate">{locale === "ar" ? s.nameArabic : s.nameEnglish}</span>
                 </button>
               ))}
@@ -892,7 +909,7 @@ export function QuranAyahViewer({
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}
-                  <span className="relative z-[1]">{n}</span>
+                  <span className="relative z-[1]">{fmtNum(n)}</span>
                 </button>
               ))}
             </div>
@@ -910,10 +927,10 @@ export function QuranAyahViewer({
       >
         <div ref={contentRef} className="ayah-content-frame">
           {/* Ayah & page info */}
-          <p className="ayah-info-line" dir="ltr">
-            {t("mushaf.ayah")} {clientAyah} / {totalAyahs}
+          <p className="ayah-info-line" dir={isRTL ? "rtl" : "ltr"}>
+            {t("mushaf.ayah")} {fmtNum(clientAyah)} / {fmtNum(totalAyahs)}
             {ayahPageCache.has(`${surahNumber}:${clientAyah}`) && (
-              <> · {t("mushaf.page")} {ayahPageCache.get(`${surahNumber}:${clientAyah}`)}</>
+              <> · {t("mushaf.page")} {fmtNum(ayahPageCache.get(`${surahNumber}:${clientAyah}`)!)}</>
             )}
           </p>
 
@@ -961,7 +978,7 @@ export function QuranAyahViewer({
                     key={num}
                     className={`ayah-translation-text ${num === clientAyah ? "ayah-translation-current" : "ayah-translation-context"}`}
                   >
-                    <span className="ayah-translation-num">{surahNumber}:{num}</span>{" "}
+                    <span className="ayah-translation-num">{fmtNum(surahNumber)}:{fmtNum(num)}</span>{" "}
                     {translations[num]}
                   </p>
                 ) : null
@@ -1028,7 +1045,7 @@ export function QuranAyahViewer({
       <div
         className="shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
         style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
-        dir="ltr"
+        dir={isRTL ? "rtl" : "ltr"}
       >
         <div className={`flex items-center ${isAudioMode ? "justify-center gap-4" : "justify-between"}`}>
           {isAudioMode ? (
@@ -1067,12 +1084,12 @@ export function QuranAyahViewer({
                 className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
               >
-                <ChevronLeft className="h-5 w-5" />
+                {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
                 {clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
               </button>
 
               <span className="text-sm text-muted-foreground tabular-nums">
-                {t("mushaf.ayah")} {clientAyah} / {totalAyahs}
+                {t("mushaf.ayah")} {fmtNum(clientAyah)} / {fmtNum(totalAyahs)}
               </span>
 
               <button
@@ -1082,7 +1099,7 @@ export function QuranAyahViewer({
                 aria-label={clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
               >
                 {clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
-                <ChevronRight className="h-5 w-5" />
+                {isRTL ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
               </button>
             </>
           )}
