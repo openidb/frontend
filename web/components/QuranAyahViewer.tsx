@@ -685,10 +685,10 @@ export function QuranAyahViewer({
   return (
     <div className="ayah-view flex flex-col h-full min-h-0">
       {/* Header bar */}
-      <div className="ayah-header flex items-center px-3 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-2">
+      <div className="ayah-header flex items-center px-2 sm:px-3 py-1.5 sm:py-2 pt-[calc(0.375rem+env(safe-area-inset-top))] sm:pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-1 sm:gap-2">
         <button
           onClick={() => router.back()}
-          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+          className="p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors"
           aria-label={t("common.close")}
         >
           {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
@@ -706,7 +706,7 @@ export function QuranAyahViewer({
         {isAudioMode && (
           <button
             onClick={() => setShowReciterMenu((v) => !v)}
-            className="flex items-center gap-1 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+            className="flex items-center gap-1 p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
             aria-label="Reciter"
           >
             <User className="h-4 w-4" />
@@ -717,21 +717,21 @@ export function QuranAyahViewer({
         )}
         <button
           onClick={toggleAudioMode}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
             isAudioMode
               ? "bg-primary text-primary-foreground"
               : "hover:bg-muted text-muted-foreground"
           }`}
           aria-label={isAudioMode ? t("mushaf.stopListening") : t("mushaf.listenToAyah")}
         >
-          <Headphones className="h-5 w-5" />
+          <Headphones className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
         <button
           onClick={() => router.push(`/mushaf/pdf?page=${ayahPageCache.get(`${surahNumber}:${clientAyah}`) ?? ayahs[0]?.pageNumber ?? 1}`)}
-          className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+          className="p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
           aria-label="PDF"
         >
-          <FileText className="h-5 w-5" />
+          <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
       </div>
 
@@ -739,24 +739,23 @@ export function QuranAyahViewer({
       <AnimatePresence>
       {showPicker && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center sm:hidden"
-          onClick={() => setShowPicker(false)}
+          className="fixed inset-0 z-50 sm:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25 }}
         >
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPicker(false)} />
           <motion.div
-            className="picker-panel relative w-full h-full sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl bg-card flex flex-col shadow-2xl"
+            className="absolute inset-x-0 bottom-0 top-0 bg-card flex flex-col"
             onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
           >
             {/* Picker header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] border-b shrink-0">
               <h2 className="text-sm font-semibold">{t("mushaf.goToSurah")}</h2>
               <button
                 onClick={() => setShowPicker(false)}
@@ -1063,25 +1062,25 @@ export function QuranAyahViewer({
 
       {/* Bottom nav */}
       <div
-        className="shrink-0 border-t border-border/50 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+        className="shrink-0 border-t border-border/50 px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
         style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
         dir={isRTL ? "rtl" : "ltr"}
       >
-        <div className={`flex items-center ${isAudioMode ? "justify-center gap-4" : "justify-between"}`}>
+        <div className={`flex items-center ${isAudioMode ? "justify-center gap-3" : "justify-between"}`}>
           {isAudioMode ? (
             <>
               <button
                 onClick={skipForward}
                 disabled={clientAyah >= totalAyahs}
-                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 w-9 sm:h-11 sm:px-5 sm:w-auto rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={t("mushaf.skipForward")}
               >
-                <SkipBack className="h-5 w-5" />
+                <SkipBack className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
 
               <button
                 onClick={isPlaying ? pause : play}
-                className="h-11 w-11 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 flex items-center justify-center transition-colors"
+                className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 flex items-center justify-center transition-colors"
                 aria-label={isPlaying ? t("audio.pause") : t("audio.play")}
               >
                 {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
@@ -1090,10 +1089,10 @@ export function QuranAyahViewer({
               <button
                 onClick={skipBack}
                 disabled={clientAyah <= 1}
-                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 w-9 sm:h-11 sm:px-5 sm:w-auto rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={t("mushaf.skipBack")}
               >
-                <SkipForward className="h-5 w-5" />
+                <SkipForward className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </>
           ) : (
@@ -1101,25 +1100,25 @@ export function QuranAyahViewer({
               <button
                 onClick={goNext}
                 disabled={!canGoNext}
-                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 px-3 sm:h-11 sm:px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
               >
-                {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-                {clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}
+                {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                <span className="max-w-[5rem] truncate">{clientAyah >= totalAyahs ? t("mushaf.nextSurah") : t("mushaf.nextAyah")}</span>
               </button>
 
-              <span className="text-sm text-muted-foreground tabular-nums">
-                {t("mushaf.ayah")} {fmtNum(clientAyah)} / {fmtNum(totalAyahs)}
+              <span className="text-xs sm:text-sm text-muted-foreground tabular-nums shrink-0">
+                {fmtNum(clientAyah)} / {fmtNum(totalAyahs)}
               </span>
 
               <button
                 onClick={goPrev}
                 disabled={!canGoPrev}
-                className="h-11 px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 px-3 sm:h-11 sm:px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
               >
-                {clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}
-                {isRTL ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                <span className="max-w-[5rem] truncate">{clientAyah <= 1 ? t("mushaf.prevSurah") : t("mushaf.prevAyah")}</span>
+                {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </button>
             </>
           )}
@@ -1136,7 +1135,7 @@ export function QuranAyahViewer({
         .ayah-bg {
           background-color: hsl(var(--reader-bg, 40 30% 96%));
           color: hsl(var(--reader-fg, 0 0% 10%));
-          padding: 1rem 0;
+          padding: 0.5rem 0;
         }
         @media (min-width: 640px) {
           .ayah-bg { padding: 1.5rem 0; }
@@ -1146,7 +1145,7 @@ export function QuranAyahViewer({
           width: 100%;
           max-width: 640px;
           margin: 0 auto;
-          padding: 0.5rem 1rem;
+          padding: 0.25rem 0.75rem;
           display: flex;
           flex-direction: column;
         }
@@ -1207,9 +1206,15 @@ export function QuranAyahViewer({
 
         /* Translation block */
         .ayah-translation-section {
-          margin-top: 1.5rem;
-          padding-top: 0.75rem;
+          margin-top: 1rem;
+          padding-top: 0.5rem;
           border-top: 1px solid hsl(var(--border));
+        }
+        @media (min-width: 640px) {
+          .ayah-translation-section {
+            margin-top: 1.5rem;
+            padding-top: 0.75rem;
+          }
         }
         .ayah-translation-label {
           font-size: 0.7rem;
@@ -1279,12 +1284,6 @@ export function QuranAyahViewer({
           line-height: 1.7;
         }
 
-        /* Picker (mobile full-screen) */
-        @media (max-width: 639px) {
-          .picker-panel {
-            border-radius: 0;
-          }
-        }
         .picker-scroll {
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
