@@ -1004,7 +1004,7 @@ export function QuranAyahViewer({
               <AnimatePresence mode="wait" initial={false}>
                 {currentTafsir && (
                   <motion.div
-                    key={`${surahNumber}:${clientAyah}:${tafsirEditionId}`}
+                    key={`${tafsirEditionId}:${currentTafsir.length}:${currentTafsir.slice(0, 80)}`}
                     className="ayah-tafsir-content"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
