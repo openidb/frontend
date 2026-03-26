@@ -688,7 +688,7 @@ export function QuranAyahViewer({
       <div className="ayah-header flex items-center px-2 sm:px-3 py-1.5 sm:py-2 pt-[calc(0.375rem+env(safe-area-inset-top))] sm:pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-1 sm:gap-2 w-full">
         <button
           onClick={() => router.back()}
-          className="p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors"
+          className="p-2 sm:p-1.5 rounded-lg hover:bg-muted transition-colors"
           aria-label={t("common.close")}
         >
           {isRTL ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
@@ -706,10 +706,10 @@ export function QuranAyahViewer({
         {isAudioMode && (
           <button
             onClick={() => setShowReciterMenu((v) => !v)}
-            className="flex items-center gap-1 p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+            className="flex items-center gap-1 p-2 sm:p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
             aria-label="Reciter"
           >
-            <User className="h-4 w-4" />
+            <User className="h-5 w-5" />
             <span className="hidden sm:inline text-xs font-medium max-w-[120px] truncate">
               {reciterName(reciter)}
             </span>
@@ -717,21 +717,21 @@ export function QuranAyahViewer({
         )}
         <button
           onClick={toggleAudioMode}
-          className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
+          className={`p-2 sm:p-1.5 rounded-lg transition-colors ${
             isAudioMode
               ? "bg-primary text-primary-foreground"
               : "hover:bg-muted text-muted-foreground"
           }`}
           aria-label={isAudioMode ? t("mushaf.stopListening") : t("mushaf.listenToAyah")}
         >
-          <Headphones className="h-4 w-4 sm:h-5 sm:w-5" />
+          <Headphones className="h-5 w-5" />
         </button>
         <button
           onClick={() => router.push(`/mushaf/pdf?page=${ayahPageCache.get(`${surahNumber}:${clientAyah}`) ?? ayahs[0]?.pageNumber ?? 1}`)}
-          className="p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+          className="p-2 sm:p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
           aria-label="PDF"
         >
-          <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+          <FileText className="h-5 w-5" />
         </button>
       </div>
 
@@ -753,19 +753,19 @@ export function QuranAyahViewer({
             {/* Column headers */}
             <div className="flex shrink-0 text-xs text-muted-foreground/60 font-medium tracking-wide uppercase">
               <div className="flex-1 px-4 py-1.5">{t("mushaf.surah")}</div>
-              <div className="w-20 px-2 py-1.5 text-center">{t("mushaf.ayah")}</div>
+              <div className="w-24 px-2 py-1.5 text-center">{t("mushaf.ayah")}</div>
             </div>
 
             {/* Two-column picker body */}
             <div className="flex flex-1 min-h-0">
               {/* Surah column */}
-              <div ref={surahListRef} className="flex-1 overflow-y-auto overflow-x-hidden picker-scroll">
+              <div ref={surahListRef} className="flex-1 overflow-y-auto picker-scroll px-1.5">
                 {SURAHS.map((s) => (
                   <button
                     key={s.number}
                     data-surah={s.number}
                     onClick={() => handlePickerSurahSelect(s.number)}
-                    className={`quran-sidebar-item relative w-full text-left px-4 py-2 text-sm flex items-center gap-2.5 ${
+                    className={`quran-sidebar-item relative w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 ${
                       s.number === pickerSurah ? "quran-sidebar-item-active" : ""
                     }`}
                   >
@@ -783,7 +783,7 @@ export function QuranAyahViewer({
               </div>
 
               {/* Ayah column */}
-              <div ref={ayahListRef} className="w-20 overflow-y-auto overflow-x-hidden picker-scroll quran-sidebar-ayah-col">
+              <div ref={ayahListRef} className="w-24 overflow-y-auto picker-scroll quran-sidebar-ayah-col px-1">
                 {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
                   <button
                     key={n}
@@ -877,7 +877,7 @@ export function QuranAyahViewer({
             <div className="w-20 px-2 py-2 text-center">{t("mushaf.ayah")}</div>
           </div>
           <div className="flex flex-1 min-h-0">
-            <div ref={sidebarSurahRef} className="flex-1 overflow-y-auto overflow-x-hidden picker-scroll">
+            <div ref={sidebarSurahRef} className="flex-1 overflow-y-auto overflow-x-hidden picker-scroll px-1.5">
               {SURAHS.map((s) => (
                 <button
                   key={s.number}
@@ -901,7 +901,7 @@ export function QuranAyahViewer({
                 </button>
               ))}
             </div>
-            <div ref={sidebarAyahRef} className="w-20 overflow-y-auto overflow-x-hidden picker-scroll quran-sidebar-ayah-col">
+            <div ref={sidebarAyahRef} className="w-20 overflow-y-auto overflow-x-hidden picker-scroll quran-sidebar-ayah-col px-1">
               {Array.from({ length: pickerAyahCount }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
@@ -1300,8 +1300,7 @@ export function QuranAyahViewer({
         }
         .quran-sidebar-item {
           border-radius: 0.5rem;
-          margin: 1px 0.375rem;
-          padding-left: 0.625rem;
+          margin: 1px 0;
           opacity: 0.55;
           transition: opacity 0.2s ease, color 0.2s ease;
         }
@@ -1327,7 +1326,7 @@ export function QuranAyahViewer({
         .quran-sidebar-ayah {
           opacity: 0.4;
           border-radius: 0.375rem;
-          margin: 1px 0.25rem;
+          margin: 1px 0;
           transition: opacity 0.2s ease, color 0.2s ease;
         }
         .quran-sidebar-ayah:hover {
