@@ -1131,7 +1131,7 @@ export function QuranAyahViewer({
         }
         .arabic-ayah-current {
           opacity: 1;
-          transition: opacity 0.6s ease-in;
+          transition: opacity 0.3s ease-in;
         }
         .arabic-ayah-text {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
@@ -1183,7 +1183,7 @@ export function QuranAyahViewer({
         }
         .ayah-translation-current {
           opacity: 1;
-          transition: opacity 0.6s ease-in;
+          transition: opacity 0.3s ease-in;
         }
         .ayah-translation-num {
           font-size: 0.75rem;
