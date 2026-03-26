@@ -1061,10 +1061,11 @@ export function QuranAyahViewer({
               <button
                 onClick={skipForward}
                 disabled={clientAyah >= totalAyahs}
-                className="h-9 w-9 sm:h-11 sm:px-5 sm:w-auto rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 px-3 sm:h-11 sm:px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={t("mushaf.skipForward")}
               >
-                <SkipBack className="h-4 w-4 sm:h-5 sm:w-5" />
+                <SkipBack className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                {t("mushaf.nextAyah")}
               </button>
 
               <button
@@ -1078,10 +1079,11 @@ export function QuranAyahViewer({
               <button
                 onClick={skipBack}
                 disabled={clientAyah <= 1}
-                className="h-9 w-9 sm:h-11 sm:px-5 sm:w-auto rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center text-sm font-medium transition-colors disabled:opacity-30"
+                className="h-9 px-3 sm:h-11 sm:px-5 rounded-xl bg-foreground/[0.06] hover:bg-foreground/[0.1] active:bg-foreground/[0.15] flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium transition-colors disabled:opacity-30"
                 aria-label={t("mushaf.skipBack")}
               >
-                <SkipForward className="h-4 w-4 sm:h-5 sm:w-5" />
+                {t("mushaf.prevAyah")}
+                <SkipForward className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
               </button>
             </>
           ) : (
