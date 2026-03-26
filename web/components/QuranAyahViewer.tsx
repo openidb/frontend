@@ -683,9 +683,9 @@ export function QuranAyahViewer({
   void ayahTick;
 
   return (
-    <div className="ayah-view flex flex-col h-full min-h-0 overflow-x-hidden">
+    <div className="ayah-view flex flex-col h-full min-h-0 w-full max-w-full">
       {/* Header bar */}
-      <div className="ayah-header flex items-center px-2 sm:px-3 py-1.5 sm:py-2 pt-[calc(0.375rem+env(safe-area-inset-top))] sm:pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-1 sm:gap-2">
+      <div className="ayah-header flex items-center px-2 sm:px-3 py-1.5 sm:py-2 pt-[calc(0.375rem+env(safe-area-inset-top))] sm:pt-[calc(0.5rem+env(safe-area-inset-top))] border-b bg-card shrink-0 gap-1 sm:gap-2 w-full">
         <button
           onClick={() => router.back()}
           className="p-1 sm:p-1.5 rounded-lg hover:bg-muted transition-colors"
@@ -936,7 +936,7 @@ export function QuranAyahViewer({
         </div>
 
         {/* Content + bottom nav */}
-        <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1 min-h-0 min-w-0">
       {/* Content */}
       <div
         ref={containerRef}
@@ -1062,7 +1062,7 @@ export function QuranAyahViewer({
 
       {/* Bottom nav */}
       <div
-        className="shrink-0 border-t border-border/50 px-2 sm:px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] overflow-hidden"
+        className="shrink-0 border-t border-border/50 px-2 sm:px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
         style={{ backgroundColor: 'hsl(var(--reader-bg, 40 30% 96%))' }}
         dir={isRTL ? "rtl" : "ltr"}
       >
@@ -1149,7 +1149,6 @@ export function QuranAyahViewer({
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          overflow-x: hidden;
         }
         @media (min-width: 640px) {
           .ayah-content-frame {
@@ -1263,6 +1262,7 @@ export function QuranAyahViewer({
           display: flex;
           gap: 0.5rem;
           margin: 0.25rem 0 0.5rem;
+          max-width: 100%;
         }
         .ayah-tafsir-select {
           padding: 0.25rem 0.5rem;
