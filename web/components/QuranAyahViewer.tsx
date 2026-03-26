@@ -1124,13 +1124,14 @@ export function QuranAyahViewer({
         /* Arabic ayahs — ayah by ayah display */
         .arabic-ayah {
           padding: 0.15rem 0;
-          transition: opacity 0.5s ease-in-out;
         }
         .arabic-ayah-context {
           opacity: 0.45;
+          transition: opacity 0.2s ease-out;
         }
         .arabic-ayah-current {
           opacity: 1;
+          transition: opacity 0.6s ease-in;
         }
         .arabic-ayah-text {
           font-family: "UthmanicHafs", "Noto Naskh Arabic", "Amiri", serif;
@@ -1175,13 +1176,14 @@ export function QuranAyahViewer({
           font-size: 0.875rem;
           line-height: 1.6;
           margin-bottom: 0.5rem;
-          transition: opacity 0.5s ease-in-out;
         }
         .ayah-translation-context {
           opacity: 0.5;
+          transition: opacity 0.2s ease-out;
         }
         .ayah-translation-current {
           opacity: 1;
+          transition: opacity 0.6s ease-in;
         }
         .ayah-translation-num {
           font-size: 0.75rem;
@@ -1300,8 +1302,10 @@ export function QuranAyahViewer({
 
         /* Reduced motion: disable opacity transitions for accessibility */
         @media (prefers-reduced-motion: reduce) {
-          .arabic-ayah,
-          .ayah-translation-text {
+          .arabic-ayah-context,
+          .arabic-ayah-current,
+          .ayah-translation-context,
+          .ayah-translation-current {
             transition: none;
           }
         }
